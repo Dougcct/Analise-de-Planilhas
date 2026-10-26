@@ -42,6 +42,7 @@ class FonteRemota:
         self._base = base_url.rstrip("/")
         self._c = cliente or httpx.Client(trust_env=False, timeout=30)
         self._token: str | None = None
+        self.papel: str | None = None          # preenchido no login (a tela usa para mostrar/ocultar ações)
 
     def _cab(self) -> dict:
         cab = {"X-Client-Version": __version__}
@@ -62,6 +63,7 @@ class FonteRemota:
         r.raise_for_status()
         dados = r.json()
         self._token = dados["token"]
+        self.papel = dados.get("papel")
         return dados
 
     def relatorios(self) -> list[dict]:
@@ -78,3 +80,12 @@ class FonteRemota:
             raise ErroServidor("Sessão expirada. Entre de novo.")
         r.raise_for_status()
         return serializacao.analise_de_json(r.json())
+
+    def exportar_html(self, slug: str) -> str:
+        r = self._c.get(self._url(f"/api/v1/relatorios/{slug}/html"), headers=self._cab())
+        if r.status_code == 403:
+            raise ErroServidor("Seu papel não permite exportar.")
+        if r.status_code == 404:
+            raise ErroServidor("Relatório não encontrado (ou de outro setor).")
+        r.raise_for_status()
+        return r.text

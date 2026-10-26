@@ -43,7 +43,7 @@ def test_status_e_publico(cliente):
 def test_login_ok_e_senha_errada(cliente):
     r = _login(cliente, "user.fin", "senha123")
     assert r.status_code == 200
-    assert r.json()["papel"] == "USUARIO" and r.json()["precisa_trocar_senha"] is True and r.json()["token"]
+    assert r.json()["papel"] == "USUARIO" and r.json()["precisa_trocar_senha"] is False and r.json()["token"]
     assert _login(cliente, "user.fin", "errada").status_code == 401
 
 
@@ -78,6 +78,55 @@ def test_analise_funciona_e_filtra(cliente):
     uma = cliente.post("/api/v1/relatorios/sintetico-fin/analise",
                        json={"selecao": {"Cidade": ["A"]}}, headers=h).json()
     assert 0 < uma["linhas"] < 60
+
+
+def test_exportar_html_so_gestor_ou_adm(cliente):
+    hu = _auth(cliente, "user.fin")
+    assert cliente.get("/api/v1/relatorios/sintetico-fin/html", headers=hu).status_code == 403  # Usuário não
+    hg = _auth(cliente, "gestor.fin")
+    r = cliente.get("/api/v1/relatorios/sintetico-fin/html", headers=hg)
+    assert r.status_code == 200 and "<html" in r.text.lower()
+    assert cliente.get("/api/v1/relatorios/sintetico-fat/html", headers=hg).status_code == 404  # outro setor
+
+
+def test_gestor_cadastra_so_usuario_do_proprio_setor(cliente):
+    hg = _auth(cliente, "gestor.fin")
+    r = cliente.post("/api/v1/usuarios", headers=hg,
+                     json={"login": "novo.fin", "nome": "Novo", "senha": "senha123", "papel": "USUARIO"})
+    assert r.status_code == 201 and r.json()["centro_custo_id"] == 1
+    # Gestor não cria outro Gestor
+    assert cliente.post("/api/v1/usuarios", headers=hg,
+                        json={"login": "g2", "nome": "G", "senha": "senha123", "papel": "GESTOR"}).status_code == 403
+    # Usuário comum não cadastra ninguém
+    hu = _auth(cliente, "user.fin")
+    assert cliente.post("/api/v1/usuarios", headers=hu,
+                        json={"login": "z", "nome": "Z", "senha": "senha123"}).status_code == 403
+
+
+def test_novo_usuario_bloqueado_ate_trocar_senha(cliente):
+    hg = _auth(cliente, "gestor.fin")
+    cliente.post("/api/v1/usuarios", headers=hg,
+                 json={"login": "trocar.fin", "nome": "T", "senha": "senha123", "papel": "USUARIO"})
+    tok = _login(cliente, "trocar.fin", "senha123").json()["token"]
+    h = {"Authorization": f"Bearer {tok}"}
+    assert cliente.get("/api/v1/relatorios", headers=h).status_code == 409        # troca pendente trava
+    assert cliente.post("/api/v1/sessao/senha", headers=h,
+                        json={"senha_atual": "senha123", "nova": "novasenha"}).status_code == 200
+    assert cliente.get("/api/v1/relatorios", headers=h).status_code == 200        # liberou
+
+
+def test_gestor_bloqueia_do_setor_mas_nao_de_outro(cliente):
+    hg = _auth(cliente, "gestor.fin")
+    alvo = cliente.post("/api/v1/usuarios", headers=hg,
+                        json={"login": "bloq.fin", "nome": "B", "senha": "senha123", "papel": "USUARIO"}).json()
+    assert cliente.post(f"/api/v1/usuarios/{alvo['id']}/bloquear", headers=hg).status_code == 200
+    assert _login(cliente, "bloq.fin", "senha123").status_code == 401             # bloqueado não entra
+    # alguém de OUTRO setor (criado pelo ADM no Faturamento) é invisível para o gestor do Financeiro
+    ha = _auth(cliente, "admin", "admin123")
+    outro = cliente.post("/api/v1/usuarios", headers=ha,
+                         json={"login": "alvo.fat", "nome": "A", "senha": "senha123",
+                               "papel": "USUARIO", "centro_custo_id": 2}).json()
+    assert cliente.post(f"/api/v1/usuarios/{outro['id']}/bloquear", headers=hg).status_code == 404
 
 
 def test_auditoria_registra(cliente):

@@ -6,6 +6,8 @@ v1 — é o cliente da API; a v1 local segue intacta. Uso: `python main.py --ser
 from __future__ import annotations
 
 import sys
+import tempfile
+import webbrowser
 from html import escape
 from pathlib import Path
 
@@ -63,8 +65,12 @@ class JanelaServidor(QtWidgets.QMainWindow):
         self.combo.setMinimumWidth(260)
         self.combo.setEnabled(False)
         self.combo.currentIndexChanged.connect(self._ao_trocar)
+        self.bt_export = QtWidgets.QPushButton("Exportar HTML")
+        self.bt_export.setProperty("classe", "secundario")
+        self.bt_export.setVisible(False)            # só aparece para Gestor/ADM, após o login
+        self.bt_export.clicked.connect(self._exportar)
         for w in (QtWidgets.QLabel("Servidor:"), self.ed_url, self.ed_login, self.ed_senha, self.bt_entrar,
-                  QtWidgets.QLabel("Relatório:"), self.combo):
+                  QtWidgets.QLabel("Relatório:"), self.combo, self.bt_export):
             barra.addWidget(w)
         barra.addStretch(1)
         col.addLayout(barra)
@@ -98,6 +104,7 @@ class JanelaServidor(QtWidgets.QMainWindow):
             self.combo.addItem(r["nome"], r["slug"])
         self.combo.blockSignals(False)
         self.combo.setEnabled(bool(rels))
+        self.bt_export.setVisible(self._fonte.papel in ("GESTOR", "ADM"))   # trava de exportação na tela
         aviso = "" if dados.get("precisa_trocar_senha") is False else "  (troca de senha pendente)"
         self._status(f"Conectado como {dados.get('nome')} · papel {dados.get('papel')}{aviso}. "
                      f"{len(rels)} relatório(s).", "sucesso")
@@ -175,6 +182,20 @@ class JanelaServidor(QtWidgets.QMainWindow):
         if a.arquivos:
             partes.append(f"<p style='color:{cor['texto_apoio']};font-size:12px'>Fonte: {escape(', '.join(a.arquivos))}</p>")
         return "".join(partes) or "<p>Sem conteúdo.</p>"
+
+    def _exportar(self):
+        slug = self.combo.currentData()
+        if not slug or self._fonte is None:
+            return
+        try:
+            html = self._fonte.exportar_html(slug)
+        except ErroServidor as e:
+            QtWidgets.QMessageBox.warning(self, "Exportar", str(e))
+            return
+        destino = Path(tempfile.gettempdir()) / f"relatorio_{slug}.html"
+        destino.write_text(html, encoding="utf-8")
+        webbrowser.open(destino.as_uri())
+        self._status(f"Relatório exportado: {destino}", "sucesso")
 
     def _status(self, texto, aviso="info"):
         self.lbl_status.setText(texto)

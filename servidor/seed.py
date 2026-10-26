@@ -8,7 +8,8 @@ from sqlalchemy import select
 from .modelos_bd import ADM, GESTOR, USUARIO, CentroCusto, Relatorio, Usuario
 from .seguranca import hash_senha
 
-# só para a demonstração local da fase 2
+# só para a demonstração local. Em produção, o 1º ADM é criado por comando e com troca de senha
+# pendente; aqui os usuários já vêm "prontos" (precisa_trocar_senha=False) para a demo fluir.
 DEMO = [
     ("admin", "Administrador", "admin123", ADM, None),
     ("gestor.fin", "Gestor Financeiro", "senha123", GESTOR, "FIN"),
@@ -29,7 +30,7 @@ def semear(sessao) -> bool:
     sessao.flush()
     for login, nome, senha, papel, cc in DEMO:
         sessao.add(Usuario(login=login, nome=nome, senha_hash=hash_senha(senha), papel=papel,
-                           centro_custo_id=centros[cc].id if cc else None, precisa_trocar_senha=True))
+                           centro_custo_id=centros[cc].id if cc else None, precisa_trocar_senha=False))
     sessao.add_all([
         Relatorio(slug="sintetico-fin", nome="Sintético — Financeiro", centro_custo_id=centros["FIN"].id),
         Relatorio(slug="sintetico-fat", nome="Sintético — Faturamento", centro_custo_id=centros["FAT"].id),

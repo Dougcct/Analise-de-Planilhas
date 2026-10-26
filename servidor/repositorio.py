@@ -6,7 +6,7 @@ from __future__ import annotations
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .modelos_bd import Relatorio
+from .modelos_bd import Relatorio, Usuario
 from .seguranca import Escopo
 
 
@@ -27,3 +27,17 @@ class RepoRelatorios:
     def obter(self, slug: str) -> Relatorio | None:
         """Relatório do escopo pelo slug; None se não existe OU é de outro centro de custo (→ 404)."""
         return self._s.scalar(self._base().where(Relatorio.slug == slug))
+
+
+class RepoUsuarios:
+    """Gestão de usuários dentro do escopo: o Gestor só alcança usuários do PRÓPRIO centro de custo."""
+
+    def __init__(self, sessao: Session, escopo: Escopo):
+        self._s = sessao
+        self._e = escopo
+
+    def obter(self, usuario_id: int) -> Usuario | None:
+        q = select(Usuario).where(Usuario.id == usuario_id)
+        if not self._e.eh_adm:                       # Gestor: só o próprio setor
+            q = q.where(Usuario.centro_custo_id == self._e.centro_custo_id)
+        return self._s.scalar(q)

@@ -44,6 +44,10 @@ def _handler(request: httpx.Request) -> httpx.Response:
         return httpx.Response(200, json=serializacao.analise_para_json(servico.analisar(DS, f)))
     if p.endswith("/outro/analise"):
         return httpx.Response(404, json={"detail": "não encontrado"})
+    if p.endswith("/r1/html"):
+        return httpx.Response(200, text="<html><body>relatório</body></html>")
+    if p.endswith("/proibido/html"):
+        return httpx.Response(403, json={"detail": "sem permissão"})
     return httpx.Response(404)
 
 
@@ -82,3 +86,12 @@ def test_remota_404_vira_erro_tratavel():
     f.login("user.fin", "senha123")
     with pytest.raises(ErroServidor, match="outro setor"):
         f.analisar("outro", Filtros())
+
+
+def test_remota_exporta_html_e_guarda_papel():
+    f = _remota()
+    f.login("gestor.fin", "senha123")
+    assert f.papel == "USUARIO"                           # o mock devolve payload fixo; o papel veio do login
+    assert "<html" in f.exportar_html("r1").lower()
+    with pytest.raises(ErroServidor, match="papel"):
+        f.exportar_html("proibido")

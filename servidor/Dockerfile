@@ -14,9 +14,10 @@ WORKDIR /app
 COPY servidor/requirements.txt servidor/requirements.txt
 RUN pip install -r servidor/requirements.txt
 
-# 2) código: o motor e a API
+# 2) código: o motor, a API e os templates (export de HTML na fase 3)
 COPY src/ src/
 COPY servidor/ servidor/
+COPY templates/ templates/
 
 # usuário sem privilégio (não rodar como root)
 RUN useradd --create-home app && chown -R app:app /app

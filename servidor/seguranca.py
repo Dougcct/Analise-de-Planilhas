@@ -43,7 +43,12 @@ class Escopo:
     papel: str
     centro_custo_id: int | None
     ip: str | None = None
+    precisa_trocar_senha: bool = False
 
     @property
     def eh_adm(self) -> bool:
         return self.papel == "ADM"
+
+    @property
+    def eh_gestor(self) -> bool:
+        return self.papel == "GESTOR"
