@@ -1,7 +1,7 @@
 """JANELA PRINCIPAL — Análise de Planilhas.
 
-Interface local em PyQt6 (sem rede, sem servidor), no mesmo desenho do projeto Garantia de
-Atendimento: no topo da barra lateral o usuário escolhe o RELATÓRIO (um modelo do cliente, ou
+Interface local em PyQt6 (sem servidor; rede só no Modo I.A e na consulta de atualização), no mesmo
+desenho do projeto Garantia de Atendimento: no topo da barra lateral o usuário escolhe o RELATÓRIO (um modelo do cliente, ou
 "Sem modelo"); cada relatório lê as planilhas da sua subpasta de dados/ (lista marcável), e os
 filtros, KPIs e abas são montados dinamicamente a partir da análise.
 
@@ -33,6 +33,7 @@ from analise_planilha.perfil import resumo_colunas  # noqa: E402
 
 try:
     from app import tema
+    from app.atualizador import Atualizador
     from app.componentes import (
         COR_DESTAQUE, CarregadorWorker, ListaMarcavel, ModeloPandas, item_somente_leitura, limpar_layout,
         norm_busca, painel_widget, separador, tabela_widget, titulo,
@@ -42,6 +43,7 @@ try:
     from app.dialogo_modelo import DialogoModelo
 except ModuleNotFoundError:  # executado com app/ no sys.path (main.py / .exe)
     import tema  # type: ignore
+    from atualizador import Atualizador  # type: ignore
     from componentes import (  # type: ignore
         COR_DESTAQUE, CarregadorWorker, ListaMarcavel, ModeloPandas, item_somente_leitura, limpar_layout,
         norm_busca, painel_widget, separador, tabela_widget, titulo,
@@ -101,6 +103,10 @@ class JanelaPrincipal(QtWidgets.QMainWindow):
         self._carregar_lista_modelos()
         self._montando = False
         self.recarregar()
+
+        # só no .exe: consulta a última versão depois de abrir (sem rede, segue em silêncio)
+        self._atualizador = Atualizador(self)
+        QtCore.QTimer.singleShot(1500, self._atualizador.verificar)
 
     # ---------- topo
     def _montar_topo(self) -> QtWidgets.QWidget:

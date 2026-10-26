@@ -4,6 +4,20 @@ Formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · [SemVer](
 
 ## [Não lançado]
 
+### Adicionado (distribuição e atualização automática — [08](08_build_e_distribuicao.md))
+- **Build automático no GitHub** (`.github/workflows/release.yml`): a tag `vX.Y.Z` roda testes, compila
+  com o Nuitka, roda o autoteste do `.exe` e publica `.zip` + `.sha256` nas Releases do repositório público.
+- **Atualização automática do `.exe`** (`atualizacao.py` + `app/atualizador.py`): consulta silenciosa ao
+  abrir, pergunta antes de instalar, confere o SHA-256 e troca só os arquivos do programa — `dados\`,
+  `saida\` e os arquivos já existentes de `config\` são preservados. Desliga com `config\atualizacao.toml`
+  (`verificar = false`). Única conexão de saída fora do Modo IA; não envia dados.
+- Versão com fonte única (`__version__`), lida pelo `build.bat` e pelo `pyproject.toml`.
+
+### Corrigido (build)
+- `build.bat` devolve código de saída ≠ 0 quando testes, compilação ou autoteste falham (antes só
+  exibia a mensagem e terminava como sucesso).
+- `.gitattributes` garante CRLF nos `.bat` (com LF o `cmd` pode errar o `goto :rótulo`).
+
 ### Alterado (organização do código — sem mudança de funcionalidade)
 - **`app/janela.py` dividido** (1.431 → 1.009 linhas): peças reutilizáveis em `app/componentes.py`
   (`ListaMarcavel`, `ModeloPandas`, `CarregadorWorker`, montagem de tabelas/painéis, helpers de layout);

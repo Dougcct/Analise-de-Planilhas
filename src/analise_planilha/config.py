@@ -3,10 +3,13 @@ import sys
 from pathlib import Path
 
 
+EMPACOTADO = getattr(sys, "frozen", False) or "__compiled__" in globals()   # .exe (Nuitka/PyInstaller)
+
+
 def _raiz() -> Path:
     """Em desenvolvimento, a raiz do repositório. Compilado (Nuitka/PyInstaller), a pasta do .exe
     — onde ficam, graváveis, as pastas de trabalho (dados/, saida/, config/)."""
-    if getattr(sys, "frozen", False) or "__compiled__" in globals():
+    if EMPACOTADO:
         return Path(sys.argv[0]).resolve().parent
     return Path(__file__).resolve().parents[2]
 

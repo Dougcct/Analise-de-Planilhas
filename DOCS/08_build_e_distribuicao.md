@@ -52,9 +52,56 @@ inteira** — o `.exe` depende dos arquivos ao lado.
 Se existir `assets/icon.ico`, o build o usa; senão, compila sem ícone. Para personalizar, coloque o
 arquivo em `assets/icon.ico`.
 
+## Versão
+
+Fonte única: `__version__` em `src/analise_planilha/__init__.py`. O `build.bat` lê de lá a versão do
+executável (`0.2.0` → `0.2.0.0`) e o `pyproject.toml` aponta para o mesmo lugar.
+
+## Lançar uma versão (build automático no GitHub)
+
+O código fica no repositório **privado** `Dougcct/Analise-de-Planilhas-privado`; os executáveis, nas
+Releases do repositório **público** `Dougcct/Analise-de-Planilhas` (só o `.zip`, sem código).
+
+```powershell
+# 1. ajuste __version__ (ex.: "0.2.0") e o CHANGELOG; commit
+git tag v0.2.0
+git push origin main v0.2.0
+```
+
+A tag dispara `.github/workflows/release.yml` (Windows): confere que a tag bate com `__version__`, roda o
+`build.bat` (testes → Nuitka → autoteste do `.exe`) e publica `AnalisePlanilhas-v0.2.0.zip` +
+`.zip.sha256` como Release no repositório público. Acompanhe em *Actions* no repositório privado. Se
+qualquer etapa falhar, nada é publicado.
+
+**Pré-requisito (uma vez):** secret `RELEASES_TOKEN` no repositório privado (*Settings › Secrets and
+variables › Actions*) com um token *fine-grained* que só tenha **Contents: Read and write** no
+repositório público. O token fica no GitHub — nunca dentro do `.exe`.
+
+## Atualização automática do .exe
+
+`analise_planilha/atualizacao.py` (lógica) + `app/atualizador.py` (tela). Só age no executável:
+
+1. ~1,5 s depois de abrir, consulta em segundo plano a última Release (tempo-limite 5 s). Sem rede,
+   proxy bloqueando ou GitHub fora: segue em silêncio, na versão atual.
+2. Versão maior que a instalada → **pergunta** ao usuário (com as notas da Release, se houver).
+3. Sim → baixa o `.zip`, confere o **SHA-256** publicado junto (arquivo corrompido ou adulterado é
+   recusado), extrai numa pasta temporária e confere que o pacote traz o `.exe`.
+4. Fecha o programa; um script (`robocopy`) espera ele sair, copia o programa novo por cima e reabre.
+   **Nunca toca em `dados\` e `saida\`**; de `config\` só copia arquivos **que ainda não existem** (ex.: um
+   modelo novo) — modelos, metas e `ia.toml` já existentes ficam como estão. Registro em `atualizacao.log`.
+
+**O que sai da máquina:** só GETs em `api.github.com`/`github.com` (qual a última versão + o download).
+Nenhum dado de planilha, caminho ou identificação é enviado. Para desligar (ex.: pedido da TI), crie
+`config\atualizacao.toml` com `verificar = false`.
+
+Limites conhecidos: arquivos que uma versão nova **deixou de usar** ficam na pasta (a cópia não apaga
+nada, para nunca arriscar `dados\`); a pasta do programa precisa ser gravável pelo usuário (ela já é, por
+causa de `dados\` e `saida\`).
+
 ## Checklist de release
 
 - [ ] `pytest` e `--autoteste` OK
 - [ ] versão incrementada em `__init__.py` e CHANGELOG atualizado
-- [ ] `build.bat` concluiu e o autoteste pós-build passou
-- [ ] pasta `main.dist` testada em uma máquina limpa (sem Python)
+- [ ] tag `vX.Y.Z` enviada e o fluxo *Release* concluiu (ou, local: `build.bat` concluiu e o autoteste
+      pós-build passou)
+- [ ] pasta `main.dist` (ou o `.zip` da Release) testada em uma máquina limpa (sem Python)

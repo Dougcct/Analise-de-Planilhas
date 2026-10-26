@@ -111,6 +111,36 @@ def test_gerar_html(monkeypatch, janela, pastas):
     assert janela.lbl_status.property("aviso") == "sucesso"
 
 
+def test_atualizacao_pergunta_baixa_e_fecha(app, janela, monkeypatch):
+    from analise_planilha import atualizacao
+    chamadas = []
+    monkeypatch.setattr(atualizacao, "verificacao_ativa", lambda: True)
+    monkeypatch.setattr(atualizacao, "buscar_ultima", lambda: atualizacao.Versao("99.0.0", "zip", "sha"))
+    monkeypatch.setattr(atualizacao, "baixar_e_preparar", lambda v: ("script", {"v": v.versao}))
+    monkeypatch.setattr(atualizacao, "iniciar_instalacao", lambda *a: chamadas.append(a))
+    monkeypatch.setattr(QtWidgets.QMessageBox, "question", lambda *a, **k: QtWidgets.QMessageBox.StandardButton.Yes)
+    monkeypatch.setattr(QtWidgets.QApplication, "quit", lambda: chamadas.append("fechou"))
+    janela._atualizador.verificar()
+    assert _esperar(app, lambda: "fechou" in chamadas), "não instalou"
+    assert chamadas == [("script", {"v": "99.0.0"}), "fechou"]
+
+
+def test_atualizacao_sem_rede_nao_incomoda(app, janela, monkeypatch):
+    from analise_planilha import atualizacao
+    avisos = []
+
+    def sem_rede():
+        raise atualizacao.ErroAtualizacao("sem rede")
+
+    monkeypatch.setattr(atualizacao, "verificacao_ativa", lambda: True)
+    monkeypatch.setattr(atualizacao, "buscar_ultima", sem_rede)
+    for nome in ("question", "warning", "information", "critical"):
+        monkeypatch.setattr(QtWidgets.QMessageBox, nome, lambda *a, **k: avisos.append(a))
+    janela._atualizador.verificar()
+    _esperar(app, lambda: False, segundos=1)
+    assert avisos == [] and janela.lbl_status.property("aviso") != "erro"
+
+
 def test_lista_marcavel_guarda_valor_original(app):
     from app.componentes import ListaMarcavel
     lst = ListaMarcavel()

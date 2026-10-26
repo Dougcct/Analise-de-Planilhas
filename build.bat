@@ -15,6 +15,13 @@ REM ==========================================================================
 setlocal
 cd /d "%~dp0"
 set PYTHONIOENCODING=utf-8
+set CODIGO=0
+
+REM Versao: fonte unica em src\analise_planilha\__init__.py (__version__)
+set VERSAO=
+for /f "usebackq delims=" %%v in (`python -c "import sys; sys.path.insert(0, 'src'); import analise_planilha as a; print(a.__version__)"`) do set VERSAO=%%v
+if not defined VERSAO goto :erro_versao
+echo Versao %VERSAO%
 
 if "%1"=="--rapido" goto :compilar
 
@@ -48,11 +55,12 @@ python -m nuitka ^
     %ICONE% ^
     --company-name="Nucleo de Inovacao" ^
     --product-name="Analise de Planilhas" ^
-    --file-version=0.1.0.0 ^
-    --product-version=0.1.0.0 ^
+    --file-version=%VERSAO%.0 ^
+    --product-version=%VERSAO%.0 ^
     --file-description="Analise Dinamica de Planilhas" ^
     --include-module=janela ^
     --include-module=tema ^
+    --include-module=atualizador ^
     --include-module=componentes ^
     --include-module=dialogo_ia ^
     --include-module=dialogo_metas ^
@@ -92,17 +100,26 @@ echo  Entregue a pasta "%SAIDA%" inteira (o .exe depende dos arquivos ao lado).
 echo ======================================================================
 goto :fim
 
+:erro_versao
+echo.
+echo [ERRO] Nao foi possivel ler a versao em src\analise_planilha\__init__.py.
+set CODIGO=1
+goto :fim
 :erro_teste
 echo.
 echo [ERRO] A suite de testes falhou — build abortado. Rode: python -m pytest
+set CODIGO=1
 goto :fim
 :erro
 echo.
 echo [ERRO] Falha na compilacao Nuitka. Veja o log acima.
+set CODIGO=1
 goto :fim
 :erro_autoteste
 echo.
 echo [ERRO] O .exe compilou mas o autoteste falhou (algo so quebra empacotado).
+set CODIGO=1
 goto :fim
 :fim
-endlocal
+REM codigo de saida != 0 em qualquer falha (o build automatico do GitHub depende disso)
+endlocal & exit /b %CODIGO%

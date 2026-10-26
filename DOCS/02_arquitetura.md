@@ -42,6 +42,7 @@ app/componentes.py      peças reutilizáveis: lista marcável, tabela de DataFr
 app/dialogo_metas.py    diálogo "⚙ Editar metas" (grava config/metas.json)
 app/dialogo_modelo.py   diálogo "Salvar como modelo…" (gera o .toml do cliente)
 app/dialogo_ia.py       diálogo "Configurar Modo I.A" + thread que chama a API
+app/atualizador.py      atualização automática do .exe na tela (lógica em analise_planilha/atualizacao.py)
 app/tema.py             tokens de cor/espaço/fonte e folha de estilo (a marca fica num lugar só)
 templates/              relatório HTML (Jinja2)
 src/analise_planilha/   lógica de análise (independente de interface)
