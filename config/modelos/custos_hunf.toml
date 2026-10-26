@@ -1,0 +1,111 @@
+# =============================================================================
+# MODELO — Custos HUNF (página principal do workbook HUNF: custo por conta × mês)
+# =============================================================================
+# Aba «CUSTOS»: uma conta de custo por linha e um mês por coluna, em blocos (Custos hospitalares,
+# Despesas administrativas, Empregados, Encargos, Seguros, Impostos, Terceiros). Os blocos abaixo
+# seguem exatamente a planilha; cada um tem subtotal e «TOTAL», que NÃO entram como dado (servem para
+# conferir «soma das contas × total da planilha»). As últimas linhas (Procedimentos cooperado, Custo
+# complexo contábil, Total complexo) são guardadas como referência para conferência — o total
+# contábil não é a soma dos blocos detalhados. Guia: DOCS/13_financeiro_hunf.md
+# -----------------------------------------------------------------------------
+
+nome = "Custos HUNF"
+pasta = "HUNF"
+aba = "CUSTOS"                # página (aba real) deste relatório
+ordem = 3                     # ordem da página (aba) no seletor
+
+[leitura]
+formato       = "matriz_mensal"
+coluna_rotulo = 3                 # coluna D: nome da conta de custo
+rotulo_conta  = "Conta"
+rotulo_grupo  = "Grupo"
+rotulo_valor  = "Custo"
+agrupamento   = "secoes"          # blocos declarados abaixo (seguem a planilha)
+limpar_codigo = true              # mostra «AGUA E ESGOTO» (tira o código contábil do rótulo)
+a_partir_de   = "2024-01"         # base atualizada a partir de jan/2024
+pular         = ["TOTAL"]
+linha_inicio  = 2
+linha_fim     = 133               # até «TOTAL COMPLEXO HOSPITALAR»
+
+[[leitura.secao]]
+inicio = "CUSTOS HOSPITALARES"
+grupo  = "Custos hospitalares"
+
+[[leitura.secao]]
+inicio = "DESPESAS ADMINISTRATIVAS HUNF"
+grupo  = "Despesas administrativas"
+
+[[leitura.secao]]
+inicio = "DESPESAS COM EMPREGADOS HUNF"
+grupo  = "Despesas com empregados"
+
+[[leitura.secao]]
+inicio = "DESPESAS COM ENCARGOS SOCIAIS"
+grupo  = "Encargos sociais"
+
+[[leitura.secao]]                 # bloco só com a linha de total (duas linhas iguais: vale a última)
+inicio = "TOTAL DESPESAS SEGUROS DE BENS E IMOVEIS"
+grupo  = "Seguros de bens e imóveis"
+conta  = "SEGUROS DE BENS E IMOVEIS"
+linha_unica = true
+
+[[leitura.secao]]
+inicio = "DESPESAS COM IMPOSTOS TAXAS HUNF"
+grupo  = "Impostos e taxas"
+
+[[leitura.secao]]
+inicio = "REMUNERAÇÃO SERVIÇOS TERCEIROS"
+grupo  = "Serviços de terceiros"
+
+[[leitura.referencia]]
+rotulo = "PROCEDIMENTOS COOPERADO NO HOSPITAL"
+nome   = "Procedimentos cooperado no hospital"
+
+[[leitura.referencia]]
+rotulo = "CUSTO COMPLEXO HOSPITALAR CONTÁBIL"
+nome   = "Custo complexo hospitalar (contábil)"
+
+[[leitura.referencia]]
+rotulo = "TOTAL COMPLEXO HOSPITALAR"
+nome   = "Total complexo hospitalar"
+
+[analise]
+tipo             = "serie"        # série financeira mensal: dashboards financeiros (financeiro.py)
+perfil           = "custos"
+sentido          = "menor"        # para custo, subir é ruim
+medida_principal = "Custo"
+dimensoes        = ["Grupo", "Conta"]
+top = 20
+
+# conferência dos totais da planilha: total = soma das partes (por mês)
+[[analise.conferencia]]
+total = "Total complexo hospitalar"
+partes = ["Procedimentos cooperado no hospital", "Custo complexo hospitalar (contábil)"]
+
+# comparação informativa: custo gerencial (soma das contas detalhadas) × custo contábil
+[[analise.comparacao]]
+rotulo = "Detalhado (soma das contas) × contábil"
+referencia = "Custo complexo hospitalar (contábil)"
+
+[[coluna]]
+canonico = "grupo"
+rotulo   = "Grupo"
+tipo     = "categorico"
+papel    = "dimensao"
+
+[[coluna]]
+canonico = "conta"
+rotulo   = "Conta"
+tipo     = "categorico"
+papel    = "dimensao"
+
+[[coluna]]
+canonico = "mes"
+rotulo   = "Mês"
+tipo     = "data"
+
+[[coluna]]
+canonico = "custo"
+rotulo   = "Custo"
+tipo     = "moeda"
+papel    = "medida"

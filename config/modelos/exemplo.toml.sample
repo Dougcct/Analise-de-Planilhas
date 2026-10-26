@@ -1,0 +1,58 @@
+# =============================================================================
+# MODELO DE CLIENTE — ARQUIVO DE EXEMPLO (template)
+# =============================================================================
+# Este arquivo termina em ".sample", então NÃO aparece no seletor de modelos.
+# Para criar o modelo de um cliente:
+#   1. Copie este arquivo para  config/modelos/<cliente>.toml
+#   2. Edite "nome", "aba" e as [[coluna]] conforme a planilha do cliente.
+#   3. O modelo passa a aparecer no seletor da janela.
+# Guia completo: DOCS/04_modelo_de_cliente.md
+#
+# Dica: o jeito mais rápido é abrir a planilha SEM modelo, corrigir os tipos na
+# aba "Tipos" e usar o botão "Salvar como modelo…" — ele gera o .toml pré-pronto.
+# -----------------------------------------------------------------------------
+
+nome = "Exemplo (renomeie)"     # rótulo exibido no seletor
+aba  = "Planilha1"              # (opcional) aba pré-selecionada ao abrir
+
+# Tipos válidos em "tipo":
+#   identificador  código/contador/protocolo — não é somado nem vira gráfico
+#   categorico     poucas categorias — vira filtro e ranking
+#   moeda          valores em R$ (métrica)
+#   inteiro        números inteiros (métrica)
+#   decimal        números com casas (métrica)
+#   percentual     frações/percentuais (métrica)
+#   data           datas (série temporal e filtro de período)
+#   data_hora      data com hora
+#   booleano       sim/não (taxa %)
+#   texto_livre    textos longos — apenas contagem
+
+[[coluna]]
+canonico  = "codigo"
+rotulo    = "Código"
+tipo      = "identificador"
+sinonimos = ["cod", "id", "protocolo", "no"]
+
+[[coluna]]
+canonico  = "data"
+rotulo    = "Data"
+tipo      = "data"
+sinonimos = ["data", "dt", "data do registro"]
+
+[[coluna]]
+canonico  = "categoria"
+rotulo    = "Categoria"
+tipo      = "categorico"
+sinonimos = ["categoria", "tipo", "grupo"]
+
+[[coluna]]
+canonico  = "valor"
+rotulo    = "Valor"
+tipo      = "moeda"
+sinonimos = ["valor", "vlr", "preco", "custo"]
+
+[[coluna]]
+canonico  = "quantidade"
+rotulo    = "Quantidade"
+tipo      = "inteiro"
+sinonimos = ["qtd", "quantidade"]

@@ -1,0 +1,137 @@
+# =============================================================================
+# MODELO — Reembolso (controle de reembolsos)
+# =============================================================================
+# Reproduz a fonte "Reembolso" do projeto de referência (motor tabular): valores solicitado/autorizado/
+# negado, status, justificativa, tempo de abertura → finalização. A planilha tem uma aba por mês
+# (JUNHO, JULHO…) com o mesmo cabeçalho + uma aba DASHBOARD (ignorada): todas as abas são consolidadas.
+# Guia: DOCS/14_garantia_reembolso.md
+# -----------------------------------------------------------------------------
+
+nome = "Reembolso"
+pasta = "Reembolso"       # planilhas em dados\Reembolso\
+abas = "todas"            # consolida as abas mensais numa base só
+
+[analise]
+entidade          = "nome"
+data_base         = "data_abertura"
+estatistica_tempo = "mediana"
+dimensoes = ["cidade", "tipo_servico", "status", "justificativa", "setor"]
+medidas = ["valor_solicitado", "valor_autorizado", "valor_negado"]
+medida_principal = "valor_autorizado"
+
+# ---- colunas ------------------------------------------------------------------
+[[coluna]]
+canonico = "data_abertura"
+rotulo = "Data de abertura"
+tipo = "data"
+sinonimos = ["data de abertura"]
+obrigatoria = true
+
+[[coluna]]
+canonico = "data_entrada"
+rotulo = "Entrada em sistema"
+tipo = "data"
+sinonimos = ["entrada em sistema"]
+
+[[coluna]]
+canonico = "protocolo"
+rotulo = "Protocolo"
+tipo = "identificador"
+
+[[coluna]]
+canonico = "transacao"
+rotulo = "Transação"
+tipo = "identificador"
+sinonimos = ["transacao"]
+obrigatoria = true
+
+[[coluna]]
+canonico = "nome"
+rotulo = "Nome"
+tipo = "texto_livre"
+papel = "entidade"
+obrigatoria = true
+
+[[coluna]]
+canonico = "carteirinha"
+rotulo = "Carteirinha"
+tipo = "identificador"
+
+[[coluna]]
+canonico = "cidade"
+rotulo = "Cidade"
+tipo = "categorico"
+
+[[coluna]]
+canonico = "tipo_servico"
+rotulo = "Tipo de serviço"
+tipo = "categorico"
+sinonimos = ["tipo de servico"]
+
+[[coluna]]
+canonico = "descricao"
+rotulo = "Descrição do serviço"
+tipo = "texto_livre"
+papel = "texto"
+sinonimos = ["descricao do servico"]
+
+[[coluna]]
+canonico = "valor_solicitado"
+rotulo = "Valor solicitado"
+tipo = "moeda"
+papel = "medida"
+
+[[coluna]]
+canonico = "valor_autorizado"
+rotulo = "Valor autorizado"
+tipo = "moeda"
+papel = "medida"
+
+[[coluna]]
+canonico = "valor_negado"
+rotulo = "Valor negado"
+tipo = "moeda"
+papel = "medida"
+
+[[coluna]]
+canonico = "status"
+rotulo = "Status"
+tipo = "categorico"
+obrigatoria = true
+
+[[coluna]]
+canonico = "justificativa"
+rotulo = "Justificativa"
+tipo = "categorico"
+
+[[coluna]]
+canonico = "setor"
+rotulo = "Setor de encaminhamento"
+tipo = "categorico"
+sinonimos = ["setor de encaminhamento"]
+
+[[coluna]]
+canonico = "data_finalizacao"
+rotulo = "Data de finalização"
+tipo = "data"
+sinonimos = ["data de finalizacao"]
+
+# ---- indicadores --------------------------------------------------------------
+[[taxa]]
+canonico = "taxa_autorizacao"
+rotulo = "Taxa de autorização"
+numerador = "valor_autorizado"        # ponderada: soma(autorizado) ÷ soma(solicitado)
+denominador = "valor_solicitado"
+sentido = "maior"
+
+[[tempo]]
+canonico = "abertura_finalizacao"
+rotulo = "Abertura → finalização"
+inicio = "data_abertura"
+fim = "data_finalizacao"
+em_aberto = true                      # sem data de finalização = pendência
+
+# ---- qualidade ----------------------------------------------------------------
+[qualidade]
+duplicidade = ["transacao"]
+grafias_parecidas = ["cidade", "tipo_servico", "status", "justificativa"]

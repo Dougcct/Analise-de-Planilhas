@@ -1,0 +1,249 @@
+# =============================================================================
+# MODELO — Garantia de Atendimento (Central de Atendimentos)
+# =============================================================================
+# Reproduz, só com configuração, as regras do projeto de referência "garantia_atendimento".
+# A planilha de controle tem abas por tipo/mês (Consultas, Exames, Pesquisas de rede…) com o mesmo
+# layout: são todas consolidadas numa análise só. Guia: DOCS/04 e DOCS/14_garantia_reembolso.md
+# -----------------------------------------------------------------------------
+
+nome = "Garantia de Atendimento"
+pasta = "Garantia de Atendimento"   # planilhas em dados\Garantia de Atendimento\
+abas = "todas"            # consolida todas as abas com este layout (Consultas, Exames, por mês…)
+
+[analise]
+entidade          = "cliente"            # quem é atendido: distintos, recorrência, anonimização
+data_base         = "data_solicitacao"   # data do filtro de período e da evolução mensal
+estatistica_tempo = "mediana"            # mediana | media | p90 | p95
+dimensoes = ["tipo_atendimento", "canal", "especialidade", "cidade_demanda", "prestador",
+             "desfecho", "encaminhamento", "status"]
+
+# ---- colunas da planilha ------------------------------------------------------
+[[coluna]]
+canonico = "num"
+rotulo = "Nº"
+tipo = "identificador"
+sinonimos = ["n", "no", "numero"]
+
+[[coluna]]
+canonico = "canal_abertura"
+rotulo = "Canal de abertura (original)"
+tipo = "categorico"
+papel = "texto"                       # não vira quebra própria: a quebra é a classificação "canal"
+sinonimos = ["canal de abertura"]
+obrigatoria = true
+
+[[coluna]]
+canonico = "data_solicitacao"
+rotulo = "Data da solicitação"
+tipo = "data"
+sinonimos = ["data da solicitacao"]
+obrigatoria = true
+
+[[coluna]]
+canonico = "data_recebimento"
+rotulo = "Data de recebimento"
+tipo = "data"
+sinonimos = ["data de recebimento"]
+obrigatoria = true
+
+[[coluna]]
+canonico = "cliente"
+rotulo = "Cliente"
+tipo = "texto_livre"
+papel = "entidade"
+sinonimos = ["nome do cliente"]
+obrigatoria = true
+
+[[coluna]]
+canonico = "transacao"
+rotulo = "Transação"
+tipo = "identificador"
+sinonimos = ["transacao"]
+obrigatoria = true
+validar = "numerico"
+
+[[coluna]]
+canonico = "tipo_pesquisa"
+rotulo = "Tipo de pesquisa"
+tipo = "categorico"
+
+[[coluna]]
+canonico = "especialidade"
+rotulo = "Especialidade / procedimento"
+tipo = "categorico"
+sinonimos = ["especialidade", "exame/terapia/procedimento", "especialidade/exame/procedimento"]
+aliases = { "CARDIOLOGISTA" = "CARDIOLOGIA", "ORTOPEDISTA" = "ORTOPEDIA" }
+
+[[coluna]]
+canonico = "cidade_demanda"
+rotulo = "Cidade de demanda"
+tipo = "categorico"
+sinonimos = ["cidade de demanda", "municipio de demanda"]
+
+[[coluna]]
+canonico = "cidade_agendada"
+rotulo = "Cidade agendada"
+tipo = "categorico"
+sinonimos = ["cidade agendada", "municipio identificado"]
+
+[[coluna]]
+canonico = "prestador"
+rotulo = "Prestador"
+tipo = "categorico"
+sinonimos = ["prestador identificado"]
+ignorar_palavras = ["DR", "DRA", "DRS"]   # "DR. FULANO" e "FULANO" viram o mesmo prestador
+
+[[coluna]]
+canonico = "status"
+rotulo = "Status"
+tipo = "categorico"
+obrigatoria = true
+
+[[coluna]]
+canonico = "data_finalizacao"
+rotulo = "Data de finalização"
+tipo = "data"
+sinonimos = ["data de finalizacao"]
+
+[[coluna]]
+canonico = "observacoes"
+rotulo = "Observações"
+tipo = "texto_livre"
+papel = "texto"
+sinonimos = ["observacao", "observacoes", "obs"]
+
+# ---- classificações: colunas novas por regra de texto ---------------------------
+# regras: [trecho, categoria] (procura na "origem") ou [coluna, trecho, categoria].
+# Texto comparado sem acento e em maiúsculas; a 1ª regra que casar vence.
+[[classificacao]]
+canonico = "tipo_atendimento"
+rotulo = "Tipo de atendimento"
+origem = "_aba"                           # pelo nome da aba ("CONSULTA - JULHO" → CONSULTA)
+regras = [["PESQUISA", "PESQUISA DE REDE"], ["CONSULT", "CONSULTA"], ["EXAME", "EXAME"]]
+outros = "NÃO CLASSIFICADO"
+
+[[classificacao]]
+canonico = "canal"
+rotulo = "Canal"
+origem = "canal_abertura"
+regras = [
+  ["NIP", "Regulatório / Jurídico"], ["OUVIDORIA", "Regulatório / Jurídico"],
+  ["TUTELA", "Regulatório / Jurídico"], ["JURIDIC", "Regulatório / Jurídico"],
+  ["CRM", "CRM"], ["RECEPC", "Recepção (presencial)"],
+  ["CALL CENTER", "Call Center / SAC"], ["SAC", "Call Center / SAC"],
+  ["FEDERAC", "Federação / Intercâmbio"], ["RELACIONAMENTO", "Relacionamento PF / PJ"],
+  ["GARANTIA", "Garantia de Atendimento (interno)"], ["E-MAIL", "E-mail"], ["EMAIL", "E-mail"],
+]
+vazio = "Não informado"
+outros = "Outros"
+
+[[classificacao]]
+canonico = "desfecho"
+rotulo = "Desfecho"
+origem = "status"
+regras = [
+  ["observacoes", "CANCEL", "Cancelado"],
+  ["observacoes", "DEVOLVIDO", "Devolvido para correção"],
+  ["observacoes", "CONTA PROPRIA", "Resolvido pelo beneficiário"],
+  ["observacoes", "PROPRIO BENEFICIARIO", "Resolvido pelo beneficiário"],
+  ["observacoes", "PROPRIA BENEFICIARIA", "Resolvido pelo beneficiário"],
+  ["observacoes", "LOCALIZOU PRESTADOR", "Resolvido pelo beneficiário"],
+  ["observacoes", "FORMA PARTICULAR", "Resolvido pelo beneficiário"],
+  ["status", "AGENDADO", "Agendado na rede"],
+  ["status", "PRESTADOR IDENTIFICADO", "Prestador identificado"],
+  ["status", "REEMBOLSO", "Encaminhado a reembolso"],
+]
+vazio = "Sem status"
+outros = "manter"                          # demais status: mantém o texto original
+
+[[classificacao]]
+canonico = "encaminhamento"
+rotulo = "Encaminhamento"
+origem = "observacoes"
+regras = [["REEMBOLSO", "Setor de Reembolso"], ["INTERCAMBIO", "Setor de Intercâmbio"],
+          ["AUTORIZAC", "Setor de Autorização"]]
+vazio = "Sem encaminhamento"
+outros = "Sem encaminhamento"
+
+# ---- taxas: % de registros que atendem uma condição ------------------------------
+[[taxa]]
+canonico = "resolvido_rede"
+rotulo = "Resolvidas na rede"
+coluna = "status"
+valores = ["AGENDADO", "PRESTADOR IDENTIFICADO"]
+sentido = "maior"                          # maior é melhor (achados apontam categorias abaixo)
+
+[[taxa]]
+canonico = "reembolso"
+rotulo = "Encaminhadas a reembolso"
+coluna = "status"
+valores = ["REEMBOLSO"]
+sentido = "menor"                          # menor é melhor (proxy de insuficiência de rede)
+
+[[taxa]]
+canonico = "regulatorio"
+rotulo = "Canal regulatório / jurídico"
+coluna = "canal"
+valores = ["Regulatório / Jurídico"]
+sentido = "menor"
+
+# ---- tempos entre datas -----------------------------------------------------------
+[[tempo]]
+canonico = "espera"
+rotulo = "Espera para início"
+inicio = "data_solicitacao"
+fim = "data_recebimento"
+
+[[tempo]]
+canonico = "tratativa"
+rotulo = "Tratativa"
+inicio = "data_recebimento"
+fim = "data_finalizacao"
+
+[[tempo]]
+canonico = "total"
+rotulo = "Tempo total"
+inicio = "data_solicitacao"
+fim = "data_finalizacao"
+dias_uteis = true                          # meta em dias úteis (seg–sex, sem feriados)
+meta_por = "tipo_atendimento"
+metas = { "CONSULTA" = 14, "EXAME" = 10, "PESQUISA DE REDE" = 21 }
+meta = 14                                  # demais tipos
+em_aberto = true                           # sem data de finalização = pendência
+
+# ---- cruzamentos ---------------------------------------------------------------------
+[[cruzamento]]
+rotulo = "Possíveis vazios assistenciais (reembolsos por especialidade × cidade)"
+linhas = "especialidade"
+colunas = "cidade_demanda"
+somente = "reembolso"
+
+[[cruzamento]]
+rotulo = "Deslocamento: cidade de demanda → cidade agendada"
+linhas = "cidade_demanda"
+colunas = "cidade_agendada"
+diferentes = true
+
+[[cruzamento]]
+rotulo = "Status por tipo de atendimento"
+linhas = "status"
+colunas = "tipo_atendimento"
+
+# ---- qualidade -------------------------------------------------------------------------
+[qualidade]
+duplicidade = ["transacao", "especialidade"]
+grafias_parecidas = ["prestador", "especialidade", "cidade_demanda"]
+
+[feriados]
+extras = []                                # municipais (AAAA-MM-DD), ex.: ["2026-06-29"]
+
+# ---- metas do gestor (✔/✗ no topo do resumo) --------------------------------------------
+[[meta]]
+indicador = "resolvido_rede"
+alvo = 60                                  # % (taxa)
+sentido = ">="
+
+[[meta]]
+indicador = "total"
+alvo = 10                                  # dias (tempo, pela estatística escolhida)
+sentido = "<="

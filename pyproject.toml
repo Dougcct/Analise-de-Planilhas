@@ -1,0 +1,15 @@
+[project]
+name = "analise-planilha"
+dynamic = ["version"]          # fonte única: src/analise_planilha/__init__.py (__version__)
+requires-python = ">=3.10"
+
+[tool.setuptools.dynamic]
+version = { attr = "analise_planilha.__version__" }
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["testes"]
+
+[tool.ruff]
+line-length = 120
+src = ["src", "app"]

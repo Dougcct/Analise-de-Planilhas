@@ -1,0 +1,261 @@
+# =============================================================================
+# MODELO — Contas Convênio (relatório do sistema hospitalar, uma conta por atendimento)
+# =============================================================================
+# O relatório é um formulário em blocos; o leitor `contas_convenio.py` o converte numa tabela
+# (uma linha por atendimento) e este modelo dá nomes legíveis e as regras de negócio.
+# Abra os arquivos de vários anos JUNTOS (seleção múltipla) para comparar os anos.
+# Guia: DOCS/12_contas_convenio.md
+# -----------------------------------------------------------------------------
+
+nome = "Contas Convênio"
+pasta = "Contas Convênio"       # arquivos em dados\Contas Convênio\ (2025.xlsx, 2026.xlsx, …)
+aba = "Page 1"                  # página (aba real) lida em blocos; a «CESARIANA…» é a outra página
+ordem = 1                       # ordem desta página (aba) no seletor
+
+[analise]
+entidade          = "paciente"
+entidade_plural   = "pacientes"
+medida_principal  = "faturamento_bruto"      # soma dos grupos: comparável entre todos os atendimentos
+dimensoes = ["ano", "convenio", "tipo_atendimento", "procedimento"]
+# somadas em cada quebra (por ano, convênio, tipo…) e mostradas nos KPIs
+medidas_quebra = ["faturamento_bruto", "custo", "resultado"]
+# partes do faturamento bruto: painel «Composição»
+composicao = ["diarias", "mat_med", "pacotes", "honorarios", "exames", "taxas_hosp", "opme", "gases", "gastos_extras"]
+medidas = ["faturamento_bruto", "faturamento_apurado", "custo", "resultado", "diarias_qtd",
+           "diarias", "mat_med", "pacotes", "honorarios", "exames", "taxas_hosp", "opme", "gases", "gastos_extras"]
+top = 15
+
+# ---- identificação do atendimento ---------------------------------------------------
+[[coluna]]
+canonico = "ano"
+rotulo = "Ano"
+tipo = "categorico"                    # vem do nome do arquivo (o relatório não tem datas)
+
+[[coluna]]
+canonico = "cod_atendimento"
+rotulo = "Cód. Atendimento"
+tipo = "identificador"
+sinonimos = ["cod atd", "codigo do atendimento"]
+obrigatoria = true
+
+[[coluna]]
+canonico = "paciente"
+rotulo = "Paciente"
+tipo = "texto_livre"
+papel = "entidade"                     # distintos, recorrência e anonimização (iniciais)
+obrigatoria = true
+
+[[coluna]]
+canonico = "convenio"
+rotulo = "Convênio"
+tipo = "categorico"
+obrigatoria = true
+# a mesma operadora aparece com razões sociais diferentes no sistema
+aliases = { "BRADESCO SAÚDE S.A." = "BRADESCO SAÚDE", "BRADESCO SAUDE - OPERADORA DE PLANOS S/A" = "BRADESCO SAÚDE", "AMIL ASSISTENCIA MEDICA INTERNACIONAL S/A" = "AMIL" }
+
+[[coluna]]
+canonico = "procedimento"
+rotulo = "Procedimento"
+tipo = "categorico"
+obrigatoria = true
+
+# ---- grupos de faturamento (cada um pode faltar em algum ano) -------------------------
+[[coluna]]
+canonico = "diarias"
+rotulo = "Diárias"
+tipo = "moeda"
+papel = "medida"
+opcional = true
+
+[[coluna]]
+canonico = "mat_med"
+rotulo = "Materiais e medicamentos"
+tipo = "moeda"
+papel = "medida"
+sinonimos = ["Mat/Med"]
+opcional = true
+
+[[coluna]]
+canonico = "pacotes"
+rotulo = "Pacotes especiais"
+tipo = "moeda"
+papel = "medida"
+opcional = true
+
+[[coluna]]
+canonico = "honorarios"
+rotulo = "Honorários médicos"
+tipo = "moeda"
+papel = "medida"
+opcional = true
+
+[[coluna]]
+canonico = "exames"
+rotulo = "Exames e diagnósticos"
+tipo = "moeda"
+papel = "medida"
+opcional = true
+
+[[coluna]]
+canonico = "taxas_hosp"
+rotulo = "Taxas"
+tipo = "moeda"
+papel = "medida"
+opcional = true
+
+[[coluna]]
+canonico = "opme"
+rotulo = "OPME"
+tipo = "moeda"
+papel = "medida"
+sinonimos = ["MAT ESPECIAIS, ORTESES E PROTESES (OPME)", "orteses e proteses"]
+opcional = true
+
+[[coluna]]
+canonico = "gases"
+rotulo = "Gases medicinais"
+tipo = "moeda"
+papel = "medida"
+opcional = true
+
+[[coluna]]
+canonico = "gastos_extras"
+rotulo = "Gastos extras"
+tipo = "moeda"
+papel = "medida"
+opcional = true
+
+[[coluna]]
+canonico = "diarias_qtd"
+rotulo = "Diárias (qtd)"
+tipo = "decimal"                       # nº de diárias da conta (proxy de permanência)
+papel = "medida"
+opcional = true
+
+# ---- totais: bruto (sistema) × apurado (custo lançado pela equipe) ----------------------
+[[coluna]]
+canonico = "faturamento_bruto"
+rotulo = "Faturamento bruto"
+tipo = "moeda"
+papel = "medida"
+
+[[coluna]]
+canonico = "valor_total_relatorio"
+rotulo = "Valor total (relatório)"
+tipo = "moeda"
+papel = "texto"                        # mistura bruto e ajustado à mão: só para conferência
+
+[[coluna]]
+canonico = "faturamento_apurado"
+rotulo = "Faturamento apurado"
+tipo = "moeda"
+papel = "medida"
+
+[[coluna]]
+canonico = "custo"
+rotulo = "Custo"
+tipo = "moeda"
+papel = "medida"
+
+[[coluna]]
+canonico = "resultado"
+rotulo = "Resultado"
+tipo = "moeda"
+papel = "medida"
+
+[[coluna]]
+canonico = "margem"
+rotulo = "Margem"
+tipo = "percentual"
+papel = "texto"                        # por atendimento (para ordenar); a margem agregada é a taxa abaixo
+
+[[coluna]]
+canonico = "custo_apurado"
+rotulo = "Custo apurado"
+tipo = "categorico"
+
+[[coluna]]
+canonico = "total_ajustado"
+rotulo = "Total ajustado manualmente"
+tipo = "categorico"
+
+# ---- aba de resumo (ex.: «CESARIANA…» em 2025): outra versão do custo ---------------------
+[[coluna]]
+canonico = "resumo_faturamento"
+rotulo = "Faturamento (aba resumo)"
+tipo = "moeda"
+papel = "texto"
+opcional = true
+
+[[coluna]]
+canonico = "resumo_custo"
+rotulo = "Custo (aba resumo)"
+tipo = "moeda"
+papel = "texto"
+opcional = true
+
+[[coluna]]
+canonico = "resumo_resultado"
+rotulo = "Resultado (aba resumo)"
+tipo = "moeda"
+papel = "texto"
+opcional = true
+
+# ---- tipo de atendimento (a partir do procedimento) ---------------------------------------
+[[classificacao]]
+canonico = "tipo_atendimento"
+rotulo = "Tipo de atendimento"
+origem = "procedimento"
+regras = [["CESARIANA", "Cesariana"], ["INTERNACAO CLINICA", "Internação clínica"]]
+vazio = "Não informado"
+outros = "Cirurgia / procedimento"
+
+# ---- indicadores (taxas) ---------------------------------------------------------------------
+[[taxa]]
+canonico = "margem"
+rotulo = "Margem (contas apuradas)"
+numerador = "resultado"                # ponderada: soma(resultado) ÷ soma(faturamento apurado)
+denominador = "faturamento_apurado"
+sentido = "maior"
+
+[[taxa]]
+canonico = "custo_apurado"
+rotulo = "Contas com custo apurado"
+coluna = "custo_apurado"
+valores = ["Sim"]
+sentido = "maior"                      # cobertura da apuração de custo
+
+[[taxa]]
+canonico = "peso_opme"
+rotulo = "Peso de OPME no faturamento"
+numerador = "opme"
+denominador = "faturamento_bruto"
+
+[[taxa]]
+canonico = "peso_honorarios"
+rotulo = "Peso de honorários no faturamento"
+numerador = "honorarios"
+denominador = "faturamento_bruto"
+
+# ---- cruzamentos -----------------------------------------------------------------------------
+[[cruzamento]]
+rotulo = "Tipo de atendimento por ano"
+linhas = "tipo_atendimento"
+colunas = "ano"
+
+[[cruzamento]]
+rotulo = "Convênio por ano"
+linhas = "convenio"
+colunas = "ano"
+
+# ---- qualidade ---------------------------------------------------------------------------------
+[qualidade]
+duplicidade = ["cod_atendimento"]
+grafias_parecidas = ["convenio", "procedimento"]
+
+# ---- metas do gestor (opcional) — descomente e ajuste ------------------------------------------
+# [[meta]]
+# indicador = "margem"
+# alvo = 20                              # % (margem mínima desejada)
+# sentido = ">="
+

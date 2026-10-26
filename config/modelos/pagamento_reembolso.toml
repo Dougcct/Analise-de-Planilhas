@@ -1,0 +1,91 @@
+# =============================================================================
+# MODELO — Pagamento Reembolso (digitação de pagamento)
+# =============================================================================
+# Reproduz a fonte "Pagamento Reembolso" do projeto de referência (motor tabular): valor do documento,
+# valor do reembolso, forma de pagamento, centro de custo, fluxo, data do depósito.
+#
+# LGPD: estas planilhas trazem CPF e DADOS BANCÁRIOS/PIX (agência, conta, chave). Por isso o modelo usa
+# `apenas_mapeadas = true`: só as colunas declaradas abaixo entram na análise — CPF, banco, agência,
+# conta e chave Pix ficam de FORA (não vão para a base, o relatório nem o Modo IA).
+# Guia: DOCS/14_garantia_reembolso.md
+# -----------------------------------------------------------------------------
+
+nome = "Pagamento Reembolso"
+pasta = "Pagamento Reembolso"   # planilhas em dados\Pagamento Reembolso\
+abas = "todas"                  # consolida as abas, se houver mais de uma
+apenas_mapeadas = true          # descarta colunas não declaradas (CPF/banco/PIX) — LGPD
+
+[analise]
+entidade = "nome"
+data_base = "data_deposito"
+dimensoes = ["centro_custo", "fluxo", "forma_pagamento", "prestador"]
+medidas = ["vr_doc", "vr_reembolso"]
+medida_principal = "vr_reembolso"
+
+# ---- colunas (só estas são lidas; o resto é descartado) ------------------------
+[[coluna]]
+canonico = "nome"
+rotulo = "Nome"
+tipo = "texto_livre"
+papel = "entidade"
+obrigatoria = true
+
+[[coluna]]
+canonico = "centro_custo"
+rotulo = "Centro de custo"
+tipo = "categorico"
+sinonimos = ["centro de custo"]
+
+[[coluna]]
+canonico = "fluxo"
+rotulo = "Fluxo"
+tipo = "categorico"
+
+[[coluna]]
+canonico = "servico"
+rotulo = "Reembolso referente a"
+tipo = "texto_livre"
+papel = "texto"
+sinonimos = ["reembolso ref. a.", "reembolso ref a", "reemb ref a"]
+
+[[coluna]]
+canonico = "prestador"
+rotulo = "Prestador (observação)"
+tipo = "categorico"
+sinonimos = ["observacao"]        # a razão social do prestador vem no campo «Observação» (regra da referência)
+
+[[coluna]]
+canonico = "vr_doc"
+rotulo = "Valor do documento"
+tipo = "moeda"
+papel = "medida"
+sinonimos = ["vr doc"]
+
+[[coluna]]
+canonico = "forma_pagamento"
+rotulo = "Forma de pagamento"
+tipo = "categorico"
+sinonimos = ["forma de pagamento"]
+
+[[coluna]]
+canonico = "data_deposito"
+rotulo = "Data do depósito"
+tipo = "data"
+sinonimos = ["data do deposito"]
+
+[[coluna]]
+canonico = "vr_reembolso"
+rotulo = "Valor do reembolso"
+tipo = "moeda"
+papel = "medida"
+sinonimos = ["vr reembolso"]
+obrigatoria = true
+
+[[coluna]]
+canonico = "transacao"
+rotulo = "Transação"
+tipo = "identificador"
+sinonimos = ["transacao"]
+
+[qualidade]
+grafias_parecidas = ["centro_custo", "fluxo", "forma_pagamento", "prestador"]

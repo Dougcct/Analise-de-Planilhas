@@ -1,0 +1,20 @@
+# Análise
+pandas>=2.2
+openpyxl>=3.1      # .xlsx / .xlsm
+odfpy>=1.4         # .ods
+xlrd>=2.0          # .xls (legado)
+charset-normalizer>=3.0
+
+# Relatório HTML (template Jinja2 + gráficos SVG puros — sem JavaScript de terceiros)
+jinja2>=3.1
+markupsafe>=2.1
+
+# Interface desktop
+pyqt6>=6.6
+
+# Build do executável (só na máquina que compila)
+nuitka>=2.0
+
+# Previstos para v0.2 (PDF / DOCX)
+# python-docx>=1.1
+# xhtml2pdf>=0.2.11   # ou weasyprint / playwright

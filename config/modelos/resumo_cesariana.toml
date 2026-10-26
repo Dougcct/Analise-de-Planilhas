@@ -1,0 +1,56 @@
+# =============================================================================
+# MODELO — Resumo Cesariana (2ª página do relatório «Contas Convênio»)
+# =============================================================================
+# A planilha 2025.xlsx tem uma 2ª aba, «CESARIANA (FETO ÚNICO OU MÚLTIP…)», com um resumo próprio
+# (uma linha por paciente: faturamento, custo e resultado). Esta é uma VISÃO à parte — não se mistura
+# com a página «Atendimentos» (que lê a aba «Page 1» em blocos). Arquivos sem essa aba (ex.: 2026) são
+# ignorados nesta página, com aviso. Guia: DOCS/12_contas_convenio.md
+# -----------------------------------------------------------------------------
+
+nome = "Resumo Cesariana"
+pasta = "Contas Convênio"
+aba = "CESARIANA (FETO ÚNICO OU MÚLTIP"        # página (aba real); Excel corta o nome em 31 caracteres
+ordem = 2                                      # ordem da página (aba) no seletor
+
+[analise]
+entidade = "paciente"
+medida_principal = "resultado"
+dimensoes = []
+medidas_quebra = ["faturamento", "custo", "resultado"]
+top = 20
+
+[[coluna]]
+canonico = "paciente"
+rotulo = "Paciente"
+tipo = "texto_livre"
+papel = "entidade"
+obrigatoria = true
+
+[[coluna]]
+canonico = "faturamento"
+rotulo = "Faturamento (R$)"
+tipo = "moeda"
+papel = "medida"
+
+[[coluna]]
+canonico = "custo"
+rotulo = "Custo (R$)"
+tipo = "moeda"
+papel = "medida"
+
+[[coluna]]
+canonico = "resultado"
+rotulo = "Resultado (R$)"
+tipo = "moeda"
+papel = "medida"
+
+[[taxa]]
+canonico = "margem"
+rotulo = "Margem (cesariana)"
+numerador = "resultado"
+denominador = "faturamento"
+sentido = "maior"
+
+[qualidade]
+duplicidade = ["paciente"]
+

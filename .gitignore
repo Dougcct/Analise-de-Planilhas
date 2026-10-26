@@ -1,0 +1,26 @@
+# Dados pessoais (LGPD) — nunca versionar
+dados/
+saida/
+_revisar/
+
+# Configuração local de cada usuário — contém chave de API (ia.toml) e as metas do gestor
+config/ia.toml
+config/metas.json
+config/atualizacao.toml
+*.ods
+*.xlsx
+*.xls
+*.csv
+!config/*.csv
+!testes/fixtures/*.csv
+
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+build/
+dist/
+
+# Diagnóstico local (main.py --autoteste)
+autoteste.txt

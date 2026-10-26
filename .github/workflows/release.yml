@@ -1,0 +1,62 @@
+# Lançar uma versão: ajuste __version__ em src/analise_planilha/__init__.py, faça o commit e envie a tag
+#   git tag v0.2.0 && git push origin main v0.2.0
+# Este fluxo roda os testes, compila o .exe (build.bat: testes → Nuitka → autoteste do .exe) e publica
+# o .zip + .sha256 como Release no repositório PÚBLICO de binários — é de lá que o programa se atualiza.
+# Precisa do secret RELEASES_TOKEN (token com permissão de escrita só no repositório público).
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements*.txt
+
+      - name: Dependências
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Tag confere com a versão do código
+        shell: pwsh
+        run: |
+          $v = python -c "import sys; sys.path.insert(0, 'src'); import analise_planilha as a; print(a.__version__)"
+          if ("v$v" -ne "${{ github.ref_name }}") {
+            throw "A tag ${{ github.ref_name }} difere da versão do código (v$v): ajuste src/analise_planilha/__init__.py"
+          }
+
+      - name: Testes, build e autoteste do .exe
+        shell: cmd
+        run: build.bat
+
+      - name: Empacotar (.zip + SHA-256)
+        shell: pwsh
+        run: |
+          $dist = "build_nuitka\main.dist"
+          Remove-Item "$dist\autoteste.txt" -ErrorAction SilentlyContinue
+          $zip = "AnalisePlanilhas-${{ github.ref_name }}.zip"
+          Compress-Archive -Path "$dist\*" -DestinationPath $zip
+          $hash = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLower()
+          [IO.File]::WriteAllText("$zip.sha256", "$hash  $zip`n")
+
+      - name: Publicar no repositório público
+        uses: softprops/action-gh-release@v2
+        with:
+          repository: Dougcct/Analise-de-Planilhas
+          token: ${{ secrets.RELEASES_TOKEN }}
+          tag_name: ${{ github.ref_name }}
+          name: Análise de Planilhas ${{ github.ref_name }}
+          files: |
+            AnalisePlanilhas-${{ github.ref_name }}.zip
+            AnalisePlanilhas-${{ github.ref_name }}.zip.sha256
