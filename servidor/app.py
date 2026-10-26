@@ -7,8 +7,11 @@ CONTROLE: cada setor só enxerga o que é seu, e tudo fica auditado.
 """
 from __future__ import annotations
 
+import hashlib
 import io
+import os
 import sys
+import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -17,7 +20,7 @@ sys.path.insert(0, str(RAIZ / "src"))
 
 import numpy as np
 import pandas as pd
-from fastapi import Depends, FastAPI, Header, HTTPException, Request
+from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Request, UploadFile
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from sqlalchemy import select
@@ -26,20 +29,25 @@ from sqlalchemy.orm import Session
 from analise_planilha import __version__, relatorio_html, serializacao, servico
 from analise_planilha.modelos import Filtros
 
-from . import bd, seed
-from .modelos_bd import ADM, GESTOR, PAPEIS, USUARIO, Auditoria, CentroCusto, Relatorio, SessaoUsuario, Usuario, utcnow
-from .repositorio import RepoRelatorios, RepoUsuarios
+from . import bd, seed, validacao
+from .modelos_bd import (
+    ADM, GESTOR, PAPEIS, PUBLICADA, RASCUNHO, SUBSTITUIDA, USUARIO,
+    Auditoria, Carga, CentroCusto, Relatorio, SessaoUsuario, Usuario, utcnow,
+)
+from .repositorio import RepoCargas, RepoRelatorios, RepoUsuarios
 from .seguranca import (
     DURACAO_SESSAO, MAX_TENTATIVAS, Escopo, conferir_senha, gerar_token, hash_senha, hash_token,
 )
 
 VERSAO_MINIMA_CLIENTE = "1.0.0"
+CARGAS_DIR = Path(os.getenv("CARGAS_DIR", "/app/dados_cargas"))   # volume: arquivos brutos enviados
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     bd.esperar_banco()
     bd.criar_schema()
+    CARGAS_DIR.mkdir(parents=True, exist_ok=True)
     with bd.Sessao() as s:
         if seed.semear(s):
             print("[seed] dados de demonstração criados")
@@ -62,6 +70,22 @@ def _dataset_sintetico():
 
 
 _DS = _dataset_sintetico()
+
+# cache de Dataset por carga (os arquivos são imutáveis; monta uma vez, filtra em milissegundos)
+_cache_cargas: dict[int, object] = {}
+
+
+def _dataset_da_carga(carga: Carga):
+    if carga.id not in _cache_cargas:
+        bruto = (CARGAS_DIR / carga.arquivo_uuid).read_bytes()
+        _cache_cargas[carga.id] = servico.carregar(bruto, carga.nome_original)
+    return _cache_cargas[carga.id]
+
+
+def _dataset_do_relatorio(s: Session, escopo: Escopo, rel: Relatorio):
+    """A carga PUBLICADA mais recente do relatório; sem nenhuma, cai no sintético (demo)."""
+    carga = RepoCargas(s, escopo).publicada(rel.id)
+    return _dataset_da_carga(carga) if carga is not None else _DS
 
 
 # ---- dependências ----
@@ -196,7 +220,8 @@ def analise(slug: str, filtros: FiltrosIn, escopo: Escopo = Depends(sessao_pront
         raise HTTPException(404, "Relatório não encontrado.")
     registrar(s, escopo.usuario_id, escopo.centro_custo_id, "abrir_relatorio", slug, escopo.ip)
     s.commit()
-    return serializacao.analise_para_json(servico.analisar(_DS, _filtros(filtros)))
+    ds = _dataset_do_relatorio(s, escopo, rel)
+    return serializacao.analise_para_json(servico.analisar(ds, _filtros(filtros)))
 
 
 @app.get("/api/v1/relatorios/{slug}/html", response_class=HTMLResponse)
@@ -253,6 +278,83 @@ def bloquear_usuario(usuario_id: int, escopo: Escopo = Depends(sessao_pronta), s
     registrar(s, escopo.usuario_id, escopo.centro_custo_id, "bloquear_usuario", alvo.login, escopo.ip)
     s.commit()
     return {"ok": True}
+
+
+def _carga_json(c: Carga) -> dict:
+    return {"id": c.id, "status": c.status, "nome_original": c.nome_original, "tamanho": c.tamanho,
+            "criado_em": c.criado_em.isoformat() if c.criado_em else None,
+            "publicado_em": c.publicado_em.isoformat() if c.publicado_em else None}
+
+
+@app.post("/api/v1/cargas", status_code=201)
+async def enviar_carga(slug: str = Form(...), arquivo: UploadFile = File(...),
+                       escopo: Escopo = Depends(sessao_pronta), s: Session = Depends(get_sessao)):
+    exigir(escopo, GESTOR, ADM)
+    rel = RepoRelatorios(s, escopo).obter(slug)
+    if rel is None:
+        raise HTTPException(404, "Relatório não encontrado.")
+    conteudo = await arquivo.read(validacao.MAX_BYTES + 1)
+    if len(conteudo) > validacao.MAX_BYTES:
+        raise HTTPException(413, "Arquivo acima do limite.")
+    try:
+        validacao.validar(arquivo.filename or "", conteudo)
+    except validacao.ErroArquivo as e:
+        raise HTTPException(422, str(e)) from e
+    nome_uuid = uuid.uuid4().hex + Path(arquivo.filename or "").suffix.lower()
+    CARGAS_DIR.mkdir(parents=True, exist_ok=True)
+    (CARGAS_DIR / nome_uuid).write_bytes(conteudo)
+    carga = Carga(relatorio_id=rel.id, centro_custo_id=rel.centro_custo_id, enviado_por=escopo.usuario_id,
+                  nome_original=arquivo.filename or "sem-nome", hash_sha256=hashlib.sha256(conteudo).hexdigest(),
+                  arquivo_uuid=nome_uuid, tamanho=len(conteudo), status=RASCUNHO)
+    s.add(carga)
+    s.flush()
+    registrar(s, escopo.usuario_id, escopo.centro_custo_id, "enviar_carga", f"{slug}:{carga.id}", escopo.ip,
+              detalhes=carga.hash_sha256)
+    s.commit()
+    return _carga_json(carga)
+
+
+@app.get("/api/v1/relatorios/{slug}/cargas")
+def listar_cargas(slug: str, escopo: Escopo = Depends(sessao_pronta), s: Session = Depends(get_sessao)):
+    rel = RepoRelatorios(s, escopo).obter(slug)
+    if rel is None:
+        raise HTTPException(404, "Relatório não encontrado.")
+    return [_carga_json(c) for c in RepoCargas(s, escopo).do_relatorio(rel.id)]
+
+
+@app.post("/api/v1/cargas/{carga_id}/analise")
+def analise_rascunho(carga_id: int, filtros: FiltrosIn, escopo: Escopo = Depends(sessao_pronta),
+                     s: Session = Depends(get_sessao)):
+    exigir(escopo, GESTOR, ADM)                        # testar antes de publicar é do gestor
+    carga = RepoCargas(s, escopo).obter(carga_id)
+    if carga is None:
+        raise HTTPException(404, "Carga não encontrada.")
+    try:
+        ds = _dataset_da_carga(carga)
+    except Exception as e:                             # arquivo que o motor não consegue ler
+        raise HTTPException(422, f"Não foi possível ler a planilha: {type(e).__name__}") from e
+    return serializacao.analise_para_json(servico.analisar(ds, _filtros(filtros)))
+
+
+@app.post("/api/v1/cargas/{carga_id}/publicar")
+def publicar_carga(carga_id: int, escopo: Escopo = Depends(sessao_pronta), s: Session = Depends(get_sessao)):
+    exigir(escopo, GESTOR, ADM)
+    carga = RepoCargas(s, escopo).obter(carga_id)
+    if carga is None:
+        raise HTTPException(404, "Carga não encontrada.")
+    try:
+        _dataset_da_carga(carga)                       # só publica o que o motor consegue ler
+    except Exception as e:
+        raise HTTPException(422, f"A planilha não pôde ser processada: {type(e).__name__}") from e
+    for anterior in s.scalars(select(Carga).where(Carga.relatorio_id == carga.relatorio_id,
+                                                  Carga.status == PUBLICADA)):
+        anterior.status = SUBSTITUIDA                  # vale a mais recente; não soma em dobro
+    carga.status = PUBLICADA
+    carga.publicado_em = utcnow()
+    registrar(s, escopo.usuario_id, escopo.centro_custo_id, "publicar_carga",
+              f"{carga.relatorio_id}:{carga.id}", escopo.ip)
+    s.commit()
+    return _carga_json(carga)
 
 
 def _filtros(f: FiltrosIn) -> Filtros:

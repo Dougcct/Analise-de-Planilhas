@@ -14,6 +14,8 @@ pytest.importorskip("argon2")
 _DB = pathlib.Path(tempfile.gettempdir()) / "analise_teste_servidor.sqlite"
 _DB.unlink(missing_ok=True)
 os.environ["DATABASE_URL"] = f"sqlite+pysqlite:///{_DB.as_posix()}"
+_CARGAS = pathlib.Path(tempfile.mkdtemp(prefix="analise_cargas_teste_"))
+os.environ["CARGAS_DIR"] = str(_CARGAS)
 
 from fastapi.testclient import TestClient      # noqa: E402
 
@@ -54,8 +56,10 @@ def test_sem_token_recusa(cliente):
 
 def test_usuario_ve_so_o_proprio_setor(cliente):
     h = _auth(cliente, "user.fin")
-    slugs = [r["slug"] for r in cliente.get("/api/v1/relatorios", headers=h).json()]
-    assert slugs == ["sintetico-fin"]                         # não enxerga o de Faturamento
+    rels = cliente.get("/api/v1/relatorios", headers=h).json()
+    slugs = {r["slug"] for r in rels}
+    assert all(r["centro_custo_id"] == 1 for r in rels)       # só do Financeiro
+    assert "sintetico-fin" in slugs and "sintetico-fat" not in slugs
 
 
 def test_isolamento_outro_setor_da_404(cliente):
@@ -68,7 +72,7 @@ def test_isolamento_outro_setor_da_404(cliente):
 def test_adm_ve_todos(cliente):
     h = _auth(cliente, "admin", "admin123")
     slugs = {r["slug"] for r in cliente.get("/api/v1/relatorios", headers=h).json()}
-    assert slugs == {"sintetico-fin", "sintetico-fat"}
+    assert {"sintetico-fin", "sintetico-fat"} <= slugs        # vê os dois setores (e mais)
 
 
 def test_analise_funciona_e_filtra(cliente):
@@ -127,6 +131,61 @@ def test_gestor_bloqueia_do_setor_mas_nao_de_outro(cliente):
                          json={"login": "alvo.fat", "nome": "A", "senha": "senha123",
                                "papel": "USUARIO", "centro_custo_id": 2}).json()
     assert cliente.post(f"/api/v1/usuarios/{outro['id']}/bloquear", headers=hg).status_code == 404
+
+
+def _csv(n=15):
+    linhas = ["Produto;Valor;Cidade"]
+    for i in range(n):
+        linhas.append(f"P{i:03d};{10 + i},50;{'A' if i % 2 else 'B'}")
+    return ("\n".join(linhas)).encode("utf-8")
+
+
+def test_upload_publicacao_muda_a_analise(cliente):
+    hg = _auth(cliente, "gestor.fin")
+    # sem carga publicada, o relatório cai no sintético (60)
+    assert cliente.post("/api/v1/relatorios/carga-fin/analise", json={}, headers=hg).json()["linhas"] == 60
+    # envia um CSV de 15 linhas → fica em RASCUNHO
+    r = cliente.post("/api/v1/cargas", headers=hg, data={"slug": "carga-fin"},
+                     files={"arquivo": ("dados.csv", _csv(15), "text/csv")})
+    assert r.status_code == 201 and r.json()["status"] == "RASCUNHO"
+    carga_id = r.json()["id"]
+    # testar em rascunho já lê o arquivo enviado (15), sem afetar o relatório ainda
+    assert cliente.post(f"/api/v1/cargas/{carga_id}/analise", json={}, headers=hg).json()["linhas"] == 15
+    assert cliente.post("/api/v1/relatorios/carga-fin/analise", json={}, headers=hg).json()["linhas"] == 60
+    # publicar → o relatório passa a refletir o arquivo
+    assert cliente.post(f"/api/v1/cargas/{carga_id}/publicar", headers=hg).json()["status"] == "PUBLICADA"
+    assert cliente.post("/api/v1/relatorios/carga-fin/analise", json={}, headers=hg).json()["linhas"] == 15
+
+
+def test_usuario_nao_envia_nem_publica(cliente):
+    hu = _auth(cliente, "user.fin")
+    r = cliente.post("/api/v1/cargas", headers=hu, data={"slug": "carga-fin"},
+                     files={"arquivo": ("x.csv", _csv(3), "text/csv")})
+    assert r.status_code == 403
+
+
+def test_upload_de_outro_setor_bloqueado(cliente):
+    hg = _auth(cliente, "gestor.fin")        # gestor do Financeiro mandando para relatório do Faturamento
+    r = cliente.post("/api/v1/cargas", headers=hg, data={"slug": "sintetico-fat"},
+                     files={"arquivo": ("x.csv", _csv(3), "text/csv")})
+    assert r.status_code == 404
+
+
+def test_upload_rejeita_extensao_e_zip_bomb(cliente):
+    hg = _auth(cliente, "gestor.fin")
+    # extensão proibida (.xlsm)
+    assert cliente.post("/api/v1/cargas", headers=hg, data={"slug": "carga-fin"},
+                        files={"arquivo": ("macro.xlsm", b"PK\x03\x04qualquer", "x")}).status_code == 422
+    # zip bomb: zip pequeno que descompacta enorme
+    import io
+    import zipfile
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
+        z.writestr("grande.bin", b"0" * (50 * 1024 * 1024))   # 50 MB de zeros → zip minúsculo
+    bomba = buf.getvalue()
+    assert len(bomba) < 100_000                                 # o zip em si é pequeno
+    assert cliente.post("/api/v1/cargas", headers=hg, data={"slug": "carga-fin"},
+                        files={"arquivo": ("bomba.xlsx", bomba, "x")}).status_code == 422
 
 
 def test_auditoria_registra(cliente):

@@ -13,6 +13,8 @@ from .bd import Base
 ADM, GESTOR, USUARIO = "ADM", "GESTOR", "USUARIO"
 PAPEIS = (ADM, GESTOR, USUARIO)
 
+RASCUNHO, PUBLICADA, SUBSTITUIDA = "RASCUNHO", "PUBLICADA", "SUBSTITUIDA"
+
 
 def utcnow() -> dt.datetime:
     """UTC "ingênuo" (sem tzinfo): consistente entre SQLite dos testes e Postgres do container."""
@@ -60,6 +62,23 @@ class Relatorio(Base):
     nome: Mapped[str] = mapped_column(String(160))
     centro_custo_id: Mapped[int] = mapped_column(ForeignKey("centros_custo.id"), index=True)
     ativo: Mapped[bool] = mapped_column(Boolean, default=True)
+
+
+class Carga(Base):
+    """Uma planilha enviada para um relatório. O arquivo bruto fica no volume com nome aleatório
+    (UUID), nunca o nome original (DOCS/18 §4)."""
+    __tablename__ = "cargas"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    relatorio_id: Mapped[int] = mapped_column(ForeignKey("relatorios.id"), index=True)
+    centro_custo_id: Mapped[int] = mapped_column(Integer, index=True)   # denormalizado p/ o escopo
+    enviado_por: Mapped[int] = mapped_column(ForeignKey("usuarios.id"))
+    nome_original: Mapped[str] = mapped_column(String(255))
+    hash_sha256: Mapped[str] = mapped_column(String(64))
+    arquivo_uuid: Mapped[str] = mapped_column(String(64))               # nome no disco (sem o nome real)
+    tamanho: Mapped[int] = mapped_column(Integer)
+    status: Mapped[str] = mapped_column(String(16), default=RASCUNHO)
+    criado_em: Mapped[dt.datetime] = mapped_column(DateTime, default=utcnow)
+    publicado_em: Mapped[dt.datetime | None] = mapped_column(DateTime)
 
 
 class Auditoria(Base):

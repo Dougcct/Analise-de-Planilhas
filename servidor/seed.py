@@ -34,6 +34,8 @@ def semear(sessao) -> bool:
     sessao.add_all([
         Relatorio(slug="sintetico-fin", nome="Sintético — Financeiro", centro_custo_id=centros["FIN"].id),
         Relatorio(slug="sintetico-fat", nome="Sintético — Faturamento", centro_custo_id=centros["FAT"].id),
+        # relatório para enviar planilha de verdade (fase 4). Sem carga publicada, cai no sintético.
+        Relatorio(slug="carga-fin", nome="Carga — Financeiro", centro_custo_id=centros["FIN"].id),
     ])
     sessao.commit()
     return True

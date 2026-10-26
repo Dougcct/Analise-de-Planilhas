@@ -22,6 +22,9 @@ services:
     image: analise-planilhas-api:dev
     environment:
       DATABASE_URL: postgresql+psycopg://analise:analise@db:5432/analise
+      CARGAS_DIR: /app/dados_cargas
+    volumes:
+      - cargas:/app/dados_cargas          # planilhas brutas enviadas (fora da imagem; LGPD)
     depends_on:
       db:
         condition: service_healthy
@@ -31,3 +34,4 @@ services:
 
 volumes:
   dados_db:
+  cargas:

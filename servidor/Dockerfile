@@ -19,8 +19,9 @@ COPY src/ src/
 COPY servidor/ servidor/
 COPY templates/ templates/
 
-# usuário sem privilégio (não rodar como root)
-RUN useradd --create-home app && chown -R app:app /app
+# usuário sem privilégio (não rodar como root). A pasta das cargas é criada aqui com o dono certo,
+# para o volume nomeado (montado nela) herdar a permissão de escrita do usuário app.
+RUN useradd --create-home app && mkdir -p /app/dados_cargas && chown -R app:app /app
 USER app
 
 EXPOSE 8000
