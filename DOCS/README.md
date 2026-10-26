@@ -21,6 +21,9 @@ Esta pasta documenta a base para que adaptar a uma planilha nova seja rápido e 
 | [12_contas_convenio.md](12_contas_convenio.md) | **Relatório Contas Convênio** (contas hospitalares em blocos): leitura, regras, indicadores financeiros |
 | [13_financeiro_hunf.md](13_financeiro_hunf.md) | **Relatórios financeiros HUNF** (planilhas em matriz conta × mês): leitor `matriz.py`, Faturamento/Custos/DRE |
 | [14_garantia_reembolso.md](14_garantia_reembolso.md) | **Garantia / Reembolso / Pagamento** (do projeto de referência): modelos, consolidação de abas, `apenas_mapeadas` (LGPD) |
+| [16_arquitetura_v2.md](16_arquitetura_v2.md) | **v2.0 (planejamento)** — cliente-servidor por centro de custo: decisões, papéis, dados, API, fases |
+| [17_atualizacao_v2.md](17_atualizacao_v2.md) | **v2.0 (planejamento)** — atualização controlada pelo servidor, trava de versão, rollback |
+| [18_seguranca_lgpd_v2.md](18_seguranca_lgpd_v2.md) | **v2.0 (planejamento)** — anonimização no servidor, upload seguro, isolamento, auditoria, checklist |
 | [CHANGELOG.md](CHANGELOG.md) | Histórico de versões (Keep a Changelog) |
 | [ROADMAP.md](ROADMAP.md) | Próximos passos |
 

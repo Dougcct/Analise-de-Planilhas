@@ -2,6 +2,14 @@
 
 Ordem sugerida, não compromissada. Itens entram no [CHANGELOG](CHANGELOG.md) quando concluídos.
 
+## v2.0 — cliente-servidor (em desenvolvimento na branch `v2`)
+
+Plano em 8 fases, da fundação (serialização da análise, sem mudar a v1) à produção atrás do pfSense:
+ver [16 · Arquitetura v2 §8](16_arquitetura_v2.md#8-plano-em-fases). Os itens de LGPD abaixo (anonimização
+por coluna sensível) fazem parte da fase 5 ([18](18_seguranca_lgpd_v2.md#2-anonimização--como-é-hoje-e-o-que-muda)).
+
+As seções seguintes são os próximos passos da v1 (desktop local).
+
 ## Curto prazo
 
 1. **Anonimização de dados sensíveis** — ✅ nomes da entidade (iniciais) feito. Falta: CPF, telefone e
