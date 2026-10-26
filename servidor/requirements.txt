@@ -1,7 +1,17 @@
-# Dependências do SERVIDOR v2 (imagem Docker). O motor é importado de ../src, então o container
-# também instala as dependências da análise.
--r ../requirements.txt
+# Dependências do SERVIDOR v2 (imagem Docker): motor de análise + API.
+# NÃO inclui PyQt6 nem Nuitka — esses são do cliente/empacotamento, não do servidor.
+# (As versões espelham as do motor em ../requirements.txt, sem as de interface/build.)
 
+# Motor de análise (src/analise_planilha)
+pandas>=2.2
+openpyxl>=3.1          # .xlsx / .xlsm
+odfpy>=1.4            # .ods
+xlrd>=2.0             # .xls (legado)
+charset-normalizer>=3.0
+jinja2>=3.1
+markupsafe>=2.1
+
+# API
 fastapi>=0.115
 uvicorn[standard]>=0.30
 pydantic>=2.7

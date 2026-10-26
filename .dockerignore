@@ -1,0 +1,29 @@
+# Contexto de build enxuto e sem dados/segredos.
+# (O que entra na imagem é controlado pelos COPY do servidor/Dockerfile; aqui só encolhemos o contexto.)
+.git
+.venv
+.pytest_cache
+.ruff_cache
+**/__pycache__/
+*.pyc
+
+# dados pessoais e saídas nunca vão para a imagem (LGPD)
+dados/
+saida/
+_revisar/
+
+# interface, build e planejamento não fazem parte do servidor
+app/
+build_nuitka/
+build/
+dist/
+Planejamento/
+assets/
+
+# configuração local / segredos
+config/ia.toml
+config/metas.json
+config/atualizacao.toml
+
+*.zip
+autoteste.txt

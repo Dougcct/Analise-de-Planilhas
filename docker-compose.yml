@@ -1,0 +1,12 @@
+# Subir o servidor v2 em desenvolvimento:  docker compose up --build
+# Fase 1: só a API (sem banco e sem login ainda — ver DOCS/16 §8). Banco (Postgres) e proxy TLS (Caddy)
+# entram nas fases seguintes.
+services:
+  api:
+    build:
+      context: .
+      dockerfile: servidor/Dockerfile
+    image: analise-planilhas-api:dev
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
