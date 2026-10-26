@@ -7,13 +7,13 @@ filtros, KPIs e abas são montados dinamicamente a partir da análise.
 
 Recursos próprios deste projeto, encaixados no mesmo estilo: Modo I.A (gera o modelo pela planilha),
 abas "Resumo por coluna" e "Tipos" (corrigir o tipo detectado) e "Salvar como modelo…".
-Toda a lógica de negócio fica em analise_planilha.*; aqui só há interface.
+Toda a lógica de negócio fica em analise_planilha.*; aqui só há a orquestração da tela. As peças
+reutilizáveis ficam em componentes.py e os diálogos em dialogo_*.py.
 """
 from __future__ import annotations
 
 import shutil
 import sys
-import unicodedata
 import webbrowser
 from html import escape
 from pathlib import Path
@@ -26,368 +26,35 @@ RAIZ = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(RAIZ / "src"))
 
 from analise_planilha import __version__, config, ia, leitura, metas, relatorio_html, servico  # noqa: E402
-from analise_planilha.formatacao import formatar  # noqa: E402
-from analise_planilha.modelo import (  # noqa: E402
-    ColunaModelo, _chave, carregar_modelo, listar_modelos, salvar_modelo,
-)
+from analise_planilha.modelo import carregar_modelo, listar_modelos, salvar_modelo  # noqa: E402
 from analise_planilha.modelos import TIPOS, Filtros  # noqa: E402
 from analise_planilha.normalizacao import chave_texto  # noqa: E402
 from analise_planilha.perfil import resumo_colunas  # noqa: E402
 
 try:
     from app import tema
+    from app.componentes import (
+        COR_DESTAQUE, CarregadorWorker, ListaMarcavel, ModeloPandas, item_somente_leitura, limpar_layout,
+        norm_busca, painel_widget, separador, tabela_widget, titulo,
+    )
+    from app.dialogo_ia import DialogoIA, TrabalhoIA
     from app.dialogo_metas import DialogoMetas
+    from app.dialogo_modelo import DialogoModelo
 except ModuleNotFoundError:  # executado com app/ no sys.path (main.py / .exe)
     import tema  # type: ignore
+    from componentes import (  # type: ignore
+        COR_DESTAQUE, CarregadorWorker, ListaMarcavel, ModeloPandas, item_somente_leitura, limpar_layout,
+        norm_busca, painel_widget, separador, tabela_widget, titulo,
+    )
+    from dialogo_ia import DialogoIA, TrabalhoIA  # type: ignore
     from dialogo_metas import DialogoMetas  # type: ignore
+    from dialogo_modelo import DialogoModelo  # type: ignore
 
 SEM_MODELO = "Sem modelo (inferência automática)"
 ABAS_TODAS = "\x00todas"              # página sentinela: o relatório consolida TODAS as abas (abas="todas")
 ROT_ABAS_TODAS = "Todas as abas (consolidado)"
-COR_DESTAQUE = QtGui.QColor("#FFE58A")   # amarelo suave para realçar os resultados da busca
 FMT_TIPO = {"moeda": "moeda", "percentual": "pct", "inteiro": "int", "decimal": "dec"}
 KPIS_POR_LINHA = 6
-
-
-def _norm(s) -> str:
-    return "".join(c for c in unicodedata.normalize("NFKD", str(s)) if not unicodedata.combining(c)).upper()
-
-
-# ---------------------------------------------------------------- carga em thread
-class CarregadorWorker(QtCore.QObject):
-    concluido = QtCore.pyqtSignal(object)
-    falhou = QtCore.pyqtSignal(str)
-
-    def __init__(self, tarefa):
-        super().__init__()
-        self._tarefa = tarefa
-
-    def executar(self):
-        try:
-            self.concluido.emit(self._tarefa())
-        except Exception as exc:  # erro de leitura não pode derrubar a janela
-            self.falhou.emit(f"{type(exc).__name__}: {exc}")
-
-
-# ---------------------------------------------------------------- lista marcável
-class ListaMarcavel(QtWidgets.QListWidget):
-    """Lista de itens com caixa de marcação e busca. Repassa a rolagem para a barra lateral quando
-    ela própria não tem mais o que rolar. Guarda o valor original de cada item (não só o texto)."""
-
-    def __init__(self, altura_max: int = 150):
-        super().__init__()
-        self._altura_max = altura_max
-        self.setMaximumHeight(altura_max)
-
-    def preencher(self, valores):
-        marcados = set(self.selecionados())
-        self.clear()
-        self._valores = {}
-        for v in valores:
-            txt = str(v)
-            self._valores[txt] = v
-            item = QtWidgets.QListWidgetItem(txt)
-            item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
-            item.setCheckState(Qt.CheckState.Checked if txt in marcados else Qt.CheckState.Unchecked)
-            self.addItem(item)
-        # altura mínima = a dos itens (até o máximo): a barra lateral ROLA em vez de espremer a lista
-        # (sizeHintForRow devolve -1 antes da lista ser exibida: a altura vem da fonte + padding do tema)
-        por_item = max(self.sizeHintForRow(0) if self.count() else 0, self.fontMetrics().height() + 12)
-        self.setMinimumHeight(min(self._altura_max, max(1, self.count()) * por_item + 10))
-
-    def selecionados(self) -> list[str]:
-        return [self.item(i).text() for i in range(self.count())
-                if self.item(i).checkState() == Qt.CheckState.Checked]
-
-    def valores_selecionados(self) -> list:
-        mapa = getattr(self, "_valores", {})
-        return [mapa.get(t, t) for t in self.selecionados()]
-
-    def desmarcar(self):
-        for i in range(self.count()):
-            self.item(i).setCheckState(Qt.CheckState.Unchecked)
-
-    def marcar_apenas(self, nome):
-        """Marca só o item de texto `nome` (desmarca os demais) — usado para o arquivo ativo."""
-        for i in range(self.count()):
-            it = self.item(i)
-            it.setCheckState(Qt.CheckState.Checked if it.text() == str(nome) else Qt.CheckState.Unchecked)
-
-    def filtrar_visiveis(self, texto: str):
-        t = _norm(texto).strip()
-        for i in range(self.count()):
-            item = self.item(i)
-            item.setHidden(bool(t) and t not in _norm(item.text()))
-
-    def wheelEvent(self, event):
-        barra = self.verticalScrollBar()
-        sem_rolagem = barra.minimum() == barra.maximum()
-        subindo = event.angleDelta().y() > 0
-        if sem_rolagem or (barra.value() == barra.minimum() and subindo) or \
-                (barra.value() == barra.maximum() and not subindo):
-            event.ignore()
-            return
-        super().wheelEvent(event)
-
-
-# ---------------------------------------------------------------- tabela (DataFrame → QTableView)
-class ModeloPandas(QtCore.QAbstractTableModel):
-    """Tabela ordenável (ordena pelo valor cru, exibe formatado em pt-BR) e com realce de busca."""
-    ORDENACAO = QtCore.Qt.ItemDataRole.UserRole + 1
-    MAX_CONTAGEM = 300_000          # células varridas para CONTAR resultados (o realce vale para todas)
-
-    def __init__(self, df: pd.DataFrame, formatos: dict[str, str] | None = None):
-        super().__init__()
-        self._df = df
-        self._fmt = [(formatos or {}).get(c) for c in df.columns]
-        self._alvo = ""
-
-    def rowCount(self, _=QtCore.QModelIndex()):
-        return len(self._df)
-
-    def columnCount(self, _=QtCore.QModelIndex()):
-        return self._df.shape[1]
-
-    def _texto(self, r: int, c: int) -> str:
-        return formatar(self._df.iat[r, c], self._fmt[c])
-
-    def data(self, idx, papel=QtCore.Qt.ItemDataRole.DisplayRole):
-        if not idx.isValid():
-            return None
-        v = self._df.iat[idx.row(), idx.column()]
-        if papel == self.ORDENACAO:
-            return float(v) if isinstance(v, (int, float)) and pd.notna(v) else str(v).lower()
-        if papel == QtCore.Qt.ItemDataRole.DisplayRole:
-            return formatar(v, self._fmt[idx.column()])
-        if papel == QtCore.Qt.ItemDataRole.TextAlignmentRole and self._fmt[idx.column()]:
-            return int(QtCore.Qt.AlignmentFlag.AlignRight | QtCore.Qt.AlignmentFlag.AlignVCenter)
-        if papel == QtCore.Qt.ItemDataRole.BackgroundRole and self._alvo \
-                and self._alvo in _norm(self._texto(idx.row(), idx.column())):
-            return COR_DESTAQUE
-        return None
-
-    def headerData(self, secao, orient, papel=QtCore.Qt.ItemDataRole.DisplayRole):
-        if papel != QtCore.Qt.ItemDataRole.DisplayRole:
-            return None
-        if orient == QtCore.Qt.Orientation.Horizontal:
-            return str(self._df.columns[secao])
-        return str(self._df.index[secao])
-
-    def destacar(self, alvo_norm: str) -> tuple[int, QtCore.QModelIndex | None]:
-        """Realça as células que contêm o texto; devolve (nº de resultados, 1º índice)."""
-        self._alvo = alvo_norm
-        total, primeiro = 0, None
-        if alvo_norm:
-            linhas = min(len(self._df), max(1, self.MAX_CONTAGEM // max(1, self._df.shape[1])))
-            for r in range(linhas):
-                for c in range(self._df.shape[1]):
-                    if alvo_norm in _norm(self._texto(r, c)):
-                        total += 1
-                        if primeiro is None:
-                            primeiro = self.index(r, c)
-        if self.rowCount() and self.columnCount():
-            self.dataChanged.emit(self.index(0, 0), self.index(self.rowCount() - 1, self.columnCount() - 1),
-                                  [QtCore.Qt.ItemDataRole.BackgroundRole])
-        return total, primeiro
-
-
-# ---------------------------------------------------------------- assistente de modelo
-class DialogoModelo(QtWidgets.QDialog):
-    """Cria/edita o .toml do cliente a partir das colunas da planilha aberta."""
-
-    def __init__(self, pai, esquema, aba, nome_sugerido):
-        super().__init__(pai)
-        self.setWindowTitle("Salvar como modelo do cliente")
-        self.resize(720, 520)
-        self.aba = aba
-        lay = QtWidgets.QVBoxLayout(self)
-
-        form = QtWidgets.QFormLayout()
-        self.ed_nome = QtWidgets.QLineEdit(nome_sugerido)
-        form.addRow("Nome do modelo:", self.ed_nome)
-        form.addRow("Aba preferida:", QtWidgets.QLabel(aba or "(não se aplica)"))
-        lay.addLayout(form)
-        lay.addWidget(QtWidgets.QLabel("Revise rótulo, tipo e sinônimos de cada coluna:"))
-
-        self.tab = QtWidgets.QTableWidget(len(esquema.colunas), 4)
-        self.tab.setHorizontalHeaderLabels(["Coluna (planilha)", "Rótulo", "Tipo", "Sinônimos (vírgula)"])
-        self.tab.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Stretch)
-        for i, c in enumerate(esquema.colunas):
-            item = QtWidgets.QTableWidgetItem(c.nome)
-            item.setFlags(item.flags() & ~QtCore.Qt.ItemFlag.ItemIsEditable)
-            self.tab.setItem(i, 0, item)
-            self.tab.setItem(i, 1, QtWidgets.QTableWidgetItem(c.nome))
-            combo = QtWidgets.QComboBox()
-            combo.addItems(TIPOS)
-            combo.setCurrentText(c.tipo)
-            self.tab.setCellWidget(i, 2, combo)
-            self.tab.setItem(i, 3, QtWidgets.QTableWidgetItem(_chave(c.nome)))
-        lay.addWidget(self.tab)
-
-        botoes = QtWidgets.QDialogButtonBox(
-            QtWidgets.QDialogButtonBox.StandardButton.Save | QtWidgets.QDialogButtonBox.StandardButton.Cancel)
-        botoes.accepted.connect(self.accept)
-        botoes.rejected.connect(self.reject)
-        lay.addWidget(botoes)
-
-    def gerar_colunas(self):
-        colunas = []
-        for i in range(self.tab.rowCount()):
-            rotulo = self.tab.item(i, 1).text().strip() or self.tab.item(i, 0).text()
-            tipo = self.tab.cellWidget(i, 2).currentText()
-            sin = [s.strip() for s in self.tab.item(i, 3).text().split(",") if s.strip()]
-            colunas.append(ColunaModelo(canonico=_chave(rotulo) or f"col{i+1}", rotulo=rotulo,
-                                        tipo=tipo, sinonimos=sin))
-        return colunas
-
-
-# ---------------------------------------------------------------- Modo IA
-class TrabalhoIA(QtCore.QThread):
-    """Chama a API de IA fora da thread da interface (não congela a janela)."""
-    pronto = QtCore.pyqtSignal(object)
-    falhou = QtCore.pyqtSignal(str)
-    progresso = QtCore.pyqtSignal(str)   # retentativas / troca de modelo (sinal é seguro entre threads)
-
-    def __init__(self, ds, cfg):
-        super().__init__()
-        self._ds, self._cfg = ds, cfg
-
-    def run(self):
-        try:
-            self.pronto.emit(ia.gerar(self._ds, self._cfg, aviso=self.progresso.emit))
-        except Exception as e:  # rede, JSON, validação do modelo — tudo vira mensagem amigável
-            self.falhou.emit(str(e))
-
-
-class DialogoIA(QtWidgets.QDialog):
-    """Configura o Modo IA. O caminho simples: colar a chave e clicar em «Detectar» — o sistema
-    descobre o provedor e o melhor modelo. O resto (dialeto/endereço/modelo) é avançado e opcional."""
-    _AUTO = "(automático)"
-    _AMOSTRAS = [("Só a estrutura (mais seguro, LGPD)", "nenhuma"),
-                 ("Estrutura + amostra anonimizada", "anonimizada")]
-
-    def __init__(self, pai, cfg: "ia.ConfigIA"):
-        super().__init__(pai)
-        self.setWindowTitle("Configurar Modo I.A")
-        self.resize(580, 0)
-        lay = QtWidgets.QVBoxLayout(self)
-
-        intro = QtWidgets.QLabel(
-            "Cole a <b>chave de API</b> e clique em <b>Detectar</b> — o sistema reconhece o provedor "
-            "(OpenAI, Anthropic ou Gemini) e testa os modelos até achar um que responda. O Modo IA envia só a "
-            "<b>estrutura</b> da planilha (com amostra, exemplos <b>anonimizados</b>); nenhum valor "
-            "bruto sai da máquina.")
-        intro.setWordWrap(True)
-        intro.setProperty("classe", "apoio")
-        lay.addWidget(intro)
-
-        linha_chave = QtWidgets.QHBoxLayout()
-        self.ed_chave = QtWidgets.QLineEdit(cfg.api_key)
-        self.ed_chave.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
-        self.ed_chave.setPlaceholderText("cole a chave aqui (ou use a variável de ambiente)")
-        linha_chave.addWidget(self.ed_chave, 1)
-        self.bt_detectar = QtWidgets.QPushButton("Detectar")
-        self.bt_detectar.setProperty("classe", "secundario")
-        self.bt_detectar.clicked.connect(lambda: self._detectar(silencioso=False))
-        linha_chave.addWidget(self.bt_detectar)
-        form_chave = QtWidgets.QFormLayout()
-        form_chave.addRow("Chave de API:", linha_chave)
-        form_chave.addRow("O que enviar:", self._combo_amostra(cfg))
-        lay.addLayout(form_chave)
-
-        self.grp = QtWidgets.QGroupBox("Avançado (opcional)")
-        self.grp.setCheckable(True)
-        self.grp.setChecked(bool(cfg.base_url or cfg.modelo))   # fechado no caminho "só a chave"
-        fa = QtWidgets.QFormLayout(self.grp)
-        self.cb_dialeto = QtWidgets.QComboBox()
-        self.cb_dialeto.addItems([self._AUTO, *ia.DIALETOS])
-        self.cb_dialeto.setCurrentText(cfg.dialeto if cfg.dialeto in ia.DIALETOS else self._AUTO)
-        self.cb_dialeto.currentTextChanged.connect(self._ao_trocar_dialeto)
-        fa.addRow("Dialeto da API:", self.cb_dialeto)
-        self.ed_base = QtWidgets.QLineEdit(cfg.base_url)
-        fa.addRow("Endereço (base_url):", self.ed_base)
-        self.ed_modelo = QtWidgets.QLineEdit(cfg.modelo)
-        self.ed_modelo.setPlaceholderText("em branco = detectar o melhor ao salvar")
-        fa.addRow("Modelo:", self.ed_modelo)
-        lay.addWidget(self.grp)
-
-        self._dica = QtWidgets.QLabel()
-        self._dica.setProperty("classe", "apoio")
-        self._dica.setWordWrap(True)
-        lay.addWidget(self._dica)
-        self._ao_trocar_dialeto(self.cb_dialeto.currentText())
-
-        botoes = QtWidgets.QDialogButtonBox()
-        b_salvar = botoes.addButton("Salvar", QtWidgets.QDialogButtonBox.ButtonRole.AcceptRole)
-        b_salvar.setProperty("classe", "primario")
-        botoes.addButton("Cancelar", QtWidgets.QDialogButtonBox.ButtonRole.RejectRole)
-        botoes.accepted.connect(self.accept)
-        botoes.rejected.connect(self.reject)
-        lay.addWidget(botoes)
-
-    def _combo_amostra(self, cfg):
-        self.cb_amostra = QtWidgets.QComboBox()
-        self.cb_amostra.addItems([rot for rot, _ in self._AMOSTRAS])
-        for i, (_, v) in enumerate(self._AMOSTRAS):
-            if v == cfg.amostra:
-                self.cb_amostra.setCurrentIndex(i)
-        return self.cb_amostra
-
-    def _ao_trocar_dialeto(self, dialeto: str):
-        if dialeto == self._AUTO:
-            self.ed_base.setPlaceholderText("detectado pela chave")
-            self.ed_modelo.setPlaceholderText("detectado pela chave")
-            self._dica.setText("Dialeto automático: o provedor é reconhecido pelo formato da chave e o "
-                               "melhor modelo é escolhido ao detectar/salvar.")
-            return
-        padrao = ia.PADROES.get(dialeto, {})
-        self.ed_base.setPlaceholderText(padrao.get("base_url", ""))
-        self.ed_modelo.setPlaceholderText(padrao.get("modelo", "") + "  (ou em branco = melhor disponível)")
-        env = ia.ENV_CHAVE.get(dialeto, "OPENAI_API_KEY")
-        self._dica.setText(f"Padrão: {padrao.get('base_url', '')}. "
-                           f"Sem chave no campo, usa a variável de ambiente {env}.")
-
-    def _coletar(self) -> "ia.ConfigIA":
-        d = self.cb_dialeto.currentText()
-        amostra = self._AMOSTRAS[self.cb_amostra.currentIndex()][1]
-        return ia.ConfigIA(
-            ativo=True, dialeto=("" if d == self._AUTO else d),
-            base_url=self.ed_base.text().strip(), modelo=self.ed_modelo.text().strip(),
-            api_key=self.ed_chave.text().strip(), amostra=amostra)
-
-    def _detectar(self, silencioso: bool = True) -> bool:
-        cfg = self._coletar()
-        if not cfg.chave_efetiva():
-            if not silencioso:
-                QtWidgets.QMessageBox.information(self, "Chave necessária",
-                                                 "Cole a chave de API antes de detectar.")
-            return False
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
-        try:
-            novo = ia.autoconfigurar(cfg)
-        except Exception as e:
-            QtWidgets.QApplication.restoreOverrideCursor()
-            QtWidgets.QMessageBox.warning(self, "Não foi possível detectar automaticamente", str(e))
-            return False
-        QtWidgets.QApplication.restoreOverrideCursor()
-        self.grp.setChecked(True)
-        self.cb_dialeto.setCurrentText(novo.dialeto)
-        if novo.base_url:
-            self.ed_base.setText(novo.base_url)
-        self.ed_modelo.setText(novo.modelo)
-        self._dica.setText(f"✓ Detectado e testado: provedor «{novo.dialeto}», modelo «{novo.modelo}» "
-                           "(respondeu agora).")
-        return True
-
-    def accept(self):
-        # caminho simples: sem dialeto/modelo definidos, detecta pela chave antes de fechar
-        precisa = self.cb_dialeto.currentText() == self._AUTO or not self.ed_modelo.text().strip()
-        if precisa and not self._detectar(silencioso=False):
-            return
-        super().accept()
-
-    def resultado(self) -> "ia.ConfigIA":
-        return self._coletar()
 
 
 # ---------------------------------------------------------------- janela
@@ -478,13 +145,13 @@ class JanelaPrincipal(QtWidgets.QMainWindow):
         lay.setSizeConstraint(QtWidgets.QLayout.SizeConstraint.SetMinimumSize)
 
         # Navegação em 3 níveis: Pasta (subpasta de dados\) › Relatório › Página (aba/visão)
-        self._titulo(lay, "Pasta")
+        titulo(lay, "Pasta")
         self.combo_pasta = QtWidgets.QComboBox()
         self.combo_pasta.setToolTip("Pasta de dados dentro de dados\\ (cada assunto na sua pasta)")
         self.combo_pasta.currentIndexChanged.connect(self._ao_trocar_pasta)
         lay.addWidget(self.combo_pasta)
 
-        self._titulo(lay, "Relatório")
+        titulo(lay, "Relatório")
         self.combo_relatorio = QtWidgets.QComboBox()
         self.combo_relatorio.setToolTip("Relatório disponível nesta pasta")
         self.combo_relatorio.currentIndexChanged.connect(self._ao_trocar_relatorio)
@@ -519,10 +186,10 @@ class JanelaPrincipal(QtWidgets.QMainWindow):
         self.lb_ia.setWordWrap(True)
         lay.addWidget(self.lb_ia)
 
-        self._separador(lay)
+        separador(lay)
 
         # Arquivos (juntar/consolidar) — abaixo do menu; marque vários do mesmo tipo e Recarregar
-        self._titulo(lay, "Arquivos (juntar)")
+        titulo(lay, "Arquivos (juntar)")
         self.lbl_pasta = QtWidgets.QLabel("")
         self.lbl_pasta.setProperty("classe", "apoio")
         self.lbl_pasta.setWordWrap(True)
@@ -545,7 +212,7 @@ class JanelaPrincipal(QtWidgets.QMainWindow):
         linha_arq.addWidget(b_rec)
         lay.addLayout(linha_arq)
 
-        self._separador(lay)
+        separador(lay)
 
         # Período + dimensões (reconstruídos a cada carga)
         self.box_filtros = QtWidgets.QWidget()
@@ -554,7 +221,7 @@ class JanelaPrincipal(QtWidgets.QMainWindow):
         self.lay_filtros.setSpacing(5)
         lay.addWidget(self.box_filtros)
 
-        self._separador(lay)
+        separador(lay)
         self.chk_anon = QtWidgets.QCheckBox("Anonimizar nomes")
         lay.addWidget(self.chk_anon)
         lay.addStretch(1)
@@ -576,26 +243,6 @@ class JanelaPrincipal(QtWidgets.QMainWindow):
         lin.addWidget(b_limpar)
         col.addWidget(acoes)
         return painel
-
-    def _titulo(self, lay, txt):
-        lb = QtWidgets.QLabel(txt)
-        lb.setProperty("classe", "secao")
-        lay.addWidget(lb)
-
-    def _separador(self, lay):
-        sep = QtWidgets.QFrame()
-        sep.setProperty("classe", "separador")
-        sep.setFixedHeight(1)
-        lay.addWidget(sep)
-
-    def _limpar_layout(self, layout):
-        while layout.count():
-            item = layout.takeAt(0)
-            w = item.widget()
-            if w is not None:
-                w.setParent(None)
-            elif item.layout() is not None:
-                self._limpar_layout(item.layout())
 
     # ---------- conteúdo
     def _montar_conteudo(self) -> QtWidgets.QWidget:
@@ -718,46 +365,31 @@ class JanelaPrincipal(QtWidgets.QMainWindow):
         self.combo_pasta.blockSignals(True)
         self._selecionar_combo(self.combo_pasta, pasta)
         self.combo_pasta.blockSignals(False)
-        pasta = self.combo_pasta.currentData()
+        self._preencher_relatorios(arquivo)
+        self._ao_trocar_relatorio(aba=aba)
 
+    def _preencher_relatorios(self, arquivo=None):
+        """Relatórios (arquivos) da pasta atual, sem disparar sinais; seleciona `arquivo` ou o primeiro."""
         self.combo_relatorio.blockSignals(True)
         self.combo_relatorio.clear()
-        for a in config.listar_arquivos(self._pasta_de(pasta)):
+        for a in config.listar_arquivos(self._pasta()):
             self.combo_relatorio.addItem(a.stem, a.name)
         self._selecionar_combo(self.combo_relatorio, arquivo)
         self.combo_relatorio.blockSignals(False)
-        arq = self.combo_relatorio.currentData()
-
-        paginas = self._paginas(pasta, arq)
-        self.combo_pagina.blockSignals(True)
-        self.combo_pagina.clear()
-        for rotulo, _m in paginas:
-            self.combo_pagina.addItem(self._rot_pagina(rotulo), rotulo)
-        self._selecionar_combo(self.combo_pagina, aba)
-        self.combo_pagina.blockSignals(False)
-        self.lb_pagina.setVisible(len(paginas) > 1)
-        self.combo_pagina.setVisible(len(paginas) > 1)
-        self._descobrir_arquivos(marcar=arq)
-        self._ao_trocar_pagina()
 
     def _ao_trocar_pasta(self, *_):
-        pasta = self.combo_pasta.currentData()
-        self.combo_relatorio.blockSignals(True)
-        self.combo_relatorio.clear()
-        for a in config.listar_arquivos(self._pasta_de(pasta)):
-            self.combo_relatorio.addItem(a.stem, a.name)
-        self.combo_relatorio.setCurrentIndex(0 if self.combo_relatorio.count() else -1)
-        self.combo_relatorio.blockSignals(False)
+        self._preencher_relatorios()
         self._ao_trocar_relatorio()
 
-    def _ao_trocar_relatorio(self, *_):
+    def _ao_trocar_relatorio(self, *_, aba=None):
+        """Monta as páginas do relatório atual (seleciona `aba` ou a primeira) e carrega."""
         pasta, arq = self.combo_pasta.currentData(), self.combo_relatorio.currentData()
         paginas = self._paginas(pasta, arq)
         self.combo_pagina.blockSignals(True)
         self.combo_pagina.clear()
         for rotulo, _m in paginas:
             self.combo_pagina.addItem(self._rot_pagina(rotulo), rotulo)
-        self.combo_pagina.setCurrentIndex(0 if self.combo_pagina.count() else -1)
+        self._selecionar_combo(self.combo_pagina, aba)
         self.combo_pagina.blockSignals(False)
         self.lb_pagina.setVisible(len(paginas) > 1)
         self.combo_pagina.setVisible(len(paginas) > 1)
@@ -800,9 +432,15 @@ class JanelaPrincipal(QtWidgets.QMainWindow):
 
     def _modelo_em_uso(self):
         """O gerado pela IA (se o Modo IA estiver ligado) ou o do relatório/página escolhido."""
-        if self.ck_ia.isChecked() and self.modelo_ia is not None:
-            return self.modelo_ia
-        return self.modelo_rel
+        return self.modelo_ia if self._ia_ativa() else self.modelo_rel
+
+    def _ia_ativa(self) -> bool:
+        """Modo IA ligado e com o modelo já gerado."""
+        return self.ck_ia.isChecked() and self.modelo_ia is not None
+
+    def _formatos_base(self) -> dict[str, str]:
+        """Formato de exibição (moeda/pct/…) de cada coluna da base, pelo tipo detectado."""
+        return {c.nome: FMT_TIPO[c.tipo] for c in self.ds.esquema.colunas if c.tipo in FMT_TIPO}
 
     def _pasta_de(self, pasta) -> Path:
         return config.pasta_relatorio(None if pasta in (None, "entrada") else pasta)
@@ -925,13 +563,13 @@ class JanelaPrincipal(QtWidgets.QMainWindow):
 
     # ================================================= filtros (dinâmicos)
     def _montar_filtros_da_fonte(self):
-        self._limpar_layout(self.lay_filtros)
+        limpar_layout(self.lay_filtros)
         self.dim_listas = {}
         self.combo_data = self.dt_ini = self.dt_fim = None
         lay = self.lay_filtros
         datas = servico.colunas_data(self.ds)
         if datas:
-            self._titulo(lay, "Período pela")
+            titulo(lay, "Período pela")
             self.combo_data = QtWidgets.QComboBox()
             for d in datas:
                 self.combo_data.addItem(d, d)
@@ -960,7 +598,7 @@ class JanelaPrincipal(QtWidgets.QMainWindow):
             vazio.setProperty("classe", "apoio")
             lay.addWidget(vazio)
         for col in dims:
-            self._titulo(lay, col)
+            titulo(lay, col)
             busca = QtWidgets.QLineEdit()
             busca.setPlaceholderText(f"buscar {col.lower()}…")
             busca.setClearButtonEnabled(True)
@@ -998,7 +636,7 @@ class JanelaPrincipal(QtWidgets.QMainWindow):
         self._destacar(self.busca_conteudo.text())
         self.b_html.setEnabled(True)
         self.b_salvar_modelo.setEnabled(True)
-        origem = "modelo gerado por IA" if (self.ck_ia.isChecked() and self.modelo_ia) else self._nome_relatorio()
+        origem = "modelo gerado por IA" if self._ia_ativa() else self._nome_relatorio()
         self._definir_status(f"{origem}: {self.analise.linhas} registro(s) no recorte · "
                              f"{len(self.analise.arquivos)} arquivo(s).", "info")
 
@@ -1011,7 +649,7 @@ class JanelaPrincipal(QtWidgets.QMainWindow):
 
     # ================================================= render
     def _render_kpis(self, analise):
-        self._limpar_layout(self.grade_kpi)
+        limpar_layout(self.grade_kpi)
         kpis = analise.kpis if analise else []
         # cartões por linha conforme a largura: valor em R$ com 26px precisa de ~210px para não cortar
         largura = max(self.abas.width(), self.width() - 380)
@@ -1051,63 +689,19 @@ class JanelaPrincipal(QtWidgets.QMainWindow):
             if p.tabela is not None and not p.tabela.empty:
                 grupos.setdefault(p.aba, []).append(p)
         for aba, paineis in grupos.items():
-            self.abas.addTab(self._painel_widget(aba, paineis), aba)
+            self.abas.addTab(painel_widget(aba, paineis), aba)
 
         df = servico.aplicar_filtros(self.ds, self._filtros_atuais())
-        fmt_dados = {c.nome: FMT_TIPO[c.tipo] for c in self.ds.esquema.colunas if c.tipo in FMT_TIPO}
-        self.abas.addTab(self._tabela_widget(servico.visiveis(df).reset_index(drop=True), fmt_dados),
+        self.abas.addTab(tabela_widget(servico.visiveis(df).reset_index(drop=True), self._formatos_base()),
                          "Base detalhada")
         ativas = type(self.ds.esquema)([c for c in self.ds.esquema.colunas if c.tipo != "vazio"])
-        self.abas.addTab(self._tabela_widget(resumo_colunas(df, ativas), {}), "Resumo por coluna")
+        self.abas.addTab(tabela_widget(resumo_colunas(df, ativas), {}), "Resumo por coluna")
         self.abas.addTab(self.pg_tipos, "Tipos")
 
         for i in range(self.abas.count()):
             if self.abas.tabText(i) == atual:
                 self.abas.setCurrentIndex(i)
                 break
-
-    def _painel_widget(self, aba: str, paineis) -> QtWidgets.QWidget:
-        env = QtWidgets.QWidget()
-        lay = QtWidgets.QVBoxLayout(env)
-        lay.setContentsMargins(8, 8, 8, 8)
-        lay.setSpacing(6)
-        for p in paineis:
-            if len(paineis) > 1 or p.titulo != aba:
-                t = QtWidgets.QLabel(p.titulo)
-                t.setProperty("classe", "secao")
-                lay.addWidget(t)
-            if p.descricao:
-                d = QtWidgets.QLabel(p.descricao)
-                d.setProperty("classe", "apoio")
-                lay.addWidget(d)
-            lay.addWidget(self._tabela(p.tabela, p.formatos), 1)
-        return env
-
-    def _tabela(self, df: pd.DataFrame, formatos: dict) -> QtWidgets.QTableView:
-        tv = QtWidgets.QTableView()
-        tv.setAlternatingRowColors(True)
-        tv.setSortingEnabled(True)
-        tv.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
-        tv.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
-        tv.verticalHeader().setVisible(False)
-        tv.verticalHeader().setDefaultSectionSize(28)
-        tv.setWordWrap(False)
-        proxy = QtCore.QSortFilterProxyModel(tv)
-        proxy.setSortRole(ModeloPandas.ORDENACAO)
-        proxy.setSourceModel(ModeloPandas(df, formatos))
-        tv.setModel(proxy)
-        tv.horizontalHeader().setHighlightSections(False)
-        tv.resizeColumnsToContents()
-        if df.shape[1]:
-            tv.horizontalHeader().setStretchLastSection(True)
-        return tv
-
-    def _tabela_widget(self, df: pd.DataFrame, formatos: dict) -> QtWidgets.QWidget:
-        env = QtWidgets.QWidget()
-        lay = QtWidgets.QVBoxLayout(env)
-        lay.setContentsMargins(8, 8, 8, 8)
-        lay.addWidget(self._tabela(df, formatos))
-        return env
 
     def _html_resumo(self, a) -> str:
         """Painel "Resumo e achados": metas ✔/✗, observações, achados, leitura e filtros."""
@@ -1146,7 +740,7 @@ class JanelaPrincipal(QtWidgets.QMainWindow):
 
     # ================================================= busca na tela (realce)
     def _destacar(self, texto: str):
-        alvo = _norm(texto).strip()
+        alvo = norm_busca(texto).strip()
         w = self.abas.currentWidget()
         if w is None:
             self.lbl_busca.setText("")
@@ -1160,7 +754,7 @@ class JanelaPrincipal(QtWidgets.QMainWindow):
                         item = tv.item(r, c)
                         if item is None:
                             continue
-                        casa = bool(alvo) and alvo in _norm(item.text())
+                        casa = bool(alvo) and alvo in norm_busca(item.text())
                         item.setBackground(COR_DESTAQUE if casa else QtGui.QBrush())
                         total += casa
                 continue
@@ -1207,10 +801,9 @@ class JanelaPrincipal(QtWidgets.QMainWindow):
         filtros = self._filtros_atuais()
         analise = servico.analisar(self.ds, filtros)
         base = servico.visiveis(servico.aplicar_filtros(self.ds, filtros)).reset_index(drop=True)
-        fmt_base = {c.nome: FMT_TIPO[c.tipo] for c in self.ds.esquema.colunas if c.tipo in FMT_TIPO}
-        nome = ("Modelo gerado por IA" if (self.ck_ia.isChecked() and self.modelo_ia) else self._nome_relatorio())
+        nome = "Modelo gerado por IA" if self._ia_ativa() else self._nome_relatorio()
         try:
-            destino = relatorio_html.gerar(analise, nome, base=base, formatos_base=fmt_base,
+            destino = relatorio_html.gerar(analise, nome, base=base, formatos_base=self._formatos_base(),
                                            prefixo=f"relatorio_{chave_texto(nome) or 'planilhas'}",
                                            ds=self.ds, filtros=filtros)
         except Exception as e:
@@ -1228,21 +821,16 @@ class JanelaPrincipal(QtWidgets.QMainWindow):
         self._montando = True
         self.tab_tipos.setRowCount(len(self.ds.esquema.colunas))
         for i, c in enumerate(self.ds.esquema.colunas):
-            self.tab_tipos.setItem(i, 0, self._item_ro(c.nome))
+            self.tab_tipos.setItem(i, 0, item_somente_leitura(c.nome))
             combo = QtWidgets.QComboBox()
             combo.addItem("(automático)")
             combo.addItems(TIPOS)
             combo.setCurrentText(self.overrides.get(c.nome, "(automático)"))
             combo.currentTextChanged.connect(lambda novo, nome=c.nome: self._ao_trocar_tipo(nome, novo))
             self.tab_tipos.setCellWidget(i, 1, combo)
-            self.tab_tipos.setItem(i, 2, self._item_ro(f"{c.n_validos} / {c.n_validos + c.n_nulos}"))
-            self.tab_tipos.setItem(i, 3, self._item_ro(c.evidencia))
+            self.tab_tipos.setItem(i, 2, item_somente_leitura(f"{c.n_validos} / {c.n_validos + c.n_nulos}"))
+            self.tab_tipos.setItem(i, 3, item_somente_leitura(c.evidencia))
         self._montando = False
-
-    def _item_ro(self, texto):
-        item = QtWidgets.QTableWidgetItem(str(texto))
-        item.setFlags(item.flags() & ~QtCore.Qt.ItemFlag.ItemIsEditable)
-        return item
 
     def _ao_trocar_tipo(self, nome, novo):
         if self._montando:

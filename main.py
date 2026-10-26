@@ -115,6 +115,8 @@ def autoteste() -> int:
     linhas.append("-" * 60)
     linhas.append("RESULTADO: " + ("TUDO OK" if falhas == 0 else f"{falhas} FALHA(S)"))
     relatorio = "\n".join(linhas)
+    if hasattr(sys.stdout, "reconfigure"):   # console cp1252 não tem «→»: troca por «?» em vez de quebrar
+        sys.stdout.reconfigure(errors="replace")
     print(relatorio)
     try:
         (config.RAIZ / "autoteste.txt").write_text(relatorio, encoding="utf-8")

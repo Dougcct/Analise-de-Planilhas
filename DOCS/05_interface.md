@@ -1,7 +1,9 @@
 # 05 · Interface (janela PyQt6)
 
 Mesmo desenho do projeto **Garantia de Atendimento e Reembolso**. A janela só apresenta; toda regra vem
-de `servico.py`. Código em `app/janela.py` (+ `app/dialogo_metas.py`); cores em `app/tema.py`.
+de `servico.py`. Código em `app/janela.py` (orquestração da tela), `app/componentes.py` (lista marcável,
+tabelas, carga em thread) e `app/dialogo_*.py` (metas, salvar modelo, Modo I.A); cores em `app/tema.py`.
+Módulo novo em `app/` também entra no `build.bat` (`--include-module=<nome>`).
 
 ```
 ┌ Análise de Planilhas ─────────────────────────────── (topo: título, "Relatório: X — análise local", vN) ┐
@@ -85,7 +87,7 @@ cobre (menus, popups, calendário, `QMessageBox`, campos, itens desabilitados). 
 > O bug de cor só aparece no **estilo nativo do Windows**: o backend `offscreen` (teste/CI) renderiza
 > claro e não pega a regressão — valide a janela real (`python main.py`).
 
-Ao mexer em `app/tema.py` ou adicionar widgets em `app/janela.py`:
+Ao mexer em `app/tema.py` ou adicionar widgets em `app/` (`janela.py`, `componentes.py`, diálogos):
 
 1. **Cores e tamanhos só pelos tokens** (`PALETA`, `ESPACO`, `FONTE`, `RAIO`) e pela intenção
    (`setProperty("classe", "primario" | "secundario" | "discreto" | "kpi" | "cartao" | …)`); trocou a

@@ -4,6 +4,21 @@ Formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · [SemVer](
 
 ## [Não lançado]
 
+### Alterado (organização do código — sem mudança de funcionalidade)
+- **`app/janela.py` dividido** (1.431 → 1.009 linhas): peças reutilizáveis em `app/componentes.py`
+  (`ListaMarcavel`, `ModeloPandas`, `CarregadorWorker`, montagem de tabelas/painéis, helpers de layout);
+  diálogos em `app/dialogo_modelo.py` («Salvar como modelo…») e `app/dialogo_ia.py` (`DialogoIA`,
+  `TrabalhoIA`). Novos módulos incluídos no `build.bat`.
+- Navegação Pasta › Relatório › Página: o preenchimento dos combos, antes copiado em três métodos, ficou
+  num só caminho (`_preencher_relatorios` + `_ao_trocar_relatorio`). Estado da tela conferido idêntico ao
+  anterior em todas as pastas, relatórios e páginas.
+- Removido código sem uso (funções, constantes, aliases antigos, parâmetro morto de `_col`) e ícones
+  antigos de `assets/`.
+
+### Corrigido
+- `main.py --autoteste` não quebra mais ao imprimir num console cp1252 (caractere «→»); o
+  `autoteste.txt` continua em UTF-8.
+
 ### Adicionado (relatórios Garantia / Reembolso / Pagamento — [14](14_garantia_reembolso.md))
 - Trazidos do projeto de referência `garantia_atendimento`, **só com modelos `.toml`** (sem tocar nos
   relatórios atuais): **Garantia de Atendimento** (reaproveita o `.sample` já pronto), **Reembolso**

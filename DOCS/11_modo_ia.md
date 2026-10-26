@@ -17,7 +17,8 @@ estrutura da planilha (+ amostra anonimizada)
 ```
 
 Código: [src/analise_planilha/ia.py](../src/analise_planilha/ia.py). Interface: painel "Modo I.A" na
-barra lateral + `DialogoIA` e `TrabalhoIA` (thread) em [app/janela.py](../app/janela.py).
+barra lateral ([app/janela.py](../app/janela.py)) + `DialogoIA` e `TrabalhoIA` (thread) em
+[app/dialogo_ia.py](../app/dialogo_ia.py).
 
 ## Privacidade (LGPD) — o que sai da máquina
 

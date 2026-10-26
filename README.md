@@ -60,7 +60,7 @@ main.py                 ponto de entrada (interface + --autoteste)
 gerar_relatorio.py      linha de comando (relatório HTML com filtros)
 analisar.py             linha de comando (resumo da inferência)
 build.bat               compilação com Nuitka
-app/                    interface desktop (janela.py, tema.py, dialogo_metas.py)
+app/                    interface desktop (janela.py, componentes.py, dialogo_*.py, tema.py)
 src/analise_planilha/   lógica (leitura, modelo, inferência, especificação, indicadores, metas, relatório)
 templates/              modelo do relatório HTML (Jinja2)
 assets/                 ícone (barra de tarefas e janelas)

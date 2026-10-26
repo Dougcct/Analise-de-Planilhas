@@ -112,7 +112,7 @@ def test_gerar_html(monkeypatch, janela, pastas):
 
 
 def test_lista_marcavel_guarda_valor_original(app):
-    from app.janela import ListaMarcavel
+    from app.componentes import ListaMarcavel
     lst = ListaMarcavel()
     lst.preencher([2025, 2026])
     lst.item(1).setCheckState(lst.item(1).checkState().__class__.Checked)

@@ -37,8 +37,11 @@ dados/<relatório>/*.xlsx|ods|csv   — uma subpasta por relatório (modelo); v�
 
 ```
 main.py                 ponto de entrada; --autoteste faz o diagnóstico sem janela
-app/janela.py           interface PyQt6 (só apresentação; nenhuma regra de negócio aqui)
+app/janela.py           janela principal PyQt6: orquestra a tela (só apresentação; nenhuma regra de negócio)
+app/componentes.py      peças reutilizáveis: lista marcável, tabela de DataFrame, carga em thread, layout
 app/dialogo_metas.py    diálogo "⚙ Editar metas" (grava config/metas.json)
+app/dialogo_modelo.py   diálogo "Salvar como modelo…" (gera o .toml do cliente)
+app/dialogo_ia.py       diálogo "Configurar Modo I.A" + thread que chama a API
 app/tema.py             tokens de cor/espaço/fonte e folha de estilo (a marca fica num lugar só)
 templates/              relatório HTML (Jinja2)
 src/analise_planilha/   lógica de análise (independente de interface)

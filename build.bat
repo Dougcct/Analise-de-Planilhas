@@ -53,7 +53,10 @@ python -m nuitka ^
     --file-description="Analise Dinamica de Planilhas" ^
     --include-module=janela ^
     --include-module=tema ^
+    --include-module=componentes ^
+    --include-module=dialogo_ia ^
     --include-module=dialogo_metas ^
+    --include-module=dialogo_modelo ^
     --include-package=analise_planilha ^
     --include-data-dir=templates=templates ^
     --include-data-files=assets/icon.ico=assets/icon.ico ^
