@@ -15,7 +15,6 @@ from . import config, contas_convenio, estrutura, matriz
 from .modelos import MetaLeitura
 from .normalizacao import tokens_nome
 
-Fonte = "str | Path | BinaryIO | bytes"
 _TEXTO = (".csv", ".tsv", ".txt")
 
 

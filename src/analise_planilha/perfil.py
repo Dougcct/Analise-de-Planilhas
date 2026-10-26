@@ -29,10 +29,6 @@ def tabela_tipos(esquema: Esquema) -> pd.DataFrame:
     ])
 
 
-def completude(df: pd.DataFrame) -> float:
-    return float(df.notna().to_numpy().mean()) if df.size else 0.0
-
-
 def resumo_colunas(df: pd.DataFrame, esquema: Esquema) -> pd.DataFrame:
     """Uma linha por coluna: tipo, preenchimento, únicos e um resumo adequado ao tipo."""
     linhas = []

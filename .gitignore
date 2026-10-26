@@ -1,6 +1,7 @@
 # Dados pessoais (LGPD) — nunca versionar
 dados/
 saida/
+_revisar/
 
 # Configuração do Modo IA — contém chave de API
 config/ia.toml

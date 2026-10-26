@@ -10,7 +10,6 @@ import tomllib
 from dataclasses import dataclass, field
 from difflib import SequenceMatcher
 from pathlib import Path
-from typing import NamedTuple
 
 import pandas as pd
 
@@ -220,33 +219,4 @@ def listar_modelos() -> dict[str, Path]:
         except (tomllib.TOMLDecodeError, OSError):
             nome = p.stem
         saida[nome] = p
-    return saida
-
-
-class RefModelo(NamedTuple):
-    """Referência leve a um modelo para o seletor Pasta › Relatório › Página."""
-    nome: str          # nome único do modelo (chave de metas, títulos, CLI)
-    caminho: Path | None
-    pasta: str         # subpasta de dados\ (nível «Pasta»)
-    relatorio: str     # nome do relatório que agrupa as páginas (nível «Relatório»)
-    pagina: str        # rótulo da página (nível «Página»)
-    ordem: int = 0     # ordem da página dentro do relatório (menor primeiro)
-
-
-def catalogo_modelos() -> list[RefModelo]:
-    """Referências dos modelos para o seletor Pasta › Relatório › Página (ordem de nome de arquivo).
-
-    Lê só `nome`, `pasta`, `categoria` e `pagina` do .toml (sem carregar o modelo inteiro). Sem
-    `categoria`, o relatório é o próprio nome (uma página só); sem `pasta`/`pagina`, usam o nome.
-    """
-    PASTA_MODELOS.mkdir(parents=True, exist_ok=True)
-    saida: list[RefModelo] = []
-    for p in sorted(PASTA_MODELOS.glob("*.toml")):
-        try:
-            d = tomllib.loads(p.read_text(encoding="utf-8"))
-            nome = d.get("nome", p.stem)
-        except (tomllib.TOMLDecodeError, OSError):
-            nome, d = p.stem, {}
-        saida.append(RefModelo(nome, p, d.get("pasta") or nome, d.get("categoria") or nome,
-                               d.get("pagina") or nome, int(d.get("ordem", 0))))
     return saida

@@ -44,15 +44,8 @@ class ColunaInferida:
 class Esquema:
     colunas: list[ColunaInferida]
 
-    def por_tipo(self, *tipos: str) -> list[str]:
-        return [c.nome for c in self.colunas if c.tipo in tipos]
-
     def tipo_de(self, nome: str) -> str:
         return next(c.tipo for c in self.colunas if c.nome == nome)
-
-    @property
-    def assinatura(self) -> str:
-        return "|".join(c.nome for c in self.colunas)
 
 
 @dataclass

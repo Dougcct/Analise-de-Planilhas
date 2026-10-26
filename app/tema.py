@@ -223,9 +223,6 @@ def aplicar(app):
     app.setStyleSheet(folha_de_estilo())
 
 
-aplicar_tema = aplicar   # nome antigo
-
-
 def icone():
     return QIcon(str(config.ICONE)) if config.ICONE.exists() else QIcon()
 

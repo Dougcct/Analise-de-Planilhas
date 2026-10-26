@@ -42,7 +42,6 @@ except ModuleNotFoundError:  # executado com app/ no sys.path (main.py / .exe)
     from dialogo_metas import DialogoMetas  # type: ignore
 
 SEM_MODELO = "Sem modelo (inferência automática)"
-ABA_AUTOMATICA = "(automática)"
 ABAS_TODAS = "\x00todas"              # página sentinela: o relatório consolida TODAS as abas (abas="todas")
 ROT_ABAS_TODAS = "Todas as abas (consolidado)"
 COR_DESTAQUE = QtGui.QColor("#FFE58A")   # amarelo suave para realçar os resultados da busca
@@ -103,10 +102,6 @@ class ListaMarcavel(QtWidgets.QListWidget):
     def valores_selecionados(self) -> list:
         mapa = getattr(self, "_valores", {})
         return [mapa.get(t, t) for t in self.selecionados()]
-
-    def marcar_todos(self):
-        for i in range(self.count()):
-            self.item(i).setCheckState(Qt.CheckState.Checked)
 
     def desmarcar(self):
         for i in range(self.count()):
@@ -414,7 +409,6 @@ class JanelaPrincipal(QtWidgets.QMainWindow):
         self.cfg_ia = ia.carregar_config()
         self.modelo_ia = None           # Modelo gerado pela IA (quando o Modo IA está ligado)
         self._trab_ia = None
-        self._ultimo_ia = None
 
         self.setWindowTitle(config.NOME_APLICACAO)
         self.setWindowIcon(tema.icone())
@@ -1346,7 +1340,6 @@ class JanelaPrincipal(QtWidgets.QMainWindow):
     def _ia_pronto(self, resultado):
         self.ck_ia.setEnabled(True)
         self.bt_config_ia.setEnabled(True)
-        self._ultimo_ia = resultado
         self.modelo_ia = resultado.modelo
         if resultado.modelo_usado and resultado.modelo_usado != self.cfg_ia.modelo:
             self.cfg_ia.modelo = resultado.modelo_usado      # lembra o modelo de IA que respondeu
@@ -1412,9 +1405,6 @@ class JanelaPrincipal(QtWidgets.QMainWindow):
         else:
             QtWidgets.QApplication.restoreOverrideCursor()
             self.b_html.setEnabled(self.ds is not None)
-
-
-Janela = JanelaPrincipal   # nome antigo
 
 
 def executar() -> int:

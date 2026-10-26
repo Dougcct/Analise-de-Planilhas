@@ -523,7 +523,7 @@ def _visao_geral(df, c: _Ctx, meses, base) -> list[Painel]:
     anos = df[c.M].dt.year
     por_ano = df.assign(_a=anos).groupby("_a").agg(total=(c.V, "sum"), meses=(c.M, "nunique"))
     por_ano["media"] = por_ano["total"] / por_ano["meses"]
-    cats = [f"{a}" + ("" if n == 12 else f"*") for a, n in zip(por_ano.index, por_ano["meses"])]
+    cats = [f"{a}" + ("" if n == 12 else "*") for a, n in zip(por_ano.index, por_ano["meses"])]
     fig_ano = graficos.colunas(cats, [("Média mensal", list(por_ano["media"]), CORES[0])], moeda=True,
                                largura=LARG_MEIA)
     t_ano = pd.DataFrame({"Ano": por_ano.index.astype(str), "Meses": por_ano["meses"].values,
@@ -556,8 +556,8 @@ def _paineis_dre(df, c: _Ctx, ext: dict, meses) -> tuple[list[Painel], list[KPI]
         return nome, sub[sub[col_g] == nome].groupby(c.M)["Valor"].sum().reindex(meses)
 
     n_rec, rec = serie("receita")
-    n_res, res = serie("resultado")
-    n_op, op = serie("resultado_operacional")
+    _, res = serie("resultado")
+    _, op = serie("resultado_operacional")
     cats = [rm(m) for m in meses]
     if rec is not None:
         r_tot = float(rec.sum())
