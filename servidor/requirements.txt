@@ -1,0 +1,8 @@
+# Dependências do SERVIDOR v2 (imagem Docker). O motor é importado de ../src, então o container
+# também instala as dependências da análise.
+-r ../requirements.txt
+
+fastapi>=0.115
+uvicorn[standard]>=0.30
+pydantic>=2.7
+python-multipart>=0.0.9   # upload de planilhas (fase 4)
