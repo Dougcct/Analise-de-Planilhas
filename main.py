@@ -128,6 +128,11 @@ def autoteste() -> int:
 def main() -> int:
     if "--autoteste" in sys.argv:
         return autoteste()
+    if "--servidor" in sys.argv:                 # cliente da API v2 (ver DOCS/16); --servidor [URL]
+        from janela_remota import URL_PADRAO, executar_servidor
+        i = sys.argv.index("--servidor")
+        url = sys.argv[i + 1] if i + 1 < len(sys.argv) and not sys.argv[i + 1].startswith("-") else URL_PADRAO
+        return executar_servidor(url)
     from janela import executar
     return executar()
 
