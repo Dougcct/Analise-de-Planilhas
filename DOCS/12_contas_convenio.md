@@ -99,7 +99,7 @@ Na barra lateral: **Pasta** «Contas Convênio» → **Relatório** = o arquivo 
 
 Cada arquivo/página é analisado **à parte**. Para comparar os anos, use **Arquivos (juntar)** abaixo do
 menu: marque `2025.xlsx` e `2026.xlsx` e clique **Recarregar** — os dois anos são **consolidados** numa
-base só (183 atendimentos), com «Arquivo de origem». Um arquivo sem a aba escolhida (ex.: 2026 não tem a
+base só, com «Arquivo de origem». Um arquivo sem a aba escolhida (ex.: 2026 não tem a
 de cesariana) é **ignorado** ao juntar, com aviso. A divergência de custo entre as duas versões da
 cesariana é justamente a decisão pendente (qual custo é o oficial).
 

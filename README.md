@@ -64,7 +64,7 @@ app/                    interface desktop (janela.py, componentes.py, dialogo_*.
 src/analise_planilha/   lógica (leitura, modelo, inferência, especificação, indicadores, metas, relatório)
 templates/              modelo do relatório HTML (Jinja2)
 assets/                 ícone (barra de tarefas e janelas)
-config/                 modelos de cliente (.toml), metas do gestor (metas.json), Modo IA (ia.toml)
+config/                 modelos de cliente (.toml); locais, não versionados: metas.json, ia.toml
 testes/                 suíte offline (sem rede, sem dados reais)
 dados/<Relatório>/      planilhas a analisar, uma subpasta por relatório (não versionar — LGPD)
 saida/                  relatórios gerados (não versionar — LGPD)

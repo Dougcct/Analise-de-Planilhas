@@ -39,7 +39,7 @@ típico; o P90, a cauda ("90% em até X dias"). A estatística dos KPIs/metas é
 3. cada taxa geral; cada tempo (estatística, P90, % na meta, em aberto);
 4. concentração nas 3 primeiras dimensões (≥ 25% "concentra"; senão, os 3 mais frequentes);
 5. **desvios de taxa**: categorias com ≥ `MIN_CASOS_ACHADO` (3) registros cuja taxa está ≥ 15 p.p.
-   pior que a geral (pelo `sentido`) — ex.: "Reembolso em «Acupuntura»: 100% (geral 21%)". Dimensões que
+   pior que a geral (pelo `sentido`) — ex.: "Reembolso em «Categoria A»: 90% (geral 20%)". Dimensões que
    **definem** a taxa (e classificações derivadas delas) são ignoradas, para não dizer o óbvio; taxas
    complementares geram uma frase só por categoria;
 6. **tempos mais longos**: categoria com mediana ≥ 1,5× a geral (e +2 dias);
@@ -52,9 +52,8 @@ Limiares em `config.py`: `MIN_CASOS_ACHADO`, `DESVIO_ACHADO_PP`, `LIMIAR_GRAFIA_
 ## Validação com dado real
 
 Com `garantia_atendimento.toml.sample` sobre a planilha de controle real (11 abas), o motor genérico
-reproduziu o relatório do projeto Garantia: registros 344 × 343, clientes 297 = 297, resolvidas na rede
-74,4% × 74,3%, reembolso 20,6% × 20,7%, tempo total 16 = 16 dias, espera 3 = 3, na meta 55,3% × 55,4%,
-em aberto 2 = 2. A diferença é **uma linha real com o nome do cliente em branco**: o projeto antigo a
+reproduziu os indicadores do relatório do projeto Garantia (registros, clientes, taxas, tempos, % na meta
+e em aberto). A única diferença é **uma linha real com o nome do cliente em branco**: o projeto antigo a
 descartava em silêncio; aqui ela conta e aparece em Qualidade com aba e linha.
 
 ## Privacidade (LGPD)

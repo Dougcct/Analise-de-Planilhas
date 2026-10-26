@@ -38,7 +38,7 @@ def rm(m: pd.Timestamp) -> str:
 
 
 def rs(v) -> str:
-    """R$ compacto para KPIs/frases: R$ 14,39 mi."""
+    """R$ compacto para KPIs/frases: R$ 1,23 mi."""
     return "—" if v is None or (isinstance(v, float) and math.isnan(v)) else f"R$ {fmt_compacto(v)}"
 
 

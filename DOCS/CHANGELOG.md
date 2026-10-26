@@ -4,6 +4,16 @@ Formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · [SemVer](
 
 ## [Não lançado]
 
+## [1.0.0] — 2026-10-26
+
+Primeira versão distribuída: executável publicado nas Releases do repositório público, com atualização
+automática a partir daqui.
+
+### Alterado (privacidade)
+- Nada que vem das planilhas fica no repositório: valores e contagens reais saíram da documentação;
+  `config/metas.json` (metas de cada usuário) deixou de ser versionado; o `build.bat` não copia mais
+  `ia.toml` (chave de API), `metas.json` e `atualizacao.toml` de quem compila para a pasta do `.exe`.
+
 ### Adicionado (distribuição e atualização automática — [08](08_build_e_distribuicao.md))
 - **Build automático no GitHub** (`.github/workflows/release.yml`): a tag `vX.Y.Z` roda testes, compila
   com o Nuitka, roda o autoteste do `.exe` e publica `.zip` + `.sha256` nas Releases do repositório público.
@@ -77,8 +87,8 @@ Formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · [SemVer](
 
 ### Corrigido
 - **DRE HUNF:** «EPI» e «IMPOSTOS» (caixa alta) eram tomados por blocos e a linha «(-) Descontos…» era
-  descartada — o resultado do período saía errado (R$ 34,6 mi). Agora a soma das contas bate com o
-  Resultado líquido da planilha em todos os meses (**R$ 14,57 mi** de jan/25 a jul/26).
+  descartada — o resultado do período saía errado. Agora a soma das contas bate com o Resultado
+  líquido da planilha em todos os meses.
 - Gráfico de linhas aparecia como texto (o SVG era escapado ao somar com a legenda).
 
 ### Adicionado (relatórios financeiros HUNF — [13](13_financeiro_hunf.md))
@@ -178,7 +188,7 @@ Formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · [SemVer](
 
 ### Corrigido
 - **Filtro de faixa numérica excluía linhas sem o usuário mexer**: o campo arredondava mín./máx. para
-  2 casas, se considerava "ativo" e cortava as pontas (183 contas viravam 181). Agora arredonda para fora
+  2 casas, se considerava "ativo" e cortava as pontas (contas das extremidades ficavam de fora). Agora arredonda para fora
   e compara com o valor do próprio campo. Teste de regressão em `testes/test_janela_filtros.py`.
 
 ### Corrigido (tema claro)

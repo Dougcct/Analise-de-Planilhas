@@ -3,8 +3,10 @@ dados/
 saida/
 _revisar/
 
-# Configuração do Modo IA — contém chave de API
+# Configuração local de cada usuário — contém chave de API (ia.toml) e as metas do gestor
 config/ia.toml
+config/metas.json
+config/atualizacao.toml
 *.ods
 *.xlsx
 *.xls

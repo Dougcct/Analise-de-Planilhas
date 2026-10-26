@@ -89,6 +89,8 @@ REM Cada relatorio le de dados\<pasta do modelo>\ (criada pela janela ao escolhe
 if not exist "%SAIDA%\dados\entrada" mkdir "%SAIDA%\dados\entrada"
 if not exist "%SAIDA%\saida" mkdir "%SAIDA%\saida"
 xcopy /e /i /y config "%SAIDA%\config" >nul
+REM configuracao local de quem compila nao vai junto: chave de API, metas do gestor, atualizacao
+for %%f in (ia.toml metas.json atualizacao.toml) do if exist "%SAIDA%\config\%%f" del /q "%SAIDA%\config\%%f"
 
 "%SAIDA%\AnalisePlanilhas.exe" --autoteste
 if errorlevel 1 goto :erro_autoteste

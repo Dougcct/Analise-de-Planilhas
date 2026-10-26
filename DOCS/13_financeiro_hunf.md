@@ -22,13 +22,13 @@ O modelo declara os blocos **exatamente como na planilha** (`agrupamento = "seco
 
 | Bloco (grupo) | Abre na linha | Observação |
 |---|---|---|
-| Custos hospitalares | CUSTOS HOSPITALARES | 41 contas |
-| Despesas administrativas | DESPESAS ADMINISTRATIVAS HUNF | 31 contas |
-| Despesas com empregados | DESPESAS COM EMPREGADOS HUNF | 24 contas (inclui contas sem código: ENCARGOS SOCIAIS, REMUNERAÇÃO, REPOUSO REMUNERADO) |
-| Encargos sociais | DESPESAS COM ENCARGOS SOCIAIS | 7 contas |
+| Custos hospitalares | CUSTOS HOSPITALARES | |
+| Despesas administrativas | DESPESAS ADMINISTRATIVAS HUNF | |
+| Despesas com empregados | DESPESAS COM EMPREGADOS HUNF | inclui contas sem código (ENCARGOS SOCIAIS, REMUNERAÇÃO, REPOUSO REMUNERADO) |
+| Encargos sociais | DESPESAS COM ENCARGOS SOCIAIS | |
 | Seguros de bens e imóveis | TOTAL DESPESAS SEGUROS DE BENS E IMOVEIS | só tem a linha de total — ela é o dado; a linha aparece **duas vezes** e vale a última (a 1ª tem **datas digitadas** no lugar de valores em 2026) |
-| Impostos e taxas | DESPESAS COM IMPOSTOS TAXAS HUNF | 3 contas |
-| Serviços de terceiros | REMUNERAÇÃO SERVIÇOS TERCEIROS | 4 contas |
+| Impostos e taxas | DESPESAS COM IMPOSTOS TAXAS HUNF | |
+| Serviços de terceiros | REMUNERAÇÃO SERVIÇOS TERCEIROS | |
 
 Subtotais e linhas «TOTAL» **não entram como dado**: são guardados para a conferência. Resultado com os
 dados de out/2026: **os 7 blocos batem centavo a centavo** com os subtotais da planilha, em todos os meses.
@@ -37,7 +37,7 @@ As três últimas linhas são **referências** (guardadas à parte, não somam n
 **Procedimentos cooperado no hospital**, **Custo complexo hospitalar (contábil)** e **Total complexo
 hospitalar**. Achados:
 - *Total complexo = cooperado + contábil* em todos os meses, **menos fev–jun/2025** (valores digitados à mão).
-- O **custo detalhado** (soma das contas) e o **contábil** são visões diferentes: o detalhado fica ~4,8%
+- O **custo detalhado** (soma das contas) e o **contábil** são visões diferentes: o detalhado fica
   acima no período. **Não somar** um com o outro.
 
 ## Dashboards no HTML (e abas na janela)
@@ -97,7 +97,7 @@ referencia = "Custo complexo hospitalar (contábil)"
 
 Na DRE (`agrupamento = "maiusculas"`): `contas = ["EPI", "IMPOSTOS"]` (em caixa alta, mas são contas) e
 `pular_prefixos = ["*", "(Soma"]` (a linha «(-) Descontos…» é conta). Com isso, a soma das contas bate com
-o **Resultado líquido** da planilha em todos os meses (R$ 14,57 mi de jan/25 a jul/26).
+o **Resultado líquido** da planilha em todos os meses.
 
 ## Fórmulas entre as abas
 
