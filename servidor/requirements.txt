@@ -16,3 +16,8 @@ fastapi>=0.115
 uvicorn[standard]>=0.30
 pydantic>=2.7
 python-multipart>=0.0.9   # upload de planilhas (fase 4)
+
+# Banco e segurança (fase 2)
+sqlalchemy>=2.0
+psycopg[binary]>=3.2      # driver PostgreSQL
+argon2-cffi>=23.1         # hash de senha (Argon2id)

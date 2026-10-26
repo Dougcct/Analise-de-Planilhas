@@ -1,12 +1,33 @@
 # Subir o servidor v2 em desenvolvimento:  docker compose up --build
-# Fase 1: só a API (sem banco e sem login ainda — ver DOCS/16 §8). Banco (Postgres) e proxy TLS (Caddy)
-# entram nas fases seguintes.
+# Fase 2: API + PostgreSQL (login e isolamento por centro de custo). Proxy TLS (Caddy) vem na fase 7.
 services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: analise
+      POSTGRES_PASSWORD: analise      # SÓ desenvolvimento; produção usa secret/.env (DOCS/18 §7)
+      POSTGRES_DB: analise
+    volumes:
+      - dados_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U analise -d analise"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
   api:
     build:
       context: .
       dockerfile: servidor/Dockerfile
     image: analise-planilhas-api:dev
+    environment:
+      DATABASE_URL: postgresql+psycopg://analise:analise@db:5432/analise
+    depends_on:
+      db:
+        condition: service_healthy
     ports:
       - "8000:8000"
     restart: unless-stopped
+
+volumes:
+  dados_db:
