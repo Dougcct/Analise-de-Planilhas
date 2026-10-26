@@ -1,0 +1,57 @@
+# =============================================================================
+# MODELO — Faturamento HUNF (receita por convênio × mês)
+# =============================================================================
+# Aba «FATURAMENTO» do workbook HUNF: um convênio por linha e um mês por coluna. O leitor
+# `matriz.py` despivota para uma linha por convênio × mês; a linha «TOTAL MÊS» é guardada para a
+# conferência (soma dos convênios × total da planilha). Base a partir de jan/2024.
+# Guia: DOCS/13_financeiro_hunf.md
+# -----------------------------------------------------------------------------
+
+nome = "Faturamento HUNF"
+pasta = "HUNF"
+aba = "FATURAMENTO"           # página (aba real) deste relatório
+ordem = 1                     # ordem da página (aba) no seletor
+
+[leitura]
+formato       = "matriz_mensal"
+coluna_rotulo = 0                 # coluna A: nome do convênio
+rotulo_conta  = "Convênio"
+rotulo_valor  = "Faturamento"
+agrupamento   = "nenhum"          # cada linha é um convênio; não há grupos
+a_partir_de   = "2024-01"
+pular         = ["TOTAL", "MEDIA", "MÉDIA"]
+linha_inicio  = 2
+linha_fim     = 19
+
+[[leitura.referencia]]
+rotulo = "TOTAL MÊS"
+nome   = "Total mês (planilha)"
+
+[analise]
+tipo             = "serie"
+perfil           = "faturamento"
+sentido          = "maior"        # para receita, subir é bom
+medida_principal = "Faturamento"
+dimensoes        = ["Convênio"]
+top = 20
+
+[[analise.conferencia]]
+total  = "Total mês (planilha)"
+partes = ["__soma__"]             # soma dos convênios
+
+[[coluna]]
+canonico = "convenio"
+rotulo   = "Convênio"
+tipo     = "categorico"
+papel    = "dimensao"
+
+[[coluna]]
+canonico = "mes"
+rotulo   = "Mês"
+tipo     = "data"
+
+[[coluna]]
+canonico = "faturamento"
+rotulo   = "Faturamento"
+tipo     = "moeda"
+papel    = "medida"

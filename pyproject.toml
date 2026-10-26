@@ -1,0 +1,12 @@
+[project]
+name = "analise-planilha"
+version = "0.1.0"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["testes"]
+
+[tool.ruff]
+line-length = 120
+src = ["src", "app"]

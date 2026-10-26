@@ -1,0 +1,28 @@
+# Modo I.A — modelo de configuração.
+# Copie para `config/ia.toml` (que NÃO é versionado) e preencha. A configuração também pode ser
+# feita pela janela: painel "Modo I.A" → botão "Configurar…". Ver DOCS/11_modo_ia.md.
+
+ativo    = false            # ligado/desligado (a janela controla; aqui é só o padrão)
+
+# dialeto: "" = AUTOMÁTICO (detectado pela chave) · ou "openai" / "anthropic" / "gemini".
+# O jeito simples é deixar "" e usar o botão "Detectar" na janela — ele também escolhe o melhor modelo.
+dialeto  = ""
+
+# Endereço e modelo. Em branco = detectados/padrão do dialeto:
+#   openai    → https://api.openai.com/v1                     · ex.: gpt-4o-mini
+#   anthropic → https://api.anthropic.com/v1                  · ex.: claude-opus-5-5
+#   gemini    → https://generativelanguage.googleapis.com/v1beta · ex.: gemini-2.0-flash
+base_url = ""
+modelo   = ""
+
+# Chave de API. Em branco = usa a variável de ambiente conforme o dialeto:
+#   openai → OPENAI_API_KEY · anthropic → ANTHROPIC_API_KEY · gemini → GEMINI_API_KEY (ou GOOGLE_API_KEY)
+# Preferir a variável de ambiente a deixar a chave em arquivo.
+api_key  = ""
+
+# O que enviar à IA (LGPD):
+#   "nenhuma"     → só a estrutura (nomes de coluna, tipos, contagens) — mais seguro
+#   "anonimizada" → estrutura + exemplos anonimizados (nomes→iniciais, dígitos→#, sem texto livre)
+amostra      = "anonimizada"
+max_exemplos = 8
+timeout      = 90

@@ -1,0 +1,23 @@
+# Dados pessoais (LGPD) — nunca versionar
+dados/
+saida/
+
+# Configuração do Modo IA — contém chave de API
+config/ia.toml
+*.ods
+*.xlsx
+*.xls
+*.csv
+!config/*.csv
+!testes/fixtures/*.csv
+
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+build/
+dist/
+
+# Diagnóstico local (main.py --autoteste)
+autoteste.txt

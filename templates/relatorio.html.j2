@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ a.titulo }} – Relatório</title>
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7; --surface: #fcfcfb; --surface-2: #f2f1ed;
+  --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
+  --grid: #e1e0d9; --axis: #c3c2b7; --border: rgba(11,11,11,0.10);
+  --marca: #00995d; --alerta: #b4521f; --ok: #006300;
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100;
+  --s5: #7c5cd6; --s6: #d4457a; --s7: #9a998f; --s8: #4aa3b8;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --surface-2: #232321;
+    --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10);
+    --marca: #2fbf7f; --alerta: #ec835a; --ok: #0ca30c;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500;
+    --s5: #9478e8; --s6: #e0628f; --s7: #6f6e68; --s8: #57b3c8;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d; --surface: #1a1a19; --surface-2: #232321;
+  --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781;
+  --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10);
+  --marca: #2fbf7f; --alerta: #ec835a; --ok: #0ca30c;
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500;
+  --s5: #9478e8; --s6: #e0628f; --s7: #6f6e68; --s8: #57b3c8;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--ink);
+  font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+.topo { background: var(--surface); border-bottom: 3px solid var(--marca); }
+.topo-in, main { max-width: 1180px; margin: 0 auto; padding: 0 16px; }
+.topo-in { display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: flex-end; justify-content: space-between; padding-top: 20px; padding-bottom: 16px; }
+h1 { font-size: 22px; margin: 0; line-height: 1.25; }
+.sub { color: var(--ink-2); margin: 2px 0 0; }
+.meta { color: var(--muted); font-size: 12px; text-align: right; }
+nav.indice { position: sticky; top: 0; z-index: 5; background: var(--surface); border-bottom: 1px solid var(--grid); }
+nav.indice div { max-width: 1180px; margin: 0 auto; padding: 6px 16px; display: flex; gap: 4px 14px; flex-wrap: wrap; font-size: 13px; }
+nav.indice a { color: var(--ink-2); text-decoration: none; }
+nav.indice a:hover { color: var(--ink); text-decoration: underline; }
+#periodo-l { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; color: var(--ink-2); }
+#periodo { background: var(--surface); border: 1px solid var(--border); color: var(--ink); border-radius: 6px; padding: 1px 6px; font: inherit; cursor: pointer; }
+#tema { margin-left: 10px; background: none; border: 1px solid var(--border); color: var(--ink-2); border-radius: 6px; padding: 1px 8px; cursor: pointer; font: inherit; }
+.vista[hidden] { display: none; }
+section { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; margin: 16px 0; scroll-margin-top: 44px; }
+h2 { font-size: 17px; margin: 0 0 2px; }
+h3 { font-size: 14px; margin: 18px 0 6px; color: var(--ink-2); }
+.desc { color: var(--ink-2); margin: 0 0 14px; font-size: 13px; }
+.filtros { display: grid; grid-template-columns: max-content 1fr; gap: 2px 16px; margin: 0; font-size: 13px; }
+.filtros dt { color: var(--muted); } .filtros dd { margin: 0; }
+.avisos { border-left: 3px solid var(--alerta); padding-left: 10px; color: var(--ink-2); font-size: 13px; margin-top: 10px; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.kpi { background: var(--surface-2); border-radius: 8px; padding: 12px 14px; }
+.kpi .rot { color: var(--ink-2); font-size: 12px; }
+.kpi .val { font-size: 22px; font-weight: 600; line-height: 1.25; }
+.kpi .val.marca { color: var(--marca); }
+.kpi .nota { color: var(--muted); font-size: 11.5px; }
+ul.achados { margin: 0; padding-left: 18px; } ul.achados li { margin: 4px 0; }
+table.metas { width: auto; margin: 4px 0 12px; } table.metas td { border: none; padding: 3px 14px 3px 0; font-size: 13.5px; }
+.metas .ok { color: var(--ok); font-weight: 600; } .metas .nok { color: var(--alerta); font-weight: 600; } .metas .nd { color: var(--muted); }
+.obs { background: var(--surface-2); border-left: 3px solid var(--marca); padding: 8px 12px; border-radius: 0 6px 6px 0; margin: 4px 0 14px; white-space: pre-wrap; }
+.legenda { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink-2); margin: 4px 0 6px; }
+.leg-item i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+svg.grafico { width: 100%; height: auto; display: block; }
+svg .grade { stroke: var(--grid); stroke-width: 1; } svg .base { stroke: var(--axis); stroke-width: 1; }
+svg .eixo { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+svg .valor { fill: var(--ink-2); font-size: 11px; font-weight: 600; }
+svg [data-tip]:hover { opacity: .82; }
+.barras { display: grid; gap: 4px; }
+.barra-linha { display: grid; grid-template-columns: minmax(120px, 38%) 1fr; gap: 10px; align-items: center; padding: 2px 0; border-radius: 4px; }
+.barra-linha:hover { background: var(--surface-2); }
+.barra-rot { font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink); }
+.barra-trilho { display: flex; align-items: center; width: calc(100% - 64px); }
+.barra { display: block; height: 14px; flex: none; background: var(--cor); border-radius: 0 4px 4px 0; }
+.barra-val { margin-left: 6px; font-size: 12px; color: var(--ink-2); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.tabela-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+th { color: var(--ink-2); font-weight: 600; background: var(--surface-2); position: sticky; top: 0; }
+td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+tbody tr:hover { background: var(--surface-2); }
+details { margin-top: 10px; } summary { cursor: pointer; color: var(--ink-2); font-size: 13px; }
+details .tabela-wrap { max-height: 480px; overflow: auto; margin-top: 8px; }
+.grade-paineis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 28px; }
+.painel { grid-column: 1 / -1; min-width: 0; }
+.painel.meia { grid-column: auto; }
+.kpis.mini { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin: 4px 0 10px; }
+.kpis.mini .kpi { padding: 8px 10px; } .kpis.mini .val { font-size: 18px; }
+.painel .aberta { max-height: 520px; overflow: auto; }
+@media (max-width: 860px) { .painel.meia { grid-column: 1 / -1; } }
+ul.alertas { margin: 0; padding-left: 18px; font-size: 13px; } ul.alertas li { margin: 3px 0; }
+.al-erro { color: var(--alerta); font-weight: 600; } .al-aviso { color: var(--alerta); } .al-info { color: var(--ink-2); }
+.vazio { color: var(--muted); font-style: italic; }
+#tip { position: fixed; pointer-events: none; z-index: 20; background: var(--ink); color: var(--surface); font-size: 12px;
+  padding: 5px 8px; border-radius: 6px; max-width: 320px; opacity: 0; transition: opacity .08s; }
+footer { color: var(--muted); font-size: 12px; text-align: center; padding: 12px 16px 32px; }
+@media (max-width: 600px) {
+  .meta { text-align: left; }
+  .barra-linha { grid-template-columns: 1fr; gap: 0; }
+  section { padding: 14px 14px; }
+}
+@media print {
+  nav.indice, #tip, #tema { display: none; }
+  body { background: #fff; } section { break-inside: avoid; border-color: #ddd; }
+  details { display: block; } details > * { display: block; }
+}
+</style>
+</head>
+<body>
+{%- macro tabela(colunas, linhas) -%}
+<div class="tabela-wrap"><table>
+  <thead><tr>{% for titulo, chave, num in colunas %}<th class="{{ 'n' if num }}">{{ titulo }}</th>{% endfor %}</tr></thead>
+  <tbody>{% for linha in linhas %}<tr>{% for titulo, chave, num in colunas %}<td class="{{ 'n' if num }}">{{ linha.get(chave, '') }}</td>{% endfor %}</tr>{% endfor %}</tbody>
+</table></div>
+{%- endmacro %}
+<header class="topo"><div class="topo-in">
+  <div><h1>{{ a.titulo }}</h1><p class="sub">Relatório analítico{% if a.periodo %} · {{ a.periodo }}{% endif %}{% if a.sub %} · {{ a.sub }}{% endif %}</p></div>
+  <div class="meta">Gerado em {{ a.gerado_em }} · v{{ a.versao }}<br>{{ a.arquivos|length }} arquivo(s)</div>
+</div></header>
+<nav class="indice"><div>
+  <a data-sec="filtros" href="#filtros-v0">Filtros</a><a data-sec="resumo" href="#resumo-v0">Resumo e achados</a>
+  {% for s in a.vistas[0].secoes %}<a data-sec="{{ s.id }}" href="#{{ s.id }}-v0">{{ s.titulo }}</a>{% endfor %}
+  <a href="#leitura">Leitura e qualidade</a>{% if a.base %}<a href="#base">Base detalhada</a>{% endif %}<a href="#metodologia">Metodologia</a>
+  {% if a.multi %}<label id="periodo-l" title="Troca o período do relatório (recalculado no Python, embutido)">Período
+    <select id="periodo">{% for v in a.vistas %}<option value="{{ loop.index0 }}">{{ v.rotulo }}</option>{% endfor %}</select></label>{% endif %}
+  <button id="tema" type="button" aria-label="Alternar tema">◐ tema</button>
+</div></nav>
+<main>
+{% for v in a.vistas %}
+<div class="vista" data-i="{{ v.i }}"{{ ' hidden' if not loop.first }}>
+<section id="filtros-v{{ v.i }}">
+  <h2>Filtros aplicados</h2>
+  <dl class="filtros">{% for rot, val in v.filtros %}<dt>{{ rot }}</dt><dd>{{ val }}</dd>{% endfor %}
+    <dt>Fonte</dt><dd>{{ v.arquivos|join(', ') if v.arquivos else '—' }}</dd></dl>
+  {% if v.avisos %}<div class="avisos">{% for av in v.avisos %}<div>{{ av }}</div>{% endfor %}</div>{% endif %}
+</section>
+
+{% if v.total == 0 %}
+<section><h2>Sem dados</h2><p class="vazio">Nenhum registro neste período.</p></section>
+{% else %}
+<section id="resumo-v{{ v.i }}">
+  <h2>Resumo e achados</h2>
+  <p class="desc">{% if v.resumo %}{{ v.resumo }}{% else %}{{ v.total }} registro(s) no recorte · tempos pela {{ v.estatistica|lower }}.{% endif %}</p>
+  <div class="kpis">
+    {% for k in v.kpis %}
+    <div class="kpi"><div class="rot">{{ k.rotulo }}</div>
+      <div class="val{{ ' marca' if k.destaque }}">{{ k.valor }}</div>
+      <div class="nota">{{ k.nota }}</div></div>
+    {% endfor %}
+  </div>
+  {% if v.metas %}
+  <h3>Metas do gestor</h3>
+  <table class="metas">{% for m in v.metas %}
+    <tr><td class="{{ 'ok' if m.ok is sameas true else ('nok' if m.ok is sameas false else 'nd') }}">{{ '✔' if m.ok is sameas true else ('✗' if m.ok is sameas false else '•') }}</td>
+        <td>{{ m.rotulo }}</td><td><b>{{ m.valor_fmt }}</b></td>
+        <td class="nd">meta {{ '≥' if m.sentido == '>=' else '≤' }} {{ m.alvo_fmt }}</td></tr>{% endfor %}
+  </table>
+  {% endif %}
+  {% if v.observacoes %}<h3>Observações do gestor</h3><div class="obs">{{ v.observacoes }}</div>{% endif %}
+  <h3>Principais achados</h3>
+  {% if v.achados %}<ul class="achados">{% for t in v.achados %}<li>{{ t }}</li>{% endfor %}</ul>
+  {% else %}<p class="vazio">Sem achados no recorte.</p>{% endif %}
+</section>
+
+{% for s in v.secoes %}
+<section id="{{ s.id }}-v{{ v.i }}">
+  <h2>{{ s.titulo }}</h2>
+  <div class="grade-paineis">
+  {% for p in s.paineis %}
+  <div class="painel{{ ' meia' if p.meia }}">
+    {% if s.paineis|length > 1 or p.titulo != s.titulo %}<h3>{{ p.titulo }}</h3>{% endif %}
+    {% if p.descricao %}<p class="desc">{{ p.descricao }}</p>{% endif %}
+    {% if p.kpis %}<div class="kpis mini">{% for k in p.kpis %}<div class="kpi"><div class="rot">{{ k.rotulo }}</div>
+      <div class="val">{{ k.valor }}</div><div class="nota">{{ k.nota }}</div></div>{% endfor %}</div>{% endif %}
+    {% if p.figura %}
+      {{ p.figura }}
+      {% if p.linhas %}{% if p.aberta %}<div class="aberta">{{ tabela(p.colunas, p.linhas) }}</div>
+      {% else %}<details><summary>Ver tabela</summary>{{ tabela(p.colunas, p.linhas) }}</details>{% endif %}{% endif %}
+    {% elif p.linhas %}
+      {% if p.aberta %}<div class="aberta">{{ tabela(p.colunas, p.linhas) }}</div>
+      {% else %}<details><summary>Ver tabela</summary>{{ tabela(p.colunas, p.linhas) }}</details>{% endif %}
+    {% elif not p.kpis %}<p class="vazio">Sem dados no recorte.</p>{% endif %}
+  </div>
+  {% endfor %}
+  </div>
+</section>
+{% endfor %}
+{% endif %}
+</div>
+{% endfor %}
+
+<section id="leitura">
+  <h2>Leitura e qualidade</h2>
+  <p class="desc">O que a leitura fez com as planilhas e o que conferir — nada é descartado em silêncio.</p>
+  {% if a.alertas %}<ul class="alertas">{% for al in a.alertas %}<li class="al-{{ al.nivel }}">{{ al.texto }}</li>{% endfor %}</ul>
+  {% else %}<p class="vazio">Nenhum problema de leitura ou qualidade detectado.</p>{% endif %}
+</section>
+
+{% if a.base %}
+<section id="base">
+  <h2>Base detalhada</h2>
+  <p class="desc">{{ a.base.total }} linha(s) do recorte{% if a.base.cortado %} — exibidas as primeiras {{ a.base.linhas|length }}{% endif %}.</p>
+  <details><summary>Abrir base</summary>{{ tabela(a.base.colunas, a.base.linhas) }}</details>
+</section>
+{% endif %}
+
+<section id="metodologia">
+  <h2>Metodologia</h2>
+  {% if a.metodologia %}<p class="desc">{{ a.metodologia }}</p>{% else %}
+  <p class="desc">Indicadores calculados sobre o recorte filtrado. Taxas «ponderadas por valor» = soma do numerador ÷
+  soma do denominador. Tempos em dias corridos, pela {{ a.estatistica|lower }} (escolhida em ⚙ Editar metas); P90 = 90% dos
+  casos em até X dias. Grafias equivalentes (acentos, caixa, pontuação) são unificadas. Cada ocorrência de qualidade aponta
+  arquivo, aba e linha para correção na planilha de origem.</p>{% endif %}
+</section>
+</main>
+<div id="tip" role="tooltip"></div>
+<footer>{{ a.titulo }} · relatório gerado automaticamente · v{{ a.versao }} · contém dados pessoais — uso interno (LGPD)</footer>
+<script>
+(function () {
+  var tip = document.getElementById('tip');
+  document.addEventListener('mousemove', function (e) {
+    var el = e.target.closest ? e.target.closest('[data-tip]') : null;
+    if (!el) { tip.style.opacity = 0; return; }
+    tip.textContent = el.getAttribute('data-tip');
+    var x = e.clientX + 14, y = e.clientY + 14, r = tip.getBoundingClientRect();
+    if (x + r.width > window.innerWidth - 8) x = e.clientX - r.width - 14;
+    if (y + r.height > window.innerHeight - 8) y = e.clientY - r.height - 14;
+    tip.style.left = x + 'px'; tip.style.top = y + 'px'; tip.style.opacity = 1;
+  });
+  var periodo = document.getElementById('periodo');
+  if (periodo) {
+    periodo.addEventListener('change', function () {
+      var i = this.value;
+      var vistas = document.querySelectorAll('.vista');
+      for (var k = 0; k < vistas.length; k++) { vistas[k].hidden = (vistas[k].getAttribute('data-i') !== i); }
+      var links = document.querySelectorAll('nav.indice a[data-sec]');
+      for (var j = 0; j < links.length; j++) { links[j].setAttribute('href', '#' + links[j].getAttribute('data-sec') + '-v' + i); }
+      window.scrollTo(0, 0);
+    });
+  }
+  var raiz = document.documentElement;
+  try { var t = localStorage.getItem('tema-relatorio'); if (t) raiz.setAttribute('data-theme', t); } catch (e) {}
+  document.getElementById('tema').addEventListener('click', function () {
+    var escuro = raiz.getAttribute('data-theme') === 'dark' ||
+      (!raiz.getAttribute('data-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    var novo = escuro ? 'light' : 'dark';
+    raiz.setAttribute('data-theme', novo);
+    try { localStorage.setItem('tema-relatorio', novo); } catch (e) {}
+  });
+})();
+</script>
+</body>
+</html>

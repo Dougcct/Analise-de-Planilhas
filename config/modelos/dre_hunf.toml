@@ -1,0 +1,63 @@
+# =============================================================================
+# MODELO — DRE HUNF (demonstrativo de resultado por conta × mês)
+# =============================================================================
+# Aba «DRE HUNF»: uma conta por linha e um mês por coluna. Receita vem positiva e custo/despesa
+# NEGATIVO; os títulos em CAIXA ALTA (RECEITA OPERACIONAL BRUTA, DESPESAS COM PESSOAL, RESULTADO…)
+# são os blocos — viram «Grupo» e o valor deles é o subtotal da planilha (a própria DRE, guardada
+# para o demonstrativo e para a conferência). A DRE é calculada pela planilha a partir de FATURAMENTO
+# e CUSTOS (fórmulas entre abas). Base a partir de jan/2024 (a aba começa em jan/2025).
+# Leitura gerencial — ver DOCS/13_financeiro_hunf.md
+# -----------------------------------------------------------------------------
+
+nome = "DRE HUNF"
+pasta = "HUNF"
+aba = "DRE HUNF"              # página (aba real) deste relatório
+ordem = 2                     # ordem da página (aba) no seletor
+
+[leitura]
+formato        = "matriz_mensal"
+coluna_rotulo  = 0                # coluna A: nome da conta
+rotulo_conta   = "Conta"
+rotulo_grupo   = "Grupo"
+rotulo_valor   = "Valor"
+agrupamento    = "maiusculas"     # linha em CAIXA ALTA = bloco/subtotal (vira o grupo)
+contas         = ["EPI", "IMPOSTOS"]   # em caixa alta, mas são contas (não blocos)
+pular_prefixos = ["*", "(Soma"]   # linhas de fórmula/observação («*(Item…)*», «(Soma dos itens…)»)
+a_partir_de    = "2024-01"
+linha_inicio   = 2
+linha_fim      = 117              # até «RESULTADO LÍQUIDO DO PERÍODO»
+
+[analise]
+tipo             = "serie"
+perfil           = "dre"
+sentido          = "maior"
+medida_principal = "Valor"
+dimensoes        = ["Grupo", "Conta"]
+top = 20
+# linhas da DRE (nomes dos blocos, sem acento/caixa) usadas nos indicadores
+receita              = "Receita operacional bruta"
+resultado_operacional = "Resultado operacional antes financeiro"
+resultado            = "Resultado líquido do período"
+
+[[coluna]]
+canonico = "grupo"
+rotulo   = "Grupo"
+tipo     = "categorico"
+papel    = "dimensao"
+
+[[coluna]]
+canonico = "conta"
+rotulo   = "Conta"
+tipo     = "categorico"
+papel    = "dimensao"
+
+[[coluna]]
+canonico = "mes"
+rotulo   = "Mês"
+tipo     = "data"
+
+[[coluna]]
+canonico = "valor"
+rotulo   = "Valor"
+tipo     = "moeda"
+papel    = "medida"
