@@ -188,6 +188,54 @@ def test_upload_rejeita_extensao_e_zip_bomb(cliente):
                         files={"arquivo": ("bomba.xlsx", bomba, "x")}).status_code == 422
 
 
+def test_compartilhamento_ciclo_completo(cliente):
+    hg = _auth(cliente, "gestor.fin")          # dono (Financeiro)
+    # antes de compartilhar, o gestor do Faturamento não vê o relatório do Financeiro
+    assert cliente.post("/api/v1/relatorios/sintetico-fin/analise", json={},
+                        headers=_auth(cliente, "gestor.fat")).status_code == 404
+    # compartilha com o gestor.fat por 7 dias, anonimizado
+    r = cliente.post("/api/v1/relatorios/sintetico-fin/compartilhar", headers=hg,
+                     json={"login_destino": "gestor.fat", "dias": 7, "anonimizar": True})
+    assert r.status_code == 201
+    acesso_id = r.json()["id"]
+
+    hv = _auth(cliente, "gestor.fat")          # convidado
+    comp = cliente.get("/api/v1/compartilhados", headers=hv).json()
+    assert any(c["slug"] == "sintetico-fin" for c in comp) and comp[0]["dias_restantes"] <= 7
+    # convidado LÊ o relatório emprestado
+    vis = cliente.post("/api/v1/relatorios/sintetico-fin/analise", json={}, headers=hv)
+    assert vis.status_code == 200
+    # mas NÃO exporta nem envia (age como Usuário no relatório alheio)
+    assert cliente.get("/api/v1/relatorios/sintetico-fin/html", headers=hv).status_code == 404
+    assert cliente.post("/api/v1/cargas", headers=hv, data={"slug": "sintetico-fin"},
+                        files={"arquivo": ("x.csv", _csv(3), "text/csv")}).status_code == 404
+
+    # revogado pelo dono → some na hora
+    assert cliente.post(f"/api/v1/acessos/{acesso_id}/revogar", headers=hg).status_code == 200
+    assert cliente.post("/api/v1/relatorios/sintetico-fin/analise", json={}, headers=hv).status_code == 404
+    assert cliente.get("/api/v1/compartilhados", headers=hv).json() == []
+
+
+def test_anonimizacao_forcada_no_servidor(cliente):
+    hg = _auth(cliente, "gestor.fin")
+    cliente.post("/api/v1/relatorios/sintetico-fin/compartilhar", headers=hg,
+                 json={"login_destino": "gestor.fat", "dias": 3, "anonimizar": True})
+    hv = _auth(cliente, "gestor.fat")
+    # convidado pede SEM anonimizar, mas o servidor força (aparece nos filtros aplicados)
+    a = cliente.post("/api/v1/relatorios/sintetico-fin/analise", json={"anonimizar": False}, headers=hv).json()
+    privacidade = [v for rotulo, v in a["filtros_desc"] if rotulo == "Privacidade"]
+    assert privacidade and "anonim" in privacidade[0].lower()
+
+
+def test_so_dono_compartilha(cliente):
+    # Usuário comum não compartilha
+    assert cliente.post("/api/v1/relatorios/sintetico-fin/compartilhar", headers=_auth(cliente, "user.fin"),
+                        json={"login_destino": "gestor.fat"}).status_code == 403
+    # Gestor de outro setor não compartilha relatório que não é dele
+    assert cliente.post("/api/v1/relatorios/sintetico-fin/compartilhar", headers=_auth(cliente, "gestor.fat"),
+                        json={"login_destino": "user.fin"}).status_code == 404
+
+
 def test_auditoria_registra(cliente):
     from sqlalchemy import func, select
     from servidor import bd

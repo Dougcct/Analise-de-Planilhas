@@ -7,6 +7,7 @@ CONTROLE: cada setor só enxerga o que é seu, e tudo fica auditado.
 """
 from __future__ import annotations
 
+import datetime as dt
 import hashlib
 import io
 import os
@@ -32,7 +33,7 @@ from analise_planilha.modelos import Filtros
 from . import bd, seed, validacao
 from .modelos_bd import (
     ADM, GESTOR, PAPEIS, PUBLICADA, RASCUNHO, SUBSTITUIDA, USUARIO,
-    Auditoria, Carga, CentroCusto, Relatorio, SessaoUsuario, Usuario, utcnow,
+    AcessoTemporario, Auditoria, Carga, CentroCusto, Relatorio, SessaoUsuario, Usuario, utcnow,
 )
 from .repositorio import RepoCargas, RepoRelatorios, RepoUsuarios
 from .seguranca import (
@@ -82,10 +83,19 @@ def _dataset_da_carga(carga: Carga):
     return _cache_cargas[carga.id]
 
 
-def _dataset_do_relatorio(s: Session, escopo: Escopo, rel: Relatorio):
-    """A carga PUBLICADA mais recente do relatório; sem nenhuma, cai no sintético (demo)."""
-    carga = RepoCargas(s, escopo).publicada(rel.id)
+def _dataset_do_relatorio(s: Session, rel: Relatorio):
+    """A carga PUBLICADA mais recente do relatório; sem nenhuma, cai no sintético (demo).
+    Busca pela carga do relatório (o acesso ao relatório já foi autorizado), não pelo setor do leitor —
+    assim o convidado (acesso temporário) lê os dados reais do relatório emprestado (anonimizados)."""
+    carga = s.scalar(select(Carga).where(Carga.relatorio_id == rel.id, Carga.status == PUBLICADA)
+                     .order_by(Carga.id.desc()))
     return _dataset_da_carga(carga) if carga is not None else _DS
+
+
+def acesso_vigente(s: Session, usuario_id: int, relatorio_id: int) -> AcessoTemporario | None:
+    return s.scalar(select(AcessoTemporario).where(
+        AcessoTemporario.usuario_destino == usuario_id, AcessoTemporario.relatorio_id == relatorio_id,
+        AcessoTemporario.revogado.is_(False), AcessoTemporario.expira_em > utcnow()))
 
 
 # ---- dependências ----
@@ -149,6 +159,12 @@ class UsuarioIn(BaseModel):
     senha: str
     papel: str = USUARIO
     centro_custo_id: int | None = None   # ADM escolhe; Gestor ignora (usa o próprio setor)
+
+
+class CompartilharIn(BaseModel):
+    login_destino: str
+    dias: int = 7
+    anonimizar: bool = True
 
 
 # ---- rotas ----
@@ -216,18 +232,22 @@ def relatorios(escopo: Escopo = Depends(sessao_pronta), s: Session = Depends(get
 def analise(slug: str, filtros: FiltrosIn, escopo: Escopo = Depends(sessao_pronta),
             s: Session = Depends(get_sessao)):
     rel = RepoRelatorios(s, escopo).obter(slug)
-    if rel is None:                                   # de outro setor (ou inexistente) → 404, não 403
+    if rel is None:                                   # de outro setor sem acesso (ou inexistente) → 404
         raise HTTPException(404, "Relatório não encontrado.")
+    f = _filtros(filtros)
+    if not escopo.eh_adm and rel.centro_custo_id != escopo.centro_custo_id:   # convidado de outro setor
+        ac = acesso_vigente(s, escopo.usuario_id, rel.id)
+        if ac is not None and ac.anonimizar:
+            f.anonimizar = True                       # forçado no servidor; o convidado não desliga
     registrar(s, escopo.usuario_id, escopo.centro_custo_id, "abrir_relatorio", slug, escopo.ip)
     s.commit()
-    ds = _dataset_do_relatorio(s, escopo, rel)
-    return serializacao.analise_para_json(servico.analisar(ds, _filtros(filtros)))
+    return serializacao.analise_para_json(servico.analisar(_dataset_do_relatorio(s, rel), f))
 
 
 @app.get("/api/v1/relatorios/{slug}/html", response_class=HTMLResponse)
 def exportar_html(slug: str, escopo: Escopo = Depends(sessao_pronta), s: Session = Depends(get_sessao)):
     exigir(escopo, GESTOR, ADM)                       # Usuário não exporta (DOCS/18 §3)
-    rel = RepoRelatorios(s, escopo).obter(slug)
+    rel = RepoRelatorios(s, escopo).obter_proprio(slug)   # convidado não exporta relatório alheio
     if rel is None:
         raise HTTPException(404, "Relatório não encontrado.")
     registrar(s, escopo.usuario_id, escopo.centro_custo_id, "exportar_html", slug, escopo.ip)
@@ -290,7 +310,7 @@ def _carga_json(c: Carga) -> dict:
 async def enviar_carga(slug: str = Form(...), arquivo: UploadFile = File(...),
                        escopo: Escopo = Depends(sessao_pronta), s: Session = Depends(get_sessao)):
     exigir(escopo, GESTOR, ADM)
-    rel = RepoRelatorios(s, escopo).obter(slug)
+    rel = RepoRelatorios(s, escopo).obter_proprio(slug)   # só envia para relatório do próprio setor
     if rel is None:
         raise HTTPException(404, "Relatório não encontrado.")
     conteudo = await arquivo.read(validacao.MAX_BYTES + 1)
@@ -316,7 +336,7 @@ async def enviar_carga(slug: str = Form(...), arquivo: UploadFile = File(...),
 
 @app.get("/api/v1/relatorios/{slug}/cargas")
 def listar_cargas(slug: str, escopo: Escopo = Depends(sessao_pronta), s: Session = Depends(get_sessao)):
-    rel = RepoRelatorios(s, escopo).obter(slug)
+    rel = RepoRelatorios(s, escopo).obter_proprio(slug)   # gestão de cargas é do próprio setor
     if rel is None:
         raise HTTPException(404, "Relatório não encontrado.")
     return [_carga_json(c) for c in RepoCargas(s, escopo).do_relatorio(rel.id)]
@@ -355,6 +375,54 @@ def publicar_carga(carga_id: int, escopo: Escopo = Depends(sessao_pronta), s: Se
               f"{carga.relatorio_id}:{carga.id}", escopo.ip)
     s.commit()
     return _carga_json(carga)
+
+
+@app.post("/api/v1/relatorios/{slug}/compartilhar", status_code=201)
+def compartilhar(slug: str, dados: CompartilharIn, escopo: Escopo = Depends(sessao_pronta),
+                 s: Session = Depends(get_sessao)):
+    exigir(escopo, GESTOR, ADM)
+    rel = RepoRelatorios(s, escopo).obter_proprio(slug)   # só compartilha relatório do próprio setor
+    if rel is None:
+        raise HTTPException(404, "Relatório não encontrado.")
+    if not (1 <= dados.dias <= 90):
+        raise HTTPException(422, "Prazo deve ser de 1 a 90 dias.")
+    destino = s.scalar(select(Usuario).where(Usuario.login == dados.login_destino))
+    if destino is None or not destino.ativo:
+        raise HTTPException(404, "Usuário destino não encontrado.")
+    if destino.centro_custo_id == rel.centro_custo_id:
+        raise HTTPException(422, "O destinatário já é do setor deste relatório.")
+    ac = AcessoTemporario(relatorio_id=rel.id, usuario_destino=destino.id, autorizado_por=escopo.usuario_id,
+                          expira_em=utcnow() + dt.timedelta(days=dados.dias), anonimizar=dados.anonimizar)
+    s.add(ac)
+    s.flush()
+    registrar(s, escopo.usuario_id, escopo.centro_custo_id, "compartilhar",
+              f"{slug}->{destino.login}", escopo.ip, detalhes=f"dias={dados.dias} anon={dados.anonimizar}")
+    s.commit()
+    return {"id": ac.id, "expira_em": ac.expira_em.isoformat(), "anonimizar": ac.anonimizar}
+
+
+@app.get("/api/v1/compartilhados")
+def compartilhados_comigo(escopo: Escopo = Depends(sessao_pronta), s: Session = Depends(get_sessao)):
+    linhas = s.execute(
+        select(AcessoTemporario, Relatorio).join(Relatorio, Relatorio.id == AcessoTemporario.relatorio_id)
+        .where(AcessoTemporario.usuario_destino == escopo.usuario_id,
+               AcessoTemporario.revogado.is_(False), AcessoTemporario.expira_em > utcnow())).all()
+    return [{"slug": rel.slug, "nome": rel.nome, "anonimizar": ac.anonimizar,
+             "dias_restantes": max(0, (ac.expira_em - utcnow()).days)} for ac, rel in linhas]
+
+
+@app.post("/api/v1/acessos/{acesso_id}/revogar")
+def revogar_acesso(acesso_id: int, escopo: Escopo = Depends(sessao_pronta), s: Session = Depends(get_sessao)):
+    exigir(escopo, GESTOR, ADM)
+    ac = s.get(AcessoTemporario, acesso_id)
+    if ac is not None:
+        rel = s.get(Relatorio, ac.relatorio_id)
+        if escopo.eh_adm or (rel is not None and rel.centro_custo_id == escopo.centro_custo_id):
+            ac.revogado = True                        # só o dono (ou ADM) revoga
+            registrar(s, escopo.usuario_id, escopo.centro_custo_id, "revogar_acesso", str(acesso_id), escopo.ip)
+            s.commit()
+            return {"ok": True}
+    raise HTTPException(404, "Acesso não encontrado.")
 
 
 def _filtros(f: FiltrosIn) -> Filtros:

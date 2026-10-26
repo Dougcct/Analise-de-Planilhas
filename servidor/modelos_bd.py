@@ -81,6 +81,20 @@ class Carga(Base):
     publicado_em: Mapped[dt.datetime | None] = mapped_column(DateTime)
 
 
+class AcessoTemporario(Base):
+    """Empréstimo de um relatório a alguém de OUTRO setor, por prazo e (em geral) anonimizado.
+    O convidado age como Usuário (só leitura) naquele relatório — DOCS/16 §3.3."""
+    __tablename__ = "acessos_temporarios"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    relatorio_id: Mapped[int] = mapped_column(ForeignKey("relatorios.id"), index=True)
+    usuario_destino: Mapped[int] = mapped_column(ForeignKey("usuarios.id"), index=True)
+    autorizado_por: Mapped[int] = mapped_column(ForeignKey("usuarios.id"))
+    expira_em: Mapped[dt.datetime] = mapped_column(DateTime)
+    anonimizar: Mapped[bool] = mapped_column(Boolean, default=True)
+    revogado: Mapped[bool] = mapped_column(Boolean, default=False)
+    criado_em: Mapped[dt.datetime] = mapped_column(DateTime, default=utcnow)
+
+
 class Auditoria(Base):
     """Append-only (a aplicação só INSERE; nunca UPDATE/DELETE) — ver DOCS/18 §6."""
     __tablename__ = "auditoria"

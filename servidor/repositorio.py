@@ -3,10 +3,10 @@ As rotas não recebem a sessão crua do banco; recebem repositórios que já nas
 "esquecer o WHERE centro_custo_id" seja estruturalmente difícil."""
 from __future__ import annotations
 
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
-from .modelos_bd import Carga, Relatorio, Usuario
+from .modelos_bd import AcessoTemporario, Carga, Relatorio, Usuario, utcnow
 from .seguranca import Escopo
 
 
@@ -15,18 +15,34 @@ class RepoRelatorios:
         self._s = sessao
         self._e = escopo
 
+    def _compartilhados_comigo(self):
+        return (select(AcessoTemporario.relatorio_id)
+                .where(AcessoTemporario.usuario_destino == self._e.usuario_id,
+                       AcessoTemporario.revogado.is_(False),
+                       AcessoTemporario.expira_em > utcnow()))
+
     def _base(self):
+        """Relatórios que o usuário PODE LER: do próprio setor + os compartilhados vigentes."""
         q = select(Relatorio).where(Relatorio.ativo.is_(True))
         if not self._e.eh_adm:                      # ADM vê todos (e tudo fica auditado)
-            q = q.where(Relatorio.centro_custo_id == self._e.centro_custo_id)
+            q = q.where(or_(Relatorio.centro_custo_id == self._e.centro_custo_id,
+                            Relatorio.id.in_(self._compartilhados_comigo())))
         return q
 
     def listar(self) -> list[Relatorio]:
         return list(self._s.scalars(self._base().order_by(Relatorio.nome)))
 
     def obter(self, slug: str) -> Relatorio | None:
-        """Relatório do escopo pelo slug; None se não existe OU é de outro centro de custo (→ 404)."""
+        """Relatório que o usuário pode LER (próprio setor ou compartilhado vigente); senão None (→ 404)."""
         return self._s.scalar(self._base().where(Relatorio.slug == slug))
+
+    def obter_proprio(self, slug: str) -> Relatorio | None:
+        """Só relatório do PRÓPRIO setor (ADM: qualquer). Para ações de dono: exportar, enviar, publicar,
+        compartilhar. Garante que convidado (acesso temporário) NÃO faça essas ações no relatório alheio."""
+        q = select(Relatorio).where(Relatorio.slug == slug, Relatorio.ativo.is_(True))
+        if not self._e.eh_adm:
+            q = q.where(Relatorio.centro_custo_id == self._e.centro_custo_id)
+        return self._s.scalar(q)
 
 
 class RepoUsuarios:
