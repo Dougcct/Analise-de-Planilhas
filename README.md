@@ -1,5 +1,14 @@
 # Análise de Planilhas — Estrutura Base
 
+> **O problema:** cada setor mantém planilhas no seu próprio formato, e transformar isso em indicadores
+> confiáveis é um trabalho manual e repetido a cada mês. **A ideia:** uma base única que lê a planilha do
+> cliente como ela é, reconhece os tipos de dado, aplica as regras de negócio daquele relatório e entrega
+> os indicadores prontos — sem reprogramar para cada planilha nova, bastando descrever o cliente num
+> arquivo de modelo.
+>
+> Este repositório **documenta e apresenta** essa base. O código é aberto aqui; o executável para o
+> usuário final está previsto (ver [build](#build-do-executável)).
+
 Ferramenta **local de desktop** (Windows, PyQt6) que lê as planilhas da equipe (xlsx, ods, csv), padroniza
 os dados, mostra os indicadores na tela e gera um relatório analítico — no mesmo desenho do projeto
 **Garantia de Atendimento e Reembolso**. No topo da barra lateral o usuário escolhe o **Relatório**:
@@ -12,9 +21,10 @@ os dados, mostra os indicadores na tela e gera um relatório analítico — no m
 Exemplo pronto: **Contas Convênio** (contas hospitalares em blocos — [DOCS/12](DOCS/12_contas_convenio.md)).
 
 Não usa rede nem servidor: tudo roda na máquina do usuário (o **Modo I.A** opcional é a única exceção, e
-envia só a estrutura anonimizada — [DOCS/11](DOCS/11_modo_ia.md)). É entregue como executável (`.exe`).
+envia só a estrutura anonimizada — [DOCS/11](DOCS/11_modo_ia.md)). A distribuição prevista é um executável
+(`.exe`) compilado com Nuitka (ver [build](#build-do-executável)).
 
-**Versão:** 0.1.0 · **Saídas:** HTML (PDF e DOCX previstos na v0.2)
+**Versão:** 1.0.0 · **Saídas:** HTML (PDF e DOCX previstos na v2)
 
 ## Uso (usuário final)
 
