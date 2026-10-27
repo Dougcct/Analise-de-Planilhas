@@ -204,6 +204,21 @@ class FonteRemota:
             raise ErroServidor(self._detalhe(r, "Não foi possível buscar a atualização no GitHub."))
         return r.json()
 
+    def subir_pacote(self, versao: str, nome: str, conteudo: bytes) -> dict:
+        """Envia um pacote do cliente (.zip do build local) para o espelho do servidor."""
+        r = self._c.post(self._url("/api/v1/atualizacao"), headers=self._cab(),
+                         data={"versao": versao}, files={"arquivo": (nome, conteudo)}, timeout=600)
+        if r.status_code not in (200, 201):
+            raise ErroServidor(self._detalhe(r, "Não foi possível enviar o pacote."))
+        return r.json()
+
+    def aprovar_versao(self, recomendada: str, minima: str | None = None) -> dict:
+        r = self._c.post(self._url("/api/v1/atualizacao/aprovar"), headers=self._cab(),
+                         json={"recomendada": recomendada, "minima": minima})
+        if r.status_code != 200:
+            raise ErroServidor(self._detalhe(r, "Não foi possível definir a versão recomendada."))
+        return r.json()
+
     # ---- envio e publicação de planilhas (Gestor/ADM) ----
     def listar_cargas(self, slug: str) -> list[dict]:
         return self._get(f"/api/v1/relatorios/{slug}/cargas")

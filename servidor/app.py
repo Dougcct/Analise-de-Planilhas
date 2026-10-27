@@ -244,8 +244,8 @@ async def subir_atualizacao(versao: str = Form(...), arquivo: UploadFile = File(
     exigir(escopo, ADM)
     if atualizacao.versao_tupla(versao) is None:
         raise HTTPException(422, "Versão inválida (use algo como 2.1.0).")
-    conteudo = await arquivo.read(validacao.MAX_BYTES + 1)
-    if len(conteudo) > validacao.MAX_BYTES:
+    conteudo = await arquivo.read(atualizacao.MAX_PACOTE + 1)     # pacote do cliente é grande (≠ planilha)
+    if len(conteudo) > atualizacao.MAX_PACOTE:
         raise HTTPException(413, "Pacote acima do limite.")
     sha = atualizacao.guardar_pacote(versao, conteudo)
     registrar(s, escopo.usuario_id, None, "subir_atualizacao", versao, escopo.ip, detalhes=sha)

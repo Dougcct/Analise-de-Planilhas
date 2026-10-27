@@ -100,9 +100,16 @@ for %%f in (ia.toml metas.json atualizacao.toml servidor.json) do if exist "%SAI
 if errorlevel 1 goto :erro_autoteste
 
 echo.
+echo [5/5] Empacotando (.zip + .sha256) para distribuicao / espelho no servidor...
+python scripts\empacotar.py
+if errorlevel 1 goto :erro_pacote
+
+echo.
 echo ======================================================================
 echo  Build concluido: %SAIDA%\AnalisePlanilhas.exe
-echo  Entregue a pasta "%SAIDA%" inteira (o .exe depende dos arquivos ao lado).
+echo  Para rodar/entregar: a pasta "%SAIDA%" inteira (o .exe depende dos arquivos ao lado).
+echo  Para atualizar os setores pela LAN: envie o .zip em dist\ no app
+echo  (Administracao -^> Enviar pacote local).
 echo ======================================================================
 goto :fim
 
@@ -124,6 +131,11 @@ goto :fim
 :erro_autoteste
 echo.
 echo [ERRO] O .exe compilou mas o autoteste falhou (algo so quebra empacotado).
+set CODIGO=1
+goto :fim
+:erro_pacote
+echo.
+echo [ERRO] O .exe esta OK, mas falhou ao gerar o .zip (scripts\empacotar.py).
 set CODIGO=1
 goto :fim
 :fim

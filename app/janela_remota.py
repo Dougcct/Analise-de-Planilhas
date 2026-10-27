@@ -440,14 +440,20 @@ class JanelaServidor(QtWidgets.QMainWindow):
         c3 = QtWidgets.QFrame(); c3.setProperty("classe", "cartao")
         v3 = QtWidgets.QVBoxLayout(c3); v3.setContentsMargins(16, 14, 16, 14); v3.setSpacing(8)
         t3 = QtWidgets.QLabel("Atualização do cliente (.exe)"); t3.setProperty("classe", "secao")
-        d3 = QtWidgets.QLabel("Busca a última versão publicada no GitHub, confere o SHA-256 e a espelha no "
-                              "servidor — os setores atualizam pela rede interna, sem sair para a internet.")
+        d3 = QtWidgets.QLabel("Espelha uma versão do cliente no servidor; os setores atualizam pela rede "
+                              "interna, sem sair para a internet. Use o pacote do build local (dist\\*.zip) "
+                              "ou busque a última Release no GitHub.")
         d3.setProperty("classe", "apoio"); d3.setWordWrap(True)
+        self.bt_enviar_pacote = QtWidgets.QPushButton("Enviar pacote local (.zip)…")
+        self.bt_enviar_pacote.setProperty("classe", "primario")
+        self.bt_enviar_pacote.clicked.connect(self._enviar_pacote_ui)
         self.bt_sincronizar = QtWidgets.QPushButton("Buscar atualização no GitHub")
         self.bt_sincronizar.setProperty("classe", "secundario")
         self.bt_sincronizar.clicked.connect(self._sincronizar_ui)
-        v3.addWidget(t3); v3.addWidget(d3)
-        v3.addWidget(self.bt_sincronizar, alignment=QtCore.Qt.AlignmentFlag.AlignLeft)
+        linha_bts = QtWidgets.QHBoxLayout()
+        linha_bts.addWidget(self.bt_enviar_pacote); linha_bts.addWidget(self.bt_sincronizar)
+        linha_bts.addStretch(1)
+        v3.addWidget(t3); v3.addWidget(d3); v3.addLayout(linha_bts)
         col.addWidget(c3)
 
         dica = QtWidgets.QLabel("Depois de criar o setor, cadastre o gestor dele em «Usuários». Sem planilha "
@@ -501,6 +507,37 @@ class JanelaServidor(QtWidgets.QMainWindow):
         except ErroServidor:
             pass
         self._aviso(self.lbl_adm, f"Relatório «{nome}» criado.", "sucesso")
+
+    def _enviar_pacote_ui(self):
+        inicial = str(RAIZ / "dist")
+        caminho, _ = QtWidgets.QFileDialog.getOpenFileName(
+            self, "Escolher pacote do cliente (.zip)", inicial, "Pacote (*.zip)")
+        if not caminho:
+            return
+        import re
+        m = re.search(r"(\d+\.\d+\.\d+)", Path(caminho).name)
+        versao = m.group(1) if m else None
+        if not versao:
+            versao, ok = QtWidgets.QInputDialog.getText(self, "Versão", "Versão deste pacote (ex.: 1.1.0):")
+            if not ok or not versao.strip():
+                return
+            versao = versao.strip()
+        self.bt_enviar_pacote.setEnabled(False)
+        self._aviso(self.lbl_adm, f"Enviando o pacote da versão {versao} ao servidor…", "info")
+        QtWidgets.QApplication.processEvents()
+        try:
+            conteudo = Path(caminho).read_bytes()
+            self._fonte.subir_pacote(versao, Path(caminho).name, conteudo)
+            self._fonte.aprovar_versao(versao)          # recomenda a versão recém-enviada
+        except ErroServidor as e:
+            self._aviso(self.lbl_adm, str(e), "erro")
+        except OSError as e:
+            self._aviso(self.lbl_adm, f"Não foi possível ler o arquivo: {e}", "erro")
+        else:
+            self._aviso(self.lbl_adm, f"Versão {versao} espelhada e recomendada. "
+                        f"Os setores já atualizam pela rede.", "sucesso")
+        finally:
+            self.bt_enviar_pacote.setEnabled(True)
 
     def _sincronizar_ui(self):
         self.bt_sincronizar.setEnabled(False)

@@ -21,6 +21,7 @@ from analise_planilha import __version__
 
 ATUALIZACOES_DIR = Path(os.getenv("ATUALIZACOES_DIR", "/app/dados_atualizacoes"))
 VERSAO_MINIMA_PADRAO = os.getenv("VERSAO_MINIMA_CLIENTE", "1.0.0")
+MAX_PACOTE = int(os.getenv("MAX_PACOTE_MB", "600")) * 1024 * 1024   # .exe do cliente (PyQt+pandas) é grande
 # repositório público só com os binários (Releases) — a ligação servidor↔GitHub
 GITHUB_REPO = os.getenv("GITHUB_REPO", "Dougcct/Analise-de-Planilhas")
 ARQ_POLITICA = ATUALIZACOES_DIR / "politica.json"
