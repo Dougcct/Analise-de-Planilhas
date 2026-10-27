@@ -19,7 +19,7 @@ RAIZ = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(RAIZ / "src"))
 
 from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Request, UploadFile
-from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -211,6 +211,12 @@ class RelatorioIn(BaseModel):
 
 
 # ---- rotas ----
+@app.get("/", include_in_schema=False)
+def raiz():
+    """Abrir o endereço "pelado" (http://servidor) leva direto para o site web."""
+    return RedirectResponse("/web")
+
+
 @app.get("/api/v1/status/versao")
 def versao():
     """Público (sem login): o cliente consulta ANTES de entrar para saber se precisa atualizar."""

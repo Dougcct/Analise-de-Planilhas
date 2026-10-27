@@ -32,6 +32,11 @@ def _entrar(c, login="user.fin", senha="senha123"):
     return c.post("/web/login", data={"login": login, "senha": senha}, follow_redirects=False)
 
 
+def test_raiz_redireciona_para_web(web):
+    r = web.get("/", follow_redirects=False)
+    assert r.status_code == 307 and r.headers["location"] == "/web"   # http://servidor -> /web
+
+
 def test_sem_login_redireciona(web):
     r = web.get("/web", follow_redirects=False)
     assert r.status_code == 303 and r.headers["location"] == "/web/login"
