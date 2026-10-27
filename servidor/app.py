@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import datetime as dt
 import hashlib
-import io
 import os
 import sys
 import uuid
@@ -19,8 +18,6 @@ from pathlib import Path
 RAIZ = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(RAIZ / "src"))
 
-import numpy as np
-import pandas as pd
 from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from pydantic import BaseModel
@@ -28,9 +25,10 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from analise_planilha import __version__, relatorio_html, serializacao, servico
+from analise_planilha.modelo import carregar_modelo
 from analise_planilha.modelos import Filtros
 
-from . import atualizacao, bd, seed, validacao
+from . import atualizacao, bd, dados_demo, seed, validacao
 from .modelos_bd import (
     ADM, GESTOR, PAPEIS, PUBLICADA, RASCUNHO, SUBSTITUIDA, USUARIO,
     AcessoTemporario, Auditoria, Carga, CentroCusto, Relatorio, SessaoUsuario, Usuario, utcnow,
@@ -77,38 +75,52 @@ async def trava_de_versao(request: Request, call_next):
     return await call_next(request)
 
 
-# ---- relatório sintético (uma montagem por processo; o upload real vem na fase 4) ----
-def _dataset_sintetico():
-    rng = np.random.default_rng(1)
-    df = pd.DataFrame({
-        "Nº": range(1, 61),
-        "Data": pd.date_range("2026-01-01", periods=60).strftime("%d/%m/%Y"),
-        "Cidade": rng.choice(["A", "B", "C"], 60),
-        "Valor": [f"{v:.2f}".replace(".", ",") for v in rng.uniform(10, 500, 60)],
-    })
-    return servico.carregar(io.BytesIO(df.to_csv(sep=";", index=False).encode("utf-8")), "sintetico.csv")
+# ---- modelos e datasets ---------------------------------------------------------------
+# O servidor analisa com o MESMO modelo da v1 (config/modelos/*.toml): a planilha enviada — ou, na
+# falta dela, uma SINTÉTICA no formato do modelo (dados_demo) — vira a mesma análise rica (tempos,
+# taxas, convênio × mês…). Nada de dado pessoal real em homologação (LGPD).
+_cache_modelos: dict[str, object] = {}
+_cache_cargas: dict[int, object] = {}         # Dataset por carga (arquivos são imutáveis)
+_cache_demo: dict[str, object] = {}           # Dataset sintético por modelo
 
 
-_DS = _dataset_sintetico()
+def _modelo_do(rel: Relatorio):
+    if not rel.modelo:
+        return None
+    if rel.modelo not in _cache_modelos:
+        try:
+            _cache_modelos[rel.modelo] = carregar_modelo(rel.modelo)
+        except Exception:                     # modelo ausente/ilegível: cai na inferência "Sem modelo"
+            _cache_modelos[rel.modelo] = None
+    return _cache_modelos[rel.modelo]
 
-# cache de Dataset por carga (os arquivos são imutáveis; monta uma vez, filtra em milissegundos)
-_cache_cargas: dict[int, object] = {}
 
-
-def _dataset_da_carga(carga: Carga):
+def _dataset_da_carga(carga: Carga, modelo=None):
     if carga.id not in _cache_cargas:
         bruto = (CARGAS_DIR / carga.arquivo_uuid).read_bytes()
-        _cache_cargas[carga.id] = servico.carregar(bruto, carga.nome_original)
+        _cache_cargas[carga.id] = servico.carregar(bruto, carga.nome_original, modelo=modelo)
     return _cache_cargas[carga.id]
 
 
+def _dataset_demo(rel: Relatorio, modelo):
+    """Planilha SINTÉTICA no padrão do modelo do relatório (quando ainda não há carga publicada)."""
+    if rel.slug not in _cache_demo:
+        gerado = dados_demo.gerar(rel.modelo) if rel.modelo else None
+        if gerado is None:
+            raise HTTPException(404, "Relatório ainda sem dados publicados.")
+        bruto, nome = gerado
+        _cache_demo[rel.slug] = servico.carregar(bruto, nome, modelo=modelo)
+    return _cache_demo[rel.slug]
+
+
 def _dataset_do_relatorio(s: Session, rel: Relatorio):
-    """A carga PUBLICADA mais recente do relatório; sem nenhuma, cai no sintético (demo).
-    Busca pela carga do relatório (o acesso ao relatório já foi autorizado), não pelo setor do leitor —
-    assim o convidado (acesso temporário) lê os dados reais do relatório emprestado (anonimizados)."""
+    """A carga PUBLICADA mais recente; sem nenhuma, a planilha sintética do modelo (demo).
+    Busca pela carga do relatório (acesso já autorizado), não pelo setor do leitor — assim o convidado
+    (acesso temporário) lê os dados do relatório emprestado (anonimizados)."""
+    modelo = _modelo_do(rel)
     carga = s.scalar(select(Carga).where(Carga.relatorio_id == rel.id, Carga.status == PUBLICADA)
                      .order_by(Carga.id.desc()))
-    return _dataset_da_carga(carga) if carga is not None else _DS
+    return _dataset_da_carga(carga, modelo) if carga is not None else _dataset_demo(rel, modelo)
 
 
 def acesso_vigente(s: Session, usuario_id: int, relatorio_id: int) -> AcessoTemporario | None:
@@ -328,7 +340,7 @@ def exportar_html(slug: str, escopo: Escopo = Depends(sessao_pronta), s: Session
         raise HTTPException(404, "Relatório não encontrado.")
     registrar(s, escopo.usuario_id, escopo.centro_custo_id, "exportar_html", slug, escopo.ip)
     s.commit()
-    return relatorio_html.montar_html(servico.analisar(_DS, Filtros()), rel.nome)
+    return relatorio_html.montar_html(servico.analisar(_dataset_do_relatorio(s, rel), Filtros()), rel.nome)
 
 
 def _usuario_json(u: Usuario) -> dict:
@@ -447,8 +459,9 @@ def analise_rascunho(carga_id: int, filtros: FiltrosIn, escopo: Escopo = Depends
     carga = RepoCargas(s, escopo).obter(carga_id)
     if carga is None:
         raise HTTPException(404, "Carga não encontrada.")
+    modelo = _modelo_do(s.get(Relatorio, carga.relatorio_id))
     try:
-        ds = _dataset_da_carga(carga)
+        ds = _dataset_da_carga(carga, modelo)
     except Exception as e:                             # arquivo que o motor não consegue ler
         raise HTTPException(422, f"Não foi possível ler a planilha: {type(e).__name__}") from e
     return serializacao.analise_para_json(servico.analisar(ds, _filtros(filtros)))
@@ -461,7 +474,7 @@ def publicar_carga(carga_id: int, escopo: Escopo = Depends(sessao_pronta), s: Se
     if carga is None:
         raise HTTPException(404, "Carga não encontrada.")
     try:
-        _dataset_da_carga(carga)                       # só publica o que o motor consegue ler
+        _dataset_da_carga(carga, _modelo_do(s.get(Relatorio, carga.relatorio_id)))   # só publica o que o motor lê
     except Exception as e:
         raise HTTPException(422, f"A planilha não pôde ser processada: {type(e).__name__}") from e
     for anterior in s.scalars(select(Carga).where(Carga.relatorio_id == carga.relatorio_id,

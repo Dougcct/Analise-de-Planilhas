@@ -61,6 +61,7 @@ class Relatorio(Base):
     slug: Mapped[str] = mapped_column(String(64), unique=True, index=True)
     nome: Mapped[str] = mapped_column(String(160))
     centro_custo_id: Mapped[int] = mapped_column(ForeignKey("centros_custo.id"), index=True)
+    modelo: Mapped[str | None] = mapped_column(String(64))   # slug do modelo (config/modelos/*.toml)
     ativo: Mapped[bool] = mapped_column(Boolean, default=True)
 
 

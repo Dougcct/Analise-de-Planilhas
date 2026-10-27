@@ -14,10 +14,11 @@ WORKDIR /app
 COPY servidor/requirements.txt servidor/requirements.txt
 RUN pip install -r servidor/requirements.txt
 
-# 2) código: o motor, a API e os templates (export de HTML na fase 3)
+# 2) código: o motor, a API, os templates e os MODELOS (.toml) usados na análise real
 COPY src/ src/
 COPY servidor/ servidor/
 COPY templates/ templates/
+COPY config/modelos/ config/modelos/
 
 # usuário sem privilégio (não rodar como root). A pasta das cargas é criada aqui com o dono certo,
 # para o volume nomeado (montado nela) herdar a permissão de escrita do usuário app.
