@@ -24,3 +24,8 @@ dist/
 
 # Diagnóstico local (main.py --autoteste)
 autoteste.txt
+
+# Segredos de produção e backups (fase 7) — nunca versionar
+.env
+backups/
+*.enc

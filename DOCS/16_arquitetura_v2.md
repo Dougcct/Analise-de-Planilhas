@@ -1,6 +1,9 @@
 # 16 · Arquitetura v2.0 — Cliente-Servidor por Centro de Custo
 
-> **Status: planejamento aprovado para desenvolvimento na branch `v2`.** Nada daqui está implementado.
+> **Status: em desenvolvimento na branch `v2`. Fases 0–6 IMPLEMENTADAS e rodando; fase 7 montada como
+> infraestrutura (TLS/backup), pendente de deploy em servidor Linux antes de qualquer dado real.**
+> Reforços de "defesa em profundidade" ainda pendentes: RLS no Postgres, grant append-only da auditoria
+> e Alembic (hoje o esquema é `create_all`). Ver o [§8](#8-plano-em-fases).
 > A v1.0 (desktop local) segue intacta no `main`, com ponto de retorno na tag `base-1.0.0`.
 > Complementos: [17 · Atualização v2](17_atualizacao_v2.md) · [18 · Segurança e LGPD v2](18_seguranca_lgpd_v2.md).
 > Origem: rascunhos em `Planejamento/` (out/2026), consolidados e revisados contra o código.
@@ -202,8 +205,11 @@ Cada fase termina com algo **utilizável e testado**. A v1 continua funcionando 
 | **3 · Papéis e travas** | Usuário/Gestor/ADM; troca de senha obrigatória; bloqueio por tentativas; gestor cadastra usuários | matriz do §4 coberta por testes, rota a rota |
 | **4 · Carga e publicação** | upload validado ([18 §4](18_seguranca_lgpd_v2.md#4-upload-seguro)), Rascunho → Publicada, substituição/consolidação, metas no servidor | planilhas sintéticas e arquivos maliciosos de teste (zip bomb, extensão falsa) tratados corretamente |
 | **5 · Compartilhamento + anonimização** | acesso temporário; anonimização no servidor por coluna sensível; marca d'água | convidado com `anonimizar` nunca recebe o nome real (teste inspecionando o JSON) |
-| **6 · Atualização v2** | checagem de versão + `426`; espelho da release no servidor; rollback ([17](17_atualizacao_v2.md)) | cliente antigo é barrado; atualização com falha volta sozinha à versão anterior |
-| **7 · Produção** | servidor Linux atrás do pfSense, TLS, backup criptografado, retenção definida | checklist de [18 §8](18_seguranca_lgpd_v2.md#8-checklist-antes-do-primeiro-dado-real) completo — **só então dados reais** |
+| **6 · Atualização v2** ✅ | checagem de versão + `426`; espelho da release no servidor; rollback ([17](17_atualizacao_v2.md)) | cliente antigo é barrado (feito); espelho+aprovação do ADM (feito); *rollback automático depende do 1º build `.exe`* |
+| **7 · Produção** 🧱 | servidor Linux atrás do pfSense, TLS, backup criptografado, retenção definida | infraestrutura pronta (Caddy/TLS, `backup.sh`/`restore.sh` cifrados, `.env`); falta o deploy no Linux e o checklist de [18 §8](18_seguranca_lgpd_v2.md#8-checklist-antes-do-primeiro-dado-real) — **só então dados reais** |
+
+As fases 0–5 (fundação, servidor, isolamento, papéis, carga, compartilhamento) estão ✅ concluídas e
+testadas (ver os commits da branch `v2` e o [17](17_atualizacao_v2.md)/[18](18_seguranca_lgpd_v2.md)).
 
 **Piloto com dado real:** começar pelo **HUNF** (Faturamento/Custos/DRE), que **não tem dado de
 paciente**. As **Contas Convênio** (nome de paciente) entram só depois da fase 5 em produção.

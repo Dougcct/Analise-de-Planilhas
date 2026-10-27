@@ -1,0 +1,25 @@
+# Proxy TLS do servidor v2 (fase 7, DOCS/18 §7). HTTPS sempre, mesmo na LAN.
+# {$DOMINIO} vem do ambiente (docker-compose.prod.yml). `tls internal`: o Caddy emite um certificado
+# com a própria CA interna — sem depender de internet nem de CA pública para a rede interna.
+# O cliente PyQt6 fixa a identificação deste certificado (pinning) e recusa qualquer outro servidor.
+
+{$DOMINIO} {
+	tls internal
+
+	encode zstd gzip
+
+	# Teto de upload também no proxy (a API valida de novo em 25 MB) — DOCS/18 §4.
+	request_body {
+		max_size 25MB
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "no-referrer"
+		-Server
+	}
+
+	reverse_proxy api:8000
+}

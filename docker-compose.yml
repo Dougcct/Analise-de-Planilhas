@@ -1,5 +1,9 @@
-# Subir o servidor v2 em desenvolvimento:  docker compose up --build
-# Fase 2: API + PostgreSQL (login e isolamento por centro de custo). Proxy TLS (Caddy) vem na fase 7.
+# BASE comum a todos os ambientes (API + PostgreSQL).
+#   Desenvolvimento:  docker compose up --build
+#       → junta automaticamente o docker-compose.override.yml (publica a API em localhost:8000).
+#   Produção:         docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#       → NÃO usa o override (a API fica só atrás do Caddy/TLS; nada exposto além do 443). Fase 7.
+# A porta do banco nunca é publicada em nenhum ambiente (rede interna do Docker).
 services:
   db:
     image: postgres:16-alpine
@@ -30,9 +34,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    ports:
-      - "8000:8000"
     restart: unless-stopped
+    # A publicação da porta 8000 fica no docker-compose.override.yml (só desenvolvimento).
 
 volumes:
   dados_db:

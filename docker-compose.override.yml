@@ -1,0 +1,8 @@
+# DESENVOLVIMENTO — carregado automaticamente pelo `docker compose up`.
+# Única diferença para a base: publica a API em localhost:8000, para testar direto pelo navegador/cliente
+# sem TLS. Em produção este arquivo NÃO é usado (lá se passa -f docker-compose.yml -f docker-compose.prod.yml),
+# então a API nunca fica exposta fora da rede do Docker — só o Caddy (443) responde (fase 7).
+services:
+  api:
+    ports:
+      - "8000:8000"

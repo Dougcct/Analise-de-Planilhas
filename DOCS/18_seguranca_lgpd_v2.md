@@ -134,6 +134,15 @@ Complementos: identificadores não sequenciais nas URLs (slug/UUID, contra enume
 
 ## 7. Rede, retenção e backup
 
+> **Estado (fase 7 montada como infraestrutura, ainda sem deploy):** o TLS já está configurado
+> (`servidor/Caddyfile` com `tls internal` + teto de upload + cabeçalhos de segurança; `docker-compose.prod.yml`
+> publica **só** a 443 pelo Caddy e deixa a API sem porta no host). Os segredos saíram do git para `.env`
+> (`.env.exemplo` + `.gitignore`). O backup **criptografado** (AES-256) e o **teste de restauração** já
+> funcionam (`servidor/backup.sh` / `restore.sh`, serviço `backup` sob `--profile backup`) — demonstrados
+> contra o banco de desenvolvimento, com restauração conferida num banco descartável. **Falta** o deploy no
+> servidor Linux atrás do pfSense, o *pinning* do certificado no cliente, a cadeia de hash da auditoria e a
+> rotina de cópia para fora do servidor (cron).
+
 | Tema | Regra |
 |---|---|
 | Transporte | **HTTPS sempre**, mesmo na LAN (Caddy com certificado interno). O cliente traz a **identificação do certificado do servidor** na configuração e recusa qualquer outro (*pinning*) — dispensa instalar CA em cada PC e barra servidor falso na rede |
@@ -148,11 +157,11 @@ Complementos: identificadores não sequenciais nas URLs (slug/UUID, contra enume
 
 ## 8. Checklist antes do primeiro dado real
 
-- [ ] Servidor de produção no Linux, atrás do pfSense, com as regras do §7
-- [ ] HTTPS com certificado fixado no cliente
-- [ ] Testes de isolamento (§5) e de anonimização (§2) passando
-- [ ] Auditoria só-inserção ativa e conferida
-- [ ] Backup criptografado configurado **e uma restauração testada**
+- [ ] Servidor de produção no Linux, atrás do pfSense, com as regras do §7 *(infra pronta; falta o deploy)*
+- [ ] HTTPS com certificado fixado no cliente *(TLS pronto no Caddy; falta o pinning no cliente)*
+- [x] Testes de isolamento (§5) e de anonimização (§2) passando *(cobertos por testes; RLS ainda pendente como 2ª camada)*
+- [ ] Auditoria só-inserção ativa e conferida *(a aplicação só insere; falta o grant no banco + cadeia de hash)*
+- [x] Backup criptografado configurado **e uma restauração testada** *(`backup.sh`/`restore.sh`; restauração conferida em banco descartável)*
 - [ ] Política de retenção definida com o DPO
 - [ ] DPO/Segurança da Informação cientes do novo fluxo de dados
 - [ ] Piloto com o **HUNF** (sem dado de paciente); Contas Convênio só depois da fase 5 em produção

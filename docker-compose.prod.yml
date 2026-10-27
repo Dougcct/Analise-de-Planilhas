@@ -1,0 +1,56 @@
+# PRODUÇÃO (fase 7) — servidor atrás do pfSense, TLS pelo Caddy, segredos fora do git.
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+# Antes: copie .env.exemplo para .env e preencha as senhas/segredos (o .env NÃO vai para o git).
+# pfSense: liberar só a porta 443 do host para a LAN; a saída do servidor só para github.com.
+# LEMBRETE LGPD: dado real de paciente só aqui (Linux, atrás do pfSense), nunca no Docker da estação.
+services:
+  db:
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina no .env}
+    # sem porta publicada — o banco só é alcançável pela rede interna do compose
+
+  api:
+    environment:
+      DATABASE_URL: postgresql+psycopg://analise:${POSTGRES_PASSWORD}@db:5432/analise
+      VERSAO_MINIMA_CLIENTE: ${VERSAO_MINIMA_CLIENTE:-1.0.0}
+    # sem `ports`: a API só é acessível pelo Caddy (serviço abaixo), nunca direto do host
+
+  caddy:
+    image: caddy:2-alpine
+    depends_on:
+      - api
+    ports:
+      - "443:443"
+      - "80:80"                       # só redireciona para 443
+    environment:
+      DOMINIO: ${DOMINIO:-analise.local}
+    volumes:
+      - ./servidor/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data              # guarda o certificado interno gerado (não recria a cada restart)
+      - caddy_config:/config
+    restart: unless-stopped
+
+  # Backup sob demanda / agendado (não sobe no `up` normal; só com --profile backup):
+  #   docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile backup run --rm backup
+  # Em produção, um cron no host dispara essa linha e copia /backups para fora do servidor.
+  backup:
+    image: postgres:16-alpine
+    profiles: ["backup"]
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      BACKUP_PASSPHRASE: ${BACKUP_PASSPHRASE:?defina no .env}
+      CARGAS_DIR: /cargas
+    volumes:
+      - ./servidor/backup.sh:/backup.sh:ro
+      - ./servidor/restore.sh:/restore.sh:ro
+      - cargas:/cargas:ro
+      - backups:/backups
+    entrypoint: ["sh", "/backup.sh", "db", "analise", "analise"]
+
+volumes:
+  caddy_data:
+  caddy_config:
+  backups:
