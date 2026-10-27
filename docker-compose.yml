@@ -7,6 +7,7 @@
 services:
   db:
     image: postgres:16-alpine
+    container_name: analise-planilhas-banco      # nome claro no Docker Desktop (o banco do app)
     environment:
       POSTGRES_USER: analise
       POSTGRES_PASSWORD: analise      # SÓ desenvolvimento; produção usa secret/.env (DOCS/18 §7)
@@ -24,6 +25,7 @@ services:
       context: .
       dockerfile: servidor/Dockerfile
     image: analise-planilhas-api:dev
+    container_name: analise-planilhas-servidor    # nome claro no Docker Desktop (o servidor do app)
     environment:
       DATABASE_URL: postgresql+psycopg://analise:analise@db:5432/analise
       CARGAS_DIR: /app/dados_cargas
