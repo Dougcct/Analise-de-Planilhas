@@ -258,6 +258,25 @@ def test_so_dono_compartilha(cliente):
                         json={"login_destino": "user.fin"}).status_code == 404
 
 
+def test_adm_cadastra_setor_e_relatorio(cliente):
+    ha = _auth(cliente, "admin", "admin123")
+    modelos = {m["slug"] for m in cliente.get("/api/v1/modelos", headers=ha).json()}
+    assert "garantia_atendimento" in modelos
+    r = cliente.post("/api/v1/centros", headers=ha, json={"codigo": "rh", "nome": "Recursos Humanos"})
+    assert r.status_code == 201 and r.json()["codigo"] == "RH"      # código normalizado p/ maiúsculo
+    cid = r.json()["id"]
+    assert cliente.post("/api/v1/centros", headers=ha,
+                        json={"codigo": "RH", "nome": "x"}).status_code == 409   # duplicado
+    r2 = cliente.post("/api/v1/relatorios", headers=ha,
+                      json={"nome": "Turnover RH", "centro_custo_id": cid, "modelo": None})
+    assert r2.status_code == 201 and r2.json()["slug"] == "turnover-rh"          # slug derivado do nome
+    # Gestor não cadastra setor nem relatório
+    hg = _auth(cliente, "gestor.fin")
+    assert cliente.post("/api/v1/centros", headers=hg, json={"codigo": "XX", "nome": "x"}).status_code == 403
+    assert cliente.post("/api/v1/relatorios", headers=hg,
+                        json={"nome": "y", "centro_custo_id": cid}).status_code == 403
+
+
 def test_trava_de_versao_426(cliente):
     h = _auth(cliente, "gestor.fin")
     r = cliente.get("/api/v1/relatorios", headers={**h, "X-Client-Version": "0.9.0"})

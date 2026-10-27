@@ -170,6 +170,34 @@ class FonteRemota:
         if r.status_code != 200:
             raise ErroServidor(self._detalhe(r, "Não foi possível bloquear o usuário."))
 
+    # ---- administração (ADM): setores, relatórios, compartilhamento ----
+    def listar_modelos(self) -> list[dict]:
+        return self._get("/api/v1/modelos")
+
+    def criar_centro(self, codigo: str, nome: str) -> dict:
+        r = self._c.post(self._url("/api/v1/centros"), headers=self._cab(),
+                         json={"codigo": codigo, "nome": nome})
+        if r.status_code not in (200, 201):
+            raise ErroServidor(self._detalhe(r, "Não foi possível criar o setor."))
+        return r.json()
+
+    def criar_relatorio(self, nome: str, centro_custo_id: int, modelo: str | None = None) -> dict:
+        r = self._c.post(self._url("/api/v1/relatorios"), headers=self._cab(),
+                         json={"nome": nome, "centro_custo_id": centro_custo_id, "modelo": modelo})
+        if r.status_code not in (200, 201):
+            raise ErroServidor(self._detalhe(r, "Não foi possível criar o relatório."))
+        return r.json()
+
+    def compartilhar(self, slug: str, login_destino: str, dias: int, anonimizar: bool) -> dict:
+        r = self._c.post(self._url(f"/api/v1/relatorios/{slug}/compartilhar"), headers=self._cab(),
+                         json={"login_destino": login_destino, "dias": dias, "anonimizar": anonimizar})
+        if r.status_code not in (200, 201):
+            raise ErroServidor(self._detalhe(r, "Não foi possível compartilhar."))
+        return r.json()
+
+    def compartilhados(self) -> list[dict]:
+        return self._get("/api/v1/compartilhados")
+
     # ---- envio e publicação de planilhas (Gestor/ADM) ----
     def listar_cargas(self, slug: str) -> list[dict]:
         return self._get(f"/api/v1/relatorios/{slug}/cargas")

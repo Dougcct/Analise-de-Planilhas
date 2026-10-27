@@ -203,6 +203,18 @@ class AprovarIn(BaseModel):
     minima: str | None = None    # sem valor: mantém a mínima atual
 
 
+class CentroIn(BaseModel):
+    codigo: str
+    nome: str
+
+
+class RelatorioIn(BaseModel):
+    nome: str
+    centro_custo_id: int
+    modelo: str | None = None
+    slug: str | None = None      # sem valor: derivado do nome
+
+
 # ---- rotas ----
 @app.get("/api/v1/status/versao")
 def versao():
@@ -363,6 +375,59 @@ def listar_centros(escopo: Escopo = Depends(sessao_pronta), s: Session = Depends
         q = q.where(CentroCusto.id == escopo.centro_custo_id)
     return [{"id": c.id, "codigo": c.codigo, "nome": c.nome}
             for c in s.scalars(q.order_by(CentroCusto.nome))]
+
+
+@app.get("/api/v1/modelos")
+def listar_modelos_disponiveis(escopo: Escopo = Depends(sessao_pronta)):
+    """Modelos de análise disponíveis (config/modelos/*.toml), para o ADM montar um relatório novo."""
+    exigir(escopo, GESTOR, ADM)
+    from analise_planilha.modelo import listar_modelos
+    return [{"slug": p.stem, "nome": nome} for nome, p in listar_modelos().items()]
+
+
+@app.post("/api/v1/centros", status_code=201)
+def criar_centro(dados: CentroIn, escopo: Escopo = Depends(sessao_pronta), s: Session = Depends(get_sessao)):
+    """ADM cria um centro de custo (setor) — o sistema cresce um setor de cada vez."""
+    exigir(escopo, ADM)
+    codigo = dados.codigo.strip().upper()
+    nome = dados.nome.strip()
+    if not codigo or not nome:
+        raise HTTPException(422, "Informe código e nome do setor.")
+    if s.scalar(select(CentroCusto).where(CentroCusto.codigo == codigo)) is not None:
+        raise HTTPException(409, "Já existe um setor com esse código.")
+    centro = CentroCusto(codigo=codigo, nome=nome)
+    s.add(centro)
+    s.flush()
+    registrar(s, escopo.usuario_id, None, "criar_centro", codigo, escopo.ip)
+    s.commit()
+    return {"id": centro.id, "codigo": centro.codigo, "nome": centro.nome}
+
+
+def _slugificar(texto: str) -> str:
+    import unicodedata
+    base = unicodedata.normalize("NFKD", texto).encode("ascii", "ignore").decode()
+    return "-".join("".join(c if c.isalnum() else " " for c in base.lower()).split())
+
+
+@app.post("/api/v1/relatorios", status_code=201)
+def criar_relatorio(dados: RelatorioIn, escopo: Escopo = Depends(sessao_pronta), s: Session = Depends(get_sessao)):
+    """ADM cria um relatório num setor, opcionalmente ligado a um modelo de análise."""
+    exigir(escopo, ADM)
+    nome = dados.nome.strip()
+    slug = _slugificar(dados.slug or nome)
+    if not nome or not slug:
+        raise HTTPException(422, "Informe o nome do relatório.")
+    if s.get(CentroCusto, dados.centro_custo_id) is None:
+        raise HTTPException(422, "Centro de custo inexistente.")
+    if s.scalar(select(Relatorio).where(Relatorio.slug == slug)) is not None:
+        raise HTTPException(409, "Já existe um relatório com esse identificador.")
+    rel = Relatorio(slug=slug, nome=nome, centro_custo_id=dados.centro_custo_id, modelo=dados.modelo or None)
+    s.add(rel)
+    s.flush()
+    registrar(s, escopo.usuario_id, None, "criar_relatorio", slug, escopo.ip)
+    s.commit()
+    return {"id": rel.id, "slug": rel.slug, "nome": rel.nome,
+            "centro_custo_id": rel.centro_custo_id, "modelo": rel.modelo}
 
 
 @app.post("/api/v1/usuarios", status_code=201)

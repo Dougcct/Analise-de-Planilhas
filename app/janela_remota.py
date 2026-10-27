@@ -35,7 +35,7 @@ from analise_planilha.modelos import Filtros
 URL_PADRAO = "http://localhost:8000"
 
 _LOGIN, _SENHA, _PRINCIPAL = 0, 1, 2            # páginas da pilha
-_AREA_REL, _AREA_USR, _AREA_ENV = 0, 1, 2       # áreas dentro da PRINCIPAL
+_AREA_REL, _AREA_USR, _AREA_ENV, _AREA_ADM = 0, 1, 2, 3   # áreas dentro da PRINCIPAL
 _PAPEIS = ("USUARIO", "GESTOR", "ADM")
 
 
@@ -172,7 +172,7 @@ class JanelaServidor(QtWidgets.QMainWindow):
 
     # ================================================================= PRINCIPAL
     _TITULOS = {_AREA_REL: "Relatórios", _AREA_USR: "Gestão de usuários",
-                _AREA_ENV: "Enviar e publicar planilha"}
+                _AREA_ENV: "Enviar e publicar planilha", _AREA_ADM: "Administração"}
 
     def _montar_principal(self) -> QtWidgets.QWidget:
         pagina = QtWidgets.QWidget()
@@ -186,7 +186,8 @@ class JanelaServidor(QtWidgets.QMainWindow):
         self.bt_nav_rel = self._bt_nav("Relatórios", _AREA_REL)
         self.bt_nav_usr = self._bt_nav("Usuários", _AREA_USR)
         self.bt_nav_env = self._bt_nav("Enviar planilha", _AREA_ENV)
-        for b in (self.bt_nav_rel, self.bt_nav_usr, self.bt_nav_env):
+        self.bt_nav_adm = self._bt_nav("Administração", _AREA_ADM)
+        for b in (self.bt_nav_rel, self.bt_nav_usr, self.bt_nav_env, self.bt_nav_adm):
             lv.addWidget(b)
         lv.addStretch(1)
         self.lbl_usuario = QtWidgets.QLabel(); self.lbl_usuario.setProperty("classe", "apoio")
@@ -206,6 +207,7 @@ class JanelaServidor(QtWidgets.QMainWindow):
         self.area.addWidget(self._pagina_relatorios())   # _AREA_REL
         self.area.addWidget(self._pagina_usuarios())     # _AREA_USR
         self.area.addWidget(self._pagina_enviar())       # _AREA_ENV
+        self.area.addWidget(self._pagina_admin())        # _AREA_ADM
         col.addWidget(self.area, 1)
         linha.addWidget(conteudo, 1)
         return pagina
@@ -227,6 +229,8 @@ class JanelaServidor(QtWidgets.QMainWindow):
             self._carregar_usuarios()
         elif destino == _AREA_ENV:
             self._preparar_enviar()
+        elif destino == _AREA_ADM:
+            self._preparar_admin()
 
     # ---------- área RELATÓRIOS
     def _pagina_relatorios(self) -> QtWidgets.QWidget:
@@ -237,8 +241,11 @@ class JanelaServidor(QtWidgets.QMainWindow):
         self.combo.currentIndexChanged.connect(self._ao_trocar)
         self.bt_export = QtWidgets.QPushButton("Exportar HTML"); self.bt_export.setProperty("classe", "secundario")
         self.bt_export.setVisible(False); self.bt_export.clicked.connect(self._exportar)
+        self.bt_compartilhar = QtWidgets.QPushButton("Compartilhar…")
+        self.bt_compartilhar.setProperty("classe", "secundario"); self.bt_compartilhar.setVisible(False)
+        self.bt_compartilhar.clicked.connect(self._compartilhar)
         topo.addWidget(QtWidgets.QLabel("Relatório:")); topo.addWidget(self.combo)
-        topo.addWidget(self.bt_export); topo.addStretch(1)
+        topo.addWidget(self.bt_export); topo.addWidget(self.bt_compartilhar); topo.addStretch(1)
         col.addLayout(topo)
         self.grade_kpi = QtWidgets.QGridLayout(); self.grade_kpi.setSpacing(8); col.addLayout(self.grade_kpi)
         self.abas = QtWidgets.QTabWidget(); col.addWidget(self.abas, 1)
@@ -320,6 +327,121 @@ class JanelaServidor(QtWidgets.QMainWindow):
         self.lbl_env = QtWidgets.QLabel(); self.lbl_env.setProperty("classe", "apoio"); col.addWidget(self.lbl_env)
         return p
 
+    # ---------- área ADMINISTRAÇÃO (só ADM): cadastrar setor e relatório
+    def _pagina_admin(self) -> QtWidgets.QWidget:
+        p = QtWidgets.QWidget(); col = QtWidgets.QVBoxLayout(p)
+        col.setContentsMargins(0, 0, 0, 0); col.setSpacing(14)
+
+        # novo setor (centro de custo)
+        c1 = QtWidgets.QFrame(); c1.setProperty("classe", "cartao")
+        g1 = QtWidgets.QGridLayout(c1); g1.setContentsMargins(16, 14, 16, 14); g1.setSpacing(8)
+        t1 = QtWidgets.QLabel("Novo setor (centro de custo)"); t1.setProperty("classe", "secao")
+        g1.addWidget(t1, 0, 0, 1, 3)
+        self.ed_c_codigo = QtWidgets.QLineEdit(); self.ed_c_codigo.setPlaceholderText("ex.: RH")
+        self.ed_c_nome = QtWidgets.QLineEdit(); self.ed_c_nome.setPlaceholderText("ex.: Recursos Humanos")
+        g1.addWidget(self._rotulado("Código", self.ed_c_codigo), 1, 0)
+        g1.addWidget(self._rotulado("Nome do setor", self.ed_c_nome), 1, 1)
+        bt_c = QtWidgets.QPushButton("Criar setor"); bt_c.setProperty("classe", "primario")
+        bt_c.clicked.connect(self._criar_centro_ui); g1.addWidget(bt_c, 1, 2)
+        g1.setColumnStretch(1, 1)
+        col.addWidget(c1)
+
+        # novo relatório
+        c2 = QtWidgets.QFrame(); c2.setProperty("classe", "cartao")
+        g2 = QtWidgets.QGridLayout(c2); g2.setContentsMargins(16, 14, 16, 14); g2.setSpacing(8)
+        t2 = QtWidgets.QLabel("Novo relatório"); t2.setProperty("classe", "secao")
+        g2.addWidget(t2, 0, 0, 1, 4)
+        self.ed_r_nome = QtWidgets.QLineEdit(); self.ed_r_nome.setPlaceholderText("ex.: Garantia de Atendimento")
+        self.cb_r_setor = QtWidgets.QComboBox(); self.cb_r_modelo = QtWidgets.QComboBox()
+        g2.addWidget(self._rotulado("Nome do relatório", self.ed_r_nome), 1, 0, 1, 2)
+        g2.addWidget(self._rotulado("Setor", self.cb_r_setor), 1, 2)
+        g2.addWidget(self._rotulado("Modelo de análise", self.cb_r_modelo), 2, 0, 1, 2)
+        bt_r = QtWidgets.QPushButton("Criar relatório"); bt_r.setProperty("classe", "primario")
+        bt_r.clicked.connect(self._criar_relatorio_ui); g2.addWidget(bt_r, 2, 2)
+        g2.setColumnStretch(0, 1)
+        col.addWidget(c2)
+
+        dica = QtWidgets.QLabel("Depois de criar o setor, cadastre o gestor dele em «Usuários». Sem planilha "
+                                "publicada, o relatório mostra uma amostra sintética no formato do modelo.")
+        dica.setProperty("classe", "apoio"); dica.setWordWrap(True); col.addWidget(dica)
+        self.lbl_adm = QtWidgets.QLabel(); self.lbl_adm.setProperty("classe", "apoio"); col.addWidget(self.lbl_adm)
+        col.addStretch(1)
+        return p
+
+    def _preparar_admin(self):
+        try:
+            self._centros = self._fonte.listar_centros()
+            modelos = self._fonte.listar_modelos()
+        except ErroServidor as e:
+            self._aviso(self.lbl_adm, str(e), "erro"); return
+        self.cb_r_setor.clear()
+        for c in self._centros:
+            self.cb_r_setor.addItem(f"{c['codigo']} — {c['nome']}", c["id"])
+        self.cb_r_modelo.clear()
+        self.cb_r_modelo.addItem("(sem modelo — detecta pela planilha)", None)
+        for m in modelos:
+            self.cb_r_modelo.addItem(m["nome"], m["slug"])
+
+    def _criar_centro_ui(self):
+        codigo, nome = self.ed_c_codigo.text().strip(), self.ed_c_nome.text().strip()
+        if not codigo or not nome:
+            self._aviso(self.lbl_adm, "Informe código e nome do setor.", "alerta"); return
+        try:
+            self._fonte.criar_centro(codigo, nome)
+        except ErroServidor as e:
+            self._aviso(self.lbl_adm, str(e), "erro"); return
+        self.ed_c_codigo.clear(); self.ed_c_nome.clear()
+        self._preparar_admin()
+        self._aviso(self.lbl_adm, f"Setor «{codigo}» criado. Agora cadastre o gestor dele em «Usuários».", "sucesso")
+
+    def _criar_relatorio_ui(self):
+        nome = self.ed_r_nome.text().strip()
+        if not nome or self.cb_r_setor.currentData() is None:
+            self._aviso(self.lbl_adm, "Informe o nome do relatório e o setor.", "alerta"); return
+        try:
+            self._fonte.criar_relatorio(nome, self.cb_r_setor.currentData(), self.cb_r_modelo.currentData())
+        except ErroServidor as e:
+            self._aviso(self.lbl_adm, str(e), "erro"); return
+        self.ed_r_nome.clear()
+        try:                                       # o novo relatório aparece na lista de Relatórios
+            self._relatorios = self._fonte.relatorios()
+            self.combo.blockSignals(True); self.combo.clear()
+            for r in self._relatorios:
+                self.combo.addItem(r["nome"], r["slug"])
+            self.combo.blockSignals(False); self.combo.setEnabled(bool(self._relatorios))
+        except ErroServidor:
+            pass
+        self._aviso(self.lbl_adm, f"Relatório «{nome}» criado.", "sucesso")
+
+    # ---------- compartilhar relatório (Gestor/ADM)
+    def _compartilhar(self):
+        slug = self.combo.currentData()
+        if not slug:
+            return
+        dlg = QtWidgets.QDialog(self); dlg.setWindowTitle("Compartilhar relatório")
+        v = QtWidgets.QVBoxLayout(dlg); v.setContentsMargins(20, 18, 20, 18); v.setSpacing(10)
+        v.addWidget(QtWidgets.QLabel(f"Emprestar «{self.combo.currentText()}» a um usuário de outro setor:"))
+        ed_login = QtWidgets.QLineEdit(); ed_login.setPlaceholderText("login do destinatário")
+        sp_dias = QtWidgets.QSpinBox(); sp_dias.setRange(1, 90); sp_dias.setValue(7); sp_dias.setSuffix(" dias")
+        ck_anon = QtWidgets.QCheckBox("Anonimizar nomes (recomendado)"); ck_anon.setChecked(True)
+        v.addWidget(self._rotulado("Destinatário", ed_login))
+        v.addWidget(self._rotulado("Prazo", sp_dias))
+        v.addWidget(ck_anon)
+        bts = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.StandardButton.Ok
+                                         | QtWidgets.QDialogButtonBox.StandardButton.Cancel)
+        bts.accepted.connect(dlg.accept); bts.rejected.connect(dlg.reject)
+        v.addWidget(bts)
+        if dlg.exec() != QtWidgets.QDialog.DialogCode.Accepted:
+            return
+        login = ed_login.text().strip()
+        if not login:
+            self._status("Informe o login do destinatário.", "alerta"); return
+        try:
+            r = self._fonte.compartilhar(slug, login, sp_dias.value(), ck_anon.isChecked())
+        except ErroServidor as e:
+            QtWidgets.QMessageBox.warning(self, "Compartilhar", str(e)); return
+        self._status(f"Compartilhado com «{login}» por {sp_dias.value()} dia(s).", "sucesso")
+
     # ---------- entrada na PRINCIPAL após login
     def _abrir_principal(self):
         try:
@@ -334,8 +456,10 @@ class JanelaServidor(QtWidgets.QMainWindow):
 
         gestao = self._fonte.papel in ("GESTOR", "ADM")
         self.bt_export.setVisible(gestao)
+        self.bt_compartilhar.setVisible(gestao)
         self.bt_nav_usr.setVisible(gestao)
         self.bt_nav_env.setVisible(gestao)
+        self.bt_nav_adm.setVisible(self._fonte.papel == "ADM")
         papel_txt = {"ADM": "Administrador", "GESTOR": "Gestor", "USUARIO": "Usuário"}.get(self._fonte.papel, "")
         self.lbl_usuario.setText(
             f"<b style='color:{tema.PALETA['texto']}'>{escape(str(self._dados.get('nome') or ''))}</b>"
