@@ -171,42 +171,57 @@ class JanelaServidor(QtWidgets.QMainWindow):
         self.lbl_senha.setText(texto); self.lbl_senha.setProperty("aviso", aviso); tema.repolir(self.lbl_senha)
 
     # ================================================================= PRINCIPAL
+    _TITULOS = {_AREA_REL: "Relatórios", _AREA_USR: "Gestão de usuários",
+                _AREA_ENV: "Enviar e publicar planilha"}
+
     def _montar_principal(self) -> QtWidgets.QWidget:
         pagina = QtWidgets.QWidget()
-        col = QtWidgets.QVBoxLayout(pagina); col.setContentsMargins(12, 12, 12, 12); col.setSpacing(10)
+        linha = QtWidgets.QHBoxLayout(pagina); linha.setContentsMargins(0, 0, 0, 0); linha.setSpacing(0)
 
-        # ---- barra de navegação (topo)
-        barra = QtWidgets.QHBoxLayout()
+        # ---- barra lateral (navegação + identificação + sair)
+        lateral = QtWidgets.QFrame(); lateral.setProperty("classe", "lateral"); lateral.setFixedWidth(230)
+        lv = QtWidgets.QVBoxLayout(lateral); lv.setContentsMargins(0, 0, 0, 0); lv.setSpacing(0)
+        marca = QtWidgets.QLabel(config.NOME_APLICACAO); marca.setProperty("classe", "marca_topo")
+        marca.setWordWrap(True); lv.addWidget(marca)
         self.bt_nav_rel = self._bt_nav("Relatórios", _AREA_REL)
         self.bt_nav_usr = self._bt_nav("Usuários", _AREA_USR)
         self.bt_nav_env = self._bt_nav("Enviar planilha", _AREA_ENV)
         for b in (self.bt_nav_rel, self.bt_nav_usr, self.bt_nav_env):
-            barra.addWidget(b)
-        barra.addStretch(1)
+            lv.addWidget(b)
+        lv.addStretch(1)
         self.lbl_usuario = QtWidgets.QLabel(); self.lbl_usuario.setProperty("classe", "apoio")
-        self.bt_sair = QtWidgets.QPushButton("Sair"); self.bt_sair.setProperty("classe", "discreto")
-        self.bt_sair.clicked.connect(self._sair)
-        barra.addWidget(self.lbl_usuario); barra.addWidget(self.bt_sair)
-        col.addLayout(barra)
-        sep = QtWidgets.QFrame(); sep.setProperty("classe", "separador"); sep.setFixedHeight(1)
-        col.addWidget(sep)
+        self.lbl_usuario.setWordWrap(True); self.lbl_usuario.setContentsMargins(16, 10, 16, 6)
+        lv.addWidget(self.lbl_usuario)
+        self.bt_sair = QtWidgets.QPushButton("Sair"); self.bt_sair.setProperty("classe", "nav")
+        self.bt_sair.clicked.connect(self._sair); lv.addWidget(self.bt_sair)
+        rodape = QtWidgets.QWidget(); rodape.setFixedHeight(10); lv.addWidget(rodape)
+        linha.addWidget(lateral)
 
+        # ---- área de conteúdo (título da página + pilha de áreas)
+        conteudo = QtWidgets.QWidget(); conteudo.setProperty("classe", "conteudo")
+        col = QtWidgets.QVBoxLayout(conteudo); col.setContentsMargins(24, 18, 24, 16); col.setSpacing(14)
+        self.lbl_pagina = QtWidgets.QLabel(); self.lbl_pagina.setProperty("classe", "pagina_titulo")
+        col.addWidget(self.lbl_pagina)
         self.area = QtWidgets.QStackedWidget()
         self.area.addWidget(self._pagina_relatorios())   # _AREA_REL
         self.area.addWidget(self._pagina_usuarios())     # _AREA_USR
         self.area.addWidget(self._pagina_enviar())       # _AREA_ENV
         col.addWidget(self.area, 1)
+        linha.addWidget(conteudo, 1)
         return pagina
 
     def _bt_nav(self, texto: str, destino: int) -> QtWidgets.QPushButton:
         b = QtWidgets.QPushButton(texto)
+        b.setProperty("classe", "nav")
+        b.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
         b.clicked.connect(lambda: self._ir_area(destino))
         return b
 
     def _ir_area(self, destino: int):
         self.area.setCurrentIndex(destino)
+        self.lbl_pagina.setText(self._TITULOS.get(destino, ""))
         for b, idx in ((self.bt_nav_rel, _AREA_REL), (self.bt_nav_usr, _AREA_USR), (self.bt_nav_env, _AREA_ENV)):
-            b.setProperty("classe", "secundario" if idx == destino else "discreto")
+            b.setProperty("classe", "nav_ativo" if idx == destino else "nav")
             tema.repolir(b)
         if destino == _AREA_USR:
             self._carregar_usuarios()
@@ -235,8 +250,6 @@ class JanelaServidor(QtWidgets.QMainWindow):
     def _pagina_usuarios(self) -> QtWidgets.QWidget:
         p = QtWidgets.QWidget(); col = QtWidgets.QVBoxLayout(p)
         col.setContentsMargins(0, 0, 0, 0); col.setSpacing(10)
-        tit = QtWidgets.QLabel("Usuários do setor"); tit.setProperty("classe", "secao"); col.addWidget(tit)
-
         self.tab_usuarios = QtWidgets.QTableWidget(0, 5)
         self.tab_usuarios.setHorizontalHeaderLabels(["Nome", "Login", "Papel", "Setor", "Situação"])
         self.tab_usuarios.horizontalHeader().setStretchLastSection(True)
@@ -279,7 +292,6 @@ class JanelaServidor(QtWidgets.QMainWindow):
     def _pagina_enviar(self) -> QtWidgets.QWidget:
         p = QtWidgets.QWidget(); col = QtWidgets.QVBoxLayout(p)
         col.setContentsMargins(0, 0, 0, 0); col.setSpacing(10)
-        tit = QtWidgets.QLabel("Enviar e publicar planilha"); tit.setProperty("classe", "secao"); col.addWidget(tit)
         topo = QtWidgets.QHBoxLayout()
         self.cb_env_rel = QtWidgets.QComboBox(); self.cb_env_rel.setMinimumWidth(300)
         self.cb_env_rel.currentIndexChanged.connect(self._carregar_cargas)
@@ -325,7 +337,9 @@ class JanelaServidor(QtWidgets.QMainWindow):
         self.bt_nav_usr.setVisible(gestao)
         self.bt_nav_env.setVisible(gestao)
         papel_txt = {"ADM": "Administrador", "GESTOR": "Gestor", "USUARIO": "Usuário"}.get(self._fonte.papel, "")
-        self.lbl_usuario.setText(f"{self._dados.get('nome')} · {papel_txt}")
+        self.lbl_usuario.setText(
+            f"<b style='color:{tema.PALETA['texto']}'>{escape(str(self._dados.get('nome') or ''))}</b>"
+            f"<br>{papel_txt}")
         self.pilha.setCurrentIndex(_PRINCIPAL)
         self._ir_area(_AREA_REL)
         if rels:

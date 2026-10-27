@@ -181,6 +181,17 @@ QToolTip {{ background: {c['texto']}; color: #FFFFFF; border: none; padding: 5px
 QMenu {{ background: {c['superficie']}; border: 1px solid {c['borda']}; padding: {e['xs']}px; }}
 QMenu::item {{ padding: 6px 24px 6px 10px; border-radius: 4px; }}
 QMenu::item:selected {{ background: {c['marca_clara']}; color: {c['texto']}; }}
+
+/* ---- Janela cliente-servidor (v2): barra lateral + conteúdo (não usado pela v1) ---- */
+QFrame[classe="lateral"] {{ background: {c['superficie']}; border: none; border-right: 1px solid {c['borda']}; }}
+QLabel[classe="marca_topo"] {{ background: {c['marca']}; color: #FFFFFF; font-size: 15px; font-weight: 700; padding: 18px 16px; }}
+QLabel[classe="pagina_titulo"] {{ font-size: {f['titulo']}px; font-weight: 700; color: {c['texto']}; }}
+QWidget[classe="conteudo"] {{ background: {c['fundo']}; }}
+QPushButton[classe="nav"] {{ background: transparent; color: {c['texto_apoio']}; border: none; border-left: 3px solid transparent;
+    border-radius: 0; text-align: left; padding: 11px 16px; font-weight: 600; min-height: 22px; }}
+QPushButton[classe="nav"]:hover {{ background: {c['fundo']}; color: {c['texto']}; }}
+QPushButton[classe="nav_ativo"] {{ background: {c['marca_clara']}; color: {c['marca_escura']}; border: none;
+    border-left: 3px solid {c['marca']}; border-radius: 0; text-align: left; padding: 11px 16px; font-weight: 700; min-height: 22px; }}
 """
 
 
