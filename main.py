@@ -3,8 +3,13 @@
 Interface local em PyQt6. Toda a lógica de análise vive em `src/analise_planilha`.
 
 Uso:
-    python main.py                # abre a interface
+    python main.py                # abre o CLIENTE-SERVIDOR (v2): tela de login no servidor
+    python main.py --servidor URL # idem, apontando um servidor específico
+    python main.py --local        # abre a interface LOCAL (v1): motor na própria máquina, sem login
     python main.py --autoteste    # diagnóstico sem abrir janela (usado no build)
+
+Padrão = cliente-servidor: o controle por setor (login, papéis, isolamento) vive no servidor. A v1
+local continua disponível em `--local` (útil para o ADM montar modelos ou rodar sem servidor).
 
 O `--autoteste` confere, sem gerar nada para o usuário, se o pacote tem tudo o que precisa
 (templates, ícone, dependências, pasta gravável) e exercita a análise de ponta a ponta. É o
@@ -125,16 +130,30 @@ def autoteste() -> int:
     return 1 if falhas else 0
 
 
+def _modo(argv: list[str]) -> tuple[str, str | None]:
+    """Decide o modo a partir dos argumentos (puro, sem efeitos — testável sem abrir janela).
+    Devolve (modo, url): modo ∈ {autoteste, local, servidor}; url só no servidor (None = padrão)."""
+    if "--autoteste" in argv:
+        return "autoteste", None
+    if "--local" in argv:
+        return "local", None
+    url = None
+    if "--servidor" in argv:                     # --servidor [URL] aponta um servidor específico
+        i = argv.index("--servidor")
+        if i + 1 < len(argv) and not argv[i + 1].startswith("-"):
+            url = argv[i + 1]
+    return "servidor", url
+
+
 def main() -> int:
-    if "--autoteste" in sys.argv:
+    modo, url = _modo(sys.argv[1:])
+    if modo == "autoteste":
         return autoteste()
-    if "--servidor" in sys.argv:                 # cliente da API v2 (ver DOCS/16); --servidor [URL]
-        from janela_remota import URL_PADRAO, executar_servidor
-        i = sys.argv.index("--servidor")
-        url = sys.argv[i + 1] if i + 1 < len(sys.argv) and not sys.argv[i + 1].startswith("-") else URL_PADRAO
-        return executar_servidor(url)
-    from janela import executar
-    return executar()
+    if modo == "local":                          # interface local da v1 (motor na própria máquina)
+        from janela import executar
+        return executar()
+    from janela_remota import URL_PADRAO, executar_servidor   # padrão: cliente-servidor v2
+    return executar_servidor(url or URL_PADRAO)
 
 
 if __name__ == "__main__":
