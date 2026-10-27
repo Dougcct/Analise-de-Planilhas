@@ -1,3 +1,9 @@
 # Scripts do Windows precisam de CRLF: com LF o cmd pode errar o «goto :rótulo».
 *.bat text eol=crlf
 *.cmd text eol=crlf
+
+# Já estes rodam em containers Linux: CRLF quebraria o interpretador (/bin/sh ^M). Forçar LF.
+*.sh text eol=lf
+Caddyfile text eol=lf
+Dockerfile text eol=lf
+
