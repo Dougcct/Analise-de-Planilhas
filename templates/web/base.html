@@ -18,6 +18,28 @@
     header.topo .usuario{font-size:13px;display:flex;align-items:center;gap:14px}
     header.topo a{color:#fff;text-decoration:none;opacity:.95}
     header.topo a:hover{text-decoration:underline}
+    nav.menu{background:var(--superficie);border-bottom:1px solid var(--borda);display:flex;gap:4px;
+      padding:0 16px;flex-wrap:wrap}
+    nav.menu a{padding:12px 16px;color:var(--apoio);text-decoration:none;font-weight:600;font-size:14px;
+      border-bottom:3px solid transparent}
+    nav.menu a:hover{color:var(--texto)}
+    nav.menu a.ativo{color:var(--marca);border-bottom-color:var(--marca)}
+    .ok{background:var(--marca-clara);border:1px solid var(--marca);color:var(--marca-escura);
+      border-radius:6px;padding:10px;font-size:13px;margin-top:12px}
+    table{width:100%;border-collapse:collapse;background:var(--superficie);border:1px solid var(--borda);
+      border-radius:8px;overflow:hidden;margin-top:14px}
+    th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--borda);font-size:14px}
+    th{background:var(--fundo);color:var(--apoio);font-size:12px}
+    tr:last-child td{border-bottom:0}
+    form.linha{background:var(--superficie);border:1px solid var(--borda);border-radius:8px;padding:16px;margin-top:16px}
+    form.linha .campos{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+    form.linha button{width:auto;margin-top:14px;padding:10px 18px}
+    select{width:100%;padding:9px 10px;border:1px solid var(--borda);border-radius:6px;font-size:14px;background:#fff}
+    .btn-sec{display:inline-block;width:auto;margin:0 4px 0 0;background:var(--superficie);color:var(--marca-escura);
+      border:1px solid var(--marca);border-radius:6px;padding:7px 12px;font-weight:600;cursor:pointer;font-size:13px}
+    .btn-sec:hover{background:var(--marca-clara)}
+    .inline{display:inline}
+    .secao-tit{font-weight:700;margin:22px 0 2px}
     main{max-width:1100px;margin:0 auto;padding:22px 16px}
     h1{font-size:22px;margin:0 0 4px}
     .apoio{color:var(--apoio);font-size:13px}
@@ -48,7 +70,21 @@
     <span class="marca">Análise de Planilhas</span>
     <span class="usuario">{{ nome }} · {{ papel }} <a href="/web/logout">Sair</a></span>
   </header>
+  <nav class="menu">
+    <a href="/web" class="{{ 'ativo' if secao == 'relatorios' }}">Relatórios</a>
+    {% if papel_cod in ('GESTOR','ADM') %}
+    <a href="/web/usuarios" class="{{ 'ativo' if secao == 'usuarios' }}">Usuários</a>
+    <a href="/web/enviar" class="{{ 'ativo' if secao == 'enviar' }}">Enviar planilha</a>
+    {% endif %}
+    {% if papel_cod == 'ADM' %}
+    <a href="/web/admin" class="{{ 'ativo' if secao == 'admin' }}">Administração</a>
+    {% endif %}
+  </nav>
   {% endif %}
-  <main>{% block conteudo %}{% endblock %}</main>
+  <main>
+    {% if erro %}<div class="erro">{{ erro }}</div>{% endif %}
+    {% if ok %}<div class="ok">{{ ok }}</div>{% endif %}
+    {% block conteudo %}{% endblock %}
+  </main>
 </body>
 </html>

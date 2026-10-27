@@ -1,0 +1,36 @@
+{% extends "web/base.html" %}
+{% block titulo %}Administração — Análise de Planilhas{% endblock %}
+{% block conteudo %}
+<h1>Administração</h1>
+
+<p class="secao-tit">Novo setor (centro de custo)</p>
+<form method="post" action="/web/admin/centro" class="linha">
+  <div class="campos">
+    <div><label>Código</label><input name="codigo" placeholder="ex.: RH" required></div>
+    <div><label>Nome do setor</label><input name="nome" placeholder="ex.: Recursos Humanos" required></div>
+  </div>
+  <button type="submit">Criar setor</button>
+</form>
+
+<p class="secao-tit">Novo relatório</p>
+<form method="post" action="/web/admin/relatorio" class="linha">
+  <div class="campos">
+    <div><label>Nome do relatório</label><input name="nome" placeholder="ex.: Garantia de Atendimento" required></div>
+    <div><label>Setor</label>
+      <select name="centro_custo_id">
+        {% for c in centros %}<option value="{{ c.id }}">{{ c.codigo }} — {{ c.nome }}</option>{% endfor %}
+      </select>
+    </div>
+    <div><label>Modelo de análise</label>
+      <select name="modelo">
+        <option value="">(sem modelo — detecta pela planilha)</option>
+        {% for m in modelos %}<option value="{{ m.slug }}">{{ m.nome }}</option>{% endfor %}
+      </select>
+    </div>
+  </div>
+  <button type="submit">Criar relatório</button>
+</form>
+
+<p class="apoio" style="margin-top:18px">Depois de criar o setor, cadastre o gestor dele em «Usuários».
+Sem planilha publicada, o relatório mostra uma amostra sintética no formato do modelo.</p>
+{% endblock %}

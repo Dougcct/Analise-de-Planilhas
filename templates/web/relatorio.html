@@ -3,5 +3,18 @@
 {% block conteudo %}
 <a class="voltar" href="/web">← Relatórios</a>
 <h1>{{ titulo }}</h1>
+{% if pode_compartilhar %}
+<details style="margin:6px 0 12px">
+  <summary class="btn-sec" style="list-style:none">Compartilhar com outro setor…</summary>
+  <form method="post" action="/web/r/{{ slug }}/compartilhar" class="linha" style="margin-top:10px">
+    <div class="campos">
+      <div><label>Login do destinatário</label><input name="login_destino" required></div>
+      <div><label>Prazo (dias)</label><input name="dias" type="number" value="7" min="1" max="90"></div>
+      <div><label><input type="checkbox" name="anonimizar" checked> Anonimizar nomes</label></div>
+    </div>
+    <button type="submit">Compartilhar</button>
+  </form>
+</details>
+{% endif %}
 <iframe class="relatorio" src="/web/r/{{ slug }}/conteudo" title="{{ titulo }}"></iframe>
 {% endblock %}

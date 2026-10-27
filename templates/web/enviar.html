@@ -1,0 +1,49 @@
+{% extends "web/base.html" %}
+{% block titulo %}Enviar planilha — Análise de Planilhas{% endblock %}
+{% block conteudo %}
+<h1>Enviar e publicar planilha</h1>
+
+{% if relatorios %}
+<form method="get" action="/web/enviar" class="linha">
+  <div class="campos">
+    <div><label>Relatório</label>
+      <select name="slug" onchange="this.form.submit()">
+        {% for r in relatorios %}
+        <option value="{{ r.slug }}" {{ 'selected' if r.slug == slug }}>{{ r.nome }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+</form>
+
+<form method="post" action="/web/enviar" enctype="multipart/form-data" class="linha">
+  <input type="hidden" name="slug" value="{{ slug }}">
+  <div class="campos">
+    <div><label>Arquivo (.xlsx .ods .csv .tsv .txt)</label>
+      <input type="file" name="arquivo" accept=".xlsx,.ods,.csv,.tsv,.txt" required></div>
+  </div>
+  <button type="submit">Enviar (vira Rascunho)</button>
+</form>
+
+<p class="secao-tit">Envios deste relatório</p>
+<table>
+  <tr><th>Arquivo</th><th>Situação</th><th>Tamanho</th><th>Enviado em</th><th></th></tr>
+  {% for c in cargas %}
+  <tr>
+    <td>{{ c.nome }}</td><td>{{ c.situacao }}</td><td>{{ c.tam }}</td><td>{{ c.quando }}</td>
+    <td>
+      <form method="post" action="/web/cargas/{{ c.id }}/testar" class="inline">
+        <input type="hidden" name="slug" value="{{ slug }}"><button class="btn-sec">Testar</button></form>
+      <form method="post" action="/web/cargas/{{ c.id }}/publicar" class="inline"
+            onsubmit="return confirm('Publicar esta planilha como versão vigente?')">
+        <input type="hidden" name="slug" value="{{ slug }}"><button class="btn-sec">Publicar</button></form>
+    </td>
+  </tr>
+  {% else %}
+  <tr><td colspan="5" class="apoio">Nenhum envio ainda.</td></tr>
+  {% endfor %}
+</table>
+{% else %}
+<p class="apoio" style="margin-top:20px">Nenhum relatório do seu setor para enviar.</p>
+{% endif %}
+{% endblock %}

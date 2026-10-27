@@ -1,0 +1,44 @@
+{% extends "web/base.html" %}
+{% block titulo %}Usuários — Análise de Planilhas{% endblock %}
+{% block conteudo %}
+<h1>Gestão de usuários</h1>
+<p class="apoio">Usuários do seu setor{{ ' (todos, como ADM)' if eh_adm else '' }}.</p>
+
+<table>
+  <tr><th>Nome</th><th>Login</th><th>Papel</th><th>Setor</th><th>Situação</th><th></th></tr>
+  {% for u in usuarios %}
+  <tr>
+    <td>{{ u.nome }}</td><td>{{ u.login }}</td><td>{{ u.papel }}</td><td>{{ u.setor }}</td>
+    <td>{{ 'Ativo' if u.ativo else 'Bloqueado' }}</td>
+    <td>
+      {% if u.ativo %}
+      <form method="post" action="/web/usuarios/{{ u.id }}/bloquear" class="inline"
+            onsubmit="return confirm('Bloquear {{ u.login }}?')">
+        <button class="btn-sec">Bloquear</button>
+      </form>
+      {% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+
+<p class="secao-tit">Novo usuário</p>
+<form method="post" action="/web/usuarios" class="linha">
+  <div class="campos">
+    <div><label>Nome</label><input name="nome" required></div>
+    <div><label>Login</label><input name="login" required></div>
+    <div><label>Senha provisória</label><input name="senha" type="text" required></div>
+    {% if eh_adm %}
+    <div><label>Papel</label>
+      <select name="papel">{% for p in papeis %}<option value="{{ p }}">{{ p }}</option>{% endfor %}</select>
+    </div>
+    <div><label>Setor</label>
+      <select name="centro_custo_id">
+        {% for c in centros %}<option value="{{ c.id }}">{{ c.codigo }} — {{ c.nome }}</option>{% endfor %}
+      </select>
+    </div>
+    {% endif %}
+  </div>
+  <button type="submit">Criar usuário</button>
+</form>
+{% endblock %}

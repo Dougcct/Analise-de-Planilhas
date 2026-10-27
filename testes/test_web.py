@@ -65,3 +65,63 @@ def test_logout(web):
     assert web.get("/web").status_code == 200
     web.get("/web/logout", follow_redirects=False)
     assert web.get("/web", follow_redirects=False).status_code == 303   # sessão revogada
+
+
+def _cli(login, senha="senha123"):
+    c = TestClient(app)
+    c.post("/web/login", data={"login": login, "senha": senha})   # segue o 303 e guarda o cookie
+    return c
+
+
+def test_web_gestao_de_usuarios(web):
+    c = _cli("gestor.fin")
+    r = c.post("/web/usuarios", data={"login": "novo.web", "nome": "Novo Web", "senha": "senha123"},
+               follow_redirects=False)
+    assert r.status_code == 303 and "ok=" in r.headers["location"]
+    assert "novo.web" in c.get("/web/usuarios").text
+    # usuário comum não acessa a gestão
+    assert "restrito" in _cli("user.fin").get("/web/usuarios").text.lower()
+
+
+def test_web_admin_cria_setor_e_relatorio(web):
+    c = _cli("admin", "admin123")
+    r = c.post("/web/admin/centro", data={"codigo": "webrh", "nome": "RH Web"}, follow_redirects=False)
+    assert r.status_code == 303 and "ok=" in r.headers["location"]
+    assert "WEBRH" in c.get("/web/admin").text
+    r2 = c.post("/web/admin/relatorio", data={"nome": "Teste Web", "centro_custo_id": 1, "modelo": ""},
+                follow_redirects=False)
+    assert r2.status_code == 303 and "ok=" in r2.headers["location"]
+    assert "Teste Web" in c.get("/web").text
+    # gestor não entra na administração
+    assert "restrito" in _cli("gestor.fin").get("/web/admin").text.lower()
+
+
+def _cesariana_xlsx(n):
+    import io
+    import openpyxl
+    wb = openpyxl.Workbook(); ws = wb.active; ws.title = "CESARIANA (FETO ÚNICO OU MÚLTIP"
+    ws.append(["Paciente", "Faturamento (R$)", "Custo (R$)", "Resultado (R$)"])
+    for i in range(1, n + 1):
+        ws.append([f"PACIENTE {i:03d}", 1000.0 * i, 600.0 * i, 400.0 * i])
+    b = io.BytesIO(); wb.save(b); return b.getvalue()
+
+
+def test_web_enviar_e_publicar(web):
+    import re
+    c = _cli("gestor.fat")
+    r = c.post("/web/enviar", data={"slug": "resumo-cesariana"},
+               files={"arquivo": ("cesariana.xlsx", _cesariana_xlsx(7), "x")}, follow_redirects=False)
+    assert r.status_code == 303 and "ok=" in r.headers["location"]
+    pagina = c.get("/web/enviar?slug=resumo-cesariana").text
+    cid = re.search(r"/web/cargas/(\d+)/publicar", pagina).group(1)
+    rp = c.post(f"/web/cargas/{cid}/publicar", data={"slug": "resumo-cesariana"}, follow_redirects=False)
+    assert rp.status_code == 303 and "ok=" in rp.headers["location"]
+    assert "7 registro" in c.get("/web/r/resumo-cesariana/conteudo").text   # relatório refletiu o upload
+
+
+def test_web_compartilhar(web):
+    c = _cli("gestor.fin")
+    r = c.post("/web/r/faturamento-hunf/compartilhar",
+               data={"login_destino": "gestor.fat", "dias": 7, "anonimizar": "on"}, follow_redirects=False)
+    assert r.status_code == 303 and "ok=" in r.headers["location"]
+    assert "Faturamento HUNF" in _cli("gestor.fat").get("/web").text   # convidado passa a ver o relatório
