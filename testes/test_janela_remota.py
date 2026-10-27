@@ -35,7 +35,7 @@ def _analise():
 
 def test_janela_servidor_renderiza_analise(app):
     from app.janela_remota import JanelaServidor
-    j = JanelaServidor(fonte=None)          # sem rede: construída e renderizada direto
+    j = JanelaServidor(fonte=None, auto_descobrir=False)          # sem rede: construída e renderizada direto
     j._mostrar(_analise())
     abas = [j.abas.tabText(i) for i in range(j.abas.count())]
     assert abas[0] == "Resumo e achados" and j.abas.count() >= 2
@@ -45,7 +45,7 @@ def test_janela_servidor_renderiza_analise(app):
 
 def test_sem_login_combo_desabilitado(app):
     from app.janela_remota import JanelaServidor
-    j = JanelaServidor(fonte=None)
+    j = JanelaServidor(fonte=None, auto_descobrir=False)
     assert not j.combo.isEnabled()          # só habilita após entrar
     j.close()
 
@@ -108,7 +108,7 @@ def _drenar(j, app):
 
 def test_comeca_na_tela_de_login(app):
     from app.janela_remota import JanelaServidor, _LOGIN
-    j = JanelaServidor(fonte=None)
+    j = JanelaServidor(fonte=None, auto_descobrir=False)
     assert j.pilha.currentIndex() == _LOGIN     # abre no login, não na tela de dados
     j.close()
 

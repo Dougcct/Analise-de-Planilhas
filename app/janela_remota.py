@@ -21,10 +21,11 @@ RAIZ = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(RAIZ / "src"))
 
 try:
-    from app import tema
+    from app import descoberta, tema
     from app.componentes import CarregadorWorker, limpar_layout, painel_widget
     from app.fonte import ErroServidor, FonteRemota, avaliar_versao
 except ModuleNotFoundError:   # app/ no sys.path (main.py / .exe)
+    import descoberta  # type: ignore
     import tema  # type: ignore
     from componentes import CarregadorWorker, limpar_layout, painel_widget  # type: ignore
     from fonte import ErroServidor, FonteRemota, avaliar_versao  # type: ignore
@@ -40,14 +41,18 @@ _PAPEIS = ("USUARIO", "GESTOR", "ADM")
 
 
 class JanelaServidor(QtWidgets.QMainWindow):
-    def __init__(self, fonte: FonteRemota | None = None, url: str = URL_PADRAO):
+    def __init__(self, fonte: FonteRemota | None = None, url: str | None = None,
+                 auto_descobrir: bool = True):
         super().__init__()
         self._fonte = fonte
-        self._url_inicial = url
+        self._auto_descobrir = auto_descobrir and fonte is None
+        self._url_servidor = url or descoberta.carregar_url() or URL_PADRAO
         self._dados: dict = {}
         self._centros: list[dict] = []
         self._thread: QtCore.QThread | None = None
         self._worker = None
+        self._thr_desc: QtCore.QThread | None = None
+        self._wk_desc = None
         self.setWindowTitle(f"{config.NOME_APLICACAO} — servidor")
         self.setWindowIcon(tema.icone())
         self.resize(1240, 840)
@@ -58,6 +63,10 @@ class JanelaServidor(QtWidgets.QMainWindow):
         self.pilha.addWidget(self._montar_troca_senha())  # _SENHA
         self.pilha.addWidget(self._montar_principal())    # _PRINCIPAL
         self.pilha.setCurrentIndex(_LOGIN)
+        if self._auto_descobrir:
+            QtCore.QTimer.singleShot(0, self._iniciar_descoberta)   # procura o servidor ao abrir
+        else:
+            self._srv_status(f"Servidor: {self._url_servidor}", "info")
 
     # ===================================================================== LOGIN
     def _montar_login(self) -> QtWidgets.QWidget:
@@ -73,13 +82,11 @@ class JanelaServidor(QtWidgets.QMainWindow):
         self.bt_atualizar.clicked.connect(self._atualizar_cliente)
         col.addWidget(self.banner); col.addWidget(self.bt_atualizar)
 
-        self.ed_url = QtWidgets.QLineEdit(self._url_inicial)
         self.ed_login = QtWidgets.QLineEdit(); self.ed_login.setPlaceholderText("usuário")
         self.ed_senha = QtWidgets.QLineEdit(); self.ed_senha.setPlaceholderText("senha")
         self.ed_senha.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
         for ed in (self.ed_login, self.ed_senha):
             ed.returnPressed.connect(self._entrar)
-        col.addWidget(self._rotulado("Servidor", self.ed_url))
         col.addWidget(self._rotulado("Usuário", self.ed_login))
         col.addWidget(self._rotulado("Senha", self.ed_senha))
 
@@ -88,10 +95,76 @@ class JanelaServidor(QtWidgets.QMainWindow):
         self.bt_entrar.clicked.connect(self._entrar)
         col.addWidget(self.bt_entrar)
 
+        # servidor: descoberto automaticamente na rede; o campo só aparece se o usuário pedir
+        self.lbl_servidor = QtWidgets.QLabel(); self.lbl_servidor.setProperty("classe", "apoio")
+        self.lbl_servidor.setWordWrap(True)
+        self.bt_alterar_srv = QtWidgets.QPushButton("Informar endereço manualmente")
+        self.bt_alterar_srv.setProperty("classe", "discreto")
+        self.bt_alterar_srv.clicked.connect(self._alternar_manual)
+        col.addWidget(self.lbl_servidor)
+        col.addWidget(self.bt_alterar_srv, alignment=QtCore.Qt.AlignmentFlag.AlignLeft)
+
+        self.ed_url = QtWidgets.QLineEdit(self._url_servidor)
+        self.wd_servidor = QtWidgets.QWidget()
+        wv = QtWidgets.QVBoxLayout(self.wd_servidor); wv.setContentsMargins(0, 0, 0, 0); wv.setSpacing(4)
+        bt_usar = QtWidgets.QPushButton("Usar este servidor"); bt_usar.setProperty("classe", "secundario")
+        bt_usar.clicked.connect(self._usar_servidor_manual)
+        wv.addWidget(self._rotulado("Endereço do servidor", self.ed_url)); wv.addWidget(bt_usar)
+        self.wd_servidor.setVisible(False)
+        col.addWidget(self.wd_servidor)
+
         self.lbl_login = QtWidgets.QLabel(f"Versão do cliente: {__version__}")
         self.lbl_login.setProperty("classe", "apoio"); self.lbl_login.setWordWrap(True)
         col.addWidget(self.lbl_login)
         return pagina
+
+    # ---------- descoberta automática do servidor na rede
+    def _iniciar_descoberta(self):
+        self.bt_entrar.setEnabled(False)
+        self._srv_status("Procurando o servidor na rede…", "info")
+        self._thr_desc = QtCore.QThread()
+        self._wk_desc = CarregadorWorker(lambda: descoberta.descobrir(salvo=descoberta.carregar_url()))
+        self._wk_desc.moveToThread(self._thr_desc)
+        self._thr_desc.started.connect(self._wk_desc.executar)
+        self._wk_desc.concluido.connect(self._descoberta_terminou)
+        self._wk_desc.falhou.connect(lambda _m: self._descoberta_terminou(None))
+        for s in (self._wk_desc.concluido, self._wk_desc.falhou):
+            s.connect(self._thr_desc.quit)
+        self._thr_desc.start()
+
+    def _descoberta_terminou(self, url):
+        self.bt_entrar.setEnabled(True)
+        if url:
+            self._url_servidor = url
+            self._fonte = None
+            self.ed_url.setText(url)
+            self._srv_status(f"Servidor encontrado: {url}", "sucesso")
+            self.wd_servidor.setVisible(False)
+            self.ed_login.setFocus()
+        else:
+            self._srv_status("Não encontrei o servidor automaticamente. Informe o endereço:", "alerta")
+            self.wd_servidor.setVisible(True)
+
+    def _alternar_manual(self):
+        mostrar = not self.wd_servidor.isVisible()
+        self.ed_url.setText(self._url_servidor)
+        self.wd_servidor.setVisible(mostrar)
+
+    def _usar_servidor_manual(self):
+        url = self.ed_url.text().strip()
+        if not url:
+            return
+        if not url.startswith(("http://", "https://")):
+            url = "http://" + url
+        self._url_servidor = url
+        self._fonte = None
+        self.wd_servidor.setVisible(False)
+        self._srv_status(f"Servidor: {url}", "info")
+
+    def _srv_status(self, texto, aviso="info"):
+        self.lbl_servidor.setText(texto)
+        self.lbl_servidor.setProperty("aviso", aviso)
+        tema.repolir(self.lbl_servidor)
 
     def _cartao_central(self):
         """Devolve (página, layout-do-cartão) com o cartão centralizado — usado por login e troca de senha."""
@@ -113,7 +186,7 @@ class JanelaServidor(QtWidgets.QMainWindow):
 
     def _entrar(self):
         if self._fonte is None:
-            self._fonte = FonteRemota(self.ed_url.text().strip() or URL_PADRAO)
+            self._fonte = FonteRemota(self._url_servidor or URL_PADRAO)
         if not self._checar_versao():
             return
         login, senha = self.ed_login.text().strip(), self.ed_senha.text()
@@ -126,6 +199,8 @@ class JanelaServidor(QtWidgets.QMainWindow):
             self._aviso_login(str(e), "erro"); return
         except Exception as e:
             self._aviso_login(f"{type(e).__name__}: {e}", "erro"); return
+        if self._auto_descobrir:
+            descoberta.salvar_url(self._url_servidor)    # próxima abertura conecta direto neste servidor
         self._senha_atual = senha
         self.ed_senha.clear()
         if self._dados.get("precisa_trocar_senha"):
@@ -762,16 +837,18 @@ class JanelaServidor(QtWidgets.QMainWindow):
         label.setText(texto); label.setProperty("aviso", aviso); tema.repolir(label)
 
     def closeEvent(self, e):
-        if self._thread is not None and self._thread.isRunning():
-            self._thread.quit(); self._thread.wait(2000)
+        for t in (self._thread, self._thr_desc):        # não fechar com carga/descoberta em voo
+            if t is not None and t.isRunning():
+                t.quit(); t.wait(2000)
         super().closeEvent(e)
 
 
-def executar_servidor(url: str = URL_PADRAO) -> int:
+def executar_servidor(url: str | None = None) -> int:
+    """url None → descobre o servidor na rede; url explícita (--servidor URL) → usa essa, sem descoberta."""
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(sys.argv)
     app.setApplicationName(config.NOME_APLICACAO)
     tema.aplicar(app)
-    janela = JanelaServidor(url=url)
+    janela = JanelaServidor(url=url, auto_descobrir=(url is None))
     janela.show()
     return app.exec()
 

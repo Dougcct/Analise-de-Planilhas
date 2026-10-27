@@ -152,8 +152,8 @@ def main() -> int:
     if modo == "local":                          # interface local da v1 (motor na própria máquina)
         from janela import executar
         return executar()
-    from janela_remota import URL_PADRAO, executar_servidor   # padrão: cliente-servidor v2
-    return executar_servidor(url or URL_PADRAO)
+    from janela_remota import executar_servidor   # padrão: cliente-servidor v2 (descobre o servidor)
+    return executar_servidor(url)
 
 
 if __name__ == "__main__":
