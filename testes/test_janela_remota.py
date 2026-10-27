@@ -10,7 +10,7 @@ import pytest
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 QtWidgets = pytest.importorskip("PyQt6.QtWidgets")
 
-from analise_planilha import servico   # noqa: E402
+from analise_planilha import __version__, servico   # noqa: E402
 
 
 @pytest.fixture(scope="module")
@@ -53,10 +53,15 @@ def test_sem_login_combo_desabilitado(app):
 class _FonteFake:
     """Dublê da FonteRemota: não toca rede; o teste comanda o que o 'servidor' responde."""
 
-    def __init__(self, papel="USUARIO", precisa_trocar=False):
+    def __init__(self, papel="USUARIO", precisa_trocar=False, status=None):
         self.papel = papel
         self._precisa = precisa_trocar
+        self._status = status or {"versao_minima_cliente": __version__,
+                                  "versao_recomendada_cliente": __version__}
         self.trocou = False
+
+    def status_versao(self):
+        return self._status
 
     def login(self, login, senha):
         return {"nome": "Fulano", "papel": self.papel, "precisa_trocar_senha": self._precisa}
@@ -130,6 +135,39 @@ def test_gate_de_troca_de_senha(app):
     assert f.trocou and j.pilha.currentIndex() == _PRINCIPAL
     _drenar(j, app)
     j.close()
+
+
+def test_versao_obrigatoria_barra_o_login(app):
+    from app.janela_remota import JanelaServidor, _LOGIN
+    # servidor exige uma versão mais nova que a do cliente → login barrado, banner visível
+    f = _FonteFake(status={"versao_minima_cliente": "99.0.0", "versao_recomendada_cliente": "99.0.0",
+                           "pacote": "/api/v1/atualizacao/99.0.0"})
+    j = JanelaServidor(fonte=f)
+    j.ed_login.setText("user.fin"); j.ed_senha.setText("senha123")
+    j._entrar()
+    assert j.pilha.currentIndex() == _LOGIN          # não entrou
+    assert j.banner.isVisibleTo(j) and j.bt_atualizar.isVisibleTo(j)
+    j.close()
+
+
+def test_versao_opcional_deixa_entrar(app):
+    from app.janela_remota import JanelaServidor, _PRINCIPAL
+    f = _FonteFake(status={"versao_minima_cliente": "0.1.0", "versao_recomendada_cliente": "99.0.0"})
+    j = JanelaServidor(fonte=f)
+    j.ed_login.setText("user.fin"); j.ed_senha.setText("senha123")
+    j._entrar()
+    assert j.pilha.currentIndex() == _PRINCIPAL       # entra, mas o aviso foi mostrado antes
+    assert "99.0.0" in j.banner.text()
+    _drenar(j, app)
+    j.close()
+
+
+def test_avaliar_versao():
+    from app.fonte import avaliar_versao
+    st = {"versao_minima_cliente": "2.0.0", "versao_recomendada_cliente": "2.1.0"}
+    assert avaliar_versao("1.9.0", st) == "obrigatoria"
+    assert avaliar_versao("2.0.0", st) == "opcional"
+    assert avaliar_versao("2.1.0", st) == "ok"
 
 
 def test_sair_volta_ao_login(app):

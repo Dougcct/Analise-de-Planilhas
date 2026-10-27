@@ -11,11 +11,26 @@ from __future__ import annotations
 import httpx
 
 from analise_planilha import __version__, serializacao, servico
+from analise_planilha.atualizacao import versao_tupla
 from analise_planilha.modelos import Analise, Filtros
 
 
 class ErroServidor(Exception):
     pass
+
+
+def avaliar_versao(local: str, status: dict) -> str:
+    """Compara a versão local com a política do servidor (fase 6, DOCS/17 §4).
+    Devolve 'obrigatoria' (abaixo da mínima → barra o login), 'opcional' (dá para seguir, mas há
+    versão nova recomendada) ou 'ok'."""
+    l = versao_tupla(local)
+    m = versao_tupla(status.get("versao_minima_cliente"))
+    r = versao_tupla(status.get("versao_recomendada_cliente"))
+    if m is not None and (l is None or l < m):
+        return "obrigatoria"
+    if r is not None and l is not None and l < r:
+        return "opcional"
+    return "ok"
 
 
 def _filtros_json(f: Filtros | None) -> dict:
@@ -53,11 +68,22 @@ class FonteRemota:
     def _url(self, caminho: str) -> str:
         return f"{self._base}{caminho}"
 
+    def status_versao(self) -> dict:
+        """Checagem pública (sem login) da política de versão do servidor — antes de entrar."""
+        try:
+            r = self._c.get(self._url("/api/v1/status/versao"), headers=self._cab())
+        except httpx.HTTPError as e:
+            raise ErroServidor(f"Não foi possível falar com o servidor: {e}") from e
+        r.raise_for_status()
+        return r.json()
+
     def login(self, login: str, senha: str) -> dict:
         try:
             r = self._c.post(self._url("/api/v1/sessao"), json={"login": login, "senha": senha}, headers=self._cab())
         except httpx.HTTPError as e:
             raise ErroServidor(f"Não foi possível falar com o servidor: {e}") from e
+        if r.status_code == 426:
+            raise ErroServidor("Esta versão do cliente não é mais aceita pelo servidor. Atualize para continuar.")
         if r.status_code == 401:
             raise ErroServidor("Login ou senha inválidos.")
         r.raise_for_status()

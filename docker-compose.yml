@@ -23,8 +23,10 @@ services:
     environment:
       DATABASE_URL: postgresql+psycopg://analise:analise@db:5432/analise
       CARGAS_DIR: /app/dados_cargas
+      ATUALIZACOES_DIR: /app/dados_atualizacoes
     volumes:
-      - cargas:/app/dados_cargas          # planilhas brutas enviadas (fora da imagem; LGPD)
+      - cargas:/app/dados_cargas                  # planilhas brutas enviadas (fora da imagem; LGPD)
+      - atualizacoes:/app/dados_atualizacoes      # espelho dos pacotes do cliente (fase 6)
     depends_on:
       db:
         condition: service_healthy
@@ -35,3 +37,4 @@ services:
 volumes:
   dados_db:
   cargas:
+  atualizacoes:

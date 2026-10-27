@@ -22,7 +22,7 @@ sys.path.insert(0, str(RAIZ / "src"))
 import numpy as np
 import pandas as pd
 from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Request, UploadFile
-from fastapi.responses import HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -30,7 +30,7 @@ from sqlalchemy.orm import Session
 from analise_planilha import __version__, relatorio_html, serializacao, servico
 from analise_planilha.modelos import Filtros
 
-from . import bd, seed, validacao
+from . import atualizacao, bd, seed, validacao
 from .modelos_bd import (
     ADM, GESTOR, PAPEIS, PUBLICADA, RASCUNHO, SUBSTITUIDA, USUARIO,
     AcessoTemporario, Auditoria, Carga, CentroCusto, Relatorio, SessaoUsuario, Usuario, utcnow,
@@ -40,8 +40,11 @@ from .seguranca import (
     DURACAO_SESSAO, MAX_TENTATIVAS, Escopo, conferir_senha, gerar_token, hash_senha, hash_token,
 )
 
-VERSAO_MINIMA_CLIENTE = "1.0.0"
 CARGAS_DIR = Path(os.getenv("CARGAS_DIR", "/app/dados_cargas"))   # volume: arquivos brutos enviados
+
+# Rotas abaixo deste prefixo NÃO passam pela trava de versão: a checagem pública e o download do
+# pacote precisam funcionar JUSTAMENTE para um cliente velho conseguir se atualizar (DOCS/17 §4).
+_SEM_TRAVA_VERSAO = ("/api/v1/status/", "/api/v1/atualizacao")
 
 
 @asynccontextmanager
@@ -49,6 +52,7 @@ async def lifespan(app: FastAPI):
     bd.esperar_banco()
     bd.criar_schema()
     CARGAS_DIR.mkdir(parents=True, exist_ok=True)
+    atualizacao.ATUALIZACOES_DIR.mkdir(parents=True, exist_ok=True)
     with bd.Sessao() as s:
         if seed.semear(s):
             print("[seed] dados de demonstração criados")
@@ -56,6 +60,21 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Análise de Planilhas — API v2", version=__version__, lifespan=lifespan)
+
+
+@app.middleware("http")
+async def trava_de_versao(request: Request, call_next):
+    """426 para cliente abaixo da versão mínima — burlar a tela não adianta (DOCS/17 §4).
+    Vale para toda rota /api/v1, menos a checagem pública e o espelho de atualização."""
+    caminho = request.url.path
+    if caminho.startswith("/api/v1") and not caminho.startswith(_SEM_TRAVA_VERSAO):
+        minima = atualizacao.politica()["minima"]
+        if atualizacao.cliente_desatualizado(request.headers.get("X-Client-Version"), minima):
+            return JSONResponse(status_code=426,
+                                content={"detail": "Versão do cliente desatualizada.",
+                                         "versao_minima_cliente": minima,
+                                         "pacote": f"/api/v1/atualizacao/{atualizacao.politica()['recomendada']}"})
+    return await call_next(request)
 
 
 # ---- relatório sintético (uma montagem por processo; o upload real vem na fase 4) ----
@@ -167,11 +186,68 @@ class CompartilharIn(BaseModel):
     anonimizar: bool = True
 
 
+class AprovarIn(BaseModel):
+    recomendada: str
+    minima: str | None = None    # sem valor: mantém a mínima atual
+
+
 # ---- rotas ----
 @app.get("/api/v1/status/versao")
 def versao():
-    return {"versao_servidor": __version__, "versao_minima_cliente": VERSAO_MINIMA_CLIENTE,
-            "versao_recomendada_cliente": __version__}
+    """Público (sem login): o cliente consulta ANTES de entrar para saber se precisa atualizar."""
+    pol = atualizacao.politica()
+    resp = {"versao_servidor": __version__, "versao_minima_cliente": pol["minima"],
+            "versao_recomendada_cliente": pol["recomendada"]}
+    if atualizacao.caminho_pacote(pol["recomendada"]) is not None:    # há pacote espelhado para baixar
+        resp["pacote"] = f"/api/v1/atualizacao/{pol['recomendada']}"
+        resp["sha256"] = atualizacao.sha256_pacote(pol["recomendada"])
+    return resp
+
+
+@app.get("/api/v1/atualizacao/{versao}")
+def baixar_atualizacao(versao: str):
+    """Espelho do pacote pela LAN — fora da trava de versão, para o cliente velho conseguir baixar."""
+    p = atualizacao.caminho_pacote(versao)
+    if p is None:
+        raise HTTPException(404, "Pacote não disponível para esta versão.")
+    return FileResponse(p, media_type="application/zip", filename=p.name)
+
+
+@app.post("/api/v1/atualizacao", status_code=201)
+async def subir_atualizacao(versao: str = Form(...), arquivo: UploadFile = File(...),
+                            escopo: Escopo = Depends(sessao_pronta), s: Session = Depends(get_sessao)):
+    """ADM espelha um pacote de cliente no servidor (o `.zip` gerado pela Release)."""
+    exigir(escopo, ADM)
+    if atualizacao.versao_tupla(versao) is None:
+        raise HTTPException(422, "Versão inválida (use algo como 2.1.0).")
+    conteudo = await arquivo.read(validacao.MAX_BYTES + 1)
+    if len(conteudo) > validacao.MAX_BYTES:
+        raise HTTPException(413, "Pacote acima do limite.")
+    sha = atualizacao.guardar_pacote(versao, conteudo)
+    registrar(s, escopo.usuario_id, None, "subir_atualizacao", versao, escopo.ip, detalhes=sha)
+    s.commit()
+    return {"versao": versao, "sha256": sha, "tamanho": len(conteudo)}
+
+
+@app.post("/api/v1/atualizacao/aprovar")
+def aprovar_atualizacao(dados: AprovarIn, escopo: Escopo = Depends(sessao_pronta),
+                        s: Session = Depends(get_sessao)):
+    """ADM decide a versão recomendada (e, se preciso, sobe a mínima obrigatória)."""
+    exigir(escopo, ADM)
+    if atualizacao.versao_tupla(dados.recomendada) is None:
+        raise HTTPException(422, "Versão recomendada inválida.")
+    if atualizacao.caminho_pacote(dados.recomendada) is None:
+        raise HTTPException(422, "Não há pacote espelhado para essa versão; suba o pacote antes.")
+    minima = dados.minima or atualizacao.politica()["minima"]
+    if atualizacao.versao_tupla(minima) is None:
+        raise HTTPException(422, "Versão mínima inválida.")
+    if atualizacao.versao_tupla(minima) > atualizacao.versao_tupla(dados.recomendada):
+        raise HTTPException(422, "A mínima não pode ser maior que a recomendada.")
+    pol = atualizacao.salvar_politica(minima, dados.recomendada)
+    registrar(s, escopo.usuario_id, None, "aprovar_atualizacao", dados.recomendada, escopo.ip,
+              detalhes=f"minima={minima}")
+    s.commit()
+    return pol
 
 
 @app.post("/api/v1/sessao")

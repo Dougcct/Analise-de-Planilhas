@@ -16,6 +16,8 @@ _DB.unlink(missing_ok=True)
 os.environ["DATABASE_URL"] = f"sqlite+pysqlite:///{_DB.as_posix()}"
 _CARGAS = pathlib.Path(tempfile.mkdtemp(prefix="analise_cargas_teste_"))
 os.environ["CARGAS_DIR"] = str(_CARGAS)
+_ATUALIZ = pathlib.Path(tempfile.mkdtemp(prefix="analise_atualiz_teste_"))
+os.environ["ATUALIZACOES_DIR"] = str(_ATUALIZ)
 
 from fastapi.testclient import TestClient      # noqa: E402
 
@@ -25,7 +27,8 @@ from analise_planilha import __version__       # noqa: E402
 
 @pytest.fixture(scope="module")
 def cliente():
-    with TestClient(app) as c:                 # entra no startup → cria schema + semeia
+    # o cliente real sempre manda a versão; o fixture faz o mesmo (a trava de versão é testada à parte)
+    with TestClient(app, headers={"X-Client-Version": __version__}) as c:   # startup: cria schema + semeia
         yield c
 
 
@@ -234,6 +237,45 @@ def test_so_dono_compartilha(cliente):
     # Gestor de outro setor não compartilha relatório que não é dele
     assert cliente.post("/api/v1/relatorios/sintetico-fin/compartilhar", headers=_auth(cliente, "gestor.fat"),
                         json={"login_destino": "user.fin"}).status_code == 404
+
+
+def test_trava_de_versao_426(cliente):
+    # cliente antigo é barrado em rota protegida (426), com o endereço do pacote no corpo
+    h = _auth(cliente, "gestor.fin")
+    r = cliente.get("/api/v1/relatorios", headers={**h, "X-Client-Version": "0.9.0"})
+    assert r.status_code == 426 and r.json()["versao_minima_cliente"]
+    # sem o cabeçalho de versão também barra (não confiar no cliente)
+    r2 = cliente.get("/api/v1/relatorios", headers={**h, "X-Client-Version": ""})
+    assert r2.status_code == 426
+    # a checagem pública de versão NÃO é barrada (senão o cliente velho nunca saberia que precisa atualizar)
+    assert cliente.get("/api/v1/status/versao", headers={"X-Client-Version": "0.1.0"}).status_code == 200
+
+
+def test_espelho_de_atualizacao_e_aprovacao(cliente):
+    # sem pacote espelhado, a versão recomendada não traz link de download
+    assert "pacote" not in cliente.get("/api/v1/status/versao").json()
+    # ADM sobe um pacote (zip qualquer, só para o espelho) e aprova a versão 2.0.0
+    ha = _auth(cliente, "admin", "admin123")
+    pacote = b"PK\x03\x04pacote-falso-de-teste"
+    r = cliente.post("/api/v1/atualizacao", headers=ha, data={"versao": "2.0.0"},
+                     files={"arquivo": ("AnalisePlanilhas-2.0.0.zip", pacote, "application/zip")})
+    assert r.status_code == 201
+    sha = r.json()["sha256"]
+    assert cliente.post("/api/v1/atualizacao/aprovar", headers=ha,
+                        json={"recomendada": "2.0.0"}).status_code == 200
+    # agora o status aponta o pacote e o hash, e o download pela LAN devolve exatamente o arquivo
+    st = cliente.get("/api/v1/status/versao").json()
+    assert st["versao_recomendada_cliente"] == "2.0.0" and st["sha256"] == sha
+    baixado = cliente.get(st["pacote"], headers={"X-Client-Version": "0.1.0"})   # exento da trava
+    assert baixado.status_code == 200 and baixado.content == pacote
+
+
+def test_so_adm_mexe_na_atualizacao(cliente):
+    hg = _auth(cliente, "gestor.fin")
+    assert cliente.post("/api/v1/atualizacao/aprovar", headers=hg,
+                        json={"recomendada": "2.0.0"}).status_code == 403
+    assert cliente.post("/api/v1/atualizacao", headers=hg, data={"versao": "3.0.0"},
+                        files={"arquivo": ("x.zip", b"PK\x03\x04", "application/zip")}).status_code == 403
 
 
 def test_auditoria_registra(cliente):

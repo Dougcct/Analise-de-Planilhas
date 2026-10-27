@@ -1,7 +1,11 @@
 # 17 · Atualização do cliente na v2 — versão controlada pelo servidor
 
-> **Status: planejamento (fase 6 de [16](16_arquitetura_v2.md#8-plano-em-fases)).** Parte do mecanismo
-> já existe na v1 e foi feita para ser reaproveitada.
+> **Status: fase 6 IMPLEMENTADA no servidor e no cliente.** Já funcionam: a trava `426` (middleware
+> `trava_de_versao`), o `GET /api/v1/status/versao` com política mínima/recomendada, o espelho de pacotes
+> pela LAN (`GET /api/v1/atualizacao/{versao}`), o upload e a aprovação pelo ADM (política num JSON no
+> volume) e, no cliente, a checagem antes do login (banner obrigatório/opcional). **Falta** o ADM
+> *baixar do GitHub* automaticamente (hoje o pacote é espelhado por upload) e o **rollback** do §6 —
+> ambos dependem do primeiro build `.exe`. Parte do mecanismo já existia na v1 e foi reaproveitada.
 
 ## 1. O problema
 

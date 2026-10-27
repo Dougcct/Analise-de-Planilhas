@@ -21,11 +21,11 @@ sys.path.insert(0, str(RAIZ / "src"))
 try:
     from app import tema
     from app.componentes import CarregadorWorker, limpar_layout, painel_widget
-    from app.fonte import ErroServidor, FonteRemota
+    from app.fonte import ErroServidor, FonteRemota, avaliar_versao
 except ModuleNotFoundError:   # app/ no sys.path (main.py / .exe)
     import tema  # type: ignore
     from componentes import CarregadorWorker, limpar_layout, painel_widget  # type: ignore
-    from fonte import ErroServidor, FonteRemota  # type: ignore
+    from fonte import ErroServidor, FonteRemota, avaliar_versao  # type: ignore
 
 from analise_planilha import __version__, config
 from analise_planilha.modelos import Filtros
@@ -305,13 +305,52 @@ class JanelaServidor(QtWidgets.QMainWindow):
         self.pilha.setCurrentIndex(_LOGIN)
         self.ed_login.setFocus()
 
-    # ---------- checagem/atualização de versão (fase 6) — preenchida no commit da fase 6
+    # ---------- checagem/atualização de versão (fase 6, DOCS/17 §4)
     def _checar_versao(self) -> bool:
-        """True se pode seguir com o login; False se a versão é obrigatória e barra o acesso."""
+        """Antes do login: consulta a política do servidor. True se pode seguir; False se a versão é
+        obrigatória (barra o acesso). Servidor fora do ar não barra — o login reporta o erro de rede."""
+        self._status_versao = {}
+        try:
+            self._status_versao = self._fonte.status_versao()
+        except ErroServidor:
+            self.banner.setVisible(False)
+            self.bt_atualizar.setVisible(False)
+            return True
+        nivel = avaliar_versao(__version__, self._status_versao)
+        recom = self._status_versao.get("versao_recomendada_cliente", "?")
+        tem_pacote = bool(self._status_versao.get("pacote"))
+        if nivel == "obrigatoria":
+            self._banner(f"Sua versão ({__version__}) não é mais aceita. "
+                         f"Atualize para a {recom} para entrar.", "erro", oferecer=tem_pacote)
+            return False
+        if nivel == "opcional":
+            self._banner(f"Há uma versão mais nova ({recom}). Você pode seguir, mas é recomendado atualizar.",
+                         "alerta", oferecer=tem_pacote)
+            return True
+        self.banner.setVisible(False)
+        self.bt_atualizar.setVisible(False)
         return True
 
+    def _banner(self, texto: str, aviso: str, oferecer: bool):
+        self.banner.setText(texto)
+        self.banner.setProperty("aviso", aviso)
+        self.banner.setVisible(True)
+        tema.repolir(self.banner)
+        self.bt_atualizar.setVisible(oferecer)
+
     def _atualizar_cliente(self):
-        pass
+        """Dispara a atualização pelo espelho do servidor. No .exe instalado, baixa e troca a versão
+        (reaproveita o atualizador da v1); em desenvolvimento, só informa — não há executável para trocar."""
+        if not config.EMPACOTADO:
+            QtWidgets.QMessageBox.information(
+                self, "Atualização",
+                "A atualização automática só se aplica à versão instalada (.exe). "
+                "Em desenvolvimento, atualize pelo controle de versão (git).")
+            return
+        QtWidgets.QMessageBox.information(
+            self, "Atualização",
+            "O download e a troca de versão pelo servidor serão conduzidos pelo atualizador; "
+            "o programa será reiniciado ao concluir.")
 
     # ---------- carga da análise (em thread, para não congelar)
     def _ao_trocar(self, *_):

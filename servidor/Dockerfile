@@ -21,7 +21,7 @@ COPY templates/ templates/
 
 # usuário sem privilégio (não rodar como root). A pasta das cargas é criada aqui com o dono certo,
 # para o volume nomeado (montado nela) herdar a permissão de escrita do usuário app.
-RUN useradd --create-home app && mkdir -p /app/dados_cargas && chown -R app:app /app
+RUN useradd --create-home app && mkdir -p /app/dados_cargas /app/dados_atualizacoes && chown -R app:app /app
 USER app
 
 EXPOSE 8000
