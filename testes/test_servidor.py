@@ -239,6 +239,19 @@ def test_so_dono_compartilha(cliente):
                         json={"login_destino": "user.fin"}).status_code == 404
 
 
+def test_listar_usuarios_e_centros(cliente):
+    hg = _auth(cliente, "gestor.fin")
+    us = cliente.get("/api/v1/usuarios", headers=hg).json()
+    assert all(u["centro_custo_id"] == 1 for u in us)          # Gestor: só o próprio setor
+    assert any(u["login"] == "user.fin" for u in us)
+    ce = cliente.get("/api/v1/centros", headers=hg).json()
+    assert [c["codigo"] for c in ce] == ["FIN"]                # Gestor vê só o próprio centro
+    ha = _auth(cliente, "admin", "admin123")
+    assert {c["codigo"] for c in cliente.get("/api/v1/centros", headers=ha).json()} >= {"FIN", "FAT"}
+    # usuário comum não gerencia ninguém
+    assert cliente.get("/api/v1/usuarios", headers=_auth(cliente, "user.fin")).status_code == 403
+
+
 def test_trava_de_versao_426(cliente):
     # cliente antigo é barrado em rota protegida (426), com o endereço do pacote no corpo
     h = _auth(cliente, "gestor.fin")

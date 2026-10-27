@@ -58,6 +58,13 @@ class RepoUsuarios:
             q = q.where(Usuario.centro_custo_id == self._e.centro_custo_id)
         return self._s.scalar(q)
 
+    def listar(self) -> list[Usuario]:
+        """Gestor vê os usuários do próprio setor; ADM vê todos. Ordenado por nome."""
+        q = select(Usuario)
+        if not self._e.eh_adm:
+            q = q.where(Usuario.centro_custo_id == self._e.centro_custo_id)
+        return list(self._s.scalars(q.order_by(Usuario.nome)))
+
 
 class RepoCargas:
     """Cargas (planilhas enviadas) dentro do escopo do usuário."""

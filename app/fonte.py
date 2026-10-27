@@ -135,3 +135,60 @@ class FonteRemota:
             raise ErroServidor("Relatório não encontrado (ou de outro setor).")
         r.raise_for_status()
         return r.text
+
+    # ---- gestão de usuários (Gestor/ADM) ----
+    def _detalhe(self, r: httpx.Response, padrao: str) -> str:
+        try:
+            return r.json().get("detail", padrao)
+        except Exception:
+            return padrao
+
+    def _get(self, caminho: str) -> list | dict:
+        r = self._c.get(self._url(caminho), headers=self._cab())
+        if r.status_code in (401, 403):
+            raise ErroServidor(self._detalhe(r, "Acesso negado."))
+        r.raise_for_status()
+        return r.json()
+
+    def listar_usuarios(self) -> list[dict]:
+        return self._get("/api/v1/usuarios")
+
+    def listar_centros(self) -> list[dict]:
+        return self._get("/api/v1/centros")
+
+    def criar_usuario(self, login: str, nome: str, senha: str, papel: str,
+                      centro_custo_id: int | None = None) -> dict:
+        r = self._c.post(self._url("/api/v1/usuarios"), headers=self._cab(),
+                         json={"login": login, "nome": nome, "senha": senha, "papel": papel,
+                               "centro_custo_id": centro_custo_id})
+        if r.status_code not in (200, 201):
+            raise ErroServidor(self._detalhe(r, "Não foi possível criar o usuário."))
+        return r.json()
+
+    def bloquear_usuario(self, usuario_id: int) -> None:
+        r = self._c.post(self._url(f"/api/v1/usuarios/{usuario_id}/bloquear"), headers=self._cab())
+        if r.status_code != 200:
+            raise ErroServidor(self._detalhe(r, "Não foi possível bloquear o usuário."))
+
+    # ---- envio e publicação de planilhas (Gestor/ADM) ----
+    def listar_cargas(self, slug: str) -> list[dict]:
+        return self._get(f"/api/v1/relatorios/{slug}/cargas")
+
+    def enviar_carga(self, slug: str, nome_arquivo: str, conteudo: bytes) -> dict:
+        r = self._c.post(self._url("/api/v1/cargas"), headers=self._cab(),
+                         data={"slug": slug}, files={"arquivo": (nome_arquivo, conteudo)})
+        if r.status_code not in (200, 201):
+            raise ErroServidor(self._detalhe(r, "Não foi possível enviar a planilha."))
+        return r.json()
+
+    def testar_carga(self, carga_id: int) -> Analise:
+        r = self._c.post(self._url(f"/api/v1/cargas/{carga_id}/analise"), json={}, headers=self._cab())
+        if r.status_code != 200:
+            raise ErroServidor(self._detalhe(r, "Não foi possível ler a planilha."))
+        return serializacao.analise_de_json(r.json())
+
+    def publicar_carga(self, carga_id: int) -> dict:
+        r = self._c.post(self._url(f"/api/v1/cargas/{carga_id}/publicar"), headers=self._cab())
+        if r.status_code != 200:
+            raise ErroServidor(self._detalhe(r, "Não foi possível publicar a planilha."))
+        return r.json()

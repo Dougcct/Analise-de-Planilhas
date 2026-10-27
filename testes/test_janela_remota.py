@@ -63,6 +63,21 @@ class _FonteFake:
     def status_versao(self):
         return self._status
 
+    def listar_centros(self):
+        return [{"id": 1, "codigo": "FIN", "nome": "Financeiro"}]
+
+    def listar_usuarios(self):
+        return [{"id": 1, "login": "user.fin", "nome": "Usuário Fin", "papel": "USUARIO",
+                 "centro_custo_id": 1, "ativo": True},
+                {"id": 2, "login": "bloq.fin", "nome": "Bloqueado", "papel": "USUARIO",
+                 "centro_custo_id": 1, "ativo": False}]
+
+    def criar_usuario(self, *a, **k):
+        return {"id": 9, "login": a[0] if a else "x"}
+
+    def bloquear_usuario(self, uid):
+        pass
+
     def login(self, login, senha):
         return {"nome": "Fulano", "papel": self.papel, "precisa_trocar_senha": self._precisa}
 
@@ -158,6 +173,32 @@ def test_versao_opcional_deixa_entrar(app):
     j._entrar()
     assert j.pilha.currentIndex() == _PRINCIPAL       # entra, mas o aviso foi mostrado antes
     assert "99.0.0" in j.banner.text()
+    _drenar(j, app)
+    j.close()
+
+
+def test_navegacao_e_tela_de_usuarios(app):
+    from app.janela_remota import JanelaServidor, _AREA_USR
+    f = _FonteFake(papel="GESTOR")
+    j = JanelaServidor(fonte=f)
+    j.ed_login.setText("gestor.fin"); j.ed_senha.setText("senha123")
+    j._entrar()
+    # a navegação para Gestor mostra Usuários e Enviar
+    assert j.bt_nav_usr.isVisibleTo(j) and j.bt_nav_env.isVisibleTo(j)
+    j._ir_area(_AREA_USR)
+    assert j.tab_usuarios.rowCount() == 2                     # lista preenchida
+    assert j.tab_usuarios.item(1, 4).text() == "Bloqueado"    # situação refletida
+    assert not j.wd_u_papel.isVisibleTo(j)                    # Gestor não escolhe papel/setor
+    _drenar(j, app)
+    j.close()
+
+
+def test_usuario_comum_nao_tem_gestao(app):
+    from app.janela_remota import JanelaServidor
+    j = JanelaServidor(fonte=_FonteFake(papel="USUARIO"))
+    j.ed_login.setText("user.fin"); j.ed_senha.setText("senha123")
+    j._entrar()
+    assert not j.bt_nav_usr.isVisibleTo(j) and not j.bt_nav_env.isVisibleTo(j)
     _drenar(j, app)
     j.close()
 

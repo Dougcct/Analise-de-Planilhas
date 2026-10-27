@@ -331,6 +331,28 @@ def exportar_html(slug: str, escopo: Escopo = Depends(sessao_pronta), s: Session
     return relatorio_html.montar_html(servico.analisar(_DS, Filtros()), rel.nome)
 
 
+def _usuario_json(u: Usuario) -> dict:
+    return {"id": u.id, "login": u.login, "nome": u.nome, "papel": u.papel,
+            "centro_custo_id": u.centro_custo_id, "ativo": u.ativo}
+
+
+@app.get("/api/v1/usuarios")
+def listar_usuarios(escopo: Escopo = Depends(sessao_pronta), s: Session = Depends(get_sessao)):
+    exigir(escopo, GESTOR, ADM)                        # Usuário comum não gerencia ninguém
+    return [_usuario_json(u) for u in RepoUsuarios(s, escopo).listar()]
+
+
+@app.get("/api/v1/centros")
+def listar_centros(escopo: Escopo = Depends(sessao_pronta), s: Session = Depends(get_sessao)):
+    """Para o ADM escolher o setor ao criar usuário/relatório. Gestor recebe só o próprio."""
+    exigir(escopo, GESTOR, ADM)
+    q = select(CentroCusto).where(CentroCusto.ativo.is_(True))
+    if not escopo.eh_adm:
+        q = q.where(CentroCusto.id == escopo.centro_custo_id)
+    return [{"id": c.id, "codigo": c.codigo, "nome": c.nome}
+            for c in s.scalars(q.order_by(CentroCusto.nome))]
+
+
 @app.post("/api/v1/usuarios", status_code=201)
 def criar_usuario(dados: UsuarioIn, escopo: Escopo = Depends(sessao_pronta), s: Session = Depends(get_sessao)):
     exigir(escopo, GESTOR, ADM)
