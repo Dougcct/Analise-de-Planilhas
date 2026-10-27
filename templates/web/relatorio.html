@@ -1,0 +1,7 @@
+{% extends "web/base.html" %}
+{% block titulo %}{{ titulo }} — Análise de Planilhas{% endblock %}
+{% block conteudo %}
+<a class="voltar" href="/web">← Relatórios</a>
+<h1>{{ titulo }}</h1>
+<iframe class="relatorio" src="/web/r/{{ slug }}/conteudo" title="{{ titulo }}"></iframe>
+{% endblock %}

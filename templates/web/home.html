@@ -1,0 +1,18 @@
+{% extends "web/base.html" %}
+{% block titulo %}Relatórios — Análise de Planilhas{% endblock %}
+{% block conteudo %}
+<h1>Relatórios</h1>
+<p class="apoio">Escolha um relatório para visualizar no navegador.</p>
+{% if relatorios %}
+<div class="grade">
+  {% for r in relatorios %}
+  <a class="cartao" href="/web/r/{{ r.slug }}">
+    <span class="nome">{{ r.nome }}</span>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<p class="apoio" style="margin-top:20px">Nenhum relatório disponível para o seu acesso.</p>
+{% endif %}
+<p class="rodape">Versão {{ versao }}</p>
+{% endblock %}

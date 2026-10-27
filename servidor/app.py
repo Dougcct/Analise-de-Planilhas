@@ -29,6 +29,7 @@ from analise_planilha.modelo import carregar_modelo
 from analise_planilha.modelos import Filtros
 
 from . import atualizacao, bd, dados_demo, seed, validacao
+from .autenticacao import escopo_por_token
 from .modelos_bd import (
     ADM, GESTOR, PAPEIS, PUBLICADA, RASCUNHO, SUBSTITUIDA, USUARIO,
     AcessoTemporario, Auditoria, Carga, CentroCusto, Relatorio, SessaoUsuario, Usuario, utcnow,
@@ -142,16 +143,10 @@ def registrar(s: Session, usuario_id, centro_custo_id, acao, alvo=None, ip=None,
 
 def escopo_da_sessao(authorization: str = Header(default=""), s: Session = Depends(get_sessao)) -> Escopo:
     token = authorization[7:] if authorization.lower().startswith("bearer ") else ""
-    if not token:
-        raise HTTPException(401, "Não autenticado.")
-    sess = s.scalar(select(SessaoUsuario).where(SessaoUsuario.token_hash == hash_token(token)))
-    if sess is None or sess.revogada or sess.expira_em < utcnow():
+    escopo = escopo_por_token(s, token)
+    if escopo is None:
         raise HTTPException(401, "Sessão inválida ou expirada.")
-    u = s.get(Usuario, sess.usuario_id)
-    if u is None or not u.ativo:
-        raise HTTPException(401, "Usuário inativo.")
-    return Escopo(usuario_id=u.id, papel=u.papel, centro_custo_id=u.centro_custo_id, ip=sess.ip,
-                  precisa_trocar_senha=u.precisa_trocar_senha)
+    return escopo
 
 
 def sessao_pronta(escopo: Escopo = Depends(escopo_da_sessao)) -> Escopo:
@@ -616,3 +611,9 @@ def revogar_acesso(acesso_id: int, escopo: Escopo = Depends(sessao_pronta), s: S
 
 def _filtros(f: FiltrosIn) -> Filtros:
     return Filtros(periodo=f.periodo, selecao=f.selecao, anonimizar=f.anonimizar, coluna_data=f.coluna_data)
+
+
+# ---- versão web (navegador), servida pela mesma API em /web ----
+from . import web  # noqa: E402  (importado no fim: web faz import tardio de helpers deste módulo)
+
+app.include_router(web.router)
