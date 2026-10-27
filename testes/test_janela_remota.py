@@ -48,3 +48,97 @@ def test_sem_login_combo_desabilitado(app):
     j = JanelaServidor(fonte=None)
     assert not j.combo.isEnabled()          # só habilita após entrar
     j.close()
+
+
+class _FonteFake:
+    """Dublê da FonteRemota: não toca rede; o teste comanda o que o 'servidor' responde."""
+
+    def __init__(self, papel="USUARIO", precisa_trocar=False):
+        self.papel = papel
+        self._precisa = precisa_trocar
+        self.trocou = False
+
+    def login(self, login, senha):
+        return {"nome": "Fulano", "papel": self.papel, "precisa_trocar_senha": self._precisa}
+
+    def trocar_senha(self, atual, nova):
+        self.trocou = True
+        self._precisa = False
+
+    def relatorios(self):
+        return [{"nome": "Sintético", "slug": "sintetico-fin"}]
+
+    def analisar(self, slug, filtros=None):
+        return _analise()
+
+    def logout(self):
+        pass
+
+
+def _drenar(j, app):
+    """Espera a carga em thread terminar (o login dispara a análise do 1º relatório)."""
+    import time
+    for _ in range(300):
+        if not (j._thread is not None and j._thread.isRunning()):
+            break
+        app.processEvents()
+        time.sleep(0.01)
+    app.processEvents()
+
+
+def test_comeca_na_tela_de_login(app):
+    from app.janela_remota import JanelaServidor, _LOGIN
+    j = JanelaServidor(fonte=None)
+    assert j.pilha.currentIndex() == _LOGIN     # abre no login, não na tela de dados
+    j.close()
+
+
+def test_login_leva_a_principal_e_popula_relatorios(app):
+    from app.janela_remota import JanelaServidor, _PRINCIPAL
+    f = _FonteFake(papel="GESTOR")
+    j = JanelaServidor(fonte=f)
+    j.ed_login.setText("gestor.fin")
+    j.ed_senha.setText("senha123")
+    j._entrar()
+    assert j.pilha.currentIndex() == _PRINCIPAL
+    assert j.combo.isEnabled() and j.combo.count() == 1
+    assert j.bt_export.isVisibleTo(j)           # Gestor exporta (janela não precisa estar na tela)
+    _drenar(j, app)
+    j.close()
+
+
+def test_usuario_comum_nao_ve_exportar(app):
+    from app.janela_remota import JanelaServidor
+    f = _FonteFake(papel="USUARIO")
+    j = JanelaServidor(fonte=f)
+    j.ed_login.setText("user.fin"); j.ed_senha.setText("senha123")
+    j._entrar()
+    assert not j.bt_export.isVisibleTo(j)
+    _drenar(j, app)
+    j.close()
+
+
+def test_gate_de_troca_de_senha(app):
+    from app.janela_remota import JanelaServidor, _SENHA, _PRINCIPAL
+    f = _FonteFake(precisa_trocar=True)
+    j = JanelaServidor(fonte=f)
+    j.ed_login.setText("novo.fin"); j.ed_senha.setText("senha123")
+    j._entrar()
+    assert j.pilha.currentIndex() == _SENHA     # barra até trocar a senha
+    j.ed_nova.setText("outrasenha"); j.ed_confirma.setText("outrasenha")
+    j._confirmar_troca()
+    assert f.trocou and j.pilha.currentIndex() == _PRINCIPAL
+    _drenar(j, app)
+    j.close()
+
+
+def test_sair_volta_ao_login(app):
+    from app.janela_remota import JanelaServidor, _LOGIN
+    f = _FonteFake()
+    j = JanelaServidor(fonte=f)
+    j.ed_login.setText("user.fin"); j.ed_senha.setText("senha123")
+    j._entrar()
+    _drenar(j, app)
+    j._sair()
+    assert j.pilha.currentIndex() == _LOGIN and not j.combo.isEnabled()
+    j.close()

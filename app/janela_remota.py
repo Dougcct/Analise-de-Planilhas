@@ -1,7 +1,9 @@
-"""Janela do cliente-servidor (v2): login no servidor → lista de relatórios permitidos → análise.
+"""Janela do cliente-servidor (v2): tela de login → lista de relatórios permitidos → análise.
 
-Reaproveita os componentes de renderização da v1 (KPIs, painéis, tabelas). NÃO é a JanelaPrincipal da
-v1 — é o cliente da API; a v1 local segue intacta. Uso: `python main.py --servidor [URL]`.
+Três telas numa pilha (`QStackedWidget`): LOGIN (cartão centralizado), TROCA DE SENHA (quando o
+servidor exige) e PRINCIPAL (KPIs + abas). A renderização reaproveita os componentes da v1; esta janela
+NÃO é a JanelaPrincipal da v1 — é o cliente da API. A v1 local segue intacta.
+Uso: `python main.py --servidor [URL]`.
 """
 from __future__ import annotations
 
@@ -12,67 +14,246 @@ from html import escape
 from pathlib import Path
 
 from PyQt6 import QtCore, QtWidgets
-from PyQt6.QtCore import Qt
 
 RAIZ = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(RAIZ / "src"))
 
 try:
     from app import tema
-    from app.componentes import CarregadorWorker, limpar_layout, painel_widget, titulo
+    from app.componentes import CarregadorWorker, limpar_layout, painel_widget
     from app.fonte import ErroServidor, FonteRemota
 except ModuleNotFoundError:   # app/ no sys.path (main.py / .exe)
     import tema  # type: ignore
-    from componentes import CarregadorWorker, limpar_layout, painel_widget, titulo  # type: ignore
+    from componentes import CarregadorWorker, limpar_layout, painel_widget  # type: ignore
     from fonte import ErroServidor, FonteRemota  # type: ignore
 
-from analise_planilha import config
+from analise_planilha import __version__, config
 from analise_planilha.modelos import Filtros
 
 URL_PADRAO = "http://localhost:8000"
+
+# índices das páginas na pilha
+_LOGIN, _SENHA, _PRINCIPAL = 0, 1, 2
 
 
 class JanelaServidor(QtWidgets.QMainWindow):
     def __init__(self, fonte: FonteRemota | None = None, url: str = URL_PADRAO):
         super().__init__()
         self._fonte = fonte
+        self._url_inicial = url
+        self._dados: dict = {}
         self._thread: QtCore.QThread | None = None
         self._worker = None
         self.setWindowTitle(f"{config.NOME_APLICACAO} — servidor")
         self.setWindowIcon(tema.icone())
         self.resize(1200, 820)
 
-        raiz = QtWidgets.QWidget()
-        self.setCentralWidget(raiz)
-        col = QtWidgets.QVBoxLayout(raiz)
-        col.setContentsMargins(12, 12, 12, 12)
-        col.setSpacing(10)
+        self.pilha = QtWidgets.QStackedWidget()
+        self.setCentralWidget(self.pilha)
+        self.pilha.addWidget(self._montar_login())        # _LOGIN
+        self.pilha.addWidget(self._montar_troca_senha())  # _SENHA
+        self.pilha.addWidget(self._montar_principal())    # _PRINCIPAL
+        self.pilha.setCurrentIndex(_LOGIN)
 
-        # ---- barra de login / seleção
-        barra = QtWidgets.QHBoxLayout()
-        self.ed_url = QtWidgets.QLineEdit(url)
-        self.ed_url.setFixedWidth(230)
+    # ===================================================================== LOGIN
+    def _montar_login(self) -> QtWidgets.QWidget:
+        pagina = QtWidgets.QWidget()
+        fora = QtWidgets.QVBoxLayout(pagina)
+        fora.addStretch(1)
+        linha = QtWidgets.QHBoxLayout()
+        linha.addStretch(1)
+
+        cartao = QtWidgets.QFrame()
+        cartao.setProperty("classe", "cartao")
+        cartao.setFixedWidth(400)
+        col = QtWidgets.QVBoxLayout(cartao)
+        col.setContentsMargins(28, 28, 28, 28)
+        col.setSpacing(12)
+
+        tit = QtWidgets.QLabel(config.NOME_APLICACAO)
+        tit.setProperty("classe", "titulo")
+        sub = QtWidgets.QLabel("Entre com seu usuário do setor para acessar os relatórios.")
+        sub.setProperty("classe", "apoio")
+        sub.setWordWrap(True)
+        col.addWidget(tit)
+        col.addWidget(sub)
+
+        # faixa de atualização (preenchida pela checagem de versão — fase 6); oculta em dia
+        self.banner = QtWidgets.QLabel()
+        self.banner.setWordWrap(True)
+        self.banner.setVisible(False)
+        self.bt_atualizar = QtWidgets.QPushButton("Atualizar agora")
+        self.bt_atualizar.setProperty("classe", "secundario")
+        self.bt_atualizar.setVisible(False)
+        self.bt_atualizar.clicked.connect(self._atualizar_cliente)
+        col.addWidget(self.banner)
+        col.addWidget(self.bt_atualizar)
+
+        self.ed_url = QtWidgets.QLineEdit(self._url_inicial)
         self.ed_login = QtWidgets.QLineEdit()
-        self.ed_login.setPlaceholderText("login")
+        self.ed_login.setPlaceholderText("usuário")
         self.ed_senha = QtWidgets.QLineEdit()
         self.ed_senha.setPlaceholderText("senha")
         self.ed_senha.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
-        self.ed_senha.returnPressed.connect(self._entrar)
+        for ed in (self.ed_login, self.ed_senha):
+            ed.returnPressed.connect(self._entrar)
+        col.addWidget(self._rotulado("Servidor", self.ed_url))
+        col.addWidget(self._rotulado("Usuário", self.ed_login))
+        col.addWidget(self._rotulado("Senha", self.ed_senha))
+
         self.bt_entrar = QtWidgets.QPushButton("Entrar")
         self.bt_entrar.setProperty("classe", "primario")
+        self.bt_entrar.setMinimumHeight(38)
         self.bt_entrar.clicked.connect(self._entrar)
+        col.addWidget(self.bt_entrar)
+
+        self.lbl_login = QtWidgets.QLabel(f"Versão do cliente: {__version__}")
+        self.lbl_login.setProperty("classe", "apoio")
+        self.lbl_login.setWordWrap(True)
+        col.addWidget(self.lbl_login)
+
+        linha.addWidget(cartao)
+        linha.addStretch(1)
+        fora.addLayout(linha)
+        fora.addStretch(1)
+        return pagina
+
+    def _rotulado(self, rotulo: str, campo: QtWidgets.QWidget) -> QtWidgets.QWidget:
+        caixa = QtWidgets.QWidget()
+        v = QtWidgets.QVBoxLayout(caixa)
+        v.setContentsMargins(0, 0, 0, 0)
+        v.setSpacing(3)
+        lb = QtWidgets.QLabel(rotulo)
+        lb.setProperty("classe", "secao")
+        v.addWidget(lb)
+        v.addWidget(campo)
+        return caixa
+
+    def _entrar(self):
+        if self._fonte is None:
+            self._fonte = FonteRemota(self.ed_url.text().strip() or URL_PADRAO)
+        if not self._checar_versao():          # trava obrigatória de versão (fase 6)
+            return
+        login, senha = self.ed_login.text().strip(), self.ed_senha.text()
+        if not login or not senha:
+            self._aviso_login("Informe usuário e senha.", "alerta")
+            return
+        try:
+            self._dados = self._fonte.login(login, senha)
+        except ErroServidor as e:
+            self._aviso_login(str(e), "erro")
+            return
+        except Exception as e:                  # rede/HTTP inesperado
+            self._aviso_login(f"{type(e).__name__}: {e}", "erro")
+            return
+        self._senha_atual = senha               # guardada só para a troca obrigatória, se houver
+        self.ed_senha.clear()
+        if self._dados.get("precisa_trocar_senha"):
+            self.pilha.setCurrentIndex(_SENHA)
+            self._aviso_senha("Primeiro acesso: defina uma nova senha para continuar.", "info")
+        else:
+            self._abrir_principal()
+
+    def _aviso_login(self, texto: str, aviso: str = "info"):
+        self.lbl_login.setText(texto)
+        self.lbl_login.setProperty("aviso", aviso)
+        tema.repolir(self.lbl_login)
+
+    # ============================================================ TROCA DE SENHA
+    def _montar_troca_senha(self) -> QtWidgets.QWidget:
+        pagina = QtWidgets.QWidget()
+        fora = QtWidgets.QVBoxLayout(pagina)
+        fora.addStretch(1)
+        linha = QtWidgets.QHBoxLayout()
+        linha.addStretch(1)
+
+        cartao = QtWidgets.QFrame()
+        cartao.setProperty("classe", "cartao")
+        cartao.setFixedWidth(400)
+        col = QtWidgets.QVBoxLayout(cartao)
+        col.setContentsMargins(28, 28, 28, 28)
+        col.setSpacing(12)
+        tit = QtWidgets.QLabel("Trocar senha")
+        tit.setProperty("classe", "titulo")
+        col.addWidget(tit)
+
+        self.ed_nova = QtWidgets.QLineEdit()
+        self.ed_nova.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
+        self.ed_nova.setPlaceholderText("ao menos 6 caracteres")
+        self.ed_confirma = QtWidgets.QLineEdit()
+        self.ed_confirma.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
+        self.ed_confirma.returnPressed.connect(self._confirmar_troca)
+        col.addWidget(self._rotulado("Nova senha", self.ed_nova))
+        col.addWidget(self._rotulado("Confirmar nova senha", self.ed_confirma))
+
+        bt = QtWidgets.QPushButton("Salvar e entrar")
+        bt.setProperty("classe", "primario")
+        bt.setMinimumHeight(38)
+        bt.clicked.connect(self._confirmar_troca)
+        col.addWidget(bt)
+
+        self.lbl_senha = QtWidgets.QLabel()
+        self.lbl_senha.setProperty("classe", "apoio")
+        self.lbl_senha.setWordWrap(True)
+        col.addWidget(self.lbl_senha)
+
+        linha.addWidget(cartao)
+        linha.addStretch(1)
+        fora.addLayout(linha)
+        fora.addStretch(1)
+        return pagina
+
+    def _confirmar_troca(self):
+        nova, confirma = self.ed_nova.text(), self.ed_confirma.text()
+        if len(nova) < 6:
+            self._aviso_senha("A nova senha precisa de ao menos 6 caracteres.", "alerta")
+            return
+        if nova != confirma:
+            self._aviso_senha("As senhas não conferem.", "alerta")
+            return
+        try:
+            self._fonte.trocar_senha(self._senha_atual, nova)
+        except ErroServidor as e:
+            self._aviso_senha(str(e), "erro")
+            return
+        self.ed_nova.clear()
+        self.ed_confirma.clear()
+        self._senha_atual = ""
+        self._dados["precisa_trocar_senha"] = False
+        self._abrir_principal()
+
+    def _aviso_senha(self, texto: str, aviso: str = "info"):
+        self.lbl_senha.setText(texto)
+        self.lbl_senha.setProperty("aviso", aviso)
+        tema.repolir(self.lbl_senha)
+
+    # ================================================================= PRINCIPAL
+    def _montar_principal(self) -> QtWidgets.QWidget:
+        pagina = QtWidgets.QWidget()
+        col = QtWidgets.QVBoxLayout(pagina)
+        col.setContentsMargins(12, 12, 12, 12)
+        col.setSpacing(10)
+
+        barra = QtWidgets.QHBoxLayout()
         self.combo = QtWidgets.QComboBox()
-        self.combo.setMinimumWidth(260)
-        self.combo.setEnabled(False)
+        self.combo.setMinimumWidth(280)
+        self.combo.setEnabled(False)            # só habilita após o login popular a lista
         self.combo.currentIndexChanged.connect(self._ao_trocar)
         self.bt_export = QtWidgets.QPushButton("Exportar HTML")
         self.bt_export.setProperty("classe", "secundario")
-        self.bt_export.setVisible(False)            # só aparece para Gestor/ADM, após o login
+        self.bt_export.setVisible(False)        # só Gestor/ADM, após o login
         self.bt_export.clicked.connect(self._exportar)
-        for w in (QtWidgets.QLabel("Servidor:"), self.ed_url, self.ed_login, self.ed_senha, self.bt_entrar,
-                  QtWidgets.QLabel("Relatório:"), self.combo, self.bt_export):
-            barra.addWidget(w)
+        self.bt_sair = QtWidgets.QPushButton("Sair")
+        self.bt_sair.setProperty("classe", "discreto")
+        self.bt_sair.clicked.connect(self._sair)
+        barra.addWidget(QtWidgets.QLabel("Relatório:"))
+        barra.addWidget(self.combo)
+        barra.addWidget(self.bt_export)
         barra.addStretch(1)
+        self.lbl_usuario = QtWidgets.QLabel()
+        self.lbl_usuario.setProperty("classe", "apoio")
+        barra.addWidget(self.lbl_usuario)
+        barra.addWidget(self.bt_sair)
         col.addLayout(barra)
 
         self.grade_kpi = QtWidgets.QGridLayout()
@@ -81,22 +262,16 @@ class JanelaServidor(QtWidgets.QMainWindow):
         self.abas = QtWidgets.QTabWidget()
         col.addWidget(self.abas, 1)
 
-        self.lbl_status = QtWidgets.QLabel("Informe servidor, login e senha e clique em Entrar.")
+        self.lbl_status = QtWidgets.QLabel()
         self.lbl_status.setProperty("classe", "apoio")
         col.addWidget(self.lbl_status)
+        return pagina
 
-    # ---------- login
-    def _entrar(self):
-        if self._fonte is None:
-            self._fonte = FonteRemota(self.ed_url.text().strip() or URL_PADRAO)
+    def _abrir_principal(self):
         try:
-            dados = self._fonte.login(self.ed_login.text().strip(), self.ed_senha.text())
             rels = self._fonte.relatorios()
-        except ErroServidor as e:
-            QtWidgets.QMessageBox.warning(self, "Login", str(e))
-            return
-        except Exception as e:  # rede/HTTP inesperado
-            QtWidgets.QMessageBox.critical(self, "Servidor", f"{type(e).__name__}: {e}")
+        except Exception as e:
+            self._aviso_login(f"Conectado, mas não foi possível listar relatórios: {e}", "erro")
             return
         self.combo.blockSignals(True)
         self.combo.clear()
@@ -104,12 +279,39 @@ class JanelaServidor(QtWidgets.QMainWindow):
             self.combo.addItem(r["nome"], r["slug"])
         self.combo.blockSignals(False)
         self.combo.setEnabled(bool(rels))
-        self.bt_export.setVisible(self._fonte.papel in ("GESTOR", "ADM"))   # trava de exportação na tela
-        aviso = "" if dados.get("precisa_trocar_senha") is False else "  (troca de senha pendente)"
-        self._status(f"Conectado como {dados.get('nome')} · papel {dados.get('papel')}{aviso}. "
-                     f"{len(rels)} relatório(s).", "sucesso")
+        self.bt_export.setVisible(self._fonte.papel in ("GESTOR", "ADM"))
+        self.lbl_usuario.setText(f"{self._dados.get('nome')} · {self._dados.get('papel')}")
+        self.pilha.setCurrentIndex(_PRINCIPAL)
         if rels:
             self._ao_trocar()
+        else:
+            self._status("Nenhum relatório disponível para o seu acesso.", "alerta")
+
+    def _sair(self):
+        if self._fonte is not None:
+            self._fonte.logout()
+        self.combo.blockSignals(True)
+        self.combo.clear()
+        self.combo.blockSignals(False)
+        self.combo.setEnabled(False)
+        limpar_layout(self.grade_kpi)
+        self.abas.clear()
+        self._dados = {}
+        self.ed_login.clear()
+        self.ed_senha.clear()
+        self._aviso_login(f"Versão do cliente: {__version__}", "info")
+        self.lbl_login.setProperty("aviso", None)
+        tema.repolir(self.lbl_login)
+        self.pilha.setCurrentIndex(_LOGIN)
+        self.ed_login.setFocus()
+
+    # ---------- checagem/atualização de versão (fase 6) — preenchida no commit da fase 6
+    def _checar_versao(self) -> bool:
+        """True se pode seguir com o login; False se a versão é obrigatória e barra o acesso."""
+        return True
+
+    def _atualizar_cliente(self):
+        pass
 
     # ---------- carga da análise (em thread, para não congelar)
     def _ao_trocar(self, *_):
@@ -131,6 +333,7 @@ class JanelaServidor(QtWidgets.QMainWindow):
 
     # ---------- renderização (reaproveita os componentes da v1)
     def _mostrar(self, analise):
+        self.pilha.setCurrentIndex(_PRINCIPAL)
         self._render_kpis(analise.kpis)
         atual = self.abas.tabText(self.abas.currentIndex()) if self.abas.count() else ""
         self.abas.clear()
@@ -201,6 +404,12 @@ class JanelaServidor(QtWidgets.QMainWindow):
         self.lbl_status.setText(texto)
         self.lbl_status.setProperty("aviso", aviso)
         tema.repolir(self.lbl_status)
+
+    def closeEvent(self, e):
+        if self._thread is not None and self._thread.isRunning():   # não fechar com a carga em voo
+            self._thread.quit()
+            self._thread.wait(2000)
+        super().closeEvent(e)
 
 
 def executar_servidor(url: str = URL_PADRAO) -> int:

@@ -66,6 +66,26 @@ class FonteRemota:
         self.papel = dados.get("papel")
         return dados
 
+    def trocar_senha(self, senha_atual: str, nova: str) -> None:
+        r = self._c.post(self._url("/api/v1/sessao/senha"),
+                         json={"senha_atual": senha_atual, "nova": nova}, headers=self._cab())
+        if r.status_code == 401:
+            raise ErroServidor("Senha atual incorreta.")
+        if r.status_code == 422:
+            raise ErroServidor(r.json().get("detail", "Senha inválida."))
+        r.raise_for_status()
+
+    def logout(self) -> None:
+        """Encerra a sessão no servidor (revoga o token). Ignora erro de rede: o token expira sozinho."""
+        if not self._token:
+            return
+        try:
+            self._c.delete(self._url("/api/v1/sessao"), headers=self._cab())
+        except httpx.HTTPError:
+            pass
+        self._token = None
+        self.papel = None
+
     def relatorios(self) -> list[dict]:
         r = self._c.get(self._url("/api/v1/relatorios"), headers=self._cab())
         r.raise_for_status()
