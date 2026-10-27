@@ -436,6 +436,20 @@ class JanelaServidor(QtWidgets.QMainWindow):
         g2.setColumnStretch(0, 1)
         col.addWidget(c2)
 
+        # atualização do cliente (.exe): espelhar a última versão do GitHub no servidor
+        c3 = QtWidgets.QFrame(); c3.setProperty("classe", "cartao")
+        v3 = QtWidgets.QVBoxLayout(c3); v3.setContentsMargins(16, 14, 16, 14); v3.setSpacing(8)
+        t3 = QtWidgets.QLabel("Atualização do cliente (.exe)"); t3.setProperty("classe", "secao")
+        d3 = QtWidgets.QLabel("Busca a última versão publicada no GitHub, confere o SHA-256 e a espelha no "
+                              "servidor — os setores atualizam pela rede interna, sem sair para a internet.")
+        d3.setProperty("classe", "apoio"); d3.setWordWrap(True)
+        self.bt_sincronizar = QtWidgets.QPushButton("Buscar atualização no GitHub")
+        self.bt_sincronizar.setProperty("classe", "secundario")
+        self.bt_sincronizar.clicked.connect(self._sincronizar_ui)
+        v3.addWidget(t3); v3.addWidget(d3)
+        v3.addWidget(self.bt_sincronizar, alignment=QtCore.Qt.AlignmentFlag.AlignLeft)
+        col.addWidget(c3)
+
         dica = QtWidgets.QLabel("Depois de criar o setor, cadastre o gestor dele em «Usuários». Sem planilha "
                                 "publicada, o relatório mostra uma amostra sintética no formato do modelo.")
         dica.setProperty("classe", "apoio"); dica.setWordWrap(True); col.addWidget(dica)
@@ -487,6 +501,20 @@ class JanelaServidor(QtWidgets.QMainWindow):
         except ErroServidor:
             pass
         self._aviso(self.lbl_adm, f"Relatório «{nome}» criado.", "sucesso")
+
+    def _sincronizar_ui(self):
+        self.bt_sincronizar.setEnabled(False)
+        self._aviso(self.lbl_adm, "Buscando a última versão no GitHub…", "info")
+        QtWidgets.QApplication.processEvents()
+        try:
+            r = self._fonte.sincronizar_atualizacao()
+        except ErroServidor as e:
+            self._aviso(self.lbl_adm, str(e), "erro")
+        else:
+            self._aviso(self.lbl_adm, f"Versão {r['versao']} espelhada no servidor "
+                        f"({r['tamanho'] // 1024} KB). Os setores já podem atualizar pela rede.", "sucesso")
+        finally:
+            self.bt_sincronizar.setEnabled(True)
 
     # ---------- compartilhar relatório (Gestor/ADM)
     def _compartilhar(self):

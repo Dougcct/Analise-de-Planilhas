@@ -253,6 +253,19 @@ async def subir_atualizacao(versao: str = Form(...), arquivo: UploadFile = File(
     return {"versao": versao, "sha256": sha, "tamanho": len(conteudo)}
 
 
+@app.post("/api/v1/atualizacao/sincronizar")
+def sincronizar_atualizacao(escopo: Escopo = Depends(sessao_pronta), s: Session = Depends(get_sessao)):
+    """ADM: busca a última Release no GitHub e espelha no servidor (ligação GitHub→Docker→LAN)."""
+    exigir(escopo, ADM)
+    try:
+        r = atualizacao.sincronizar_github()
+    except Exception as e:
+        raise HTTPException(502, f"Não foi possível buscar a atualização no GitHub: {type(e).__name__}") from e
+    registrar(s, escopo.usuario_id, None, "sincronizar_github", r["versao"], escopo.ip, detalhes=r["sha256"])
+    s.commit()
+    return r
+
+
 @app.post("/api/v1/atualizacao/aprovar")
 def aprovar_atualizacao(dados: AprovarIn, escopo: Escopo = Depends(sessao_pronta),
                         s: Session = Depends(get_sessao)):

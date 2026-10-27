@@ -12,6 +12,9 @@ markupsafe>=2.1
 # Interface desktop
 pyqt6>=6.6
 
+# Cliente-servidor (v2): fala com a API e descobre o servidor na rede
+httpx>=0.27
+
 # Build do executável (só na máquina que compila)
 nuitka>=2.0
 

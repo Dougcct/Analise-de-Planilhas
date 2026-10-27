@@ -198,6 +198,12 @@ class FonteRemota:
     def compartilhados(self) -> list[dict]:
         return self._get("/api/v1/compartilhados")
 
+    def sincronizar_atualizacao(self) -> dict:
+        r = self._c.post(self._url("/api/v1/atualizacao/sincronizar"), headers=self._cab(), timeout=120)
+        if r.status_code != 200:
+            raise ErroServidor(self._detalhe(r, "Não foi possível buscar a atualização no GitHub."))
+        return r.json()
+
     # ---- envio e publicação de planilhas (Gestor/ADM) ----
     def listar_cargas(self, slug: str) -> list[dict]:
         return self._get(f"/api/v1/relatorios/{slug}/cargas")

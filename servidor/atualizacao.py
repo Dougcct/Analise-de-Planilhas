@@ -13,12 +13,16 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import ssl
+import urllib.request
 from pathlib import Path
 
 from analise_planilha import __version__
 
 ATUALIZACOES_DIR = Path(os.getenv("ATUALIZACOES_DIR", "/app/dados_atualizacoes"))
 VERSAO_MINIMA_PADRAO = os.getenv("VERSAO_MINIMA_CLIENTE", "1.0.0")
+# repositório público só com os binários (Releases) — a ligação servidor↔GitHub
+GITHUB_REPO = os.getenv("GITHUB_REPO", "Dougcct/Analise-de-Planilhas")
 ARQ_POLITICA = ATUALIZACOES_DIR / "politica.json"
 
 
@@ -85,3 +89,39 @@ def guardar_pacote(versao: str, conteudo: bytes) -> str:
     sha = hashlib.sha256(conteudo).hexdigest()
     destino.with_suffix(destino.suffix + ".sha256").write_text(sha, encoding="utf-8")
     return sha
+
+
+def _abrir(url: str, timeout: int, api: bool = False):
+    cab = {"User-Agent": f"AnalisePlanilhas-Servidor/{__version__}"}
+    if api:
+        cab["Accept"] = "application/vnd.github+json"
+    req = urllib.request.Request(url, headers=cab)
+    return urllib.request.urlopen(req, timeout=timeout, context=ssl.create_default_context())
+
+
+def sincronizar_github(repo: str | None = None, timeout: int = 30) -> dict:
+    """LIGAÇÃO GitHub→Docker: baixa a última Release pública, confere o SHA-256 e espelha no volume,
+    passando a recomendá-la (a mínima não muda). É o passo que faltava na fase 6 (DOCS/17 §3).
+    Repo público → sem token. Em produção, só o servidor sai para o github.com (pfSense)."""
+    repo = repo or GITHUB_REPO
+    with _abrir(f"https://api.github.com/repos/{repo}/releases/latest", timeout, api=True) as r:
+        dados = json.loads(r.read().decode("utf-8"))
+    versao = str(dados.get("tag_name", "")).lstrip("vV")
+    if versao_tupla(versao) is None:
+        raise ValueError("A Release mais recente não tem uma tag de versão válida.")
+    assets = {a.get("name", ""): a.get("browser_download_url", "") for a in dados.get("assets", [])}
+    zips = [n for n in assets if n.lower().endswith(".zip")]
+    if not zips:
+        raise ValueError("A Release não traz um pacote .zip.")
+    nome_zip = zips[0]
+    with _abrir(assets[nome_zip], timeout) as r:
+        conteudo = r.read()
+    sha = hashlib.sha256(conteudo).hexdigest()
+    if f"{nome_zip}.sha256" in assets:                 # confere com o hash publicado, se houver
+        with _abrir(assets[f"{nome_zip}.sha256"], timeout) as r:
+            esperado = r.read().decode("utf-8-sig").split()[0].lower()
+        if esperado != sha:
+            raise ValueError("O SHA-256 do download não confere com o publicado na Release.")
+    guardar_pacote(versao, conteudo)
+    salvar_politica(politica()["minima"], versao)      # recomenda a nova; mínima obrigatória inalterada
+    return {"versao": versao, "sha256": sha, "tamanho": len(conteudo)}

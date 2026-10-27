@@ -59,6 +59,9 @@ python -m nuitka ^
     --product-version=%VERSAO%.0 ^
     --file-description="Analise Dinamica de Planilhas" ^
     --include-module=janela ^
+    --include-module=janela_remota ^
+    --include-module=fonte ^
+    --include-module=descoberta ^
     --include-module=tema ^
     --include-module=atualizador ^
     --include-module=componentes ^
@@ -66,6 +69,7 @@ python -m nuitka ^
     --include-module=dialogo_metas ^
     --include-module=dialogo_modelo ^
     --include-package=analise_planilha ^
+    --include-package=httpx ^
     --include-data-dir=templates=templates ^
     --include-data-files=assets/icon.ico=assets/icon.ico ^
     --nofollow-import-to=plotly ^
@@ -89,8 +93,8 @@ REM Cada relatorio le de dados\<pasta do modelo>\ (criada pela janela ao escolhe
 if not exist "%SAIDA%\dados\entrada" mkdir "%SAIDA%\dados\entrada"
 if not exist "%SAIDA%\saida" mkdir "%SAIDA%\saida"
 xcopy /e /i /y config "%SAIDA%\config" >nul
-REM configuracao local de quem compila nao vai junto: chave de API, metas do gestor, atualizacao
-for %%f in (ia.toml metas.json atualizacao.toml) do if exist "%SAIDA%\config\%%f" del /q "%SAIDA%\config\%%f"
+REM configuracao local de quem compila nao vai junto: chave de API, metas, atualizacao, servidor salvo
+for %%f in (ia.toml metas.json atualizacao.toml servidor.json) do if exist "%SAIDA%\config\%%f" del /q "%SAIDA%\config\%%f"
 
 "%SAIDA%\AnalisePlanilhas.exe" --autoteste
 if errorlevel 1 goto :erro_autoteste

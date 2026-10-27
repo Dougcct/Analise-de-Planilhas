@@ -310,6 +310,16 @@ def test_so_adm_mexe_na_atualizacao(cliente):
                         files={"arquivo": ("x.zip", b"PK\x03\x04", "application/zip")}).status_code == 403
 
 
+def test_sincronizar_github(cliente, monkeypatch):
+    from servidor import atualizacao as atz
+    monkeypatch.setattr(atz, "sincronizar_github",
+                        lambda: {"versao": "2.1.0", "sha256": "abc123", "tamanho": 4096})
+    assert cliente.post("/api/v1/atualizacao/sincronizar",
+                        headers=_auth(cliente, "gestor.fin")).status_code == 403    # só ADM
+    r = cliente.post("/api/v1/atualizacao/sincronizar", headers=_auth(cliente, "admin", "admin123"))
+    assert r.status_code == 200 and r.json()["versao"] == "2.1.0"
+
+
 def test_auditoria_registra(cliente):
     from sqlalchemy import func, select
     from servidor import bd
