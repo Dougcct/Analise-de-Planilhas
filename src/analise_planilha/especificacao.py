@@ -125,6 +125,7 @@ class Especificacao:
     tipo: str = "registros"            # "registros" (uma linha por caso) | "serie" (matriz conta × mês)
     perfil: str = ""                   # série: "custos" | "faturamento" | "dre"
     sentido_bom: str | None = None     # série: "menor" (custo) | "maior" (receita/resultado)
+    rotulo_registros: str = "Registros"   # o que cada linha é ("Atendimentos" quando o Cérebro achou o grão)
 
     @property
     def plural_entidade(self) -> str:
@@ -323,6 +324,53 @@ def automatica(df: pd.DataFrame, esquema: Esquema, modelo=None) -> Especificacao
     spec.medidas = [c.nome for c in cols if c.tipo in (MOEDA, DECIMAL, INTEIRO)]
     spec.medida_principal = next((c.nome for t in (MOEDA, DECIMAL, INTEIRO) for c in cols if c.tipo == t), None)
     spec.datas = [c.nome for c in cols if c.tipo in TIPOS_DATA]
+    spec.taxas = [Taxa(chave_texto(c.nome), c.nome, coluna=c.nome, valores={"TRUE"})
+                  for c in cols if c.tipo == BOOLEANO]
+    return _completar(spec, df, cols)
+
+
+def por_papeis(df: pd.DataFrame, esquema: Esquema, papeis: list, grao=None, layout: str = "plana") -> Especificacao:
+    """Especificação a partir do ENTENDIMENTO do Cérebro (papéis + grão + layout), sem modelo.
+
+    Diferente da dedução por tipo: só VALOR/QUANTIDADE viram medida (identificador nunca é somado, mesmo
+    sendo número); a entidade é a PESSOA (anonimizável); quando o grão foi consolidado, cada linha é um
+    fato e os KPIs falam em «Atendimentos», não em «Registros»."""
+    from .cerebro import papeis as P
+
+    spec = Especificacao(origem="Cérebro", top=config.TOP_N_TABELAS)
+    papel = {p.nome: p for p in papeis}
+    cols = [c for c in esquema.colunas if c.nome in df.columns and c.tipo != "vazio" and c.nome != config.COL_LINHA]
+
+    def com(*quais):
+        return [c for c in cols if c.nome in papel and papel[c.nome].papel in quais]
+
+    pessoas = com(P.PESSOA)
+    spec.entidade = next((c.nome for c in pessoas if tokens_nome(c.nome) & _DICAS_ENTIDADE),
+                         pessoas[0].nome if pessoas else None)
+    tecnicas = [c for c in cols if c.nome in (config.COL_ABA, config.COL_ARQUIVO)]
+    spec.dimensoes = [c.nome for c in com(P.DIMENSAO, P.PERIODO) + tecnicas
+                      if c.tipo not in TIPOS_DATA and 2 <= df[c.nome].nunique() <= config.MAX_CATEGORIAS_DIMENSAO]
+    medidas = [c for c in com(P.VALOR, P.QUANTIDADE) if papel[c.nome].agregacao != "média"]
+    spec.medidas = [c.nome for c in medidas]
+    itens = {grao.coluna_itens} if grao is not None and grao.coluna_itens else set()
+    candidatas =([c for c in medidas if papel[c.nome].papel == P.VALOR and c.tipo == MOEDA]
+                  + [c for c in medidas if papel[c.nome].papel == P.VALOR]
+                  + [c for c in medidas if c.nome not in itens])
+    spec.medida_principal = candidatas[0].nome if candidatas else None
+    spec.datas = [c.nome for c in com(P.DATA) if c.tipo in TIPOS_DATA]
+    spec.taxas = [Taxa(chave_texto(c.nome), c.nome, coluna=c.nome, valores={"TRUE"})
+                  for c in com(P.FLAG) if c.tipo == BOOLEANO]
+    if grao is not None and grao.consolidado:
+        spec.rotulo_registros = grao.rotulo
+    if layout == "matriz_mensal":
+        spec.tipo = "serie"
+        spec.data_base = "Mês" if "Mês" in df.columns else None
+        return spec
+    return _completar(spec, df, cols)
+
+
+def _completar(spec: Especificacao, df: pd.DataFrame, cols: list) -> Especificacao:
+    """Parte comum: data base, tempos entre pares de datas, cruzamento e grafias parecidas."""
     if spec.datas:
         spec.data_base = max((c for c in cols if c.nome in spec.datas), key=lambda c: c.n_validos).nome
     # pares de datas na ordem das colunas → tempos de processo (abertura → finalização…)
@@ -332,8 +380,6 @@ def automatica(df: pd.DataFrame, esquema: Esquema, modelo=None) -> Especificacao
             pares.append((spec.datas[0], spec.datas[-1]))
         for a, b in pares:
             spec.tempos.append(Tempo(f"{chave_texto(a)}_{chave_texto(b)}", f"{a} → {b}", a, b))
-    spec.taxas = [Taxa(chave_texto(c.nome), c.nome, coluna=c.nome, valores={"TRUE"})
-                  for c in cols if c.tipo == BOOLEANO]
     if len(spec.dimensoes) >= 2:
         # cruza as duas dimensões com menos categorias (as mais "legíveis" numa matriz)
         a, b = sorted(spec.dimensoes, key=lambda d: df[d].nunique())[:2]

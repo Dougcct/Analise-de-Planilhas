@@ -259,7 +259,7 @@ def achados(df: pd.DataFrame, spec: Especificacao, tipo_medida, problemas: pd.Da
     if not total:
         return ["Nenhum registro no recorte selecionado."]
     out = []
-    frase = f"{fmt_int(total)} registros"
+    frase = f"{fmt_int(total)} {spec.rotulo_registros.lower()}"
     if spec.entidade:
         frase += f" de {fmt_int(df[spec.entidade].nunique())} {spec.plural_entidade} distintos"
     if spec.data_base:
@@ -411,7 +411,7 @@ def avaliar_metas(df: pd.DataFrame, spec: Especificacao, tipos: dict[str, str] |
 def gerar_kpis(df: pd.DataFrame, spec: Especificacao, tipo_medida,
                tipos: dict[str, str] | None = None) -> list[KPI]:
     total = len(df)
-    kpis = [KPI("Registros", fmt_int(total),
+    kpis = [KPI(spec.rotulo_registros, fmt_int(total),
                 f"{fmt_int(df[spec.entidade].nunique())} {spec.plural_entidade} distintos" if spec.entidade else "")]
     for t in spec.taxas[:4]:
         kpis.append(KPI(t.rotulo, fmt_pct(valor_taxa(df, t)), "ponderada por valor" if t.ponderada else "dos registros"))

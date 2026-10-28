@@ -10,11 +10,10 @@ from pathlib import Path
 
 import pandas as pd
 
-from . import config, especificacao, indicadores, inferencia, leitura, metas, tratamento
+from . import cerebro, config, especificacao, indicadores, inferencia, leitura, metas, tratamento
 from .modelo import Modelo
 from .modelos import Alerta, Analise, Dataset, Esquema, Filtros, MetaLeitura
 from .perfil import alertas_qualidade
-
 
 AVISO = config.PREFIXO_AVISO    # diagnóstico com este prefixo vira Alerta de nível «aviso»
 
@@ -84,19 +83,23 @@ def _ler_mapeado(fonte, nome_arquivo: str, aba: str | None, linha_cabecalho: int
 
 
 def carregar(fonte, nome_arquivo: str, aba: str | None = None, overrides: dict[str, str] | None = None,
-             linha_cabecalho: int | None = None, modelo: Modelo | None = None) -> Dataset:
+             linha_cabecalho: int | None = None, modelo: Modelo | None = None, *,
+             conhecimento=None, contexto: str = "", correcoes: dict[str, str] | None = None) -> Dataset:
     """Lê, tipa e trata a planilha.
 
-    Com `modelo`, os cabeçalhos são mapeados para os rótulos canônicos, os tipos do modelo prevalecem e
-    as regras de negócio do .toml são aplicadas; sem modelo, a especificação é deduzida dos tipos.
-    `overrides` (correção manual do usuário) tem prioridade sobre o modelo.
+    Com `modelo` antigo (v1), os cabeçalhos são mapeados para os rótulos canônicos e as regras do .toml
+    valem. Sem modelo (ou modelo v2), o Cérebro entende a planilha: layout, papel de cada coluna e grão.
+    `overrides` (tipo físico) e `correcoes` (papel, vindas da prévia) são correções do usuário e vencem.
+    `conhecimento` = base aprendida (padrão: a ativa); `contexto` = "setor/tipo de documento".
     """
     bruto, meta, tipos, faltando, aproximados = _ler_mapeado(fonte, nome_arquivo, aba, linha_cabecalho, modelo)
-    return _processar(bruto, meta, tipos, faltando, aproximados, overrides, modelo)
+    return _processar(bruto, meta, tipos, faltando, aproximados, overrides, modelo,
+                      conhecimento=conhecimento, contexto=contexto, correcoes=correcoes)
 
 
 def carregar_varios(arquivos: list[tuple], overrides: dict[str, str] | None = None,
-                    modelo: Modelo | None = None) -> Dataset:
+                    modelo: Modelo | None = None, *, conhecimento=None, contexto: str = "",
+                    correcoes: dict[str, str] | None = None) -> Dataset:
     """Vários arquivos com o mesmo layout (ex.: um por ano) numa base só.
 
     Cada arquivo é lido como em `carregar` (aba automática) e ganha a coluna «Arquivo de origem»;
@@ -118,8 +121,9 @@ def carregar_varios(arquivos: list[tuple], overrides: dict[str, str] | None = No
                              "Selecione um arquivo que contenha essa aba.")
     nota_ign = [f"[{nome}] sem a aba «{aba_fixa}» — ignorado nesta página." for _, nome in ignorados]
 
+    extra = {"conhecimento": conhecimento, "contexto": contexto, "correcoes": correcoes}
     if len(usaveis) == 1:
-        ds = carregar(usaveis[0][0], usaveis[0][1], overrides=overrides, modelo=modelo)
+        ds = carregar(usaveis[0][0], usaveis[0][1], overrides=overrides, modelo=modelo, **extra)
         ds.meta.diagnostico += nota_ign
         return ds
 
@@ -155,7 +159,7 @@ def carregar_varios(arquivos: list[tuple], overrides: dict[str, str] | None = No
         if falt - set(faltando):
             meta.diagnostico.append(f"[{nome}] sem as colunas: {', '.join(sorted(falt - set(faltando)))}.")
     tipos[config.COL_ARQUIVO] = "categorico"
-    return _processar(base, meta, tipos, faltando, aproximados, overrides, modelo)
+    return _processar(base, meta, tipos, faltando, aproximados, overrides, modelo, **extra)
 
 
 def _versoes_sobrepostas(partes: list[pd.DataFrame], extras: list[dict], modelo, nomes: list[str]):
@@ -198,11 +202,11 @@ def _juntar_extras(lista: list[dict]) -> dict:
 
 
 def _processar(bruto: pd.DataFrame, meta: MetaLeitura, tipos: dict[str, str], faltando: list[str],
-               aproximados: list, overrides: dict[str, str] | None, modelo: Modelo | None) -> Dataset:
+               aproximados: list, overrides: dict[str, str] | None, modelo: Modelo | None, *,
+               conhecimento=None, contexto: str = "", correcoes: dict[str, str] | None = None) -> Dataset:
     """Tipagem, especificação e tratamento — comum a `carregar` e `carregar_varios`."""
     meta.diagnostico += [f"Coluna «{orig}» associada a «{rot}» do modelo por semelhança de nome."
                          for orig, rot in dict.fromkeys(aproximados)]
-
     if modelo is not None and modelo.apenas_mapeadas:   # LGPD: descarta colunas não declaradas (CPF/banco/PIX…)
         manter = {cm.rotulo for cm in modelo.colunas} | {config.COL_LINHA, config.COL_ABA, config.COL_ARQUIVO}
         descartadas = [c for c in bruto.columns if c not in manter]
@@ -215,12 +219,51 @@ def _processar(bruto: pd.DataFrame, meta: MetaLeitura, tipos: dict[str, str], fa
     tipos.update(overrides or {})  # correção do usuário vence o modelo
     df, esquema = inferencia.inferir_esquema(bruto, tipos)
     df[config.COL_LINHA] = pd.to_numeric(bruto[config.COL_LINHA]).astype("Int64")  # nº, não texto
+    if cerebro.ativo(modelo):
+        return _processar_cerebro(df, esquema, bruto, meta, tipos, faltando, overrides, modelo,
+                                  conhecimento, contexto, correcoes)
     spec =(especificacao.de_modelo(modelo, df, esquema) if modelo
             else especificacao.automatica(df, esquema))
     meta.diagnostico += spec.avisos
     df, esquema, problemas = tratamento.aplicar(df, bruto, esquema, spec, meta.aba)
     return Dataset(df=df, esquema=esquema, meta=meta, modelo=modelo, colunas_faltando=faltando,
                    spec=spec, problemas=problemas)
+
+
+def _processar_cerebro(df, esquema, bruto, meta, tipos, faltando, overrides, modelo,
+                       conhecimento, contexto, correcoes) -> Dataset:
+    """Caminho do Cérebro: papéis → tipo físico coerente com o papel → grão → especificação → tratamento."""
+    extras = meta.extras or {}
+    tipo_layout = extras.get("layout", cerebro.layout.PLANA)
+    base = conhecimento if conhecimento is not None else cerebro.conhecimento.atual()
+    dicas = dict(extras.get("papeis") or {})
+    if modelo is not None:   # modelo v2: o papel que ele declara é dica forte; o contexto dele vale por padrão
+        dicas.update({cm.rotulo: cm.papel for cm in modelo.colunas if cm.papel in cerebro.papeis.PAPEIS})
+        contexto = contexto or modelo.contexto
+    ent = cerebro.classificar_e_agrupar(df, esquema, base=base, contexto=contexto, dicas=dicas,
+                                        correcoes=correcoes, tipo_layout=tipo_layout)
+    # protocolo/atendimento lido como número vira identificador (texto): não há mais como somá-lo
+    coerentes = {k: v for k, v in cerebro.papeis.tipos_coerentes(ent.papeis).items() if k not in (overrides or {})}
+    if coerentes:
+        tipos.update(coerentes)
+        df, esquema = inferencia.inferir_esquema(bruto, tipos)
+        df[config.COL_LINHA] = pd.to_numeric(bruto[config.COL_LINHA]).astype("Int64")
+        for p in ent.papeis:
+            p.tipo = coerentes.get(p.nome, p.tipo)
+    df, esquema, ent.papeis = cerebro.grao.consolidar(df, esquema, ent.papeis, ent.grao)
+    if ent.grao.nota:
+        meta.diagnostico.append(ent.grao.nota)
+    nao_somados = [p.nome for p in ent.papeis if p.papel == cerebro.papeis.IDENTIFICADOR
+                   and p.tipo == "identificador" and p.nome in coerentes]
+    if nao_somados:
+        meta.diagnostico.append("Tratado(s) como identificador — contado(s), nunca somado(s): "
+                                + ", ".join(f"«{c}»" for c in nao_somados) + ".")
+    spec = especificacao.por_papeis(df, esquema, ent.papeis, ent.grao, tipo_layout)
+    # consolidado, cada linha é um fato novo: a checagem bruto × tipado (por linha original) não se aplica
+    ref = df if ent.grao.consolidado else bruto
+    df, esquema, problemas = tratamento.aplicar(df, ref, esquema, spec, meta.aba)
+    return Dataset(df=df, esquema=esquema, meta=meta, modelo=modelo, colunas_faltando=faltando,
+                   spec=spec, problemas=problemas, entendimento=ent)
 
 
 # ---- recorte -----------------------------------------------------------------------------------
@@ -352,6 +395,23 @@ def _analisar_serie(ds: Dataset, df: pd.DataFrame, spec, regras_an: dict, filtro
     )
 
 
+def _analisar_serie_cerebro(ds: Dataset, df: pd.DataFrame, spec, filtros: Filtros | None, cfg: dict,
+                            ativas) -> Analise:
+    """Série mensal reconhecida pelo Cérebro (matriz despivotada): evolução, grupos, contas, atípicos."""
+    from .cerebro import serie
+
+    ex = ds.meta.extras or {}
+    conta = ex.get("conta", "Conta")
+    grupo = "Grupo" if "Grupo" in df.columns else None
+    kpis, paineis, achados, resumo, metodologia = serie.montar(df, conta, "Mês", "Valor", grupo, ex.get("referencias"))
+    return Analise(
+        kpis=kpis, paineis=paineis, alertas=alertas_de_leitura(ds), esquema=ds.esquema,
+        linhas=len(df), colunas=len(ativas), achados=achados, metas=[],
+        filtros_desc=_descrever_filtros(ds, filtros), observacoes=str(cfg.get("observacoes") or ""),
+        estatistica_tempo=spec.estatistica_tempo, arquivos=arquivos_de(ds), resumo=resumo, metodologia=metodologia,
+    )
+
+
 def analisar(ds: Dataset, filtros: Filtros | None = None, metas_cfg: dict | None = None) -> Analise:
     """Indicadores do recorte. `metas_cfg` = metas do gestor (padrão: as gravadas em config/metas.json
     para este relatório); elas definem a estatística de tempo e os alvos ✔/✗."""
@@ -363,6 +423,8 @@ def analisar(ds: Dataset, filtros: Filtros | None = None, metas_cfg: dict | None
     regras_an = ds.modelo.regras.get("analise", {}) if ds.modelo is not None else {}
     if regras_an.get("tipo") == "serie":       # matriz conta × mês: dashboards financeiros (financeiro.py)
         return _analisar_serie(ds, df, spec, regras_an, filtros, cfg, ativas)
+    if spec.tipo == "serie" and (ds.meta.extras or {}).get("layout") == cerebro.layout.MATRIZ:
+        return _analisar_serie_cerebro(ds, df, spec, filtros, cfg, ativas)
     problemas = ds.problemas
     if problemas is not None and not problemas.empty:
         problemas = problemas[problemas["_idx"].isin(df.index)]

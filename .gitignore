@@ -2,6 +2,7 @@
 dados/
 saida/
 _revisar/
+Setores/
 
 # Configuração local de cada usuário — contém chave de API (ia.toml) e as metas do gestor
 config/ia.toml

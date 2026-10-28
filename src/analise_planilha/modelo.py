@@ -6,24 +6,26 @@ editar/duplicar um arquivo, sem tocar no código.
 """
 from __future__ import annotations
 
-import tomllib
 from dataclasses import dataclass, field
 from difflib import SequenceMatcher
 from pathlib import Path
 
 import pandas as pd
+import tomllib
 
 from . import config
+from .cerebro.papeis import PAPEIS as _PAPEIS_CEREBRO
 from .modelos import TIPOS
 from .normalizacao import chave_texto, nomes_unicos
 
 PASTA_MODELOS = config.PASTA_MODELOS
 _chave = chave_texto  # nome antigo, usado pela interface
-PAPEIS = ("dimensao", "medida", "entidade", "texto")
+PAPEIS_V1 = ("dimensao", "medida", "entidade", "texto")
+PAPEIS = PAPEIS_V1 + tuple(p for p in _PAPEIS_CEREBRO if p not in PAPEIS_V1)   # v2: papéis do Cérebro
 # Seções de regras de negócio aceitas no .toml (interpretadas em especificacao.py; "leitura" é lida
 # por matriz.py para planilhas em matriz conta × mês)
 SECOES_REGRAS = ("leitura", "analise", "classificacao", "taxa", "tempo", "cruzamento", "qualidade",
-                 "feriados", "meta")
+                 "feriados", "meta", "grao")
 
 
 def _semelhanca(a: str, b: str) -> float:
@@ -67,6 +69,10 @@ class Modelo:
     pagina: str | None = None             # (legado) rótulo de página; hoje a página é a aba real
     ordem: int = 0                        # ordem da página (aba) dentro do arquivo no seletor
     apenas_mapeadas: bool = False         # descarta colunas não declaradas (ex.: CPF/banco/PIX — LGPD)
+    versao: int = 1                       # 2 = gerado/entendido pelo Cérebro (papéis, layout, grão)
+    layout: str | None = None             # v2: plana | matriz_mensal | blocos
+    grao: str | None = None               # v2: coluna que identifica o fato (ex.: «Nº Atendimento»)
+    contexto: str = ""                    # v2: "Setor/Tipo de documento" — escopo do conhecimento
 
     @property
     def subpasta(self) -> str:
@@ -203,10 +209,14 @@ def carregar_modelo(origem: str | Path) -> Modelo:
     if not colunas:
         raise ValueError(f"Modelo «{caminho.name}» não declara nenhuma [[coluna]].")
     regras = {k: v for k, v in dados.items() if k in SECOES_REGRAS}
+    versao = int(dados.get("versao", 1))
+    contexto = "/".join(x for x in (dados.get("setor"), dados.get("tipo_documento")) if x)
     return Modelo(nome=dados.get("nome", caminho.stem), colunas=colunas,
                   aba=dados.get("aba"), arquivo=caminho, abas=dados.get("abas"), regras=regras,
                   pasta=dados.get("pasta"), categoria=dados.get("categoria"), pagina=dados.get("pagina"),
-                  ordem=int(dados.get("ordem", 0)), apenas_mapeadas=bool(dados.get("apenas_mapeadas", False)))
+                  ordem=int(dados.get("ordem", 0)), apenas_mapeadas=bool(dados.get("apenas_mapeadas", False)),
+                  versao=versao, layout=(dados.get("leitura") or {}).get("layout") if versao >= 2 else None,
+                  grao=(dados.get("grao") or {}).get("chave"), contexto=contexto)
 
 
 def listar_modelos() -> dict[str, Path]:

@@ -187,7 +187,7 @@ def test_filtro_recorta_indicadores_e_qualidade(modelo, planilha):
 def test_sem_modelo_deduz_especificacao(csv_ptbr):
     ds = servico.carregar(csv_ptbr, "base.csv")
     spec = ds.spec
-    assert spec.origem == "automática"
+    assert spec.origem == "Cérebro"                # sem modelo, quem entende a planilha é o Cérebro
     assert spec.medida_principal == "Valor"
     assert "Cidade" in spec.dimensoes
     assert [t.rotulo for t in spec.taxas] == ["Autorizado"]

@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 
 from . import config, contas_convenio, estrutura, matriz
+from .cerebro import layout as cerebro_layout
 from .modelos import MetaLeitura
 from .normalizacao import tokens_nome
 
@@ -231,13 +232,28 @@ def ler(fonte, nome_arquivo: str, aba: str | None = None, linha_cabecalho: int |
         for nome, bruto in brutas.items():
             grades[nome], n = _limpar_grade(bruto)
             erros += n if (aba is None or nome == aba) else 0
-        if aba in grades:
-            meta.aba = aba
-            est = estrutura.analisar(grades[aba], dicas, linha_cabecalho)
-        else:
-            meta.aba, est, motivo = _escolher_aba(grades, ocultas, dicas, linha_cabecalho)
-            if motivo:
-                meta.diagnostico.append(motivo)
+        usar_cerebro = modelo is None or getattr(modelo, "versao", 1) >= 2
+        try:
+            if aba in grades:
+                meta.aba = aba
+                est = estrutura.analisar(grades[aba], dicas, linha_cabecalho)
+            else:
+                meta.aba, est, motivo = _escolher_aba(grades, ocultas, dicas, linha_cabecalho)
+                if motivo:
+                    meta.diagnostico.append(motivo)
+        except ValueError:
+            # nenhuma "tabela" reconhecível: pode ser formulário em blocos ou matriz (Cérebro)
+            achado = _layout_especial(grades, [aba] if aba in grades else list(grades), nome_arquivo) \
+                if usar_cerebro else None
+            if achado is None:
+                raise
+            return achado
+        if usar_cerebro and linha_cabecalho is None:
+            achado = _layout_especial(grades, [meta.aba], nome_arquivo)
+            if achado is not None:
+                df_l, meta_l = achado
+                meta_l.abas, meta_l.diagnostico = meta.abas, meta.diagnostico + meta_l.diagnostico
+                return df_l, meta_l
 
     corpo = est.corpo
     corpo.index = corpo.index + 1  # nº real da linha na planilha
@@ -260,6 +276,15 @@ def ler(fonte, nome_arquivo: str, aba: str | None = None, linha_cabecalho: int |
         meta.diagnostico.append("Linhas que não são dados e foram descartadas: "
                                 + "; ".join(f"{n} {motivo}" for motivo, n in descartes.items()) + ".")
     return corpo, meta
+
+
+def _layout_especial(grades: dict[str, pd.DataFrame], nomes: list, nome_arquivo: str):
+    """(df, meta) da 1ª aba que o Cérebro reconhece como matriz conta × mês ou formulário em blocos."""
+    for nome in nomes:
+        lay = cerebro_layout.detectar(grades[nome])
+        if lay.tipo != cerebro_layout.PLANA:
+            return cerebro_layout.ler(grades[nome], lay, nome_arquivo, nome)
+    return None
 
 
 def _aba_relatorio_contas(brutas: dict[str, pd.DataFrame], aba: str | None, ext: str) -> str | None:
