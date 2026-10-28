@@ -58,12 +58,56 @@ class RepoUsuarios:
             q = q.where(Usuario.centro_custo_id == self._e.centro_custo_id)
         return self._s.scalar(q)
 
+    def _escopada(self):
+        q = select(Usuario)
+        if not self._e.eh_adm:                           # Gestor: só o próprio setor
+            q = q.where(Usuario.centro_custo_id == self._e.centro_custo_id)
+        return q
+
     def listar(self) -> list[Usuario]:
         """Gestor vê os usuários do próprio setor; ADM vê todos. Ordenado por nome."""
-        q = select(Usuario)
-        if not self._e.eh_adm:
-            q = q.where(Usuario.centro_custo_id == self._e.centro_custo_id)
-        return list(self._s.scalars(q.order_by(Usuario.nome)))
+        return list(self._s.scalars(self._escopada().order_by(Usuario.nome)))
+
+    def listar_paginado(self, busca: str = "", papel: str = "", centro_id: int | None = None,
+                        pagina: int = 1, por_pagina: int = 8) -> tuple[list[Usuario], int, int]:
+        """Lista filtrada e paginada. Devolve (itens, total, total_de_paginas).
+        Os filtros vivem DENTRO do escopo (o Gestor nunca enxerga fora do próprio setor)."""
+        from sqlalchemy import func, or_
+        cond = self._escopada().subquery()
+        q = select(Usuario).where(Usuario.id.in_(select(cond.c.id)))
+        if busca.strip():
+            alvo = f"%{busca.strip().lower()}%"
+            q = q.where(or_(func.lower(Usuario.nome).like(alvo), func.lower(Usuario.login).like(alvo)))
+        if papel:
+            q = q.where(Usuario.papel == papel)
+        if centro_id is not None:
+            q = q.where(Usuario.centro_custo_id == centro_id)
+        total = self._s.scalar(select(func.count()).select_from(q.subquery())) or 0
+        por_pagina = max(1, por_pagina)
+        paginas = max(1, (total + por_pagina - 1) // por_pagina)
+        pagina = min(max(1, pagina), paginas)
+        itens = list(self._s.scalars(q.order_by(Usuario.nome)
+                                      .offset((pagina - 1) * por_pagina).limit(por_pagina)))
+        return itens, total, paginas
+
+    def definir_ativo(self, alvo: Usuario, ativo: bool) -> None:
+        alvo.ativo = ativo
+
+    def resetar_senha(self, alvo: Usuario, nova_hash: str) -> None:
+        alvo.senha_hash = nova_hash
+        alvo.precisa_trocar_senha = True                 # obriga a trocar no próximo acesso
+        alvo.tentativas_falhas = 0
+
+    def editar(self, alvo: Usuario, *, nome: str | None = None, email: str | None = None,
+               papel: str | None = None, centro_custo_id: int | None = None) -> None:
+        if nome is not None:
+            alvo.nome = nome
+        if email is not None:
+            alvo.email = email or None
+        if papel is not None:
+            alvo.papel = papel
+        if centro_custo_id is not None:
+            alvo.centro_custo_id = centro_custo_id
 
 
 class RepoCargas:

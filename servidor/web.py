@@ -222,7 +222,8 @@ def conteudo_relatorio(slug: str, request: Request, s: Session = Depends(_sessao
 
 # ============================================================== usuários (Gestor/ADM)
 @router.get("/usuarios", response_class=HTMLResponse)
-def usuarios(request: Request, s: Session = Depends(_sessao)):
+def usuarios(request: Request, busca: str = "", papel: str = "", setor: str = "", pagina: int = 1,
+             s: Session = Depends(_sessao)):
     escopo, redir = _exige_login(request, s)
     if redir:
         return redir
@@ -230,19 +231,30 @@ def usuarios(request: Request, s: Session = Depends(_sessao)):
         return _pagina("erro.html", request, _ctx(request, escopo, s, "usuarios",
                                                    mensagem="Acesso restrito a gestores."))
     nomes = {c.id: c.nome for c in s.scalars(select(CentroCusto))}
-    lista = [{"id": u.id, "login": u.login, "nome": u.nome, "papel": u.papel,
-              "setor": nomes.get(u.centro_custo_id, "—" if u.papel == ADM else "?"), "ativo": u.ativo}
-             for u in RepoUsuarios(s, escopo).listar()]
     centros = [{"id": c.id, "codigo": c.codigo, "nome": c.nome}
                for c in s.scalars(select(CentroCusto).where(CentroCusto.ativo.is_(True)).order_by(CentroCusto.nome))
                if escopo.eh_adm or c.id == escopo.centro_custo_id]
+    papel_f = papel.upper() if papel.upper() in PAPEIS else ""
+    setor_id = int(setor) if setor.isdigit() else None
+    itens, total, paginas = RepoUsuarios(s, escopo).listar_paginado(
+        busca=busca, papel=papel_f, centro_id=setor_id, pagina=pagina)
+    lista = [{"id": u.id, "login": u.login, "nome": u.nome, "email": u.email or "", "papel": u.papel,
+              "centro_custo_id": u.centro_custo_id,
+              "setor": nomes.get(u.centro_custo_id, "—" if u.papel == ADM else "?"),
+              "ativo": u.ativo, "eu": u.id == escopo.usuario_id}
+             for u in itens]
+    pag = {"atual": min(max(1, pagina), paginas), "total": total, "paginas": paginas,
+           "ini": 0 if total == 0 else (min(max(1, pagina), paginas) - 1) * 8 + 1,
+           "fim": min(min(max(1, pagina), paginas) * 8, total)}
     return _pagina("usuarios.html", request, _ctx(request, escopo, s, "usuarios",
-                   usuarios=lista, centros=centros, eh_adm=escopo.eh_adm, papeis=PAPEIS))
+                   usuarios=lista, centros=centros, eh_adm=escopo.eh_adm, papeis=PAPEIS,
+                   busca=busca, papel_sel=papel_f, setor_sel=setor, pag=pag))
 
 
 @router.post("/usuarios")
 def usuarios_criar(request: Request, login: str = Form(...), nome: str = Form(...), senha: str = Form(...),
-                   papel: str = Form(USUARIO), centro_custo_id: str = Form(""), s: Session = Depends(_sessao)):
+                   email: str = Form(""), papel: str = Form(USUARIO), centro_custo_id: str = Form(""),
+                   s: Session = Depends(_sessao)):
     escopo, redir = _exige_login(request, s)
     if redir:
         return redir
@@ -264,17 +276,27 @@ def usuarios_criar(request: Request, login: str = Form(...), nome: str = Form(..
                 raise _Erro("Centro de custo inexistente.")
         if not (login.strip() and nome.strip() and senha):
             raise _Erro("Preencha nome, login e senha.")
-        if s.scalar(select(Usuario).where(Usuario.login == login)) is not None:
+        if len(senha) < 6:
+            raise _Erro("A senha provisória precisa de ao menos 6 caracteres.")
+        if s.scalar(select(Usuario).where(Usuario.login == login.strip())) is not None:
             raise _Erro("Login já existe.")
-        s.add(Usuario(login=login.strip(), nome=nome.strip(), senha_hash=hash_senha(senha), papel=papel,
+        s.add(Usuario(login=login.strip(), nome=nome.strip(), email=(email.strip() or None),
+                      senha_hash=hash_senha(senha), papel=papel,
                       centro_custo_id=(None if papel == ADM else cc), precisa_trocar_senha=True))
-        _audit(s, escopo, "criar_usuario", login)
+        _audit(s, escopo, "criar_usuario", login.strip())
         s.commit()
     except _Erro as e:
         return _redir("/web/usuarios", erro=str(e))
     except ValueError:
         return _redir("/web/usuarios", erro="Centro de custo inválido.")
-    return _redir("/web/usuarios", ok=f"Usuário «{login}» criado (troca a senha no 1º acesso).")
+    return _redir("/web/usuarios", ok=f"Usuário «{login.strip()}» criado (troca a senha no 1º acesso).")
+
+
+def _alvo_gerenciavel(escopo, s, usuario_id: int) -> Usuario:
+    alvo = RepoUsuarios(s, escopo).obter(usuario_id)     # já escopado ao setor do Gestor
+    if alvo is None:
+        raise _Erro("Usuário não encontrado.")
+    return alvo
 
 
 @router.post("/usuarios/{usuario_id}/bloquear")
@@ -285,21 +307,104 @@ def usuarios_bloquear(usuario_id: int, request: Request, s: Session = Depends(_s
     try:
         if not _pode(escopo, GESTOR, ADM):
             raise _Erro("Acesso restrito a gestores.")
-        alvo = RepoUsuarios(s, escopo).obter(usuario_id)
-        if alvo is None:
-            raise _Erro("Usuário não encontrado.")
+        alvo = _alvo_gerenciavel(escopo, s, usuario_id)
         if escopo.eh_gestor and alvo.papel != USUARIO:
             raise _Erro("Gestor só bloqueia usuários comuns.")
         if alvo.id == escopo.usuario_id:
             raise _Erro("Não é possível bloquear a si mesmo.")
-        alvo.ativo = False
+        RepoUsuarios(s, escopo).definir_ativo(alvo, False)
         for sess in s.scalars(select(SessaoUsuario).where(SessaoUsuario.usuario_id == alvo.id, ~SessaoUsuario.revogada)):
-            sess.revogada = True
+            sess.revogada = True                         # tira o bloqueado na hora
         _audit(s, escopo, "bloquear_usuario", alvo.login)
         s.commit()
     except _Erro as e:
         return _redir("/web/usuarios", erro=str(e))
     return _redir("/web/usuarios", ok="Usuário bloqueado.")
+
+
+@router.post("/usuarios/{usuario_id}/desbloquear")
+def usuarios_desbloquear(usuario_id: int, request: Request, s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    try:
+        if not _pode(escopo, GESTOR, ADM):
+            raise _Erro("Acesso restrito a gestores.")
+        alvo = _alvo_gerenciavel(escopo, s, usuario_id)
+        if escopo.eh_gestor and alvo.papel != USUARIO:
+            raise _Erro("Gestor só gerencia usuários comuns.")
+        RepoUsuarios(s, escopo).definir_ativo(alvo, True)
+        _audit(s, escopo, "desbloquear_usuario", alvo.login)
+        s.commit()
+    except _Erro as e:
+        return _redir("/web/usuarios", erro=str(e))
+    return _redir("/web/usuarios", ok="Usuário reativado.")
+
+
+@router.post("/usuarios/{usuario_id}/resetar-senha")
+def usuarios_resetar_senha(usuario_id: int, request: Request, nova: str = Form(...),
+                           s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    try:
+        if not _pode(escopo, GESTOR, ADM):
+            raise _Erro("Acesso restrito a gestores.")
+        alvo = _alvo_gerenciavel(escopo, s, usuario_id)
+        if escopo.eh_gestor and alvo.papel != USUARIO:
+            raise _Erro("Gestor só gerencia usuários comuns.")
+        if alvo.id == escopo.usuario_id:
+            raise _Erro("Para a sua própria senha, use «Trocar senha».")
+        if len(nova) < 6:
+            raise _Erro("A nova senha precisa de ao menos 6 caracteres.")
+        RepoUsuarios(s, escopo).resetar_senha(alvo, hash_senha(nova))
+        for sess in s.scalars(select(SessaoUsuario).where(SessaoUsuario.usuario_id == alvo.id, ~SessaoUsuario.revogada)):
+            sess.revogada = True                         # derruba sessões com a senha antiga
+        _audit(s, escopo, "resetar_senha", alvo.login)
+        s.commit()
+    except _Erro as e:
+        return _redir("/web/usuarios", erro=str(e))
+    return _redir("/web/usuarios", ok=f"Senha de «{alvo.login}» redefinida (ele troca no próximo acesso).")
+
+
+@router.post("/usuarios/{usuario_id}/editar")
+def usuarios_editar(usuario_id: int, request: Request, nome: str = Form(...), email: str = Form(""),
+                    papel: str = Form(""), centro_custo_id: str = Form(""), s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    try:
+        if not _pode(escopo, GESTOR, ADM):
+            raise _Erro("Acesso restrito a gestores.")
+        alvo = _alvo_gerenciavel(escopo, s, usuario_id)
+        if escopo.eh_gestor and alvo.papel != USUARIO:
+            raise _Erro("Gestor só edita usuários comuns.")
+        if not nome.strip():
+            raise _Erro("O nome não pode ficar vazio.")
+        novo_papel = None
+        novo_cc = None
+        if escopo.eh_adm and alvo.id != escopo.usuario_id:   # só o ADM muda papel/setor (e não o próprio)
+            p = papel.upper()
+            if p and p not in PAPEIS:
+                raise _Erro("Papel inválido.")
+            novo_papel = p or alvo.papel
+            if novo_papel == ADM:
+                novo_cc = None
+            elif centro_custo_id:
+                novo_cc = int(centro_custo_id)
+                if s.get(CentroCusto, novo_cc) is None:
+                    raise _Erro("Centro de custo inexistente.")
+            else:
+                raise _Erro("Informe o centro de custo.")
+        RepoUsuarios(s, escopo).editar(alvo, nome=nome.strip(), email=email.strip(),
+                                       papel=novo_papel, centro_custo_id=novo_cc)
+        _audit(s, escopo, "editar_usuario", alvo.login)
+        s.commit()
+    except _Erro as e:
+        return _redir("/web/usuarios", erro=str(e))
+    except ValueError:
+        return _redir("/web/usuarios", erro="Centro de custo inválido.")
+    return _redir("/web/usuarios", ok=f"Dados de «{alvo.login}» atualizados.")
 
 
 # ============================================================== enviar planilha (Gestor/ADM)

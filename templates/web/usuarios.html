@@ -1,39 +1,170 @@
 {% extends "web/base.html" %}
 {% block titulo %}Usuários — Análise de Planilhas{% endblock %}
 {% block conteudo %}
-<h1>Gestão de usuários</h1>
-<p class="apoio">Usuários do seu setor{{ ' (todos, como Administrador)' if eh_adm else '' }}.</p>
+<style>
+  .u-topo{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .u-ferramentas{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:16px}
+  .u-ferramentas form.busca{display:flex;gap:10px;flex-wrap:wrap;align-items:center;flex:1;min-width:240px;margin:0}
+  .u-busca{position:relative;flex:1;min-width:200px}
+  .u-busca svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:17px;height:17px;color:var(--fraco)}
+  .u-busca input{padding-left:36px;margin:0}
+  .u-ferramentas select{width:auto;min-width:150px;margin:0}
+  .u-avatar{width:34px;height:34px;border-radius:50%;flex:0 0 34px;display:grid;place-items:center;
+    background:var(--marca-clara);color:var(--marca-mais-escura);font-weight:800;font-size:13px}
+  .u-nome{display:flex;align-items:center;gap:11px}
+  .u-nome .meta small{display:block;color:var(--fraco);font-size:12px}
+  .u-eu{font-size:11px;font-weight:700;color:var(--marca-escura);background:var(--marca-clara);
+    padding:1px 7px;border-radius:999px;margin-left:6px}
+  .acoes{display:flex;gap:6px;justify-content:flex-end}
+  .ic-btn{display:grid;place-items:center;width:34px;height:34px;border-radius:8px;border:1px solid var(--borda);
+    background:var(--superficie);color:var(--apoio);cursor:pointer;margin:0;padding:0;transition:all var(--rapido)}
+  .ic-btn svg{width:17px;height:17px}
+  .ic-btn:hover{border-color:var(--marca);color:var(--marca-escura);background:var(--marca-clara);box-shadow:none}
+  .ic-btn.perigo:hover{border-color:var(--perigo);color:var(--perigo);background:var(--perigo-claro)}
+  .paginacao{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    padding:12px 14px;border-top:1px solid var(--borda);background:var(--superficie-2)}
+  .paginacao .paginas{display:flex;gap:6px}
+  .paginacao a,.paginacao span.pg{display:grid;place-items:center;min-width:34px;height:34px;padding:0 8px;
+    border:1px solid var(--borda);border-radius:8px;text-decoration:none;color:var(--apoio);font-weight:600;
+    font-size:13px;background:var(--superficie);transition:all var(--rapido)}
+  .paginacao a:hover{border-color:var(--marca);color:var(--marca-escura)}
+  .paginacao span.pg.atual{background:var(--marca);border-color:var(--marca);color:#fff}
+  .paginacao span.pg.mudo{opacity:.4;cursor:default}
+  #card-novo{display:none;animation:surge .28s ease both}
+  #card-novo.aberto{display:block}
+  dialog{border:1px solid var(--borda);border-radius:var(--raio);padding:0;max-width:440px;width:92vw;
+    background:var(--superficie);color:var(--texto);box-shadow:var(--sombra-forte)}
+  dialog::backdrop{background:rgba(10,18,26,.5);backdrop-filter:blur(2px)}
+  dialog .cab{padding:16px 20px;border-bottom:1px solid var(--borda);font-weight:700;font-size:16px}
+  dialog .corpo{padding:18px 20px}
+  dialog .pe{padding:14px 20px;border-top:1px solid var(--borda);display:flex;justify-content:flex-end;gap:10px}
+  dialog label{margin-top:12px}
+  dialog label:first-child{margin-top:0}
+  .senha-linha{display:flex;gap:8px;align-items:center}
+  .senha-linha input{margin:0}
+  .olho{flex:0 0 auto;width:40px;height:40px;border:1px solid var(--borda);border-radius:var(--raio-s);
+    background:var(--superficie);color:var(--apoio);display:grid;place-items:center;cursor:pointer;margin:0;padding:0}
+  .olho:hover{color:var(--marca-escura);border-color:var(--marca);background:var(--marca-clara);box-shadow:none}
+  .btn-fantasma{background:var(--superficie);color:var(--apoio);border:1px solid var(--borda);margin:0}
+  .btn-fantasma:hover{background:var(--superficie-2);color:var(--texto);box-shadow:none}
+  .linha-obrig{color:var(--fraco);font-size:12px;margin-top:14px}
+  .obrig{color:var(--perigo)}
+  /* validação discreta: só marca depois que o usuário mexeu */
+  form.validar input:user-invalid{border-color:var(--perigo);box-shadow:0 0 0 3px var(--perigo-claro)}
+</style>
+
+<div class="u-topo">
+  <div>
+    <h1>Gestão de usuários</h1>
+    <p class="apoio">Usuários do seu setor{{ ' (todos, como Administrador)' if eh_adm else '' }}.</p>
+  </div>
+  <button type="button" class="btn" onclick="document.getElementById('card-novo').classList.toggle('aberto')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="17" height="17"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+    Novo usuário</button>
+</div>
+
+<div class="u-ferramentas">
+  <form method="get" action="/web/usuarios" class="busca">
+    <div class="u-busca">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg>
+      <input name="busca" value="{{ busca }}" placeholder="Buscar por nome ou login…">
+    </div>
+    <select name="papel" onchange="this.form.submit()">
+      <option value="">Todos os papéis</option>
+      {% for p in papeis %}<option value="{{ p }}" {{ 'selected' if p == papel_sel }}>{{ p }}</option>{% endfor %}
+    </select>
+    {% if eh_adm %}
+    <select name="setor" onchange="this.form.submit()">
+      <option value="">Todos os setores</option>
+      {% for c in centros %}<option value="{{ c.id }}" {{ 'selected' if setor_sel == c.id|string }}>{{ c.codigo }}</option>{% endfor %}
+    </select>
+    {% endif %}
+  </form>
+</div>
 
 <div class="tabela-caixa">
 <table>
-  <thead><tr><th>Nome</th><th>Login</th><th>Papel</th><th>Setor</th><th>Situação</th><th></th></tr></thead>
+  <thead><tr><th>Nome</th><th>Login</th><th>Papel</th><th>Setor</th><th>Situação</th><th style="text-align:right">Ações</th></tr></thead>
   <tbody>
   {% for u in usuarios %}
   <tr>
-    <td>{{ u.nome }}</td><td>{{ u.login }}</td><td>{{ u.papel }}</td><td>{{ u.setor }}</td>
+    <td>
+      <span class="u-nome">
+        <span class="u-avatar">{{ u.nome[:1]|upper }}</span>
+        <span class="meta">{{ u.nome }}{% if u.eu %}<span class="u-eu">você</span>{% endif %}
+          {% if u.email %}<small>{{ u.email }}</small>{% endif %}</span>
+      </span>
+    </td>
+    <td>{{ u.login }}</td><td>{{ u.papel }}</td><td>{{ u.setor }}</td>
     <td>{% if u.ativo %}<span class="selo selo-ok">Ativo</span>{% else %}<span class="selo selo-off">Bloqueado</span>{% endif %}</td>
     <td>
-      {% if u.ativo %}
-      <form method="post" action="/web/usuarios/{{ u.id }}/bloquear" class="inline"
-            onsubmit="return confirm('Bloquear {{ u.login }}?')">
-        <button class="btn-perigo">Bloquear</button>
-      </form>
-      {% endif %}
+      <div class="acoes">
+        <button type="button" class="ic-btn" title="Editar"
+          onclick='abrirEditar({{ u.id }}, {{ u.nome|tojson }}, {{ u.email|tojson }}, {{ u.papel|tojson }}, {{ (u.centro_custo_id or "")|tojson }}, {{ u.login|tojson }})'>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3z" stroke-linejoin="round"/><path d="M13.5 6.5l3 3" stroke-linecap="round"/></svg>
+        </button>
+        {% if not u.eu %}
+        <button type="button" class="ic-btn" title="Resetar senha"
+          onclick='abrirReset({{ u.id }}, {{ u.login|tojson }})'>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="15" r="4"/><path d="M10.8 12.2 20 3m-3 0 3 3-3 3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        {% if u.ativo %}
+        <form method="post" action="/web/usuarios/{{ u.id }}/bloquear" class="inline"
+              onsubmit="return confirm('Bloquear {{ u.login }}?')">
+          <button class="ic-btn perigo" title="Bloquear">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+          </button></form>
+        {% else %}
+        <form method="post" action="/web/usuarios/{{ u.id }}/desbloquear" class="inline">
+          <button class="ic-btn" title="Reativar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-1.9"/></svg>
+          </button></form>
+        {% endif %}
+        {% endif %}
+      </div>
     </td>
   </tr>
   {% else %}
-  <tr><td colspan="6" class="apoio">Nenhum usuário cadastrado ainda.</td></tr>
+  <tr><td colspan="6" class="apoio">Nenhum usuário encontrado com esses filtros.</td></tr>
   {% endfor %}
   </tbody>
 </table>
+{% if pag.paginas > 1 or pag.total %}
+<div class="paginacao">
+  <span class="apoio">Mostrando {{ pag.ini }}–{{ pag.fim }} de {{ pag.total }} usuário{{ '' if pag.total == 1 else 's' }}</span>
+  {% if pag.paginas > 1 %}
+  {% set qs = '&busca=' ~ busca ~ '&papel=' ~ papel_sel ~ '&setor=' ~ setor_sel %}
+  <div class="paginas">
+    {% if pag.atual > 1 %}<a href="/web/usuarios?pagina={{ pag.atual - 1 }}{{ qs }}" title="Anterior">‹</a>
+    {% else %}<span class="pg mudo">‹</span>{% endif %}
+    {% for n in range(1, pag.paginas + 1) %}
+      {% if n == pag.atual %}<span class="pg atual">{{ n }}</span>
+      {% else %}<a href="/web/usuarios?pagina={{ n }}{{ qs }}">{{ n }}</a>{% endif %}
+    {% endfor %}
+    {% if pag.atual < pag.paginas %}<a href="/web/usuarios?pagina={{ pag.atual + 1 }}{{ qs }}" title="Próxima">›</a>
+    {% else %}<span class="pg mudo">›</span>{% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endif %}
 </div>
 
-<p class="secao-tit">Novo usuário</p>
-<form method="post" action="/web/usuarios" class="linha">
+<div id="card-novo">
+<p class="secao-tit">Cadastrar novo usuário</p>
+<form method="post" action="/web/usuarios" class="linha validar">
   <div class="campos">
-    <div><label>Nome</label><input name="nome" required></div>
-    <div><label>Login</label><input name="login" required></div>
-    <div><label>Senha provisória</label><input name="senha" type="text" required></div>
+    <div><label>Nome <span class="obrig">*</span></label><input name="nome" required placeholder="Ex.: João Silva"></div>
+    <div><label>Login <span class="obrig">*</span></label><input name="login" required placeholder="Ex.: joao.silva"></div>
+    <div><label>E-mail</label><input name="email" type="email" placeholder="Ex.: joao@empresa.com"></div>
+    <div><label>Senha provisória <span class="obrig">*</span></label>
+      <div class="senha-linha">
+        <input name="senha" id="nova-senha" type="password" required minlength="6" placeholder="ao menos 6 caracteres">
+        <button type="button" class="olho" title="Mostrar/ocultar" onclick="verSenha('nova-senha', this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="17" height="17"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <button type="button" class="btn-sec" style="margin-top:8px" onclick="gerarSenha('nova-senha')">Gerar senha forte</button>
+    </div>
     {% if eh_adm %}
     <div><label>Papel</label>
       <select name="papel">{% for p in papeis %}<option value="{{ p }}">{{ p }}</option>{% endfor %}</select>
@@ -45,6 +176,88 @@
     </div>
     {% endif %}
   </div>
+  <p class="linha-obrig">Campos com <span class="obrig">*</span> são obrigatórios. A senha é provisória — o usuário troca no 1º acesso.</p>
   <button type="submit"><span class="giro"></span><span class="rotulo">Criar usuário</span></button>
 </form>
+</div>
+
+<!-- ===================== modal: editar ===================== -->
+<dialog id="dlg-editar">
+  <form method="post" id="form-editar" class="validar">
+    <div class="cab">Editar usuário <span id="ed-login" class="apoio"></span></div>
+    <div class="corpo">
+      <label>Nome <span class="obrig">*</span></label>
+      <input name="nome" id="ed-nome" required>
+      <label>E-mail</label>
+      <input name="email" id="ed-email" type="email" placeholder="(opcional)">
+      {% if eh_adm %}
+      <div id="ed-adm">
+        <label>Papel</label>
+        <select name="papel" id="ed-papel">{% for p in papeis %}<option value="{{ p }}">{{ p }}</option>{% endfor %}</select>
+        <label>Setor</label>
+        <select name="centro_custo_id" id="ed-setor">
+          {% for c in centros %}<option value="{{ c.id }}">{{ c.codigo }} — {{ c.nome }}</option>{% endfor %}
+        </select>
+      </div>
+      {% endif %}
+    </div>
+    <div class="pe">
+      <button type="button" class="btn-fantasma" onclick="document.getElementById('dlg-editar').close()">Cancelar</button>
+      <button type="submit" style="margin:0"><span class="giro"></span><span class="rotulo">Salvar</span></button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ===================== modal: resetar senha ===================== -->
+<dialog id="dlg-reset">
+  <form method="post" id="form-reset" class="validar">
+    <div class="cab">Resetar senha <span id="rs-login" class="apoio"></span></div>
+    <div class="corpo">
+      <label>Nova senha provisória <span class="obrig">*</span></label>
+      <div class="senha-linha">
+        <input name="nova" id="rs-senha" type="password" required minlength="6" placeholder="ao menos 6 caracteres">
+        <button type="button" class="olho" title="Mostrar/ocultar" onclick="verSenha('rs-senha', this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="17" height="17"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <button type="button" class="btn-sec" style="margin-top:8px" onclick="gerarSenha('rs-senha')">Gerar senha forte</button>
+      <p class="linha-obrig">O usuário será desconectado e terá de trocar a senha no próximo acesso.</p>
+    </div>
+    <div class="pe">
+      <button type="button" class="btn-fantasma" onclick="document.getElementById('dlg-reset').close()">Cancelar</button>
+      <button type="submit" style="margin:0"><span class="giro"></span><span class="rotulo">Redefinir</span></button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+  function verSenha(id, btn){
+    var i = document.getElementById(id);
+    i.type = i.type === "password" ? "text" : "password";
+    btn.style.color = i.type === "text" ? "var(--marca-escura)" : "";
+  }
+  function gerarSenha(id){
+    var cj = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%&*";
+    var a = new Uint32Array(12); (crypto||window.crypto).getRandomValues(a);
+    var s = Array.prototype.map.call(a, function(n){ return cj[n % cj.length]; }).join("");
+    var i = document.getElementById(id); i.type = "text"; i.value = s;
+  }
+  function abrirEditar(id, nome, email, papel, cc, login){
+    var f = document.getElementById("form-editar");
+    f.action = "/web/usuarios/" + id + "/editar";
+    document.getElementById("ed-login").textContent = "· " + login;
+    document.getElementById("ed-nome").value = nome || "";
+    document.getElementById("ed-email").value = email || "";
+    var sp = document.getElementById("ed-papel");
+    if (sp){ sp.value = papel; document.getElementById("ed-setor").value = cc || ""; }
+    document.getElementById("dlg-editar").showModal();
+  }
+  function abrirReset(id, login){
+    var f = document.getElementById("form-reset");
+    f.action = "/web/usuarios/" + id + "/resetar-senha";
+    document.getElementById("rs-login").textContent = "· " + login;
+    document.getElementById("rs-senha").value = ""; document.getElementById("rs-senha").type = "password";
+    document.getElementById("dlg-reset").showModal();
+  }
+</script>
 {% endblock %}

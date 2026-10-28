@@ -183,6 +183,7 @@ class UsuarioIn(BaseModel):
     login: str
     nome: str
     senha: str
+    email: str | None = None             # opcional; dado pessoal (LGPD)
     papel: str = USUARIO
     centro_custo_id: int | None = None   # ADM escolhe; Gestor ignora (usa o próprio setor)
 
@@ -370,7 +371,7 @@ def exportar_html(slug: str, escopo: Escopo = Depends(sessao_pronta), s: Session
 
 
 def _usuario_json(u: Usuario) -> dict:
-    return {"id": u.id, "login": u.login, "nome": u.nome, "papel": u.papel,
+    return {"id": u.id, "login": u.login, "nome": u.nome, "email": u.email, "papel": u.papel,
             "centro_custo_id": u.centro_custo_id, "ativo": u.ativo}
 
 
@@ -462,7 +463,8 @@ def criar_usuario(dados: UsuarioIn, escopo: Escopo = Depends(sessao_pronta), s: 
             raise HTTPException(422, "Centro de custo inexistente.")
     if s.scalar(select(Usuario).where(Usuario.login == dados.login)) is not None:
         raise HTTPException(409, "Login já existe.")
-    novo = Usuario(login=dados.login, nome=dados.nome, senha_hash=hash_senha(dados.senha),
+    novo = Usuario(login=dados.login, nome=dados.nome, email=(dados.email or None),
+                   senha_hash=hash_senha(dados.senha),
                    papel=papel, centro_custo_id=(None if papel == ADM else cc), precisa_trocar_senha=True)
     s.add(novo)
     s.flush()

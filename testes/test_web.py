@@ -88,6 +88,67 @@ def test_web_gestao_de_usuarios(web):
     assert "restrito" in _cli("user.fin").get("/web/usuarios").text.lower()
 
 
+def _id_do_login(c, login):
+    import re
+    pagina = c.get("/web/usuarios").text
+    m = re.search(r'abrirEditar\((\d+),.*?"' + re.escape(login) + r'"\)', pagina)
+    return m.group(1) if m else None
+
+
+def test_web_cria_com_email_edita_e_aparece(web):
+    c = _cli("admin", "admin123")
+    c.post("/web/usuarios", data={"login": "ana.ed", "nome": "Ana", "senha": "senha123",
+                                  "email": "ana@empresa.com", "papel": "USUARIO", "centro_custo_id": 1})
+    assert "ana@empresa.com" in c.get("/web/usuarios").text          # e-mail opcional persistido
+    uid = _id_do_login(c, "ana.ed")
+    r = c.post(f"/web/usuarios/{uid}/editar",
+               data={"nome": "Ana Paula", "email": "anapaula@empresa.com", "papel": "USUARIO",
+                     "centro_custo_id": 1}, follow_redirects=False)
+    assert r.status_code == 303 and "ok=" in r.headers["location"]
+    pagina = c.get("/web/usuarios").text
+    assert "Ana Paula" in pagina and "anapaula@empresa.com" in pagina
+
+
+def test_web_resetar_senha(web):
+    c = _cli("admin", "admin123")
+    c.post("/web/usuarios", data={"login": "bruno.rs", "nome": "Bruno", "senha": "senha123",
+                                  "papel": "USUARIO", "centro_custo_id": 1})
+    uid = _id_do_login(c, "bruno.rs")
+    r = c.post(f"/web/usuarios/{uid}/resetar-senha", data={"nova": "trocada1"}, follow_redirects=False)
+    assert r.status_code == 303 and "ok=" in r.headers["location"]
+    # senha antiga não entra mais; a nova sim
+    assert "inválidos" in TestClient(app).post(
+        "/web/login", data={"login": "bruno.rs", "senha": "senha123"}).text
+    nova = TestClient(app).post("/web/login", data={"login": "bruno.rs", "senha": "trocada1"},
+                                follow_redirects=False)
+    assert nova.status_code == 303 and nova.cookies.get("sessao")
+    # senha curta é barrada
+    assert "6+caracteres" in c.post(f"/web/usuarios/{uid}/resetar-senha", data={"nova": "123"},
+                                    follow_redirects=False).headers["location"]
+
+
+def test_web_bloquear_e_desbloquear(web):
+    c = _cli("admin", "admin123")
+    c.post("/web/usuarios", data={"login": "caio.bd", "nome": "Caio", "senha": "senha123",
+                                  "papel": "USUARIO", "centro_custo_id": 1})
+    uid = _id_do_login(c, "caio.bd")
+    c.post(f"/web/usuarios/{uid}/bloquear")
+    assert "Bloqueado" in c.get("/web/usuarios").text
+    r = c.post(f"/web/usuarios/{uid}/desbloquear", follow_redirects=False)
+    assert r.status_code == 303 and "ok=" in r.headers["location"]
+
+
+def test_web_busca_e_filtro(web):
+    c = _cli("admin", "admin123")
+    c.post("/web/usuarios", data={"login": "diana.bf", "nome": "Diana Busca", "senha": "senha123",
+                                  "papel": "USUARIO", "centro_custo_id": 1})
+    achou = c.get("/web/usuarios?busca=diana.bf").text
+    assert "diana.bf" in achou and "admin" not in achou.split("<tbody>")[1].split("</tbody>")[0]
+    # filtro por papel ADM não traz o usuário comum recém-criado
+    so_adm = c.get("/web/usuarios?papel=ADM").text
+    assert "diana.bf" not in so_adm
+
+
 def test_web_admin_cria_setor_e_relatorio(web):
     c = _cli("admin", "admin123")
     r = c.post("/web/admin/centro", data={"codigo": "webrh", "nome": "RH Web"}, follow_redirects=False)
