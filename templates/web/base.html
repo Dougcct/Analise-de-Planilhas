@@ -16,6 +16,9 @@
       --sombra-forte:0 8px 28px rgba(16,32,48,.14);
       --raio:12px; --raio-s:8px; --lateral:248px;
       --rapido:.16s cubic-bezier(.4,0,.2,1); --suave:.28s cubic-bezier(.4,0,.2,1);
+      /* cena do login (line-art estilo Metabase, paleta genérica slate) */
+      --fundo-cena:#0d151d; --fundo-cena-topo:#101b26; --linha:#2d4a5e; --linha-forte:#3f6b86;
+      --no:#00995D;
     }
     @media (prefers-color-scheme:dark){
       :root:not([data-tema="light"]){
@@ -176,6 +179,12 @@
     .centro .apoio{text-align:center;margin-bottom:8px}
     .centro form button{width:100%}
     .centro label{margin-top:14px}
+    /* cena do login (fundo escuro + line-art) */
+    .cena{position:relative;min-height:100vh;overflow:hidden;
+      background:radial-gradient(120% 90% at 50% 0,var(--fundo-cena-topo),var(--fundo-cena))}
+    .cena-art{position:absolute;left:0;right:0;bottom:0;width:100%;height:auto;pointer-events:none;
+      animation:surge .8s ease both}
+    .cena>main{position:relative;z-index:1}
 
     /* ---------- Relatório ---------- */
     .voltar{display:inline-flex;align-items:center;gap:6px;margin-bottom:14px;color:var(--apoio);
@@ -274,10 +283,81 @@
   </div>
   {% endif %}
   {% else %}
-  {# telas sem sessão (login/senha): sem barra lateral; a página cuida do próprio aviso #}
-  <main>
-    {{ self.conteudo() }}
-  </main>
+  {# telas sem sessão (login/senha): fundo escuro com line-art (estilo Metabase), paleta genérica #}
+  <div class="cena">
+    <svg class="cena-art" viewBox="0 0 1440 460" preserveAspectRatio="xMidYMax slice" aria-hidden="true"
+         fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <defs>
+        <linearGradient id="face" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="var(--linha)" stop-opacity=".22"/>
+          <stop offset="1" stop-color="var(--linha)" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <!-- montanhas distantes -->
+      <g stroke="var(--linha)" stroke-width="2" opacity=".55">
+        <path d="M-40 250 L120 120 L210 200 L300 140 L430 250Z" fill="url(#face)"/>
+        <path d="M250 250 L430 110 L520 185 L600 130 L760 250Z" fill="url(#face)"/>
+        <path d="M120 120 L160 160 M430 110 L470 150"/>
+      </g>
+      <!-- cordilheira principal -->
+      <g stroke="var(--linha-forte)" stroke-width="2.5">
+        <path d="M-40 300 L180 150 L300 260 L420 160 L560 300Z" fill="url(#face)"/>
+        <path d="M180 150 L230 205 M420 160 L470 220"/>
+        <path d="M520 300 L700 170 L820 300Z" fill="url(#face)"/>
+      </g>
+      <!-- caminhos "fluxo de dados" com nós -->
+      <g stroke="var(--linha)" stroke-width="2">
+        <path d="M-20 330 H260 L330 300 H640 L720 340 H1060 L1140 310 H1480"/>
+        <path d="M-20 380 H200 L270 360 H520 L600 400 H900"/>
+      </g>
+      <g fill="var(--fundo-cena)" stroke="var(--linha-forte)" stroke-width="2">
+        <circle cx="260" cy="330" r="5"/><circle cx="640" cy="300" r="5"/>
+        <circle cx="1060" cy="340" r="5"/><circle cx="200" cy="380" r="5"/>
+        <circle cx="520" cy="360" r="5"/>
+      </g>
+      <g fill="var(--no)" stroke="none"><circle cx="330" cy="300" r="4.5"/><circle cx="720" cy="340" r="4.5"/><circle cx="900" cy="400" r="4.5"/></g>
+      <!-- pinheiros -->
+      <g stroke="var(--linha-forte)" stroke-width="2">
+        <path d="M150 360 L165 320 L180 360 M157 345 L173 345 M165 360 V372"/>
+        <path d="M560 350 L578 300 L596 350 M568 328 L588 328 M578 350 V364"/>
+        <path d="M980 360 L996 315 L1012 360 M988 340 L1004 340 M996 360 V373"/>
+      </g>
+      <!-- árvores redondas -->
+      <g stroke="var(--linha-forte)" stroke-width="2">
+        <circle cx="415" cy="340" r="16" fill="url(#face)"/><path d="M415 356 V376"/>
+        <circle cx="690" cy="372" r="13" fill="url(#face)"/><path d="M690 385 V402"/>
+        <circle cx="1210" cy="352" r="15" fill="url(#face)"/><path d="M1210 367 V386"/>
+      </g>
+      <!-- farol / torre à direita -->
+      <g stroke="var(--linha-forte)" stroke-width="2.5">
+        <path d="M1095 400 L1105 250 H1140 L1150 400Z" fill="url(#face)"/>
+        <path d="M1100 320 H1145 M1098 355 H1147"/>
+        <path d="M1103 250 H1142 L1135 228 H1110Z"/>
+        <path d="M1115 228 H1130 V210 H1115Z"/>
+        <path d="M1122 210 V196"/>
+        <path d="M1150 232 l20 -8 M1095 232 l-20 -8 M1152 248 l22 2 M1093 248 l-22 2"/>
+      </g>
+      <!-- casinha -->
+      <g stroke="var(--linha)" stroke-width="2">
+        <path d="M980 400 V352 L1012 330 L1044 352 V400Z" fill="url(#face)"/>
+        <path d="M1012 330 L1012 400 M980 352 L1044 352"/>
+      </g>
+      <!-- nuvens e pássaros -->
+      <g stroke="var(--linha)" stroke-width="2" opacity=".6">
+        <path d="M300 90 q14 -14 28 0 q16 -4 16 10 H296 q-8 0 4 -10"/>
+        <path d="M60 150 l10 -8 l10 8 M95 160 l10 -8 l10 8"/>
+        <path d="M1240 120 l12 -9 l12 9 M1280 135 l12 -9 l12 9"/>
+      </g>
+      <!-- ondas -->
+      <g stroke="var(--linha)" stroke-width="2" opacity=".55">
+        <path d="M1300 420 q10 -8 20 0 t20 0 t20 0 t20 0"/>
+        <path d="M1320 438 q10 -8 20 0 t20 0 t20 0"/>
+      </g>
+    </svg>
+    <main>
+      {{ self.conteudo() }}
+    </main>
+  </div>
   {% endif %}
 
   <script>
