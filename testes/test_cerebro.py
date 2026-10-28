@@ -77,6 +77,10 @@ def test_protocolo_com_nome_vence_mesmo_repetindo():
     ("Nº da guia", [881001, 881002, 881003, 881004, 881005] * 5, P.IDENTIFICADOR),
     ("Total de atendimentos", [4, 7, 2, 9, 1] * 5, P.QUANTIDADE),
     ("Valor da guia", [10.5, 20.0, 30.25, 1.0, 2.0] * 5, P.VALOR),
+    ("DIARIAS (Valor)", [300.0, 450.5, 150.0, 900.0, 75.25] * 5, P.VALOR),     # «valor» vence o que se conta
+    ("Exames (Valor)", [30.0, 45.5, 15.0, 90.0, 7.5] * 5, P.VALOR),
+    ("Diárias (Qtd)", [1, 3, 2, 5, 1] * 5, P.QUANTIDADE),                      # «Qtd» explícita vence
+    ("Diárias", [1, 3, 2, 5, 1] * 5, P.QUANTIDADE),
     ("Nome do convênio", ["AMIL", "BRADESCO", "UNIMED", "AMIL", "SUL"] * 5, P.DIMENSAO),
     ("Nome do paciente", [f"FULANO {i}" for i in range(25)], P.PESSOA),
     ("Ref", [10203040, 10203041, 10203040, 10203042, 10203043] * 5, P.IDENTIFICADOR),  # 8 dígitos fixos
@@ -142,6 +146,23 @@ def test_formulario_em_blocos_vira_uma_linha_por_bloco():
     assert len(ds.df) == 4
     assert {"Cód. Atd.", "Paciente", "Convênio", "Valor total", "Itens"} <= set(ds.df.columns)
     assert (ds.df["Itens"] == 2).all()
+    assert ds.df["Diárias (Valor)"].tolist() == [300.0] * 4 and ds.df["Mat/Med (Qtd)"].tolist() == [10] * 4
+    assert ds.spec.rotulo_registros == "Atendimentos" and ds.spec.medida_principal == "Valor total"
+    kpis = [k.rotulo for k in servico.analisar(ds).kpis]
+    assert kpis[0] == "Atendimentos" and kpis[1] == "Valor total (soma)"     # principal antes dos grupos
+
+
+@pytest.mark.parametrize("cab, nome", [("PERIODO          CONVENIO", "Convenio"), ("COMPETÊNCIA", "Conta"),
+                                       ("Mês \\ Prestador", "Prestador"), ("Taxas", "Taxas"), (None, "Conta")])
+def test_nome_da_coluna_de_contas_da_matriz(cab, nome):
+    assert layout._nome_das_linhas(cab) == nome
+
+
+def test_descricao_que_se_repete_vira_categoria():
+    tip, esq = inferir_esquema(pd.DataFrame({"Descrição": ["CESARIANA"] * 15 + ["PARTO NORMAL"] * 15,
+                                             "Observação": [f"anotação livre {i}" for i in range(30)]}))
+    papeis = P.por_nome(P.classificar(tip, esq))
+    assert papeis["Descrição"].papel == P.DIMENSAO and papeis["Observação"].papel == P.TEXTO
 
 
 # ---- conhecimento e correções ---------------------------------------------------------------------
@@ -199,6 +220,9 @@ def test_gerador_de_modelo_junta_grafias_e_grava_v2(tmp_path):
     assert m.versao == 2 and m.contexto == "FAT/Contas" and m.grao == "Nº Atendimento"
     ds = servico.carregar(_contas(["Atendimento Nº", "Nome do Paciente", "Data", "Vlr. Item"]), "mar.xlsx", modelo=m)
     assert ds.spec.rotulo_registros == "Atendimentos" and len(ds.df) == 12
+    # mesmo cabeçalho do modelo: o papel vem do modelo (dica) e o grão continua consolidando
+    ds = servico.carregar(f1, "abr.xlsx", modelo=m)
+    assert ds.spec.rotulo_registros == "Atendimentos" and len(ds.df) == 12
     base = Conhecimento()
     assert modelo_auto.semear(prop, base) >= 4
     assert base.consultar("Vlr. Item", "FAT/Contas").papel == P.VALOR
@@ -235,6 +259,31 @@ def test_setores_le_pastas_e_gera_modelos(tmp_path):
     assert base.consultar("Nome do Paciente", "Faturamento/Glosa").papel == P.PESSOA
     texto = setores.resumo(res)
     assert "PACIENTE" not in texto and "7700" not in texto and "Salários" not in texto   # só estrutura
+
+
+def test_cada_matriz_visivel_do_workbook_vira_um_modelo(tmp_path):
+    from analise_planilha.cerebro import setores
+    meses = ["jan/25", "fev/25", "mar/25", "abr/25", "mai/25", "jun/25"]
+    wb = openpyxl.Workbook()
+    wb.remove(wb.active)
+    for nome, oculta in (("CUSTOS", False), ("FATURAMENTO", False), ("ANTIGA", True)):
+        ws = wb.create_sheet(nome)
+        ws.append(["Conta"] + meses)
+        for i in range(6):
+            ws.append([f"Conta {nome} {i}"] + [100.0 + i] * 6)
+        if oculta:
+            ws.sheet_state = "hidden"
+    pasta = tmp_path / "Setores" / "Custos" / "Dados"
+    pasta.mkdir(parents=True)
+    b = io.BytesIO()
+    wb.save(b)
+    (pasta / "dados.xlsx").write_bytes(b.getvalue())
+    res = setores.aprender(tmp_path / "Setores", tmp_path / "modelos")
+    assert sorted(r.tipo for r in res) == ["Dados — CUSTOS", "Dados — FATURAMENTO"]   # oculta fica de fora
+    m = carregar_modelo(tmp_path / "modelos" / "custos_dados_custos.toml")
+    assert m.aba == "CUSTOS" and m.layout == layout.MATRIZ
+    ds = servico.carregar((pasta / "dados.xlsx").read_bytes(), "dados.xlsx", modelo=m)
+    assert set(ds.df["Conta"]) == {f"Conta CUSTOS {i}" for i in range(6)}            # leu a aba do modelo
 
 
 def test_script_aprender_setores_modo_seco(tmp_path, capsys):

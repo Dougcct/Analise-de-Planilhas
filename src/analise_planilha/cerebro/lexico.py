@@ -43,10 +43,14 @@ VALOR = {
     "salario", "orcado", "realizado", "previsto", "apurado", "repasse", "coparticipacao", "franquia",
 }
 
-QUANTIDADE = {
-    "qtd", "qtde", "quant", "quantidade", "quantidades", "diarias", "diaria", "dias", "horas", "volume",
-    "unidades", "itens", "pecas", "doses", "sessoes", "consultas", "exames", "leitos", "ocupacao",
+# Quantidade dita com todas as letras («Qtd.», «Quantidade») — vence até a palavra «valor».
+QTD_EXPLICITA = {"qtd", "qtde", "quant", "quantidade", "quantidades"}
+# Coisas que costumam ser CONTADAS — mas «Diárias (Valor)» é dinheiro: aqui «valor» vence.
+QTD_SUBSTANTIVO = {
+    "diarias", "diaria", "dias", "horas", "volume", "unidades", "itens", "pecas", "doses", "sessoes",
+    "consultas", "exames", "leitos", "ocupacao",
 }
+QUANTIDADE = QTD_EXPLICITA | QTD_SUBSTANTIVO
 
 # Nome de gente → dado pessoal (LGPD): é a "entidade" anonimizável do relatório.
 PESSOA = {

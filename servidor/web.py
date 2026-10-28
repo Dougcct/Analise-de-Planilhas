@@ -915,13 +915,14 @@ def admin_importar_setores(request: Request, s: Session = Depends(_sessao)):
         for t in tipos:
             cc, novo = _centro_do_setor(s, t["setor"])
             n_cc += novo
-            slug = srv._slugificar(t["tipo_documento"])
+            nome = t.get("nome") or t["tipo_documento"]
+            slug = srv._slugificar(nome)
             rel = s.scalar(select(Relatorio).where(Relatorio.slug == slug))
             if rel is not None and rel.centro_custo_id != cc.id:      # mesmo tipo em outro setor
-                slug = srv._slugificar(f"{t['tipo_documento']} {cc.codigo}")
+                slug = srv._slugificar(f"{nome} {cc.codigo}")
                 rel = s.scalar(select(Relatorio).where(Relatorio.slug == slug))
             if rel is None:
-                s.add(Relatorio(slug=slug, nome=t["tipo_documento"], centro_custo_id=cc.id, modelo=t["modelo"]))
+                s.add(Relatorio(slug=slug, nome=nome, centro_custo_id=cc.id, modelo=t["modelo"]))
                 n_rel += 1
             elif rel.modelo != t["modelo"]:
                 rel.modelo, n_upd = t["modelo"], n_upd + 1           # relatório existente passa ao modelo novo

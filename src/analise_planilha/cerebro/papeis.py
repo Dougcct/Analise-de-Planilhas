@@ -143,12 +143,16 @@ def _pelo_nome(nome: str, s: pd.Series, tipo: str) -> PapelColuna | None:
     contagem_de_fatos = numerico and any(t.endswith("s") for t in ev) and bool(toks & (L.NUMERO_DE | {"total"}))
     if contagem_de_fatos:
         return _p(nome, QUANTIDADE, 0.9, f"contagem de «{min(ev)}» (plural) — soma", tipo)
-    # medida explícita no nome vence o substantivo do fato («Valor da guia», «Qtd. de itens»)
-    if quant and (numerico or not _so_palavras(s)):
-        return _p(nome, QUANTIDADE, 0.92, f"nome indica quantidade («{min(quant)}»)", tipo)
+    # medida explícita no nome vence o substantivo do fato («Valor da guia», «Qtd. de itens»):
+    # «Qtd.» dita com todas as letras > «valor» > coisas que costumam ser contadas («Diárias (Valor)» é R$)
+    mede = numerico or not _so_palavras(s)
+    if quant & L.QTD_EXPLICITA and mede:
+        return _p(nome, QUANTIDADE, 0.92, f"nome indica quantidade («{min(quant & L.QTD_EXPLICITA)}»)", tipo)
     if valor and (numerico or (tipo == TEXTO_LIVRE and not _so_palavras(s))):
         agreg = "média" if tipo == PERCENTUAL else None
         return _p(nome, VALOR, 0.92, f"nome indica valor («{min(valor)}»)", tipo, agregacao=agreg)
+    if quant and mede:
+        return _p(nome, QUANTIDADE, 0.88, f"nome indica algo que se conta («{min(quant)}»)", tipo)
     doc = _documento(s)
     if doc:
         return _p(nome, IDENTIFICADOR, 0.97, f"valores no formato de {doc}", tipo, "pessoa")
@@ -168,6 +172,11 @@ def _pelo_nome(nome: str, s: pd.Series, tipo: str) -> PapelColuna | None:
     if L.casa(nome, L.DATA) and not numerico:
         return None                                   # nome de data, mas não deu data: decide pelos valores
     if L.casa(nome, L.TEXTO):
+        v = s.dropna().astype(str)
+        unicos = v.nunique()
+        if len(v) >= 10 and unicos <= config.MAX_CATEGORIAS_DIMENSAO and unicos / len(v) <= 0.5:
+            return _p(nome, DIMENSAO, 0.8, f"descrição que se repete ({unicos} valores) — funciona como categoria",
+                      tipo)
         return _p(nome, TEXTO, 0.9, "nome indica texto livre (observação/descrição)", tipo)
     if dim and tipo not in (DECIMAL, MOEDA, PERCENTUAL):
         return _p(nome, DIMENSAO, 0.88, f"nome indica categoria («{min(dim)}»)", tipo)
@@ -205,6 +214,16 @@ def _pelos_valores(nome: str, s: pd.Series, info, tipo: str) -> PapelColuna:
     return _p(nome, TEXTO, 0.7, "texto com muitos valores diferentes", tipo)
 
 
+def subtipo_identificador(nome: str) -> str:
+    """De que é o identificador, pelo nome: do fato (evento), de uma pessoa ou de um catálogo (código).
+    Necessário quando o papel vem do modelo/conhecimento — é o subtipo «evento» que guia o grão."""
+    if L.so_contador(nome):
+        return "contador"
+    if L.casa(nome, L.ID_EVENTO):
+        return "evento"
+    return "pessoa" if L.casa(nome, L.ID_PESSOA) else "codigo"
+
+
 def classificar(df: pd.DataFrame, esquema: Esquema, conhecimento: Conhecimento | None = None,
                 contexto: str = "", dicas: dict[str, str] | None = None) -> list[PapelColuna]:
     """Papel de cada coluna do DataFrame tipado. `dicas` = papéis que a leitura já sabe (layout)."""
@@ -219,11 +238,13 @@ def classificar(df: pd.DataFrame, esquema: Esquema, conhecimento: Conhecimento |
         if regra is not None and regra.papel in PAPEIS:
             por = ("corrigido por um usuário" if regra.origem == "correcao"
                    else f"aprendido em {regra.confirmacoes} publicação(ões)")
-            saida.append(_p(nome, regra.papel, 0.97, f"conhecimento do sistema: {por}", tipo,
+            sub = subtipo_identificador(nome) if regra.papel == IDENTIFICADOR else ""
+            saida.append(_p(nome, regra.papel, 0.97, f"conhecimento do sistema: {por}", tipo, sub,
                             agregacao=regra.agregacao, aprendido=True))
             continue
         if nome in dicas:
-            saida.append(_p(nome, dicas[nome], 0.95, "estrutura da planilha (layout reconhecido)", tipo))
+            sub = subtipo_identificador(nome) if dicas[nome] == IDENTIFICADOR else ""
+            saida.append(_p(nome, dicas[nome], 0.95, "estrutura da planilha / modelo do documento", tipo, sub))
             continue
         saida.append(_pelo_nome(nome, s, tipo) or _pelos_valores(nome, s, info, tipo))
     return saida

@@ -69,9 +69,14 @@ def rel_2025() -> bytes:
     return relatorio()
 
 
+def _ler_v1(fonte, nome):
+    """Leitor ANTIGO de Contas Convênio — só com o modelo v1 (sem modelo, quem lê é o Cérebro)."""
+    return leitura.ler(fonte, nome, modelo=carregar_modelo(MODELO))
+
+
 # ---- leitura ---------------------------------------------------------------
 def test_reconhece_e_le_uma_linha_por_atendimento(rel_2025):
-    df, meta = leitura.ler(rel_2025, "2025.xlsx")
+    df, meta = _ler_v1(rel_2025, "2025.xlsx")
     assert meta.aba == "Page 1"                                   # aba do relatório, não a do resumo
     assert len(df) == 3
     assert list(df.index) == [5, 24, 39]                          # linha real do «Cód. Atd.» (rastreio)
@@ -81,7 +86,7 @@ def test_reconhece_e_le_uma_linha_por_atendimento(rel_2025):
 
 
 def test_bruto_e_apurado_nao_se_misturam(rel_2025):
-    df, _ = leitura.ler(rel_2025, "2025.xlsx")
+    df, _ = _ler_v1(rel_2025, "2025.xlsx")
     ces, inter = df.loc[5], df.loc[24]
     assert ces[cc.C_BRUTO] == 2300.0 and ces[cc.C_APURADO] == 1500.0         # total foi ajustado à mão
     assert ces[cc.C_AJUSTADO] == "Sim" and ces[cc.C_TEM_CUSTO] == "Sim"
@@ -93,7 +98,7 @@ def test_bruto_e_apurado_nao_se_misturam(rel_2025):
 
 
 def test_diagnostico_transparente(rel_2025):
-    _, meta = leitura.ler(rel_2025, "2025.xlsx")
+    _, meta = _ler_v1(rel_2025, "2025.xlsx")
     texto = " ".join(meta.diagnostico)
     assert "3 atendimentos" in texto and "Ano 2025" in texto
     assert "Custo apurado em 1 de 3" in texto
@@ -104,20 +109,20 @@ def test_diagnostico_transparente(rel_2025):
 
 
 def test_aba_resumo_vira_colunas(rel_2025):
-    df, _ = leitura.ler(rel_2025, "2025.xlsx")
+    df, _ = _ler_v1(rel_2025, "2025.xlsx")
     assert df.loc[5, cc.C_RES_CUSTO] == 900.0 and df.loc[5, cc.C_RES_RES] == 600.0
     assert df[cc.C_RES_CUSTO].notna().sum() == 1                   # só a cesariana correspondente
 
 
 def test_sem_resumo_nem_rodape():
-    df, meta = leitura.ler(relatorio(com_resumo=False, rodape=False), "contas.xlsx")
+    df, meta = _ler_v1(relatorio(com_resumo=False, rodape=False), "contas.xlsx")
     assert cc.C_RES_CUSTO not in df.columns
     assert df[cc.C_ANO].isna().all()                               # sem ano no nome do arquivo
     assert not any("rodapé" in d for d in meta.diagnostico)
 
 
 def test_planilha_comum_nao_e_confundida(xlsx_com_titulo):
-    _, meta = leitura.ler(xlsx_com_titulo, "comum.xlsx")
+    _, meta = _ler_v1(xlsx_com_titulo, "comum.xlsx")
     assert not any("Contas Convênio" in d for d in meta.diagnostico)
 
 

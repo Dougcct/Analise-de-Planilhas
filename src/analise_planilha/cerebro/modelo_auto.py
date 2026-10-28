@@ -36,6 +36,7 @@ class Proposta:
     nome: str
     setor: str = ""
     tipo_documento: str = ""
+    aba: str | None = None             # aba fixa (ex.: uma matriz de um workbook com várias)
     layout: str = "plana"
     grao: str | None = None
     colunas: list[ColunaProposta] = field(default_factory=list)
@@ -49,7 +50,8 @@ class Proposta:
 
     @property
     def slug(self) -> str:
-        return "_".join(chave_texto(x) for x in (self.setor, self.tipo_documento or self.nome) if x) or "modelo"
+        partes = (self.setor, self.tipo_documento or self.nome, self.aba)
+        return "_".join(chave_texto(x) for x in partes if x) or "modelo"
 
 
 def _mesmo(a: str, b: str) -> bool:
@@ -58,15 +60,16 @@ def _mesmo(a: str, b: str) -> bool:
 
 
 def propor(arquivos: list[tuple], nome: str, setor: str = "", tipo_documento: str = "",
-           conhecimento: Conhecimento | None = None) -> Proposta:
-    """`arquivos` = [(bytes|caminho, nome_do_arquivo), …]. Lê cada um e propõe o modelo do tipo."""
+           conhecimento: Conhecimento | None = None, aba: str | None = None) -> Proposta:
+    """`arquivos` = [(bytes|caminho, nome_do_arquivo), …]. Lê cada um e propõe o modelo do tipo
+    (`aba` = ler sempre essa aba — usado quando cada aba do workbook é um documento diferente)."""
     from .. import servico
 
-    prop = Proposta(nome=nome, setor=setor, tipo_documento=tipo_documento)
+    prop = Proposta(nome=nome, setor=setor, tipo_documento=tipo_documento, aba=aba)
     layouts, graos = Counter(), Counter()
     for fonte, nome_arq in arquivos:
         try:
-            ds = servico.carregar(fonte, nome_arq, conhecimento=conhecimento, contexto=prop.contexto)
+            ds = servico.carregar(fonte, nome_arq, aba=aba, conhecimento=conhecimento, contexto=prop.contexto)
         except Exception as e:  # noqa: BLE001 - arquivo ilegível não derruba a leitura do tipo
             prop.avisos.append(f"{nome_arq}: não foi possível ler ({type(e).__name__}).")
             continue
@@ -95,11 +98,17 @@ def propor(arquivos: list[tuple], nome: str, setor: str = "", tipo_documento: st
         chave = graos.most_common(1)[0][0]
         prop.grao = next((c.rotulo for c in prop.colunas if c.rotulo == chave or chave in c.sinonimos), chave)
     for c in prop.colunas:
-        (c.papel, c.tipo), peso = c.votos.most_common(1)[0]
+        # coluna vazia num arquivo ("ignorar") não diz nada sobre o papel: não vota se outro arquivo tem dado
+        uteis = Counter({k: v for k, v in c.votos.items() if k[0] != "ignorar"}) or c.votos
+        c.votos = uteis
+        por_papel: Counter = Counter()
+        for (papel, _), v in uteis.items():
+            por_papel[papel] += v
+        (c.papel, peso), *outros = por_papel.most_common()
+        c.tipo = max((k for k in uteis if k[0] == c.papel), key=lambda k: uteis[k])[1]   # tipo mais votado do papel
         c.confianca = round(peso / max(c.arquivos, 1), 2)
-        empate = len(c.votos) > 1 and c.votos.most_common(2)[1][1] >= peso * 0.8
-        if empate:
-            prop.avisos.append(f"«{c.rotulo}»: papel incerto entre os arquivos ({', '.join(p for (p, _) in c.votos)}).")
+        if outros and outros[0][1] >= peso * 0.8:     # dois papéis DIFERENTES quase empatados
+            prop.avisos.append(f"«{c.rotulo}»: papel incerto entre os arquivos ({c.papel} × {outros[0][0]}).")
     return prop
 
 
@@ -115,6 +124,8 @@ def para_toml(prop: Proposta) -> str:
         linhas.append(f"setor = {_txt(prop.setor)}")
     if prop.tipo_documento:
         linhas.append(f"tipo_documento = {_txt(prop.tipo_documento)}")
+    if prop.aba:
+        linhas.append(f"aba = {_txt(prop.aba)}")
     linhas += ["", "[leitura]", f"layout = {_txt(prop.layout)}"]
     if prop.grao:
         linhas += ["", "[grao]", f"chave = {_txt(prop.grao)}"]

@@ -224,15 +224,20 @@ def ler(fonte, nome_arquivo: str, aba: str | None = None, linha_cabecalho: int |
                 raise ValueError("O modelo de matriz precisa indicar a aba (campo «aba»).")
             return matriz.ler(dados, nome_arquivo, alvo, cfg_matriz)
         brutas, ocultas = _ler_excel(dados, ext)
-        relatorio = _aba_relatorio_contas(brutas, aba, ext)
-        if relatorio:   # formulário em blocos (não é tabela): leitor próprio — DOCS/12
+        usar_cerebro = modelo is None or getattr(modelo, "versao", 1) >= 2
+        relatorio = None if usar_cerebro else _aba_relatorio_contas(brutas, aba, ext)
+        if relatorio:   # modelo antigo (v1) de Contas Convênio: leitor próprio — DOCS/12
             return contas_convenio.ler(dados, nome_arquivo, relatorio)
         meta.abas = list(brutas)
         grades = {}
         for nome, bruto in brutas.items():
             grades[nome], n = _limpar_grade(bruto)
             erros += n if (aba is None or nome == aba) else 0
-        usar_cerebro = modelo is None or getattr(modelo, "versao", 1) >= 2
+        # Cérebro: a maior aba (visível) em matriz conta × mês ou formulário em blocos, se houver
+        especial = None
+        if usar_cerebro and linha_cabecalho is None:
+            especial = _maior_layout_especial(grades, [aba] if aba in grades else
+                                              [n for n in grades if n not in ocultas])
         try:
             if aba in grades:
                 meta.aba = aba
@@ -242,18 +247,12 @@ def ler(fonte, nome_arquivo: str, aba: str | None = None, linha_cabecalho: int |
                 if motivo:
                     meta.diagnostico.append(motivo)
         except ValueError:
-            # nenhuma "tabela" reconhecível: pode ser formulário em blocos ou matriz (Cérebro)
-            achado = _layout_especial(grades, [aba] if aba in grades else list(grades), nome_arquivo) \
-                if usar_cerebro else None
-            if achado is None:
+            if especial is None:        # nenhuma tabela e nenhum layout especial reconhecível
                 raise
-            return achado
-        if usar_cerebro and linha_cabecalho is None:
-            achado = _layout_especial(grades, [meta.aba], nome_arquivo)
-            if achado is not None:
-                df_l, meta_l = achado
-                meta_l.abas, meta_l.diagnostico = meta.abas, meta.diagnostico + meta_l.diagnostico
-                return df_l, meta_l
+            return _ler_especial(grades, especial, nome_arquivo, meta)
+        if especial is not None and (aba in grades or _ocupacao(grades[especial[0]]) >= _ocupacao(grades[meta.aba])):
+            meta.diagnostico = [d for d in meta.diagnostico if not d.startswith("Aba «")]
+            return _ler_especial(grades, especial, nome_arquivo, meta)
 
     corpo = est.corpo
     corpo.index = corpo.index + 1  # nº real da linha na planilha
@@ -278,13 +277,27 @@ def ler(fonte, nome_arquivo: str, aba: str | None = None, linha_cabecalho: int |
     return corpo, meta
 
 
-def _layout_especial(grades: dict[str, pd.DataFrame], nomes: list, nome_arquivo: str):
-    """(df, meta) da 1ª aba que o Cérebro reconhece como matriz conta × mês ou formulário em blocos."""
-    for nome in nomes:
-        lay = cerebro_layout.detectar(grades[nome])
-        if lay.tipo != cerebro_layout.PLANA:
-            return cerebro_layout.ler(grades[nome], lay, nome_arquivo, nome)
-    return None
+def _ocupacao(grade: pd.DataFrame) -> int:
+    """Nº de células preenchidas — mede o "tamanho" real de uma aba."""
+    return int(grade.notna().to_numpy().sum())
+
+
+def _maior_layout_especial(grades: dict[str, pd.DataFrame], nomes: list):
+    """(aba, Layout) da maior aba que o Cérebro reconhece como matriz conta × mês ou blocos; senão None."""
+    achados = [(nome, lay) for nome in nomes
+               if (lay := cerebro_layout.detectar(grades[nome])).tipo != cerebro_layout.PLANA]
+    return max(achados, key=lambda x: _ocupacao(grades[x[0]])) if achados else None
+
+
+def _ler_especial(grades: dict[str, pd.DataFrame], especial, nome_arquivo: str, meta: MetaLeitura):
+    nome, lay = especial
+    df, meta_l = cerebro_layout.ler(grades[nome], lay, nome_arquivo, nome)
+    meta_l.abas = list(grades)
+    if len(grades) > 1:
+        meta.diagnostico.append(f"Aba «{nome}» escolhida automaticamente entre {len(grades)} abas "
+                                "(maior conteúdo com estrutura reconhecida).")
+    meta_l.diagnostico = meta.diagnostico + meta_l.diagnostico
+    return df, meta_l
 
 
 def _aba_relatorio_contas(brutas: dict[str, pd.DataFrame], aba: str | None, ext: str) -> str | None:

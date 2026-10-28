@@ -19,11 +19,12 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from .. import config
-from . import modelo_auto
+from . import layout, modelo_auto
 from .conhecimento import Conhecimento
 
 MANIFESTO = "_manifesto_setores.json"
 CONHECIMENTO_INICIAL = "_conhecimento_inicial.json"
+MIN_CONTAS_DOCUMENTO = 3          # linhas com valor para uma matriz do workbook virar documento próprio
 
 
 @dataclass
@@ -57,30 +58,56 @@ def varrer(raiz: Path) -> list[tuple[str, str, list[Path]]]:
     return saida
 
 
+def documentos(arqs: list[Path]) -> list[str | None]:
+    """Abas que são documentos PRÓPRIOS dentro do tipo: quando os arquivos trazem 2+ matrizes visíveis
+    (ex.: FATURAMENTO, DRE, CUSTOS no mesmo workbook), cada uma vira um modelo — somar uma com a outra
+    não faria sentido. Senão, [None]: a aba principal de cada arquivo (escolhida pela leitura).
+    Abas ocultas e resumos dinâmicos (tabelas pequenas planas) não viram documento."""
+    from .. import leitura
+
+    matrizes: Counter = Counter()
+    for p in arqs:
+        try:
+            brutas, ocultas = leitura._ler_excel(p.read_bytes(), p.suffix.lower())
+        except Exception:  # noqa: BLE001, S112 - CSV/TXT não têm abas; arquivo ilegível é tratado na leitura
+            continue
+        for nome, bruta in brutas.items():
+            if nome in ocultas:
+                continue
+            grade, _ = leitura._limpar_grade(bruta)
+            lay = layout.detectar(grade)
+            if lay.tipo == layout.MATRIZ and lay.info.get("contas", 0) >= MIN_CONTAS_DOCUMENTO:
+                matrizes[nome] += 1                   # matriz de rascunho (1–2 linhas) não vira documento
+    return sorted(matrizes) if len(matrizes) >= 2 else [None]
+
+
 def aprender(raiz: Path, saida: Path | None = None, base: Conhecimento | None = None) -> list[ResultadoTipo]:
     saida = saida or config.PASTA_MODELOS
     base = base if base is not None else Conhecimento()
     resultados, manifesto = [], []
     for setor, tipo, arqs in varrer(raiz):
-        res = ResultadoTipo(setor, tipo, arquivos=len(arqs))
-        try:
-            prop = modelo_auto.propor([(p.read_bytes(), p.name) for p in arqs], tipo, setor=setor,
-                                      tipo_documento=tipo, conhecimento=base)
-        except ValueError as e:
-            res.erro = str(e)
+        lidos = [(p.read_bytes(), p.name) for p in arqs]
+        for aba in documentos(arqs):
+            nome = f"{tipo} — {aba}" if aba else tipo
+            res = ResultadoTipo(setor, nome, arquivos=len(arqs))
+            try:
+                prop = modelo_auto.propor(lidos, nome, setor=setor, tipo_documento=tipo, conhecimento=base, aba=aba)
+            except ValueError as e:
+                res.erro = str(e)
+                resultados.append(res)
+                continue
+            destino = saida / f"{prop.slug}.toml"
+            if destino.exists() and "versao = 2" not in destino.read_text(encoding="utf-8"):
+                res.avisos.append(f"substituiu o modelo antigo {destino.name}")
+            modelo_auto.salvar(prop, saida)
+            modelo_auto.semear(prop, base)
+            res.modelo, res.linhas, res.layout, res.grao = prop.slug, prop.linhas, prop.layout, prop.grao
+            res.colunas, res.papeis = len(prop.colunas), Counter(c.papel for c in prop.colunas)
+            res.arquivos = len(prop.arquivos)
+            res.avisos += prop.avisos
             resultados.append(res)
-            continue
-        destino = saida / f"{prop.slug}.toml"
-        if destino.exists() and "versao = 2" not in destino.read_text(encoding="utf-8"):
-            res.avisos.append(f"substituiu o modelo antigo {destino.name}")
-        modelo_auto.salvar(prop, saida)
-        modelo_auto.semear(prop, base)
-        res.modelo, res.linhas, res.layout, res.grao = prop.slug, prop.linhas, prop.layout, prop.grao
-        res.colunas, res.papeis = len(prop.colunas), Counter(c.papel for c in prop.colunas)
-        res.avisos += prop.avisos
-        resultados.append(res)
-        manifesto.append({"setor": setor, "tipo_documento": tipo, "modelo": prop.slug,
-                          "arquivos": len(prop.arquivos), "layout": prop.layout})
+            manifesto.append({"setor": setor, "tipo_documento": tipo, "nome": nome, "aba": aba,
+                              "modelo": prop.slug, "arquivos": len(prop.arquivos), "layout": prop.layout})
     saida.mkdir(parents=True, exist_ok=True)
     (saida / MANIFESTO).write_text(json.dumps({"versao": 1, "tipos": manifesto}, ensure_ascii=False, indent=1),
                                    encoding="utf-8")

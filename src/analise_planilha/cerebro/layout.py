@@ -118,7 +118,7 @@ def _detectar_matriz(grade: pd.DataFrame) -> dict | None:
         com_dado = sum(1 for _, lin in corpo.iterrows()
                        if isinstance(lin.iloc[rotulo], str) and any(_numero(lin.iloc[c]) is not None for c in meses))
         if com_dado >= 2:
-            return {"linha": r, "meses": meses, "rotulo": rotulo}
+            return {"linha": r, "meses": meses, "rotulo": rotulo, "contas": com_dado}
     return None
 
 
@@ -147,11 +147,21 @@ def _resolver_anos(meses: dict[int, tuple], grade: pd.DataFrame, linha: int, nom
     return saida, nota
 
 
+def _nome_das_linhas(cab) -> str:
+    """Nome da coluna de rótulos da matriz. O cabeçalho costuma ser diagonal («PERÍODO \\ CONVÊNIO») ou
+    falar do eixo dos meses («COMPETÊNCIA»): as palavras de período saem; sobrando nada, é «Conta»."""
+    if not isinstance(cab, str) or mes(cab) is not None:
+        return "Conta"
+    palavras = [p for p in re.split(r"[\s\\/|×]+", cab.strip()) if p and p.lower() != "x"]
+    resto = [p for p in palavras if chave_texto(p) not in L.PERIODO and chave_texto(p)]
+    nome = " ".join(resto)
+    return nome[:1].upper() + nome[1:].lower() if nome else "Conta"
+
+
 def ler_matriz(grade: pd.DataFrame, info: dict, nome_arquivo: str, aba: str | None) -> tuple[pd.DataFrame, MetaLeitura]:
     r, lc = info["linha"], info["rotulo"]
     datas, nota_ano = _resolver_anos(info["meses"], grade, r, nome_arquivo)
-    cab = grade.iat[r, lc]
-    nome_conta = str(cab).strip() if isinstance(cab, str) and mes(cab) is None else "Conta"
+    nome_conta = _nome_das_linhas(grade.iat[r, lc])
 
     linhas = []                                         # (i, rótulo, valores | None se só rótulo)
     for i in range(r + 1, len(grade)):
@@ -235,36 +245,87 @@ def _detectar_blocos(grade: pd.DataFrame) -> dict | None:
     return {"abre": abre, "inicios": inicios}
 
 
+def _eh_rotulo(v) -> bool:
+    return isinstance(v, str) and v.strip().endswith(":") and 1 < len(v.strip()) <= 40
+
+
+def _segmentos(linha) -> list[tuple[int, int, object]]:
+    """Trechos preenchidos da linha: (coluna inicial, coluna final, valor). Células mescladas chegam
+    repetidas nas colunas vizinhas e viram UM trecho."""
+    segs: list[tuple[int, int, object]] = []
+    for j, v in enumerate(linha):
+        if _vazio(v):
+            continue
+        if segs and segs[-1][1] == j - 1 and segs[-1][2] == v:
+            segs[-1] = (segs[-1][0], j, v)
+        else:
+            segs.append((j, j, v))
+    return segs
+
+
+def _texto(v) -> bool:
+    return isinstance(v, str) and not _eh_rotulo(v) and _numero(v) is None
+
+
+def _ler_bloco(grade: pd.DataFrame, ini: int, fim: int) -> tuple[dict, int]:
+    """Um bloco → (campos, nº de itens). «Rótulo:» → coluna; linha só de texto antes da sub-tabela →
+    «Descrição»; sub-tabela (cabeçalho de texto seguido de linhas texto + números) → «Item (Cabeçalho)»."""
+    reg: dict = {}
+    descricoes: list[str] = []
+    cab = None                                    # trechos do cabeçalho da sub-tabela
+    itens = 0
+    linhas = [_segmentos(grade.iloc[i]) for i in range(ini, fim)]
+    linhas = [s for s in linhas if s]
+    for k, segs in enumerate(linhas):
+        if any(_eh_rotulo(v) for _, _, v in segs):
+            usados = set()
+            for idx, (_, _, v) in enumerate(segs):
+                if not _eh_rotulo(v):
+                    continue
+                nome = v.strip()[:-1].strip()
+                if idx + 1 < len(segs) and not _eh_rotulo(segs[idx + 1][2]):
+                    usados.add(idx + 1)
+                    reg.setdefault(nome, segs[idx + 1][2])
+            descricoes += [v for idx, (_, _, v) in enumerate(segs) if idx not in usados and _texto(v)]
+            continue
+        textos = [s for s in segs if _texto(s[2])]
+        numeros = [s for s in segs if _numero(s[2]) is not None]
+        if cab is None:
+            prox = linhas[k + 1] if k + 1 < len(linhas) else []
+            prox_tem_item = any(_texto(v) for _, _, v in prox) and any(_numero(v) is not None for _, _, v in prox)
+            if len(textos) >= 2 and not numeros and prox_tem_item:
+                cab = textos                     # 1º trecho = coluna do item; demais = colunas de valor
+            elif textos and not numeros:
+                descricoes += [v for _, _, v in textos]
+            continue
+        if textos and numeros:                   # linha de item da sub-tabela
+            itens += 1
+            item = str(textos[0][2]).strip()
+            for c0, c1, v in numeros:
+                h = next((str(n).strip() for (h0, h1, n) in cab[1:] if c0 <= h1 and h0 <= c1), None)
+                if h:
+                    chave = f"{item} ({h.rstrip('.')})"
+                    reg[chave] = (reg.get(chave) or 0) + _numero(v)
+    for n, d in enumerate(dict.fromkeys(str(x).strip() for x in descricoes)):
+        reg["Descrição" if n == 0 else f"Descrição {n + 1}"] = d
+    return reg, itens
+
+
 def ler_blocos(grade: pd.DataFrame, info: dict, nome_arquivo: str, aba: str | None) -> tuple[pd.DataFrame, MetaLeitura]:
     inicios = info["inicios"]
-    rotulos = _rotulos(grade)
-    linhas_rotulo = {i for i, _, _ in rotulos}
     fins = inicios[1:] + [len(grade)]
     registros = []
-    for ini, fim in zip(inicios, fins):
-        reg = {"_linha": ini + 1}
-        itens = 0
-        for i in range(ini, fim):
-            if i in linhas_rotulo:
-                for (li, cj, nome) in rotulos:
-                    if li != i:
-                        continue
-                    valor = next((grade.iat[i, k] for k in range(cj + 1, grade.shape[1])
-                                  if not _vazio(grade.iat[i, k])
-                                  and not (isinstance(grade.iat[i, k], str) and grade.iat[i, k].strip().endswith(":"))),
-                                 None)
-                    if nome not in reg and valor is not None:
-                        reg[nome] = valor
-            elif any(_numero(v) is not None for v in grade.iloc[i]) and any(isinstance(v, str) for v in grade.iloc[i]):
-                itens += 1                       # linha de item (descrição + números) dentro do bloco
-        reg["Itens"] = itens
-        registros.append(reg)
+    for ini, fim in zip(inicios, fins, strict=True):
+        campos, itens = _ler_bloco(grade, ini, fim)
+        registros.append({"_linha": ini + 1, **campos, "Itens": itens})
     df = pd.DataFrame(registros)
     df.index = df.pop("_linha")
+    fixos = [c for c in df.columns if "(" not in c and c != "Itens"]
     meta = MetaLeitura(arquivo=nome_arquivo, aba=aba, linha_cabecalho=inicios[0], linhas_cabecalho=[inicios[0]],
                        confianca=0.8)
-    meta.diagnostico.append(f"Aba «{aba}» reconhecida como formulário em blocos: {len(df)} blocos "
-                            f"(um por registro), {df.shape[1] - 1} campo(s) «Rótulo:» viraram colunas.")
+    meta.diagnostico.append(f"Aba «{aba}» reconhecida como formulário em blocos: {len(df)} blocos (um por "
+                            f"registro); {len(fixos)} campo(s) do formulário e {df.shape[1] - len(fixos) - 1} "
+                            "valor(es) da tabela de itens viraram colunas.")
     meta.extras = {"layout": BLOCOS, "papeis": {"Itens": QUANTIDADE}}
     return df, meta
 

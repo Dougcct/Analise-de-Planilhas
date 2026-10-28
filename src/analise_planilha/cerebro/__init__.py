@@ -58,7 +58,7 @@ def classificar_e_agrupar(df, esquema, *, base: Conhecimento | None, contexto: s
             p.papel, p.agregacao = novo, papeis.AGREGACAO[novo]
             p.confianca, p.justificativa, p.aprendido = 1.0, "corrigido na prévia", False
             if novo == papeis.IDENTIFICADOR and not p.subtipo:
-                p.subtipo = "evento" if grao._token_fato(p.nome) else "codigo"
+                p.subtipo = papeis.subtipo_identificador(p.nome)
             corrigidas.add(p.nome)
-    g = grao.detectar(df, lista) if tipo_layout == layout.PLANA else Grao()
+    g = grao.detectar(df, lista) if tipo_layout in (layout.PLANA, layout.BLOCOS) else Grao()
     return Entendimento(lista, list(lista), g, tipo_layout, contexto, corrigidas)

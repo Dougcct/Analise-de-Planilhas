@@ -402,6 +402,10 @@ def _analisar_serie_cerebro(ds: Dataset, df: pd.DataFrame, spec, filtros: Filtro
 
     ex = ds.meta.extras or {}
     conta = ex.get("conta", "Conta")
+    if conta not in df.columns:      # o modelo pode ter renomeado: a conta é a dimensão que não é grupo/mês/valor
+        conta = next((c for c in spec.dimensoes if c not in ("Grupo", config.COL_ABA, config.COL_ARQUIVO)),
+                     next((c for c in df.columns if c not in ("Grupo", "Mês", "Valor") and not str(c).startswith("_")
+                           and c not in (config.COL_LINHA, config.COL_ABA, config.COL_ARQUIVO)), conta))
     grupo = "Grupo" if "Grupo" in df.columns else None
     kpis, paineis, achados, resumo, metodologia = serie.montar(df, conta, "Mês", "Valor", grupo, ex.get("referencias"))
     return Analise(

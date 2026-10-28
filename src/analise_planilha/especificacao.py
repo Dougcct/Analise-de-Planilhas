@@ -353,14 +353,19 @@ def por_papeis(df: pd.DataFrame, esquema: Esquema, papeis: list, grao=None, layo
     medidas = [c for c in com(P.VALOR, P.QUANTIDADE) if papel[c.nome].agregacao != "média"]
     spec.medidas = [c.nome for c in medidas]
     itens = {grao.coluna_itens} if grao is not None and grao.coluna_itens else set()
-    candidatas =([c for c in medidas if papel[c.nome].papel == P.VALOR and c.tipo == MOEDA]
-                  + [c for c in medidas if papel[c.nome].papel == P.VALOR]
-                  + [c for c in medidas if c.nome not in itens])
+    valores = [c for c in medidas if papel[c.nome].papel == P.VALOR]
+    total = [c for c in valores if "total" in tokens_nome(c.nome)]       # «Valor total» resume os demais
+    candidatas = ([c for c in total if c.tipo == MOEDA] + total + [c for c in valores if c.tipo == MOEDA]
+                  + valores + [c for c in medidas if c.nome not in itens])
     spec.medida_principal = candidatas[0].nome if candidatas else None
+    # KPIs mostram as primeiras medidas: a principal e os demais valores na frente das quantidades
+    ordem = [m for m in [spec.medida_principal] if m] + [c.nome for c in valores] + spec.medidas
+    spec.medidas = list(dict.fromkeys(ordem))
     spec.datas = [c.nome for c in com(P.DATA) if c.tipo in TIPOS_DATA]
     spec.taxas = [Taxa(chave_texto(c.nome), c.nome, coluna=c.nome, valores={"TRUE"})
                   for c in com(P.FLAG) if c.tipo == BOOLEANO]
-    if grao is not None and grao.consolidado:
+    # cada linha é um fato nomeado: consolidado pelo grão, ou um bloco de formulário com o código do fato
+    if grao is not None and (grao.consolidado or (layout == "blocos" and grao.chave)):
         spec.rotulo_registros = grao.rotulo
     if layout == "matriz_mensal":
         spec.tipo = "serie"
