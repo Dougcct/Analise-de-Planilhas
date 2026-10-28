@@ -202,3 +202,48 @@ def test_gerador_de_modelo_junta_grafias_e_grava_v2(tmp_path):
     base = Conhecimento()
     assert modelo_auto.semear(prop, base) >= 4
     assert base.consultar("Vlr. Item", "FAT/Contas").papel == P.VALOR
+
+
+def montar_setores(raiz):
+    """Setores/<Setor>/<Tipo>/ sintético: tabela por atendimento, matriz DRE, pasta vazia e trava do Excel."""
+    glosa = raiz / "Faturamento" / "Glosa"
+    glosa.mkdir(parents=True)
+    (glosa / "jan.xlsx").write_bytes(_contas(["Nº Atendimento", "Paciente", "Data", "Valor Item"]))
+    (glosa / "fev.xlsx").write_bytes(_contas(["Nº Atendimento", "Nome do Paciente", "Data", "Vlr. Item"]))
+    (glosa / "~$jan.xlsx").write_bytes(b"trava do Excel")
+    dre = raiz / "Financeiro" / "DRE"
+    dre.mkdir(parents=True)
+    (dre / "dre 2025.xlsx").write_bytes(_matriz())
+    (raiz / "RH").mkdir()
+    return raiz
+
+
+def test_setores_le_pastas_e_gera_modelos(tmp_path):
+    import json
+
+    from analise_planilha.cerebro import setores
+    raiz, saida = montar_setores(tmp_path / "Setores"), tmp_path / "modelos"
+    res = setores.aprender(raiz, saida)
+    assert [(r.setor, r.tipo, r.layout) for r in res] == [("Faturamento", "Glosa", layout.PLANA),
+                                                          ("Financeiro", "DRE", layout.MATRIZ)]
+    assert res[0].arquivos == 2 and res[0].grao == "Nº Atendimento"          # trava ~$ ignorada
+    m = carregar_modelo(saida / "faturamento_glosa.toml")
+    assert m.versao == 2 and m.contexto == "Faturamento/Glosa" and m.layout == layout.PLANA
+    manifesto = json.loads((saida / setores.MANIFESTO).read_text(encoding="utf-8"))
+    assert {t["modelo"] for t in manifesto["tipos"]} == {"faturamento_glosa", "financeiro_dre"}
+    base = Conhecimento.carregar(saida / setores.CONHECIMENTO_INICIAL)
+    assert base.consultar("Nome do Paciente", "Faturamento/Glosa").papel == P.PESSOA
+    texto = setores.resumo(res)
+    assert "PACIENTE" not in texto and "7700" not in texto and "Salários" not in texto   # só estrutura
+
+
+def test_script_aprender_setores_modo_seco(tmp_path, capsys):
+    import importlib.util
+    import pathlib
+    spec = importlib.util.spec_from_file_location(
+        "aprender_setores", pathlib.Path(__file__).resolve().parents[1] / "scripts" / "aprender_setores.py")
+    script = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(script)
+    saida = tmp_path / "nao_criar"
+    assert script.main(["--pasta", str(montar_setores(tmp_path / "Setores")), "--saida", str(saida), "--seco"]) == 0
+    assert not saida.exists() and "nada foi gravado" in capsys.readouterr().out

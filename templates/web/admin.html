@@ -52,6 +52,19 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
 </a>
 
+<div class="item lista" style="margin-top:10px;display:flex">
+  <span class="tag" style="display:grid;place-items:center">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke-linejoin="round"/></svg></span>
+  <span class="meio"><b>Importar setores (pasta Setores)</b>
+    <small>{% if tipos_lidos %}{{ tipos_lidos }} tipo(s) de documento lido(s) pelo Cérebro — cria setores, relatórios e o conhecimento inicial.
+      {% else %}Nenhuma leitura ainda: rode «python scripts/aprender_setores.py» na máquina e reconstrua o servidor.{% endif %}</small></span>
+  {% if tipos_lidos %}
+  <form method="post" action="/web/admin/importar-setores" class="inline">
+    <button type="submit" class="btn-sec" style="margin:0"><span class="giro"></span><span class="rotulo">Importar</span></button>
+  </form>
+  {% endif %}
+</div>
+
 <div class="adm-grid">
   <!-- ======================= SETORES ======================= -->
   <div class="adm-col">

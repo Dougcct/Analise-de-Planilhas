@@ -300,6 +300,29 @@ def test_correcao_na_previa_vira_conhecimento(web):
     assert "restrito" in c.get("/web/admin/conhecimento").text.lower()  # gestor não gere o conhecimento
 
 
+def test_importar_setores_cria_setor_relatorio_e_conhecimento(web, tmp_path, monkeypatch):
+    from analise_planilha import config, modelo
+    from analise_planilha.cerebro import setores
+
+    from testes.test_cerebro import montar_setores
+    pasta = tmp_path / "modelos"
+    setores.aprender(montar_setores(tmp_path / "Setores"), pasta)
+    monkeypatch.setattr(config, "PASTA_MODELOS", pasta)
+    monkeypatch.setattr(modelo, "PASTA_MODELOS", pasta)
+    adm = _cli("admin", "admin123")
+    assert "2 tipo(s) de documento" in adm.get("/web/admin").text
+    r = adm.post("/web/admin/importar-setores", follow_redirects=False)
+    assert "ok=" in r.headers["location"], r.headers["location"]
+    tela = adm.get("/web/admin").text
+    assert "Financeiro" in tela and "Glosa" in tela and "DRE" in tela
+    assert "Nome do Paciente" in adm.get("/web/admin/conhecimento?busca=paciente").text
+    # importar de novo não duplica nada
+    from urllib.parse import unquote_plus
+    de_novo = unquote_plus(adm.post("/web/admin/importar-setores", follow_redirects=False).headers["location"])
+    assert "0 setor(es) e 0 relatório(s) novo(s)" in de_novo and "0 regra(s)" in de_novo
+    assert "restrito" in _cli("gestor.fat").post("/web/admin/importar-setores").text.lower()
+
+
 # ---------------- gestão: setores, modelos, relatórios/planilhas ----------------
 def test_admin_setor_ciclo(web):
     import re

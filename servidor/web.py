@@ -759,8 +759,10 @@ def admin(request: Request, s: Session = Depends(_sessao)):
                         "publicado": r.id in publicados, "versoes": n_ver.get(r.id, 0)} for r in rel_rows]
     modelos = [{"slug": p.stem, "nome": nome} for nome, p in listar_modelos().items()]
     n_conhecimento = s.scalar(select(func.count()).select_from(ConhecimentoColuna)) or 0
+    tipos_lidos = _manifesto_setores()
     return _pagina("admin.html", request, _ctx(request, escopo, s, "admin", centros=centros, modelos=modelos,
-                   centros_info=centros_info, relatorios_info=relatorios_info, n_conhecimento=n_conhecimento))
+                   centros_info=centros_info, relatorios_info=relatorios_info, n_conhecimento=n_conhecimento,
+                   tipos_lidos=len(tipos_lidos) if tipos_lidos else 0))
 
 
 # ----- setores (ADM): editar, desativar/reativar, excluir ---------------------------------------
@@ -859,6 +861,100 @@ def admin_modelo(slug: str, request: Request, s: Session = Depends(_sessao)):
             "consolida": m.consolida_abas, "n_colunas": len(colunas)}
     return _pagina("modelo.html", request, _ctx(request, escopo, s, "admin",
                    slug=slug, modelo=info, colunas=colunas, regras=regras))
+
+
+# ----- importar a leitura da pasta Setores/ (ADM) -----------------------------------------------
+def _manifesto_setores() -> list[dict] | None:
+    """Tipos de documento lidos por `scripts/aprender_setores.py` (vêm na imagem, em config/modelos/)."""
+    from analise_planilha import config as _config
+    from analise_planilha.cerebro import setores as _setores
+
+    arq = _config.PASTA_MODELOS / _setores.MANIFESTO
+    try:
+        return list(json.loads(arq.read_text(encoding="utf-8")).get("tipos", []))
+    except (OSError, ValueError):
+        return None
+
+
+def _centro_do_setor(s: Session, nome: str) -> tuple[CentroCusto, bool]:
+    """Setor existente (mesmo nome ou código) ou um novo, com código derivado do nome (RH, FAT, CA…)."""
+    import re
+
+    from analise_planilha.normalizacao import sem_acento
+
+    cc = s.scalar(select(CentroCusto).where((func.lower(CentroCusto.nome) == nome.lower())
+                                            | (CentroCusto.codigo == nome.upper())))
+    if cc is not None:
+        return cc, False
+    palavras = [w for w in re.split(r"[^A-Za-z0-9]+", sem_acento(nome))
+                if w and w.lower() not in {"de", "da", "do", "das", "dos", "e"}]
+    base = ("".join(w[0] for w in palavras) if len(palavras) > 1 else (palavras[0][:3] if palavras else "SET"))
+    base = base.upper()[:8]
+    codigo, n = base, 2
+    while s.scalar(select(CentroCusto).where(CentroCusto.codigo == codigo)) is not None:
+        codigo, n = f"{base}{n}", n + 1
+    cc = CentroCusto(codigo=codigo, nome=nome)
+    s.add(cc)
+    s.flush()
+    return cc, True
+
+
+@router.post("/admin/importar-setores")
+def admin_importar_setores(request: Request, s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    srv = _srv()
+    try:
+        _exige_adm(escopo)
+        tipos = _manifesto_setores()
+        if not tipos:
+            raise _Erro("Nenhuma leitura da pasta Setores encontrada. Rode «python scripts/aprender_setores.py» "
+                        "na máquina e reconstrua o servidor.")
+        n_cc = n_rel = n_upd = 0
+        for t in tipos:
+            cc, novo = _centro_do_setor(s, t["setor"])
+            n_cc += novo
+            slug = srv._slugificar(t["tipo_documento"])
+            rel = s.scalar(select(Relatorio).where(Relatorio.slug == slug))
+            if rel is not None and rel.centro_custo_id != cc.id:      # mesmo tipo em outro setor
+                slug = srv._slugificar(f"{t['tipo_documento']} {cc.codigo}")
+                rel = s.scalar(select(Relatorio).where(Relatorio.slug == slug))
+            if rel is None:
+                s.add(Relatorio(slug=slug, nome=t["tipo_documento"], centro_custo_id=cc.id, modelo=t["modelo"]))
+                n_rel += 1
+            elif rel.modelo != t["modelo"]:
+                rel.modelo, n_upd = t["modelo"], n_upd + 1           # relatório existente passa ao modelo novo
+        n_regras = _semear_conhecimento(s, escopo.usuario_id)
+        srv._cache_modelos.clear()
+        _audit(s, escopo, "importar_setores", f"{len(tipos)} tipo(s)",
+               f"setores={n_cc} relatorios={n_rel} atualizados={n_upd} regras={n_regras}")
+        s.commit()
+    except _Erro as e:
+        return _redir("/web/admin", erro=str(e))
+    return _redir("/web/admin", ok=f"Setores importados: {n_cc} setor(es) e {n_rel} relatório(s) novo(s), "
+                                   f"{n_upd} relatório(s) no modelo novo, {n_regras} regra(s) de conhecimento.")
+
+
+def _semear_conhecimento(s: Session, usuario_id: int) -> int:
+    """Leva `_conhecimento_inicial.json` para a base do servidor (sem sobrescrever o que já foi aprendido)."""
+    from analise_planilha import config as _config
+    from analise_planilha.cerebro import setores as _setores
+    from analise_planilha.cerebro.conhecimento import Conhecimento
+
+    arq = _config.PASTA_MODELOS / _setores.CONHECIMENTO_INICIAL
+    if not arq.exists():
+        return 0
+    existentes = {(r.contexto, r.assinatura) for r in s.scalars(select(ConhecimentoColuna))}
+    n = 0
+    for (ctx, ass), r in Conhecimento.carregar(arq).regras.items():
+        if (ctx, ass) in existentes:
+            continue
+        s.add(ConhecimentoColuna(contexto=ctx, assinatura=ass, rotulo=r.rotulo or ass, papel=r.papel,
+                                 agregacao=r.agregacao, confirmacoes=r.confirmacoes, origem=r.origem,
+                                 atualizado_por=usuario_id))
+        n += 1
+    return n
 
 
 # ----- conhecimento do Cérebro (ADM): ver, corrigir, esquecer -----------------------------------
