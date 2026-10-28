@@ -458,41 +458,37 @@ def _relatorios_proprios(s, escopo):
 
 
 @router.get("/enviar", response_class=HTMLResponse)
-def enviar(request: Request, slug: str = "", s: Session = Depends(_sessao)):
+def enviar(request: Request, s: Session = Depends(_sessao)):
+    """Assistente unificado: subir planilha -> (novo relatório ou atualizar um) -> prévia -> publicar."""
     escopo, redir = _exige_login(request, s)
     if redir:
         return redir
     if not _pode(escopo, GESTOR, ADM):
         return _pagina("erro.html", request, _ctx(request, escopo, s, "enviar",
                                                    mensagem="Acesso restrito a gestores."))
+    from analise_planilha.modelo import listar_modelos
     rels = [{"slug": r.slug, "nome": r.nome} for r in _relatorios_proprios(s, escopo)]
-    slug = slug or (rels[0]["slug"] if rels else "")
-    cargas = []
-    if slug:
-        rel = RepoRelatorios(s, escopo).obter_proprio(slug)
-        if rel is not None:
-            rot = {"RASCUNHO": "Rascunho", "PUBLICADA": "Publicada", "SUBSTITUIDA": "Substituída"}
-            cargas = [{"id": c.id, "nome": c.nome_original, "situacao": rot.get(c.status, c.status),
-                       "tam": f"{c.tamanho // 1024} KB",
-                       "quando": (c.criado_em.isoformat()[:16].replace("T", " ") if c.criado_em else "")}
-                      for c in RepoCargas(s, escopo).do_relatorio(rel.id)]
+    modelos = [{"slug": p.stem, "nome": nome} for nome, p in listar_modelos().items()]
+    centros = [{"id": c.id, "codigo": c.codigo, "nome": c.nome}
+               for c in s.scalars(select(CentroCusto).where(CentroCusto.ativo.is_(True)).order_by(CentroCusto.nome))
+               if escopo.eh_adm or c.id == escopo.centro_custo_id]
     return _pagina("enviar.html", request, _ctx(request, escopo, s, "enviar",
-                   relatorios=rels, slug=slug, cargas=cargas))
+                   relatorios=rels, modelos=modelos, centros=centros, eh_adm=escopo.eh_adm))
 
 
 @router.post("/enviar")
-async def enviar_carga(request: Request, slug: str = Form(...), arquivo: UploadFile = File(...),
-                       s: Session = Depends(_sessao)):
+async def enviar_carga(request: Request, modo: str = Form("novo"), arquivo: UploadFile = File(...),
+                       slug: str = Form(""), nome: str = Form(""), modelo: str = Form(""),
+                       centro_custo_id: str = Form(""), s: Session = Depends(_sessao)):
+    """Recebe a planilha, cria o rascunho (e o relatório, se for novo, ainda inativo) e vai para a prévia."""
     escopo, redir = _exige_login(request, s)
     if redir:
         return redir
     srv = _srv()
+    caminho = None
     try:
         if not _pode(escopo, GESTOR, ADM):
             raise _Erro("Acesso restrito a gestores.")
-        rel = RepoRelatorios(s, escopo).obter_proprio(slug)
-        if rel is None:
-            raise _Erro("Relatório não encontrado.")
         conteudo = await arquivo.read(validacao.MAX_BYTES + 1)
         if len(conteudo) > validacao.MAX_BYTES:
             raise _Erro("Arquivo acima do limite (25 MB).")
@@ -500,23 +496,118 @@ async def enviar_carga(request: Request, slug: str = Form(...), arquivo: UploadF
             validacao.validar(arquivo.filename or "", conteudo)
         except validacao.ErroArquivo as e:
             raise _Erro(str(e)) from e
+
+        if modo == "atualizar":
+            rel = RepoRelatorios(s, escopo).obter_proprio(slug)
+            if rel is None:
+                raise _Erro("Escolha um relatório do seu setor para atualizar.")
+        else:                                            # novo relatório a partir da planilha
+            nm = nome.strip()
+            novo_slug = srv._slugificar(nm)
+            if not nm or not novo_slug:
+                raise _Erro("Dê um nome ao relatório.")
+            if escopo.eh_gestor:                         # Gestor cria só no próprio setor
+                cc = escopo.centro_custo_id
+            else:                                        # ADM escolhe o setor
+                cc = int(centro_custo_id) if centro_custo_id else None
+                if cc is None:
+                    raise _Erro("Escolha o setor do relatório.")
+                if s.get(CentroCusto, cc) is None:
+                    raise _Erro("Setor inexistente.")
+            if s.scalar(select(Relatorio).where(Relatorio.slug == novo_slug)) is not None:
+                raise _Erro("Já existe um relatório com esse nome.")
+            rel = Relatorio(slug=novo_slug, nome=nm, centro_custo_id=cc,
+                            modelo=(modelo or None), ativo=False)   # nasce oculto até publicar
+            s.add(rel)
+            s.flush()
+            _audit(s, escopo, "criar_relatorio", novo_slug)
+
         nome_uuid = uuid.uuid4().hex + Path(arquivo.filename or "").suffix.lower()
         srv.CARGAS_DIR.mkdir(parents=True, exist_ok=True)
-        (srv.CARGAS_DIR / nome_uuid).write_bytes(conteudo)
+        caminho = srv.CARGAS_DIR / nome_uuid
+        caminho.write_bytes(conteudo)
         carga = Carga(relatorio_id=rel.id, centro_custo_id=rel.centro_custo_id, enviado_por=escopo.usuario_id,
                       nome_original=arquivo.filename or "sem-nome", hash_sha256=hashlib.sha256(conteudo).hexdigest(),
                       arquivo_uuid=nome_uuid, tamanho=len(conteudo), status=RASCUNHO)
         s.add(carga)
         s.flush()
-        _audit(s, escopo, "enviar_carga", f"{slug}:{carga.id}", carga.hash_sha256)
+        try:                                             # confirma que o motor LÊ antes da prévia
+            srv._dataset_da_carga(carga, srv._modelo_do(rel))
+        except Exception as e:  # noqa: BLE001
+            raise _Erro(f"Não foi possível ler a planilha: {type(e).__name__}") from e
+        _audit(s, escopo, "enviar_carga", f"{rel.slug}:{carga.id}", carga.hash_sha256)
+        cid = carga.id
+        s.commit()
+    except _Erro as e:
+        if caminho is not None:
+            caminho.unlink(missing_ok=True)              # não deixa arquivo órfão
+        return _redir("/web/enviar", erro=str(e))
+    return RedirectResponse(f"/web/enviar/previa/{cid}", status_code=303)
+
+
+def _carga_previa(s, escopo, carga_id):
+    carga = RepoCargas(s, escopo).obter(carga_id)        # escopado ao setor do Gestor
+    if carga is None or carga.status != RASCUNHO:
+        raise _Erro("Prévia não encontrada ou já publicada.")
+    return carga, s.get(Relatorio, carga.relatorio_id)
+
+
+@router.get("/enviar/previa/{carga_id}", response_class=HTMLResponse)
+def enviar_previa(carga_id: int, request: Request, s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    srv = _srv()
+    try:
+        if not _pode(escopo, GESTOR, ADM):
+            raise _Erro("Acesso restrito a gestores.")
+        carga, rel = _carga_previa(s, escopo, carga_id)
+        a = servico.analisar(srv._dataset_da_carga(carga, srv._modelo_do(rel)))
+    except _Erro as e:
+        return _pagina("erro.html", request, _ctx(request, escopo, s, "enviar", mensagem=str(e)))
+    novo = not rel.ativo and not s.scalar(select(Carga).where(Carga.relatorio_id == rel.id, Carga.status == PUBLICADA))
+    return _pagina("previa.html", request, _ctx(request, escopo, s, "enviar",
+                   carga_id=carga_id, titulo=rel.nome, arquivo=carga.nome_original,
+                   registros=a.linhas, paineis=len(a.paineis), novo=novo))
+
+
+@router.get("/enviar/previa/{carga_id}/conteudo", response_class=HTMLResponse)
+def enviar_previa_conteudo(carga_id: int, request: Request, s: Session = Depends(_sessao)):
+    escopo = _escopo(request, s)
+    if escopo is None or escopo.precisa_trocar_senha or not _pode(escopo, GESTOR, ADM):
+        return HTMLResponse("<p>Sessão expirada.</p>", status_code=401)
+    srv = _srv()
+    try:
+        carga, rel = _carga_previa(s, escopo, carga_id)
+    except _Erro:
+        return HTMLResponse("<p>Prévia não encontrada.</p>", status_code=404)
+    html = relatorio_html.montar_html(servico.analisar(srv._dataset_da_carga(carga, srv._modelo_do(rel))), rel.nome)
+    return HTMLResponse(html)
+
+
+@router.post("/enviar/previa/{carga_id}/publicar")
+def enviar_previa_publicar(carga_id: int, request: Request, s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    try:
+        if not _pode(escopo, GESTOR, ADM):
+            raise _Erro("Acesso restrito a gestores.")
+        carga, rel = _carga_previa(s, escopo, carga_id)
+        for ant in s.scalars(select(Carga).where(Carga.relatorio_id == rel.id, Carga.status == PUBLICADA)):
+            ant.status = SUBSTITUIDA                      # histórico: a anterior vira "substituída"
+        carga.status = PUBLICADA
+        carga.publicado_em = utcnow()
+        rel.ativo = True                                 # se era novo (oculto), aparece agora
+        _audit(s, escopo, "publicar_carga", f"{rel.slug}:{carga.id}")
         s.commit()
     except _Erro as e:
         return _redir("/web/enviar", erro=str(e))
-    return _redir(f"/web/enviar?slug={slug}", ok="Planilha enviada (Rascunho). Teste e depois publique.")
+    return _redir("/web", ok=f"Relatório «{rel.nome}» publicado — já está no ar.")
 
 
-@router.post("/cargas/{carga_id}/testar")
-def carga_testar(carga_id: int, request: Request, slug: str = Form(...), s: Session = Depends(_sessao)):
+@router.post("/enviar/previa/{carga_id}/descartar")
+def enviar_previa_descartar(carga_id: int, request: Request, s: Session = Depends(_sessao)):
     escopo, redir = _exige_login(request, s)
     if redir:
         return redir
@@ -524,45 +615,18 @@ def carga_testar(carga_id: int, request: Request, slug: str = Form(...), s: Sess
     try:
         if not _pode(escopo, GESTOR, ADM):
             raise _Erro("Acesso restrito a gestores.")
-        carga = RepoCargas(s, escopo).obter(carga_id)
-        if carga is None:
-            raise _Erro("Carga não encontrada.")
-        try:
-            ds = srv._dataset_da_carga(carga, srv._modelo_do(s.get(Relatorio, carga.relatorio_id)))
-            a = servico.analisar(ds)
-        except Exception as e:  # noqa: BLE001 - arquivo que o motor não lê
-            raise _Erro(f"Não foi possível ler a planilha: {type(e).__name__}") from e
-    except _Erro as e:
-        return _redir(f"/web/enviar?slug={slug}", erro=str(e))
-    return _redir(f"/web/enviar?slug={slug}",
-                  ok=f"Rascunho lido: {a.linhas} registro(s), {len(a.paineis)} painel(éis). Se estiver certo, publique.")
-
-
-@router.post("/cargas/{carga_id}/publicar")
-def carga_publicar(carga_id: int, request: Request, slug: str = Form(...), s: Session = Depends(_sessao)):
-    escopo, redir = _exige_login(request, s)
-    if redir:
-        return redir
-    srv = _srv()
-    try:
-        if not _pode(escopo, GESTOR, ADM):
-            raise _Erro("Acesso restrito a gestores.")
-        carga = RepoCargas(s, escopo).obter(carga_id)
-        if carga is None:
-            raise _Erro("Carga não encontrada.")
-        try:
-            srv._dataset_da_carga(carga, srv._modelo_do(s.get(Relatorio, carga.relatorio_id)))
-        except Exception as e:  # noqa: BLE001
-            raise _Erro(f"A planilha não pôde ser processada: {type(e).__name__}") from e
-        for ant in s.scalars(select(Carga).where(Carga.relatorio_id == carga.relatorio_id, Carga.status == PUBLICADA)):
-            ant.status = SUBSTITUIDA
-        carga.status = PUBLICADA
-        carga.publicado_em = utcnow()
-        _audit(s, escopo, "publicar_carga", f"{carga.relatorio_id}:{carga.id}")
+        carga, rel = _carga_previa(s, escopo, carga_id)
+        (srv.CARGAS_DIR / carga.arquivo_uuid).unlink(missing_ok=True)
+        s.delete(carga)
+        s.flush()
+        # se era um relatório novo que nunca chegou a publicar nada, some com ele também
+        if not rel.ativo and not s.scalar(select(Carga).where(Carga.relatorio_id == rel.id)):
+            s.delete(rel)
+        _audit(s, escopo, "descartar_rascunho", f"{rel.slug}:{carga_id}")
         s.commit()
     except _Erro as e:
-        return _redir(f"/web/enviar?slug={slug}", erro=str(e))
-    return _redir(f"/web/enviar?slug={slug}", ok="Planilha publicada — o relatório já reflete os novos dados.")
+        return _redir("/web/enviar", erro=str(e))
+    return _redir("/web/enviar", ok="Envio descartado.")
 
 
 # ============================================================== compartilhar (Gestor/ADM)

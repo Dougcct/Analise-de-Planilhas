@@ -1,0 +1,55 @@
+{% extends "web/base.html" %}
+{% block titulo %}Pré-visualização — Análise de Planilhas{% endblock %}
+{% block conteudo %}
+<style>
+  .previa-topo{display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;justify-content:space-between}
+  .selo-previa{display:inline-flex;align-items:center;gap:7px;background:var(--aviso-claro);color:var(--aviso);
+    font-weight:700;font-size:12.5px;padding:5px 12px;border-radius:999px}
+  .resumo{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+  .chip{display:flex;align-items:center;gap:8px;background:var(--superficie);border:1px solid var(--borda);
+    border-radius:var(--raio-s);padding:8px 13px;font-size:13px;box-shadow:var(--sombra)}
+  .chip b{font-size:16px} .chip span{color:var(--apoio)}
+  .acoes-previa{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}
+  .rel-caixa{position:relative;margin-top:4px}
+  iframe.relatorio{width:100%;height:calc(100vh - 320px);min-height:420px;border:1px solid var(--borda);
+    border-radius:var(--raio);background:var(--superficie);box-shadow:var(--sombra);display:block}
+  .rel-carregando{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:12px;background:var(--superficie);border-radius:var(--raio);color:var(--apoio);font-size:13px}
+  .rel-carregando .giro2{width:30px;height:30px;border:3px solid var(--borda);border-top-color:var(--marca);
+    border-radius:50%;animation:girar .7s linear infinite}
+</style>
+
+<div class="previa-topo">
+  <div>
+    <span class="selo-previa">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+      Pré-visualização — ainda não publicado
+    </span>
+    <h1 style="margin-top:8px">{{ titulo }}</h1>
+    <p class="apoio">Confira como o relatório ficou a partir de <b>{{ arquivo }}</b>. Se estiver certo, publique.</p>
+  </div>
+</div>
+
+<div class="resumo">
+  <span class="chip"><b>{{ registros }}</b><span>registro(s)</span></span>
+  <span class="chip"><b>{{ paineis }}</b><span>painel(éis)</span></span>
+  <span class="chip"><span>{{ 'Novo relatório' if novo else 'Atualização' }}</span></span>
+</div>
+
+<div class="acoes-previa">
+  <form method="post" action="/web/enviar/previa/{{ carga_id }}/publicar" class="inline">
+    <button type="submit"><span class="giro"></span><span class="rotulo">Publicar relatório</span></button>
+  </form>
+  <form method="post" action="/web/enviar/previa/{{ carga_id }}/descartar" class="inline"
+        onsubmit="return confirm('Descartar este envio? A planilha não será publicada.')">
+    <button type="submit" class="btn-perigo" style="padding:11px 18px">Descartar</button>
+  </form>
+  <a class="btn-sec" href="/web/enviar" style="padding:11px 16px">Enviar outra</a>
+</div>
+
+<div class="rel-caixa">
+  <div class="rel-carregando" id="rel-load"><span class="giro2"></span><span>Montando a prévia…</span></div>
+  <iframe class="relatorio" src="/web/enviar/previa/{{ carga_id }}/conteudo" title="Prévia de {{ titulo }}"
+          onload="var l=document.getElementById('rel-load'); if(l){l.style.opacity=0; setTimeout(function(){l.remove()},300);}"></iframe>
+</div>
+{% endblock %}

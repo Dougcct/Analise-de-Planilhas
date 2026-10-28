@@ -2,147 +2,114 @@
 {% block titulo %}Enviar planilha — Análise de Planilhas{% endblock %}
 {% block conteudo %}
 <style>
-  .passos{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
-  .passo{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--apoio);background:var(--superficie);
-    border:1px solid var(--borda);border-radius:999px;padding:5px 12px}
-  .passo b{width:18px;height:18px;border-radius:50%;background:var(--marca-clara);color:var(--marca-escura);
-    display:grid;place-items:center;font-size:11px;font-weight:800}
+  .abas{display:flex;gap:4px;margin-top:16px;border-bottom:1px solid var(--borda)}
+  .abas button{background:none;border:0;border-bottom:3px solid transparent;color:var(--apoio);font-weight:700;
+    font-size:14px;padding:11px 14px;margin:0;cursor:pointer;border-radius:0;transition:color var(--rapido)}
+  .abas button:hover{background:none;color:var(--texto);box-shadow:none}
+  .abas button.on{color:var(--marca);border-bottom-color:var(--marca)}
+  .aba-conteudo{display:none;animation:surge .22s ease both}
+  .aba-conteudo.on{display:block}
   .dropzone{display:flex;align-items:center;gap:14px;border:1.5px dashed var(--borda);border-radius:var(--raio);
     padding:16px 18px;background:var(--superficie-2);transition:border-color var(--rapido),background var(--rapido)}
   .dropzone:hover{border-color:var(--marca);background:var(--marca-clara)}
   .dropzone .ic{width:42px;height:42px;border-radius:11px;flex:0 0 42px;display:grid;place-items:center;
     background:var(--marca-clara);color:var(--marca-escura)}
-  .dropzone .ic svg{width:22px;height:22px}
-  .dropzone input[type=file]{margin:0}
-  .barra-caixa{margin-top:12px;display:none}
-  .barra-caixa.on{display:block;animation:surge .2s ease both}
+  .dropzone .ic svg{width:22px;height:22px} .dropzone input[type=file]{margin:0}
+  .barra-caixa{margin-top:12px;display:none} .barra-caixa.on{display:block;animation:surge .2s ease both}
   .barra{height:8px;border-radius:999px;background:var(--superficie-2);overflow:hidden;border:1px solid var(--borda)}
-  .barra>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--marca),var(--marca-escura));
-    transition:width .15s ease}
+  .barra>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--marca),var(--marca-escura));transition:width .15s ease}
   .barra-rotulo{font-size:12px;color:var(--apoio);margin-top:6px}
 </style>
 
-<h1>Enviar e publicar planilha</h1>
-<div class="passos">
-  <span class="passo"><b>1</b> Enviar (vira Rascunho)</span>
-  <span class="passo"><b>2</b> Testar a leitura</span>
-  <span class="passo"><b>3</b> Publicar como vigente</span>
+<h1>Enviar planilha</h1>
+<p class="apoio">Suba o Excel, veja a <b>prévia do relatório</b> e publique. Simples assim.</p>
+
+{% if relatorios or eh_adm or papel_cod in ('GESTOR','ADM') %}
+<div class="abas">
+  <button type="button" class="on" data-aba="novo" onclick="aba(this)">Novo relatório</button>
+  <button type="button" data-aba="atualizar" onclick="aba(this)">Atualizar existente</button>
 </div>
 
-{% if relatorios %}
-<form method="get" action="/web/enviar" class="linha" style="padding:14px 18px">
-  <label style="margin:0 0 6px">Relatório</label>
-  <select name="slug" onchange="this.form.submit()" style="max-width:420px">
-    {% for r in relatorios %}
-    <option value="{{ r.slug }}" {{ 'selected' if r.slug == slug }}>{{ r.nome }}</option>
-    {% endfor %}
-  </select>
-</form>
+<!-- ===================== NOVO ===================== -->
+<div class="aba-conteudo on" id="aba-novo">
+  <form method="post" action="/web/enviar" enctype="multipart/form-data" class="linha validar form-up">
+    <input type="hidden" name="modo" value="novo">
+    <div class="campos">
+      <div><label>Nome do relatório <span class="obrig">*</span></label>
+        <input name="nome" required placeholder="ex.: Garantia de Atendimento"></div>
+      <div><label>Modelo de análise</label>
+        <select name="modelo">
+          <option value="">(detectar pela planilha)</option>
+          {% for m in modelos %}<option value="{{ m.slug }}">{{ m.nome }}</option>{% endfor %}
+        </select>
+      </div>
+      {% if eh_adm %}
+      <div><label>Setor <span class="obrig">*</span></label>
+        <select name="centro_custo_id">
+          {% for c in centros %}<option value="{{ c.id }}">{{ c.codigo }} — {{ c.nome }}</option>{% endfor %}
+        </select>
+      </div>
+      {% endif %}
+    </div>
+    <label style="margin-top:14px">Planilha <span class="obrig">*</span></label>
+    <div class="dropzone">
+      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 16V4m0 0 4 4m-4-4-4 4M4 17v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <input type="file" name="arquivo" accept=".xlsx,.ods,.csv,.tsv,.txt" required>
+    </div>
+    {% if not eh_adm %}<p class="apoio" style="font-size:12px;margin-top:6px">Será criado no seu setor.</p>{% endif %}
+    <div class="barra-caixa"><div class="barra"><i></i></div><div class="barra-rotulo">Enviando…</div></div>
+    <button type="submit"><span class="giro"></span><span class="rotulo">Analisar e pré-visualizar</span></button>
+  </form>
+</div>
 
-<form method="post" action="/web/enviar" enctype="multipart/form-data" class="linha" id="form-upload">
-  <input type="hidden" name="slug" value="{{ slug }}">
-  <label>Arquivo da planilha</label>
-  <div class="dropzone">
-    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 16V4m0 0 4 4m-4-4-4 4M4 17v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-    <input type="file" name="arquivo" accept=".xlsx,.ods,.csv,.tsv,.txt" required>
-  </div>
-  <p class="apoio" style="font-size:12px;margin-top:6px">Formatos: .xlsx .ods .csv .tsv .txt · até 25 MB.</p>
-  <div class="barra-caixa" id="barra-caixa">
-    <div class="barra"><i id="barra-prog"></i></div>
-    <div class="barra-rotulo" id="barra-rotulo">Enviando…</div>
-  </div>
-  <button type="submit"><span class="giro"></span><span class="rotulo">Enviar planilha</span></button>
-</form>
-
-<p class="secao-tit">Envios deste relatório</p>
-<div class="tabela-caixa">
-<table>
-  <thead><tr><th>Arquivo</th><th>Situação</th><th>Tamanho</th><th>Enviado em</th><th style="text-align:right">Ações</th></tr></thead>
-  <tbody>
-  {% for c in cargas %}
-  <tr>
-    <td>{{ c.nome }}</td>
-    <td>
-      {% if 'ublic' in c.situacao %}<span class="selo selo-ok">{{ c.situacao }}</span>
-      {% elif 'ascunho' in c.situacao %}<span class="selo selo-aviso">{{ c.situacao }}</span>
-      {% else %}<span class="selo selo-neutro">{{ c.situacao }}</span>{% endif %}
-    </td>
-    <td class="apoio">{{ c.tam }}</td><td class="apoio">{{ c.quando }}</td>
-    <td style="white-space:nowrap;text-align:right">
-      <form method="post" action="/web/cargas/{{ c.id }}/testar" class="inline">
-        <input type="hidden" name="slug" value="{{ slug }}"><button class="btn-sec">Testar</button></form>
-      <button type="button" class="btn-sec" onclick="confirmarPublicar({{ c.id }}, {{ c.nome|tojson }})">Publicar</button>
-    </td>
-  </tr>
+<!-- ===================== ATUALIZAR ===================== -->
+<div class="aba-conteudo" id="aba-atualizar">
+  {% if relatorios %}
+  <form method="post" action="/web/enviar" enctype="multipart/form-data" class="linha form-up">
+    <input type="hidden" name="modo" value="atualizar">
+    <label>Relatório</label>
+    <select name="slug" style="max-width:440px">
+      {% for r in relatorios %}<option value="{{ r.slug }}">{{ r.nome }}</option>{% endfor %}
+    </select>
+    <label style="margin-top:14px">Nova planilha <span class="obrig">*</span></label>
+    <div class="dropzone">
+      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 16V4m0 0 4 4m-4-4-4 4M4 17v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <input type="file" name="arquivo" accept=".xlsx,.ods,.csv,.tsv,.txt" required>
+    </div>
+    <div class="barra-caixa"><div class="barra"><i></i></div><div class="barra-rotulo">Enviando…</div></div>
+    <button type="submit"><span class="giro"></span><span class="rotulo">Analisar e pré-visualizar</span></button>
+  </form>
   {% else %}
-  <tr><td colspan="5" class="apoio">Nenhum envio ainda.</td></tr>
-  {% endfor %}
-  </tbody>
-</table>
-</div>
-
-<!-- form oculto que o modal de confirmação dispara -->
-<form method="post" id="form-publicar" class="inline">
-  <input type="hidden" name="slug" value="{{ slug }}">
-</form>
-
-<dialog id="dlg-publicar">
-  <div class="cab">Publicar planilha</div>
-  <div class="corpo">
-    <p style="margin:0">Publicar <b id="pub-nome"></b> como a versão vigente deste relatório?</p>
-    <p class="apoio" style="font-size:12.5px;margin-top:8px">A planilha publicada hoje passa a «Substituída» e o relatório reflete os novos dados na hora.</p>
-  </div>
-  <div class="pe">
-    <button type="button" class="btn-fantasma" onclick="document.getElementById('dlg-publicar').close()">Cancelar</button>
-    <button type="button" class="btn" style="margin:0" onclick="document.getElementById('form-publicar').submit()">Publicar</button>
-  </div>
-</dialog>
-{% else %}
-<div class="vazio">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 16V4m0 0 4 4m-4-4-4 4M4 17v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-  <p>Nenhum relatório do seu setor para enviar.</p>
+  <div class="vazio" style="margin-top:16px"><p>Nenhum relatório do seu setor ainda. Crie um em «Novo relatório».</p></div>
+  {% endif %}
 </div>
 {% endif %}
 
-<style>
-  dialog{border:1px solid var(--borda);border-radius:var(--raio);padding:0;max-width:440px;width:92vw;
-    background:var(--superficie);color:var(--texto);box-shadow:var(--sombra-forte)}
-  dialog::backdrop{background:rgba(10,18,26,.5)}
-  dialog .cab{padding:16px 20px;border-bottom:1px solid var(--borda);font-weight:700;font-size:16px}
-  dialog .corpo{padding:18px 20px}
-  dialog .pe{padding:14px 20px;border-top:1px solid var(--borda);display:flex;justify-content:flex-end;gap:10px}
-  .btn-fantasma{background:var(--superficie);color:var(--apoio);border:1px solid var(--borda);margin:0}
-  .btn-fantasma:hover{background:var(--superficie-2);color:var(--texto);box-shadow:none}
-</style>
-
 <script>
-  function confirmarPublicar(id, nome){
-    var f = document.getElementById("form-publicar");
-    f.action = "/web/cargas/" + id + "/publicar";
-    document.getElementById("pub-nome").textContent = nome;
-    document.getElementById("dlg-publicar").showModal();
+  function aba(btn){
+    document.querySelectorAll(".abas button").forEach(function(b){ b.classList.toggle("on", b === btn); });
+    var alvo = btn.getAttribute("data-aba");
+    document.getElementById("aba-novo").classList.toggle("on", alvo === "novo");
+    document.getElementById("aba-atualizar").classList.toggle("on", alvo === "atualizar");
   }
-  // Upload com barra de progresso real (XHR); ao terminar, segue o redirect do servidor (mostra o toast).
-  var fu = document.getElementById("form-upload");
-  if (fu) fu.addEventListener("submit", function(ev){
-    var inp = fu.querySelector('input[type=file]');
-    if (!inp || !inp.files.length) return;              // deixa a validação nativa agir
-    ev.preventDefault();
-    var cx = document.getElementById("barra-caixa"), pr = document.getElementById("barra-prog"),
-        rot = document.getElementById("barra-rotulo"), bt = fu.querySelector('button[type=submit]');
-    cx.classList.add("on"); if (bt) bt.setAttribute("aria-busy","true");
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", fu.action);
-    xhr.upload.onprogress = function(e){
-      if (e.lengthComputable){ var p = Math.round(e.loaded/e.total*100);
-        pr.style.width = p + "%"; rot.textContent = "Enviando… " + p + "%"; }
-    };
-    xhr.onload = function(){ pr.style.width = "100%"; rot.textContent = "Processando…";
-      window.location = xhr.responseURL || ("/web/enviar?slug=" + encodeURIComponent(
-        fu.querySelector('input[name=slug]').value)); };
-    xhr.onerror = function(){ rot.textContent = "Falha no envio. Tente de novo.";
-      if (bt) bt.removeAttribute("aria-busy"); };
-    xhr.send(new FormData(fu));
+  // Upload com barra de progresso real; ao terminar segue o redirect do servidor (vai pra prévia ou mostra erro).
+  document.querySelectorAll("form.form-up").forEach(function(f){
+    f.addEventListener("submit", function(ev){
+      var inp = f.querySelector('input[type=file]');
+      if (!inp || !inp.files.length) return;              // validação nativa cuida
+      ev.preventDefault();
+      var cx = f.querySelector(".barra-caixa"), pr = f.querySelector(".barra>i"),
+          rot = f.querySelector(".barra-rotulo"), bt = f.querySelector('button[type=submit]');
+      cx.classList.add("on"); if (bt) bt.setAttribute("aria-busy","true");
+      var xhr = new XMLHttpRequest(); xhr.open("POST", f.action);
+      xhr.upload.onprogress = function(e){ if (e.lengthComputable){ var p = Math.round(e.loaded/e.total*100);
+        pr.style.width = p + "%"; rot.textContent = "Enviando… " + p + "%"; } };
+      xhr.onload = function(){ pr.style.width = "100%"; rot.textContent = "Analisando…";
+        window.location = xhr.responseURL || "/web/enviar"; };
+      xhr.onerror = function(){ rot.textContent = "Falha no envio. Tente de novo.";
+        if (bt) bt.removeAttribute("aria-busy"); };
+      xhr.send(new FormData(f));
+    });
   });
 </script>
 {% endblock %}

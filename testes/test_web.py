@@ -197,17 +197,43 @@ def _cesariana_xlsx(n):
     b = io.BytesIO(); wb.save(b); return b.getvalue()
 
 
-def test_web_enviar_e_publicar(web):
+def _subir(c, **campos):
+    """Sobe uma planilha pelo fluxo novo e devolve o id da prévia (carga)."""
     import re
+    n = campos.pop("n", 7)
+    r = c.post("/web/enviar", data=campos,
+               files={"arquivo": ("planilha.xlsx", _cesariana_xlsx(n), "x")}, follow_redirects=False)
+    assert r.status_code == 303, r.text
+    m = re.search(r"/previa/(\d+)", r.headers["location"])
+    assert m, r.headers["location"]
+    return m.group(1)
+
+
+def test_web_enviar_novo_e_publicar(web):
     c = _cli("gestor.fat")
-    r = c.post("/web/enviar", data={"slug": "resumo-cesariana"},
-               files={"arquivo": ("cesariana.xlsx", _cesariana_xlsx(7), "x")}, follow_redirects=False)
-    assert r.status_code == 303 and "ok=" in r.headers["location"]
-    pagina = c.get("/web/enviar?slug=resumo-cesariana").text
-    cid = re.search(r"/web/cargas/(\d+)/testar", pagina).group(1)   # publicar é via modal (JS); id vem do Testar
-    rp = c.post(f"/web/cargas/{cid}/publicar", data={"slug": "resumo-cesariana"}, follow_redirects=False)
+    cid = _subir(c, modo="novo", nome="Cesariana Teste Web", modelo="resumo_cesariana", n=7)
+    previa = c.get(f"/web/enviar/previa/{cid}").text
+    assert "Pré-visualização" in previa and "registro" in previa
+    assert "7 registro" in c.get(f"/web/enviar/previa/{cid}/conteudo").text     # relatório renderizado na prévia
+    rp = c.post(f"/web/enviar/previa/{cid}/publicar", follow_redirects=False)
     assert rp.status_code == 303 and "ok=" in rp.headers["location"]
-    assert "7 registro" in c.get("/web/r/resumo-cesariana/conteudo").text   # relatório refletiu o upload
+    assert "Cesariana Teste Web" in c.get("/web").text                          # aparece só depois de publicar
+    assert "7 registro" in c.get("/web/r/cesariana-teste-web/conteudo").text
+
+
+def test_web_enviar_atualizar_existente(web):
+    c = _cli("gestor.fat")
+    cid = _subir(c, modo="atualizar", slug="resumo-cesariana", n=5)
+    c.post(f"/web/enviar/previa/{cid}/publicar")
+    assert "5 registro" in c.get("/web/r/resumo-cesariana/conteudo").text
+
+
+def test_web_enviar_descartar(web):
+    c = _cli("gestor.fat")
+    cid = _subir(c, modo="novo", nome="Pra Descartar", modelo="resumo_cesariana", n=3)
+    rd = c.post(f"/web/enviar/previa/{cid}/descartar", follow_redirects=False)
+    assert rd.status_code == 303 and "ok=" in rd.headers["location"]
+    assert "Pra Descartar" not in c.get("/web").text        # relatório novo descartado não fica órfão
 
 
 def test_web_compartilhar(web):
