@@ -2,7 +2,8 @@
 {% block titulo %}Entrar — Análise de Planilhas{% endblock %}
 {% block conteudo %}
 <div class="centro">
-  <h1 style="color:var(--marca)">Análise de Planilhas</h1>
+  <div class="logo-g">AP</div>
+  <h1>Análise de Planilhas</h1>
   <p class="apoio">Entre com seu usuário do setor para ver os relatórios.</p>
   {% if erro %}<div class="erro">{{ erro }}</div>{% endif %}
   <form method="post" action="/web/login">
@@ -10,8 +11,8 @@
     <input id="login" name="login" autocomplete="username" autofocus>
     <label for="senha">Senha</label>
     <input id="senha" name="senha" type="password" autocomplete="current-password">
-    <button type="submit">Entrar</button>
+    <button type="submit"><span class="giro"></span><span class="rotulo">Entrar</span></button>
   </form>
-  <p class="rodape">Versão {{ versao }}</p>
+  <p class="rodape" style="text-align:center">Versão {{ versao }}</p>
 </div>
 {% endblock %}

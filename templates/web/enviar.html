@@ -2,6 +2,7 @@
 {% block titulo %}Enviar planilha — Análise de Planilhas{% endblock %}
 {% block conteudo %}
 <h1>Enviar e publicar planilha</h1>
+<p class="apoio">Envie o arquivo, confira em «Testar» e publique como versão vigente.</p>
 
 {% if relatorios %}
 <form method="get" action="/web/enviar" class="linha">
@@ -22,16 +23,24 @@
     <div><label>Arquivo (.xlsx .ods .csv .tsv .txt)</label>
       <input type="file" name="arquivo" accept=".xlsx,.ods,.csv,.tsv,.txt" required></div>
   </div>
-  <button type="submit">Enviar (vira Rascunho)</button>
+  <button type="submit"><span class="giro"></span><span class="rotulo">Enviar (vira Rascunho)</span></button>
 </form>
 
 <p class="secao-tit">Envios deste relatório</p>
+<div class="tabela-caixa">
 <table>
-  <tr><th>Arquivo</th><th>Situação</th><th>Tamanho</th><th>Enviado em</th><th></th></tr>
+  <thead><tr><th>Arquivo</th><th>Situação</th><th>Tamanho</th><th>Enviado em</th><th></th></tr></thead>
+  <tbody>
   {% for c in cargas %}
   <tr>
-    <td>{{ c.nome }}</td><td>{{ c.situacao }}</td><td>{{ c.tam }}</td><td>{{ c.quando }}</td>
+    <td>{{ c.nome }}</td>
     <td>
+      {% if 'ublic' in c.situacao %}<span class="selo selo-ok">{{ c.situacao }}</span>
+      {% elif 'ascunho' in c.situacao %}<span class="selo selo-aviso">{{ c.situacao }}</span>
+      {% else %}<span class="selo selo-neutro">{{ c.situacao }}</span>{% endif %}
+    </td>
+    <td class="apoio">{{ c.tam }}</td><td class="apoio">{{ c.quando }}</td>
+    <td style="white-space:nowrap">
       <form method="post" action="/web/cargas/{{ c.id }}/testar" class="inline">
         <input type="hidden" name="slug" value="{{ slug }}"><button class="btn-sec">Testar</button></form>
       <form method="post" action="/web/cargas/{{ c.id }}/publicar" class="inline"
@@ -42,8 +51,13 @@
   {% else %}
   <tr><td colspan="5" class="apoio">Nenhum envio ainda.</td></tr>
   {% endfor %}
+  </tbody>
 </table>
+</div>
 {% else %}
-<p class="apoio" style="margin-top:20px">Nenhum relatório do seu setor para enviar.</p>
+<div class="vazio">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 16V4m0 0 4 4m-4-4-4 4M4 17v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  <p>Nenhum relatório do seu setor para enviar.</p>
+</div>
 {% endif %}
 {% endblock %}

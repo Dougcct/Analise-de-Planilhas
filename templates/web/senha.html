@@ -2,7 +2,8 @@
 {% block titulo %}Trocar senha — Análise de Planilhas{% endblock %}
 {% block conteudo %}
 <div class="centro">
-  <h1 style="color:var(--marca)">Trocar senha</h1>
+  <div class="logo-g">AP</div>
+  <h1>Trocar senha</h1>
   <p class="apoio">Defina uma nova senha para continuar.</p>
   {% if erro %}<div class="erro">{{ erro }}</div>{% endif %}
   <form method="post" action="/web/senha">
@@ -12,7 +13,7 @@
     <input id="nova" name="nova" type="password" autocomplete="new-password" placeholder="ao menos 6 caracteres">
     <label for="confirma">Confirmar nova senha</label>
     <input id="confirma" name="confirma" type="password" autocomplete="new-password">
-    <button type="submit">Salvar e entrar</button>
+    <button type="submit"><span class="giro"></span><span class="rotulo">Salvar e entrar</span></button>
   </form>
 </div>
 {% endblock %}

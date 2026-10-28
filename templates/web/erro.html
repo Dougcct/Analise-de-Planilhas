@@ -1,6 +1,11 @@
 {% extends "web/base.html" %}
 {% block titulo %}Aviso — Análise de Planilhas{% endblock %}
 {% block conteudo %}
-<a class="voltar" href="/web">← Relatórios</a>
-<p class="erro">{{ mensagem }}</p>
+<a class="voltar" href="/web">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  Relatórios</a>
+<div class="vazio" style="border-color:var(--perigo);color:var(--perigo-escura)">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 8v5m0 3h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  <p>{{ mensagem }}</p>
+</div>
 {% endblock %}

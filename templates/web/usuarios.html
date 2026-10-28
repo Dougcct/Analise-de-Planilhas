@@ -2,25 +2,31 @@
 {% block titulo %}Usuários — Análise de Planilhas{% endblock %}
 {% block conteudo %}
 <h1>Gestão de usuários</h1>
-<p class="apoio">Usuários do seu setor{{ ' (todos, como ADM)' if eh_adm else '' }}.</p>
+<p class="apoio">Usuários do seu setor{{ ' (todos, como Administrador)' if eh_adm else '' }}.</p>
 
+<div class="tabela-caixa">
 <table>
-  <tr><th>Nome</th><th>Login</th><th>Papel</th><th>Setor</th><th>Situação</th><th></th></tr>
+  <thead><tr><th>Nome</th><th>Login</th><th>Papel</th><th>Setor</th><th>Situação</th><th></th></tr></thead>
+  <tbody>
   {% for u in usuarios %}
   <tr>
     <td>{{ u.nome }}</td><td>{{ u.login }}</td><td>{{ u.papel }}</td><td>{{ u.setor }}</td>
-    <td>{{ 'Ativo' if u.ativo else 'Bloqueado' }}</td>
+    <td>{% if u.ativo %}<span class="selo selo-ok">Ativo</span>{% else %}<span class="selo selo-off">Bloqueado</span>{% endif %}</td>
     <td>
       {% if u.ativo %}
       <form method="post" action="/web/usuarios/{{ u.id }}/bloquear" class="inline"
             onsubmit="return confirm('Bloquear {{ u.login }}?')">
-        <button class="btn-sec">Bloquear</button>
+        <button class="btn-perigo">Bloquear</button>
       </form>
       {% endif %}
     </td>
   </tr>
+  {% else %}
+  <tr><td colspan="6" class="apoio">Nenhum usuário cadastrado ainda.</td></tr>
   {% endfor %}
+  </tbody>
 </table>
+</div>
 
 <p class="secao-tit">Novo usuário</p>
 <form method="post" action="/web/usuarios" class="linha">
@@ -39,6 +45,6 @@
     </div>
     {% endif %}
   </div>
-  <button type="submit">Criar usuário</button>
+  <button type="submit"><span class="giro"></span><span class="rotulo">Criar usuário</span></button>
 </form>
 {% endblock %}
