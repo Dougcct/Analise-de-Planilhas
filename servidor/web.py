@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import datetime as dt
 import hashlib
+import json
 import uuid
 from pathlib import Path
 from urllib.parse import urlencode
@@ -23,13 +24,16 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from analise_planilha import __version__, relatorio_html, servico
+from analise_planilha.cerebro import layout as _cl
+from analise_planilha.cerebro import papeis as _cp
 from analise_planilha.modelos import Filtros
 
-from . import bd, validacao
+from . import aprendizado, bd, validacao
 from .autenticacao import escopo_por_token
 from .modelos_bd import (
     ADM, GESTOR, PAPEIS, PUBLICADA, RASCUNHO, SUBSTITUIDA, USUARIO,
-    AcessoTemporario, Auditoria, Carga, CentroCusto, Relatorio, SessaoUsuario, Usuario, utcnow,
+    AcessoTemporario, Auditoria, Carga, CentroCusto, ConhecimentoColuna, Relatorio, SessaoUsuario, Usuario,
+    utcnow,
 )
 from .repositorio import RepoCargas, RepoRelatorios, RepoUsuarios
 from .seguranca import DURACAO_SESSAO, MAX_TENTATIVAS, Escopo, conferir_senha, gerar_token, hash_senha, hash_token
@@ -531,8 +535,9 @@ async def enviar_carga(request: Request, modo: str = Form("novo"), arquivo: Uplo
                       arquivo_uuid=nome_uuid, tamanho=len(conteudo), status=RASCUNHO)
         s.add(carga)
         s.flush()
+        srv.esquecer_dataset(carga.id)                   # id reaproveitado (SQLite) não pode herdar cache
         try:                                             # confirma que o motor LÊ antes da prévia
-            srv._dataset_da_carga(carga, srv._modelo_do(rel))
+            srv._dataset_da_carga(carga, srv._modelo_do(rel), s)
         except Exception as e:  # noqa: BLE001
             raise _Erro(f"Não foi possível ler a planilha: {type(e).__name__}") from e
         _audit(s, escopo, "enviar_carga", f"{rel.slug}:{carga.id}", carga.hash_sha256)
@@ -552,6 +557,25 @@ def _carga_previa(s, escopo, carga_id):
     return carga, s.get(Relatorio, carga.relatorio_id)
 
 
+_LAYOUTS = {_cl.PLANA: "Tabela comum — uma linha por registro",
+            _cl.MATRIZ: "Matriz linhas × meses — convertida em série mensal",
+            _cl.BLOCOS: "Formulário em blocos — um registro por bloco"}
+
+
+def _entendimento_tela(ent) -> dict | None:
+    """O que o Cérebro entendeu, no formato da tela da prévia (só estrutura — nenhum valor de célula)."""
+    if ent is None:
+        return None
+    fora = set(ent.grao.colunas_item)
+    colunas = [{"nome": p.nome, "papel": p.papel, "rotulo": p.rotulo, "agregacao": p.agregacao,
+                "confianca": round(p.confianca * 100), "por": p.justificativa, "aprendido": p.aprendido,
+                "corrigido": p.nome in ent.corrigidas, "lgpd": p.papel == _cp.PESSOA, "fora": p.nome in fora}
+               for p in ent.todas]
+    return {"layout": _LAYOUTS.get(ent.layout, ent.layout), "grao": ent.grao.nota, "colunas": colunas,
+            "rotulo_registros": ent.grao.rotulo if ent.grao.consolidado else "Registros",
+            "papeis": [(p, _cp.ROTULOS[p]) for p in _cp.PAPEIS]}
+
+
 @router.get("/enviar/previa/{carga_id}", response_class=HTMLResponse)
 def enviar_previa(carga_id: int, request: Request, s: Session = Depends(_sessao)):
     escopo, redir = _exige_login(request, s)
@@ -562,13 +586,53 @@ def enviar_previa(carga_id: int, request: Request, s: Session = Depends(_sessao)
         if not _pode(escopo, GESTOR, ADM):
             raise _Erro("Acesso restrito a gestores.")
         carga, rel = _carga_previa(s, escopo, carga_id)
-        a = servico.analisar(srv._dataset_da_carga(carga, srv._modelo_do(rel)))
+        ds = srv._dataset_da_carga(carga, srv._modelo_do(rel), s)
+        a = servico.analisar(ds)
     except _Erro as e:
         return _pagina("erro.html", request, _ctx(request, escopo, s, "enviar", mensagem=str(e)))
     novo = not rel.ativo and not s.scalar(select(Carga).where(Carga.relatorio_id == rel.id, Carga.status == PUBLICADA))
     return _pagina("previa.html", request, _ctx(request, escopo, s, "enviar",
                    carga_id=carga_id, titulo=rel.nome, arquivo=carga.nome_original,
-                   registros=a.linhas, paineis=len(a.paineis), novo=novo))
+                   registros=a.linhas, paineis=len(a.paineis), novo=novo,
+                   entendimento=_entendimento_tela(ds.entendimento)))
+
+
+@router.post("/enviar/previa/{carga_id}/reanalisar")
+async def enviar_previa_reanalisar(carga_id: int, request: Request, s: Session = Depends(_sessao)):
+    """Correções de papel feitas na prévia: guardadas na carga (valem na publicação) e a prévia é refeita."""
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    srv = _srv()
+    form = await request.form()
+    try:
+        if not _pode(escopo, GESTOR, ADM):
+            raise _Erro("Acesso restrito a gestores.")
+        carga, rel = _carga_previa(s, escopo, carga_id)
+        modelo = srv._modelo_do(rel)
+        ent = srv._dataset_da_carga(carga, modelo, s).entendimento
+        atual = {p.nome: p.papel for p in (ent.todas if ent else [])}
+        correcoes = aprendizado.correcoes_da(carga)
+        mudou = 0
+        for chave, nome in form.multi_items():
+            if not chave.startswith("coluna_"):
+                continue
+            nome, novo = str(nome), str(form.get("papel_" + chave.removeprefix("coluna_"), ""))
+            if nome in atual and novo in _cp.PAPEIS and novo != atual[nome]:
+                correcoes[nome] = novo
+                mudou += 1
+        carga.correcoes = json.dumps(correcoes, ensure_ascii=False) if correcoes else None
+        _audit(s, escopo, "corrigir_papeis", f"{rel.slug}:{carga.id}", f"{mudou} coluna(s)")
+        s.commit()
+        srv.esquecer_dataset(carga.id)
+        try:
+            srv._dataset_da_carga(carga, modelo, s)
+        except Exception as e:  # noqa: BLE001
+            raise _Erro(f"Com essas correções a planilha não pôde ser analisada: {type(e).__name__}") from e
+    except _Erro as e:
+        return _redir(f"/web/enviar/previa/{carga_id}", erro=str(e))
+    msg = f"Prévia refeita com {mudou} correção(ões)." if mudou else "Nada mudou — prévia mantida."
+    return _redir(f"/web/enviar/previa/{carga_id}", ok=msg)
 
 
 @router.get("/enviar/previa/{carga_id}/conteudo", response_class=HTMLResponse)
@@ -581,7 +645,7 @@ def enviar_previa_conteudo(carga_id: int, request: Request, s: Session = Depends
         carga, rel = _carga_previa(s, escopo, carga_id)
     except _Erro:
         return HTMLResponse("<p>Prévia não encontrada.</p>", status_code=404)
-    html = relatorio_html.montar_html(servico.analisar(srv._dataset_da_carga(carga, srv._modelo_do(rel))), rel.nome)
+    html = relatorio_html.montar_html(servico.analisar(srv._dataset_da_carga(carga, srv._modelo_do(rel), s)), rel.nome)
     return HTMLResponse(html)
 
 
@@ -594,16 +658,23 @@ def enviar_previa_publicar(carga_id: int, request: Request, s: Session = Depends
         if not _pode(escopo, GESTOR, ADM):
             raise _Erro("Acesso restrito a gestores.")
         carga, rel = _carga_previa(s, escopo, carga_id)
+        srv = _srv()
+        ent = srv._dataset_da_carga(carga, srv._modelo_do(rel), s).entendimento
         for ant in s.scalars(select(Carga).where(Carga.relatorio_id == rel.id, Carga.status == PUBLICADA)):
             ant.status = SUBSTITUIDA                      # histórico: a anterior vira "substituída"
         carga.status = PUBLICADA
         carga.publicado_em = utcnow()
         rel.ativo = True                                 # se era novo (oculto), aparece agora
         _audit(s, escopo, "publicar_carga", f"{rel.slug}:{carga.id}")
+        # o que a prévia mostrou (com as correções) vira conhecimento do sistema
+        aprendeu = aprendizado.aprender(s, ent, ent.contexto if ent else "", escopo.usuario_id)
+        if aprendeu:
+            _audit(s, escopo, "aprender_colunas", rel.slug, f"{aprendeu} regra(s)")
         s.commit()
     except _Erro as e:
         return _redir("/web/enviar", erro=str(e))
-    return _redir("/web", ok=f"Relatório «{rel.nome}» publicado — já está no ar.")
+    extra = f" O sistema aprendeu {aprendeu} coluna(s) para as próximas planilhas." if aprendeu else ""
+    return _redir("/web", ok=f"Relatório «{rel.nome}» publicado — já está no ar.{extra}")
 
 
 @router.post("/enviar/previa/{carga_id}/descartar")
@@ -617,6 +688,7 @@ def enviar_previa_descartar(carga_id: int, request: Request, s: Session = Depend
             raise _Erro("Acesso restrito a gestores.")
         carga, rel = _carga_previa(s, escopo, carga_id)
         (srv.CARGAS_DIR / carga.arquivo_uuid).unlink(missing_ok=True)
+        srv.esquecer_dataset(carga.id)
         s.delete(carga)
         s.flush()
         # se era um relatório novo que nunca chegou a publicar nada, some com ele também
@@ -686,8 +758,9 @@ def admin(request: Request, s: Session = Depends(_sessao)):
                         "setor": nomes_cc.get(r.centro_custo_id, "?"), "modelo": r.modelo or "auto",
                         "publicado": r.id in publicados, "versoes": n_ver.get(r.id, 0)} for r in rel_rows]
     modelos = [{"slug": p.stem, "nome": nome} for nome, p in listar_modelos().items()]
+    n_conhecimento = s.scalar(select(func.count()).select_from(ConhecimentoColuna)) or 0
     return _pagina("admin.html", request, _ctx(request, escopo, s, "admin", centros=centros, modelos=modelos,
-                   centros_info=centros_info, relatorios_info=relatorios_info))
+                   centros_info=centros_info, relatorios_info=relatorios_info, n_conhecimento=n_conhecimento))
 
 
 # ----- setores (ADM): editar, desativar/reativar, excluir ---------------------------------------
@@ -786,6 +859,75 @@ def admin_modelo(slug: str, request: Request, s: Session = Depends(_sessao)):
             "consolida": m.consolida_abas, "n_colunas": len(colunas)}
     return _pagina("modelo.html", request, _ctx(request, escopo, s, "admin",
                    slug=slug, modelo=info, colunas=colunas, regras=regras))
+
+
+# ----- conhecimento do Cérebro (ADM): ver, corrigir, esquecer -----------------------------------
+_ORIGENS = {"leitura_inicial": "Leitura inicial", "correcao": "Correção", "publicacao": "Publicação"}
+
+
+@router.get("/admin/conhecimento", response_class=HTMLResponse)
+def admin_conhecimento(request: Request, busca: str = "", contexto: str = "", s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    if not _pode(escopo, ADM):
+        return _pagina("erro.html", request, _ctx(request, escopo, s, "admin",
+                                                   mensagem="Acesso restrito ao administrador."))
+    q = select(ConhecimentoColuna).order_by(ConhecimentoColuna.contexto, ConhecimentoColuna.rotulo)
+    if contexto:
+        q = q.where(ConhecimentoColuna.contexto == contexto)
+    if busca.strip():
+        q = q.where(func.lower(ConhecimentoColuna.rotulo).like(f"%{busca.strip().lower()}%"))
+    regras = [{"id": r.id, "contexto": r.contexto or "(todos)", "rotulo": r.rotulo, "papel": r.papel,
+               "confirmacoes": r.confirmacoes, "origem": _ORIGENS.get(r.origem, r.origem),
+               "quando": r.atualizado_em.strftime("%d/%m/%Y %H:%M") if r.atualizado_em else "—"}
+              for r in s.scalars(q.limit(500))]
+    contextos = [c for (c,) in s.execute(select(ConhecimentoColuna.contexto).distinct()
+                                         .order_by(ConhecimentoColuna.contexto)).all()]
+    total = s.scalar(select(func.count()).select_from(ConhecimentoColuna)) or 0
+    return _pagina("conhecimento.html", request, _ctx(request, escopo, s, "admin", regras=regras, total=total,
+                   contextos=contextos, contexto_sel=contexto, busca=busca,
+                   papeis=[(p, _cp.ROTULOS[p]) for p in _cp.PAPEIS]))
+
+
+@router.post("/admin/conhecimento/{regra_id}/papel")
+def admin_conhecimento_papel(regra_id: int, request: Request, papel: str = Form(...), s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    try:
+        _exige_adm(escopo)
+        r = s.get(ConhecimentoColuna, regra_id)
+        if r is None:
+            raise _Erro("Regra não encontrada.")
+        if papel not in _cp.PAPEIS:
+            raise _Erro("Papel inválido.")
+        r.papel, r.agregacao, r.origem = papel, None, "correcao"   # correção do ADM: publicação não desfaz
+        r.atualizado_em, r.atualizado_por = utcnow(), escopo.usuario_id
+        _audit(s, escopo, "corrigir_conhecimento", f"{r.contexto}:{r.rotulo}", papel)
+        s.commit()
+    except _Erro as e:
+        return _redir("/web/admin/conhecimento", erro=str(e))
+    return _redir("/web/admin/conhecimento", ok=f"«{r.rotulo}» agora é {_cp.ROTULOS[papel].lower()}.")
+
+
+@router.post("/admin/conhecimento/{regra_id}/excluir")
+def admin_conhecimento_excluir(regra_id: int, request: Request, s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    try:
+        _exige_adm(escopo)
+        r = s.get(ConhecimentoColuna, regra_id)
+        if r is None:
+            raise _Erro("Regra não encontrada.")
+        rotulo = r.rotulo
+        _audit(s, escopo, "esquecer_conhecimento", f"{r.contexto}:{rotulo}")
+        s.delete(r)
+        s.commit()
+    except _Erro as e:
+        return _redir("/web/admin/conhecimento", erro=str(e))
+    return _redir("/web/admin/conhecimento", ok=f"O sistema esqueceu «{rotulo}» (volta a deduzir sozinho).")
 
 
 @router.post("/admin/centro")
@@ -942,6 +1084,7 @@ def gestao_relatorio_excluir(slug: str, request: Request, s: Session = Depends(_
             raise _Erro("Há uma versão publicada. Desative o relatório em vez de excluir.")
         for c in cargas:                                # remove rascunhos/substituídas e seus arquivos
             (srv.CARGAS_DIR / c.arquivo_uuid).unlink(missing_ok=True)
+            srv.esquecer_dataset(c.id)
             s.delete(c)
         for ac in s.scalars(select(AcessoTemporario).where(AcessoTemporario.relatorio_id == rel.id)):
             s.delete(ac)
@@ -992,7 +1135,7 @@ def gestao_carga_republicar(carga_id: int, request: Request, s: Session = Depend
         rel = s.get(Relatorio, carga.relatorio_id)
         destino = f"/web/gestao/relatorio/{rel.slug}"
         try:
-            srv._dataset_da_carga(carga, srv._modelo_do(rel))   # confirma que ainda lê
+            srv._dataset_da_carga(carga, srv._modelo_do(rel), s)   # confirma que ainda lê
         except Exception as e:  # noqa: BLE001
             raise _Erro(f"Esta versão não pôde ser processada: {type(e).__name__}") from e
         for ant in s.scalars(select(Carga).where(Carga.relatorio_id == rel.id, Carga.status == PUBLICADA)):
@@ -1025,6 +1168,7 @@ def gestao_carga_descartar(carga_id: int, request: Request, s: Session = Depends
         if carga.status == PUBLICADA:
             raise _Erro("Não dá para descartar a versão publicada. Publique outra antes.")
         (srv.CARGAS_DIR / carga.arquivo_uuid).unlink(missing_ok=True)
+        srv.esquecer_dataset(carga.id)
         s.delete(carga)
         _audit(s, escopo, "descartar_carga", f"{rel.slug}:{carga_id}")
         s.commit()

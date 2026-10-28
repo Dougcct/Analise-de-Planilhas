@@ -17,6 +17,21 @@
     gap:12px;background:var(--superficie);border-radius:var(--raio);color:var(--apoio);font-size:13px}
   .rel-carregando .giro2{width:30px;height:30px;border:3px solid var(--borda);border-top-color:var(--marca);
     border-radius:50%;animation:girar .7s linear infinite}
+  details.entendeu{margin-top:16px;background:var(--superficie);border:1px solid var(--borda);
+    border-radius:var(--raio);box-shadow:var(--sombra);padding:14px 16px}
+  details.entendeu>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+    cursor:pointer;list-style:none}
+  details.entendeu>summary::-webkit-details-marker{display:none}
+  details.entendeu .tit{display:inline-flex;align-items:center;gap:8px;font-weight:700;color:var(--marca-escura)}
+  .grao-nota{margin:10px 0 0;padding:9px 12px;border-radius:var(--raio-s);background:var(--marca-clara);
+    color:var(--marca-mais-escura);font-size:13px}
+  .papel-sel{width:auto;min-width:150px;padding:6px 8px;font-size:13px}
+  .certeza{display:inline-block;width:54px;height:6px;border-radius:999px;background:var(--superficie-2);
+    border:1px solid var(--borda);overflow:hidden;vertical-align:middle}
+  .certeza>i{display:block;height:100%;background:var(--marca)}
+  .certeza.baixa>i{background:var(--aviso)}
+  tr.fora td{opacity:.65}
+  td.por{font-size:12.5px;max-width:340px}
 </style>
 
 <div class="previa-topo">
@@ -35,6 +50,49 @@
   <span class="chip"><b>{{ paineis }}</b><span>painel(éis)</span></span>
   <span class="chip"><span>{{ 'Novo relatório' if novo else 'Atualização' }}</span></span>
 </div>
+
+{% if entendimento %}
+<details class="entendeu" open>
+  <summary>
+    <span class="tit">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V17h5v-1.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z" stroke-linejoin="round"/></svg>
+      Como entendi sua planilha</span>
+    <span class="apoio">{{ entendimento.layout }}</span>
+  </summary>
+  {% if entendimento.grao %}<p class="grao-nota">{{ entendimento.grao }}</p>{% endif %}
+  <form method="post" action="/web/enviar/previa/{{ carga_id }}/reanalisar">
+    <div class="tabela-caixa" style="margin-top:10px">
+    <table>
+      <thead><tr><th>Coluna</th><th>Entendi como</th><th>O que faço com ela</th><th>Certeza</th><th>Por quê</th></tr></thead>
+      <tbody>
+      {% for c in entendimento.colunas %}
+      <tr class="{{ 'fora' if c.fora }}">
+        <td><b>{{ c.nome }}</b>
+          {% if c.lgpd %}<span class="selo selo-aviso" title="Dado pessoal — anonimizável">LGPD</span>{% endif %}
+          {% if c.corrigido %}<span class="selo selo-ok">corrigido</span>
+          {% elif c.aprendido %}<span class="selo selo-neutro">aprendido</span>{% endif %}</td>
+        <td>
+          <input type="hidden" name="coluna_{{ loop.index0 }}" value="{{ c.nome }}">
+          <select name="papel_{{ loop.index0 }}" class="papel-sel">
+            {% for v, r in entendimento.papeis %}<option value="{{ v }}" {{ 'selected' if v == c.papel }}>{{ r }}</option>{% endfor %}
+          </select>
+        </td>
+        <td class="apoio">{{ c.agregacao }}{% if c.fora %} · varia item a item (fora da visão consolidada){% endif %}</td>
+        <td style="white-space:nowrap"><span class="certeza {{ 'baixa' if c.confianca < 70 }}"><i style="width:{{ c.confianca }}%"></i></span>
+          <span class="apoio">{{ c.confianca }}%</span></td>
+        <td class="apoio por">{{ c.por }}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:12px">
+      <button type="submit" class="btn-sec" style="margin:0;padding:9px 15px"><span class="giro"></span><span class="rotulo">Reanalisar com minhas correções</span></button>
+      <span class="apoio" style="font-size:12.5px">Ao publicar, o sistema aprende estes papéis para as próximas planilhas deste tipo.</span>
+    </div>
+  </form>
+</details>
+{% endif %}
 
 <div class="acoes-previa">
   <form method="post" action="/web/enviar/previa/{{ carga_id }}/publicar" class="inline">

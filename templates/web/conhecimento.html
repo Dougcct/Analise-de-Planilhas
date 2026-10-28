@@ -1,0 +1,67 @@
+{% extends "web/base.html" %}
+{% block titulo %}Conhecimento do sistema — Análise de Planilhas{% endblock %}
+{% block conteudo %}
+<style>
+  .filtros{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:16px}
+  .filtros input,.filtros select{width:auto;min-width:200px;margin:0}
+  .linha-papel{display:flex;gap:6px;align-items:center}
+  .linha-papel select{width:auto;min-width:140px;padding:6px 8px;font-size:13px;margin:0}
+  .ic-btn{display:grid;place-items:center;width:32px;height:32px;border-radius:8px;border:1px solid var(--borda);
+    background:var(--superficie);color:var(--apoio);cursor:pointer;margin:0;padding:0;transition:all var(--rapido)}
+  .ic-btn svg{width:16px;height:16px}
+  .ic-btn:hover{border-color:var(--marca);color:var(--marca-escura);background:var(--marca-clara);box-shadow:none}
+  .ic-btn.perigo:hover{border-color:var(--perigo);color:var(--perigo);background:var(--perigo-claro)}
+  .ctx{font-family:ui-monospace,Consolas,monospace;font-size:12px;color:var(--apoio)}
+</style>
+
+<a class="voltar" href="/web/admin">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  Administração</a>
+<h1>Conhecimento do sistema</h1>
+<p class="apoio">O que o Cérebro aprendeu sobre colunas — pela leitura das pastas de Setores, pelas correções na
+  prévia e pelas publicações. {{ total }} regra(s). Corrija um papel ou faça o sistema esquecer uma regra ruim.</p>
+
+<form method="get" action="/web/admin/conhecimento" class="filtros">
+  <input name="busca" value="{{ busca }}" placeholder="Buscar coluna…">
+  <select name="contexto" onchange="this.form.submit()">
+    <option value="">Todos os contextos</option>
+    {% for c in contextos %}<option value="{{ c }}" {{ 'selected' if c == contexto_sel }}>{{ c or '(todos)' }}</option>{% endfor %}
+  </select>
+  <button type="submit" class="btn-sec" style="margin:0;padding:9px 14px">Filtrar</button>
+</form>
+
+<div class="tabela-caixa">
+<table>
+  <thead><tr><th>Contexto</th><th>Coluna</th><th>Papel</th><th>Confirmações</th><th>Origem</th><th>Atualizado</th><th></th></tr></thead>
+  <tbody>
+  {% for r in regras %}
+  <tr>
+    <td class="ctx">{{ r.contexto }}</td>
+    <td><b>{{ r.rotulo }}</b></td>
+    <td>
+      <form method="post" action="/web/admin/conhecimento/{{ r.id }}/papel" class="linha-papel">
+        <select name="papel">{% for v, rot in papeis %}<option value="{{ v }}" {{ 'selected' if v == r.papel }}>{{ rot }}</option>{% endfor %}</select>
+        <button class="ic-btn" title="Salvar papel">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </form>
+    </td>
+    <td class="apoio">{{ r.confirmacoes }}</td>
+    <td>{% if r.origem == 'Correção' %}<span class="selo selo-ok">{{ r.origem }}</span>
+        {% else %}<span class="selo selo-neutro">{{ r.origem }}</span>{% endif %}</td>
+    <td class="apoio">{{ r.quando }}</td>
+    <td>
+      <form method="post" action="/web/admin/conhecimento/{{ r.id }}/excluir" class="inline"
+            onsubmit="return confirm('Fazer o sistema esquecer esta regra?')">
+        <button class="ic-btn perigo" title="Esquecer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button></form>
+    </td>
+  </tr>
+  {% else %}
+  <tr><td colspan="7" class="apoio">Nada aprendido ainda. Publique uma planilha (ou importe as pastas de Setores) e as regras aparecem aqui.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

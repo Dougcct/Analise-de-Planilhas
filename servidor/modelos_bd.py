@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import datetime as dt
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .bd import Base
@@ -82,6 +82,7 @@ class Carga(Base):
     status: Mapped[str] = mapped_column(String(16), default=RASCUNHO)
     criado_em: Mapped[dt.datetime] = mapped_column(DateTime, default=utcnow)
     publicado_em: Mapped[dt.datetime | None] = mapped_column(DateTime)
+    correcoes: Mapped[str | None] = mapped_column(Text)   # JSON {coluna: papel} corrigido na prévia
 
 
 class AcessoTemporario(Base):
@@ -96,6 +97,23 @@ class AcessoTemporario(Base):
     anonimizar: Mapped[bool] = mapped_column(Boolean, default=True)
     revogado: Mapped[bool] = mapped_column(Boolean, default=False)
     criado_em: Mapped[dt.datetime] = mapped_column(DateTime, default=utcnow)
+
+
+class ConhecimentoColuna(Base):
+    """O que o Cérebro APRENDEU: cabeçalho (assinatura normalizada) → papel, por contexto
+    ("SETOR/tipo de documento"; "" = vale para tudo). Só estrutura — nunca valor de célula (LGPD)."""
+    __tablename__ = "conhecimento"
+    __table_args__ = (UniqueConstraint("contexto", "assinatura", name="uq_conhecimento_ctx_assinatura"),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    contexto: Mapped[str] = mapped_column(String(160), default="", index=True)
+    assinatura: Mapped[str] = mapped_column(String(160), index=True)
+    rotulo: Mapped[str] = mapped_column(String(200))
+    papel: Mapped[str] = mapped_column(String(24))
+    agregacao: Mapped[str | None] = mapped_column(String(24))
+    confirmacoes: Mapped[int] = mapped_column(Integer, default=1)
+    origem: Mapped[str] = mapped_column(String(24))          # leitura_inicial | correcao | publicacao
+    atualizado_em: Mapped[dt.datetime] = mapped_column(DateTime, default=utcnow)
+    atualizado_por: Mapped[int | None] = mapped_column(ForeignKey("usuarios.id"))
 
 
 class Auditoria(Base):

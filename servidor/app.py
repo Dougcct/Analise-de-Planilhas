@@ -28,7 +28,7 @@ from analise_planilha import __version__, relatorio_html, serializacao, servico
 from analise_planilha.modelo import carregar_modelo
 from analise_planilha.modelos import Filtros
 
-from . import atualizacao, bd, dados_demo, seed, validacao
+from . import aprendizado, atualizacao, bd, dados_demo, seed, validacao
 from .autenticacao import escopo_por_token
 from .modelos_bd import (
     ADM, GESTOR, PAPEIS, PUBLICADA, RASCUNHO, SUBSTITUIDA, USUARIO,
@@ -96,11 +96,19 @@ def _modelo_do(rel: Relatorio):
     return _cache_modelos[rel.modelo]
 
 
-def _dataset_da_carga(carga: Carga, modelo=None):
+def _dataset_da_carga(carga: Carga, modelo=None, s: Session | None = None):
+    """Dataset da planilha enviada. Com a sessão, o Cérebro usa a base aprendida, o contexto do
+    relatório e as correções feitas na prévia desta carga."""
     if carga.id not in _cache_cargas:
         bruto = (CARGAS_DIR / carga.arquivo_uuid).read_bytes()
-        _cache_cargas[carga.id] = servico.carregar(bruto, carga.nome_original, modelo=modelo)
+        kw = aprendizado.argumentos(s, carga, modelo) if s is not None else {}
+        _cache_cargas[carga.id] = servico.carregar(bruto, carga.nome_original, modelo=modelo, **kw)
     return _cache_cargas[carga.id]
+
+
+def esquecer_dataset(carga_id: int) -> None:
+    """Força reler a carga (ex.: o usuário corrigiu papéis na prévia)."""
+    _cache_cargas.pop(carga_id, None)
 
 
 def _dataset_demo(rel: Relatorio, modelo):
@@ -121,7 +129,7 @@ def _dataset_do_relatorio(s: Session, rel: Relatorio):
     modelo = _modelo_do(rel)
     carga = s.scalar(select(Carga).where(Carga.relatorio_id == rel.id, Carga.status == PUBLICADA)
                      .order_by(Carga.id.desc()))
-    return _dataset_da_carga(carga, modelo) if carga is not None else _dataset_demo(rel, modelo)
+    return _dataset_da_carga(carga, modelo, s) if carga is not None else _dataset_demo(rel, modelo)
 
 
 def acesso_vigente(s: Session, usuario_id: int, relatorio_id: int) -> AcessoTemporario | None:
@@ -542,7 +550,7 @@ def analise_rascunho(carga_id: int, filtros: FiltrosIn, escopo: Escopo = Depends
         raise HTTPException(404, "Carga não encontrada.")
     modelo = _modelo_do(s.get(Relatorio, carga.relatorio_id))
     try:
-        ds = _dataset_da_carga(carga, modelo)
+        ds = _dataset_da_carga(carga, modelo, s)
     except Exception as e:                             # arquivo que o motor não consegue ler
         raise HTTPException(422, f"Não foi possível ler a planilha: {type(e).__name__}") from e
     return serializacao.analise_para_json(servico.analisar(ds, _filtros(filtros)))
@@ -555,7 +563,7 @@ def publicar_carga(carga_id: int, escopo: Escopo = Depends(sessao_pronta), s: Se
     if carga is None:
         raise HTTPException(404, "Carga não encontrada.")
     try:
-        _dataset_da_carga(carga, _modelo_do(s.get(Relatorio, carga.relatorio_id)))   # só publica o que o motor lê
+        _dataset_da_carga(carga, _modelo_do(s.get(Relatorio, carga.relatorio_id)), s)   # só publica o que o motor lê
     except Exception as e:
         raise HTTPException(422, f"A planilha não pôde ser processada: {type(e).__name__}") from e
     for anterior in s.scalars(select(Carga).where(Carga.relatorio_id == carga.relatorio_id,

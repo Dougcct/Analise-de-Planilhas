@@ -236,6 +236,70 @@ def test_web_enviar_descartar(web):
     assert "Pra Descartar" not in c.get("/web").text        # relatório novo descartado não fica órfão
 
 
+# ---------------- Cérebro na web: prévia explica, usuário corrige, sistema aprende ----------------
+def _atendimentos_xlsx():
+    import datetime as dt
+    import io
+
+    import openpyxl
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.append(["Nº Atendimento", "Paciente", "Data", "Convênio", "Valor item", "Leito"])
+    for a in range(15):
+        for i in range(3):
+            ws.append([5500 + a, f"PACIENTE {a}", dt.datetime(2026, 3, 1 + a), ["AMIL", "SUL"][a % 2],
+                       20.0 + i, 100 + a])
+    b = io.BytesIO()
+    wb.save(b)
+    return b.getvalue()
+
+
+def _subir_xlsx(c, conteudo, **campos):
+    import re
+    r = c.post("/web/enviar", data=campos, files={"arquivo": ("atend.xlsx", conteudo, "x")}, follow_redirects=False)
+    assert r.status_code == 303, r.text
+    return re.search(r"/previa/(\d+)", r.headers["location"]).group(1)
+
+
+def test_previa_explica_como_entendeu(web):
+    c = _cli("gestor.fat")
+    cid = _subir_xlsx(c, _atendimentos_xlsx(), modo="novo", nome="Cerebro Atend")
+    pg = c.get(f"/web/enviar/previa/{cid}").text
+    assert "Como entendi sua planilha" in pg
+    assert "45 linhas formam 15 atendimentos" in pg                      # o grão, explicado
+    assert "nunca soma" in pg                                            # por que Nº Atendimento é identificador
+    assert "LGPD" in pg                                                  # Paciente sinalizado
+    c.post(f"/web/enviar/previa/{cid}/descartar")
+
+
+def test_correcao_na_previa_vira_conhecimento(web):
+    import re
+    c = _cli("gestor.fat")
+    cid = _subir_xlsx(c, _atendimentos_xlsx(), modo="novo", nome="Aprende Leito")
+    pg = c.get(f"/web/enviar/previa/{cid}").text
+    i = re.search(r'name="coluna_(\d+)" value="Leito"', pg).group(1)
+    r = c.post(f"/web/enviar/previa/{cid}/reanalisar", data={f"coluna_{i}": "Leito", f"papel_{i}": "dimensao"},
+               follow_redirects=False)
+    assert "ok=" in r.headers["location"] and "1+corre" in r.headers["location"]
+    assert "corrigido" in c.get(f"/web/enviar/previa/{cid}").text
+    rp = c.post(f"/web/enviar/previa/{cid}/publicar", follow_redirects=False)
+    assert "aprendeu" in rp.headers["location"]
+    # nova planilha do mesmo relatório: já chega com Leito = categoria, aprendido
+    cid2 = _subir_xlsx(c, _atendimentos_xlsx(), modo="atualizar", slug="aprende-leito")
+    pg2 = c.get(f"/web/enviar/previa/{cid2}").text
+    linha = pg2[pg2.index('value="Leito"'):][:600]
+    assert 'value="dimensao" selected' in linha
+    # ADM vê o que foi aprendido, corrige e faz esquecer
+    adm = _cli("admin", "admin123")
+    tela = adm.get("/web/admin/conhecimento?busca=leito").text
+    assert "Leito" in tela and "Correção" in tela
+    rid = re.search(r"/web/admin/conhecimento/(\d+)/papel", tela).group(1)
+    assert "ok=" in adm.post(f"/web/admin/conhecimento/{rid}/papel", data={"papel": "texto"},
+                             follow_redirects=False).headers["location"]
+    assert "ok=" in adm.post(f"/web/admin/conhecimento/{rid}/excluir", follow_redirects=False).headers["location"]
+    assert "restrito" in c.get("/web/admin/conhecimento").text.lower()  # gestor não gere o conhecimento
+
+
 # ---------------- gestão: setores, modelos, relatórios/planilhas ----------------
 def test_admin_setor_ciclo(web):
     import re
