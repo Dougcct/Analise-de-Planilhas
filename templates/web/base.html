@@ -19,6 +19,8 @@
       /* cena do login (line-art estilo Metabase, paleta genérica slate) */
       --fundo-cena:#0d151d; --fundo-cena-topo:#101b26; --linha:#2d4a5e; --linha-forte:#3f6b86;
       --no:#00995D;
+      /* faixa slim atrás das telas internas (bem sutil) */
+      --sis-linha:#dbe3e9; --sis-face:#eef2f5;
     }
     @media (prefers-color-scheme:dark){
       :root:not([data-tema="light"]){
@@ -27,6 +29,7 @@
         --marca-clara:#0E2A20; --perigo-claro:#2A1512; --aviso-claro:#271E0D;
         --sombra:0 1px 2px rgba(0,0,0,.4),0 2px 10px rgba(0,0,0,.35);
         --sombra-forte:0 10px 34px rgba(0,0,0,.55);
+        --sis-linha:#1f2a36; --sis-face:#141d27;
       }
     }
     *{box-sizing:border-box}
@@ -74,7 +77,10 @@
     #alterna{display:none}
 
     /* ---------- Conteúdo ---------- */
-    .corpo{flex:1;min-width:0;display:flex;flex-direction:column}
+    .corpo{flex:1;min-width:0;display:flex;flex-direction:column;position:relative;overflow:hidden}
+    .corpo-art{position:absolute;left:0;right:0;bottom:0;width:100%;height:clamp(84px,13vw,140px);
+      pointer-events:none;z-index:0;opacity:.85}
+    .corpo>main{position:relative;z-index:1}
     main{flex:1;width:100%;max-width:1120px;margin:0 auto;padding:30px 28px 48px;animation:surge .34s ease both}
     @keyframes surge{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
     h1{font-size:23px;margin:0 0 4px;letter-spacing:-.01em}
@@ -271,6 +277,22 @@
       </div>
     </aside>
     <div class="corpo">
+      <svg class="corpo-art" viewBox="0 0 1440 150" preserveAspectRatio="xMidYMax slice" aria-hidden="true"
+           fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <g stroke="var(--sis-linha)" stroke-width="2">
+          <path d="M-20 150 L160 70 L300 140 L470 60 L650 150Z" fill="var(--sis-face)"/>
+          <path d="M620 150 L820 80 L980 150Z" fill="var(--sis-face)"/>
+          <path d="M160 70 L205 110 M470 60 L520 110 M820 80 L865 122"/>
+          <path d="M-20 128 H360 L420 108 H780 L850 138 H1200 L1270 116 H1480"/>
+        </g>
+        <g stroke="var(--sis-linha)" stroke-width="2">
+          <path d="M1070 150 L1085 108 L1100 150 M1078 130 L1092 130"/>
+          <circle cx="1240" cy="128" r="12" fill="var(--sis-face)"/><path d="M1240 140 V150"/>
+        </g>
+        <g fill="var(--no)" stroke="none" opacity=".5">
+          <circle cx="360" cy="128" r="4"/><circle cx="780" cy="108" r="4"/><circle cx="1200" cy="138" r="4"/>
+        </g>
+      </svg>
       <main>
         {% block conteudo %}{% endblock %}
       </main>
