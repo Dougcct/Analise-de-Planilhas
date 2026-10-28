@@ -10,35 +10,69 @@
     box-shadow:var(--sombra);overflow:hidden;margin-bottom:8px}
   .item{display:flex;align-items:center;gap:12px;padding:12px 15px;border-bottom:1px solid var(--borda)}
   .item:last-child{border-bottom:0}
+  .item.off{opacity:.6}
   .item .tag{font-weight:800;font-size:12px;color:var(--marca-mais-escura);background:var(--marca-clara);
     padding:3px 9px;border-radius:7px;flex:0 0 auto}
-  .item .meio{flex:1;min-width:0}
-  .item .meio b{font-size:14px}
+  .item .meio{flex:1;min-width:0} .item .meio b{font-size:14px}
   .item .meio small{display:block;color:var(--fraco);font-size:12px}
-  .item .cont{display:flex;gap:6px;flex-wrap:wrap}
+  .item .cont{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
   .mini{font-size:11.5px;color:var(--apoio);background:var(--superficie-2);border:1px solid var(--borda);
     padding:2px 8px;border-radius:999px;white-space:nowrap}
+  .acoes-item{display:flex;gap:5px}
+  .ic-btn{display:grid;place-items:center;width:32px;height:32px;border-radius:8px;border:1px solid var(--borda);
+    background:var(--superficie);color:var(--apoio);cursor:pointer;margin:0;padding:0;transition:all var(--rapido)}
+  .ic-btn svg{width:16px;height:16px}
+  .ic-btn:hover{border-color:var(--marca);color:var(--marca-escura);background:var(--marca-clara);box-shadow:none}
+  .ic-btn.perigo:hover{border-color:var(--perigo);color:var(--perigo);background:var(--perigo-claro)}
   .form-cartao{background:var(--superficie);border:1px solid var(--borda);border-radius:var(--raio);
     box-shadow:var(--sombra);padding:18px;margin-top:10px}
   .form-cartao .campos{display:grid;gap:12px}
+  .gerir{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--marca-escura);
+    text-decoration:none;white-space:nowrap}
+  .gerir:hover{text-decoration:underline}
+  dialog{border:1px solid var(--borda);border-radius:var(--raio);padding:0;max-width:440px;width:92vw;
+    background:var(--superficie);color:var(--texto);box-shadow:var(--sombra-forte)}
+  dialog::backdrop{background:rgba(10,18,26,.5)}
+  dialog .cab{padding:16px 20px;border-bottom:1px solid var(--borda);font-weight:700;font-size:16px}
+  dialog .corpo{padding:18px 20px} dialog label{margin-top:12px} dialog label:first-child{margin-top:0}
+  dialog .pe{padding:14px 20px;border-top:1px solid var(--borda);display:flex;justify-content:flex-end;gap:10px}
+  .btn-fantasma{background:var(--superficie);color:var(--apoio);border:1px solid var(--borda);margin:0}
+  .btn-fantasma:hover{background:var(--superficie-2);color:var(--texto);box-shadow:none}
 </style>
 
 <h1>Administração</h1>
-<p class="apoio">Cadastre setores e relatórios do ambiente. Depois registre o gestor do setor em «Usuários».</p>
+<p class="apoio">Gestão de setores, relatórios e modelos do ambiente.</p>
 
 <div class="adm-grid">
   <!-- ======================= SETORES ======================= -->
   <div class="adm-col">
     <h2>Setores (centros de custo)</h2>
-    <p class="apoio">{{ centros_info|length }} setor(es) cadastrado(s).</p>
+    <p class="apoio">{{ centros_info|length }} setor(es). Desative para ocultar; exclua só os vazios.</p>
     <div class="lista">
       {% for c in centros_info %}
-      <div class="item">
+      <div class="item {{ '' if c.ativo else 'off' }}">
         <span class="tag">{{ c.codigo }}</span>
-        <span class="meio"><b>{{ c.nome }}</b></span>
-        <span class="cont">
-          <span class="mini">{{ c.usuarios }} usuário(s)</span>
-          <span class="mini">{{ c.relatorios }} relatório(s)</span>
+        <span class="meio"><b>{{ c.nome }}</b>
+          <small>{{ c.usuarios }} usuário(s) · {{ c.relatorios }} relatório(s){{ ' · inativo' if not c.ativo }}</small></span>
+        <span class="acoes-item">
+          <button type="button" class="ic-btn" title="Editar"
+            onclick='edCentro({{ c.id }}, {{ c.codigo|tojson }}, {{ c.nome|tojson }})'>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3z" stroke-linejoin="round"/><path d="M13.5 6.5l3 3" stroke-linecap="round"/></svg>
+          </button>
+          <form method="post" action="/web/admin/centro/{{ c.id }}/ativo" class="inline">
+            <input type="hidden" name="ativo" value="{{ '0' if c.ativo else '1' }}">
+            <button class="ic-btn" title="{{ 'Desativar' if c.ativo else 'Reativar' }}">
+              {% if c.ativo %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18.4 6A9 9 0 1 0 21 12" stroke-linecap="round"/><path d="M21 4v5h-5"/></svg>
+              {% else %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 12a8 8 0 1 1-8-8" stroke-linecap="round"/><path d="M12 7v5l3 2" stroke-linecap="round"/></svg>{% endif %}
+            </button>
+          </form>
+          {% if c.vazio %}
+          <form method="post" action="/web/admin/centro/{{ c.id }}/excluir" class="inline"
+                onsubmit="return confirm('Excluir o setor {{ c.codigo }}?')">
+            <button class="ic-btn perigo" title="Excluir (vazio)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button></form>
+          {% endif %}
         </span>
       </div>
       {% else %}
@@ -59,19 +93,23 @@
   <!-- ======================= RELATÓRIOS ======================= -->
   <div class="adm-col">
     <h2>Relatórios</h2>
-    <p class="apoio">{{ relatorios_info|length }} relatório(s) cadastrado(s).</p>
+    <p class="apoio">{{ relatorios_info|length }} relatório(s). Clique em «Gerenciar» para versões, edição e mais.</p>
     <div class="lista">
       {% for r in relatorios_info %}
-      <div class="item">
-        <span class="meio"><b>{{ r.nome }}</b><small>setor {{ r.setor }} · modelo {{ r.modelo }}</small></span>
+      <div class="item {{ '' if r.ativo else 'off' }}">
+        <span class="meio"><b>{{ r.nome }}</b>
+          <small>setor {{ r.setor }} · modelo {{ r.modelo }} · {{ r.versoes }} versão(ões){{ ' · inativo' if not r.ativo }}</small></span>
         {% if r.publicado %}<span class="selo selo-ok">Publicado</span>
         {% else %}<span class="selo selo-neutro">Amostra</span>{% endif %}
+        <a class="gerir" href="/web/gestao/relatorio/{{ r.slug }}">Gerenciar
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
       </div>
       {% else %}
       <div class="item apoio">Nenhum relatório ainda.</div>
       {% endfor %}
     </div>
     <div class="form-cartao">
+      <p class="apoio" style="font-size:12.5px;margin:0 0 10px">Dica: o jeito rápido de criar um relatório já com dados é por «Enviar planilha». Aqui cria-se um vazio (mostra amostra até publicar).</p>
       <form method="post" action="/web/admin/relatorio" class="validar">
         <div class="campos">
           <div><label>Nome do relatório <span class="obrig">*</span></label>
@@ -88,10 +126,51 @@
             </select>
           </div>
         </div>
-        <button type="submit"><span class="giro"></span><span class="rotulo">Criar relatório</span></button>
+        <button type="submit"><span class="giro"></span><span class="rotulo">Criar relatório vazio</span></button>
       </form>
     </div>
-    <p class="apoio" style="font-size:12px;margin-top:8px">Sem planilha publicada, o relatório mostra uma amostra sintética no formato do modelo.</p>
   </div>
 </div>
+
+<!-- ======================= MODELOS ======================= -->
+<h2 style="font-size:15px;margin:28px 0 4px">Modelos de análise</h2>
+<p class="apoio">{{ modelos|length }} modelo(s) disponível(is). Clique para ver abas, colunas e regras.</p>
+<div class="lista">
+  {% for m in modelos %}
+  <a class="item" href="/web/admin/modelo/{{ m.slug }}" style="text-decoration:none;color:inherit">
+    <span class="tag" style="background:var(--superficie-2);color:var(--apoio);border:1px solid var(--borda)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="14" height="14" style="vertical-align:-2px"><path d="M4 7h16M4 12h16M4 17h10" stroke-linecap="round"/></svg></span>
+    <span class="meio"><b>{{ m.nome }}</b><small>{{ m.slug }}</small></span>
+    <span class="gerir">Ver detalhes
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+  </a>
+  {% else %}
+  <div class="item apoio">Nenhum modelo encontrado.</div>
+  {% endfor %}
+</div>
+
+<!-- modal editar setor -->
+<dialog id="dlg-centro">
+  <form method="post" id="form-centro" class="validar">
+    <div class="cab">Editar setor</div>
+    <div class="corpo">
+      <label>Código <span class="obrig">*</span></label><input name="codigo" id="ce-cod" required>
+      <label>Nome <span class="obrig">*</span></label><input name="nome" id="ce-nome" required>
+    </div>
+    <div class="pe">
+      <button type="button" class="btn-fantasma" onclick="document.getElementById('dlg-centro').close()">Cancelar</button>
+      <button type="submit" style="margin:0"><span class="giro"></span><span class="rotulo">Salvar</span></button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+  function edCentro(id, cod, nome){
+    var f = document.getElementById("form-centro");
+    f.action = "/web/admin/centro/" + id + "/editar";
+    document.getElementById("ce-cod").value = cod;
+    document.getElementById("ce-nome").value = nome;
+    document.getElementById("dlg-centro").showModal();
+  }
+</script>
 {% endblock %}

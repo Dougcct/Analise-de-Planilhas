@@ -17,7 +17,7 @@ from pathlib import Path
 from urllib.parse import urlencode
 
 from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -669,21 +669,123 @@ def admin(request: Request, s: Session = Depends(_sessao)):
         return _pagina("erro.html", request, _ctx(request, escopo, s, "admin",
                                                    mensagem="Acesso restrito ao administrador."))
     from analise_planilha.modelo import listar_modelos
-    cc_rows = list(s.scalars(select(CentroCusto).where(CentroCusto.ativo.is_(True)).order_by(CentroCusto.nome)))
-    centros = [{"id": c.id, "codigo": c.codigo, "nome": c.nome} for c in cc_rows]
+    cc_rows = list(s.scalars(select(CentroCusto).order_by(CentroCusto.ativo.desc(), CentroCusto.nome)))
+    ativos = [c for c in cc_rows if c.ativo]
+    centros = [{"id": c.id, "codigo": c.codigo, "nome": c.nome} for c in ativos]   # p/ os <select>
     n_usr = dict(s.execute(select(Usuario.centro_custo_id, func.count()).group_by(Usuario.centro_custo_id)).all())
     n_rel = dict(s.execute(select(Relatorio.centro_custo_id, func.count())
-                           .where(Relatorio.ativo.is_(True)).group_by(Relatorio.centro_custo_id)).all())
-    centros_info = [{"codigo": c.codigo, "nome": c.nome,
-                     "usuarios": n_usr.get(c.id, 0), "relatorios": n_rel.get(c.id, 0)} for c in cc_rows]
+                           .group_by(Relatorio.centro_custo_id)).all())
+    centros_info = [{"id": c.id, "codigo": c.codigo, "nome": c.nome, "ativo": c.ativo,
+                     "usuarios": n_usr.get(c.id, 0), "relatorios": n_rel.get(c.id, 0),
+                     "vazio": n_usr.get(c.id, 0) == 0 and n_rel.get(c.id, 0) == 0} for c in cc_rows]
     nomes_cc = {c.id: c.codigo for c in cc_rows}
     publicados = {rid for (rid,) in s.execute(select(Carga.relatorio_id).where(Carga.status == PUBLICADA)).all()}
-    rel_rows = list(s.scalars(select(Relatorio).where(Relatorio.ativo.is_(True)).order_by(Relatorio.nome)))
-    relatorios_info = [{"nome": r.nome, "setor": nomes_cc.get(r.centro_custo_id, "?"),
-                        "modelo": r.modelo or "auto", "publicado": r.id in publicados} for r in rel_rows]
+    n_ver = dict(s.execute(select(Carga.relatorio_id, func.count()).group_by(Carga.relatorio_id)).all())
+    rel_rows = list(s.scalars(select(Relatorio).order_by(Relatorio.ativo.desc(), Relatorio.nome)))
+    relatorios_info = [{"nome": r.nome, "slug": r.slug, "ativo": r.ativo,
+                        "setor": nomes_cc.get(r.centro_custo_id, "?"), "modelo": r.modelo or "auto",
+                        "publicado": r.id in publicados, "versoes": n_ver.get(r.id, 0)} for r in rel_rows]
     modelos = [{"slug": p.stem, "nome": nome} for nome, p in listar_modelos().items()]
     return _pagina("admin.html", request, _ctx(request, escopo, s, "admin", centros=centros, modelos=modelos,
                    centros_info=centros_info, relatorios_info=relatorios_info))
+
+
+# ----- setores (ADM): editar, desativar/reativar, excluir ---------------------------------------
+def _exige_adm(escopo):
+    if not _pode(escopo, ADM):
+        raise _Erro("Acesso restrito ao administrador.")
+
+
+@router.post("/admin/centro/{cc_id}/editar")
+def admin_centro_editar(cc_id: int, request: Request, codigo: str = Form(...), nome: str = Form(...),
+                        s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    try:
+        _exige_adm(escopo)
+        cc = s.get(CentroCusto, cc_id)
+        if cc is None:
+            raise _Erro("Setor não encontrado.")
+        cod, nm = codigo.strip().upper(), nome.strip()
+        if not cod or not nm:
+            raise _Erro("Informe código e nome.")
+        outro = s.scalar(select(CentroCusto).where(CentroCusto.codigo == cod, CentroCusto.id != cc_id))
+        if outro is not None:
+            raise _Erro("Já existe outro setor com esse código.")
+        cc.codigo, cc.nome = cod, nm
+        _audit(s, escopo, "editar_centro", cod)
+        s.commit()
+    except _Erro as e:
+        return _redir("/web/admin", erro=str(e))
+    return _redir("/web/admin", ok="Setor atualizado.")
+
+
+@router.post("/admin/centro/{cc_id}/ativo")
+def admin_centro_ativo(cc_id: int, request: Request, ativo: str = Form(...), s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    try:
+        _exige_adm(escopo)
+        cc = s.get(CentroCusto, cc_id)
+        if cc is None:
+            raise _Erro("Setor não encontrado.")
+        cc.ativo = ativo in ("1", "true", "on", "sim")
+        _audit(s, escopo, "ativar_centro" if cc.ativo else "desativar_centro", cc.codigo)
+        s.commit()
+    except _Erro as e:
+        return _redir("/web/admin", erro=str(e))
+    return _redir("/web/admin", ok="Setor reativado." if cc.ativo else "Setor desativado.")
+
+
+@router.post("/admin/centro/{cc_id}/excluir")
+def admin_centro_excluir(cc_id: int, request: Request, s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    try:
+        _exige_adm(escopo)
+        cc = s.get(CentroCusto, cc_id)
+        if cc is None:
+            raise _Erro("Setor não encontrado.")
+        tem_usr = s.scalar(select(func.count()).select_from(
+            select(Usuario.id).where(Usuario.centro_custo_id == cc_id).subquery())) or 0
+        tem_rel = s.scalar(select(func.count()).select_from(
+            select(Relatorio.id).where(Relatorio.centro_custo_id == cc_id).subquery())) or 0
+        if tem_usr or tem_rel:
+            raise _Erro("Só dá para excluir um setor sem usuários nem relatórios. Desative-o.")
+        cod = cc.codigo
+        s.delete(cc)
+        _audit(s, escopo, "excluir_centro", cod)
+        s.commit()
+    except _Erro as e:
+        return _redir("/web/admin", erro=str(e))
+    return _redir("/web/admin", ok="Setor excluído.")
+
+
+# ----- modelos (ADM): ver detalhes -------------------------------------------------------------
+@router.get("/admin/modelo/{slug}", response_class=HTMLResponse)
+def admin_modelo(slug: str, request: Request, s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    if not _pode(escopo, ADM):
+        return _pagina("erro.html", request, _ctx(request, escopo, s, "admin",
+                                                   mensagem="Acesso restrito ao administrador."))
+    from analise_planilha.modelo import carregar_modelo, listar_modelos
+    if slug not in {p.stem for p in listar_modelos().values()}:
+        return _pagina("erro.html", request, _ctx(request, escopo, s, "admin", mensagem="Modelo não encontrado."))
+    m = carregar_modelo(slug)
+    colunas = [{"rotulo": c.rotulo, "canonico": c.canonico, "tipo": c.tipo,
+                "obrigatoria": c.obrigatoria, "opcional": c.opcional,
+                "sinonimos": ", ".join(c.sinonimos)} for c in m.colunas]
+    regras = sorted(m.regras.keys())
+    abas = m.abas if isinstance(m.abas, str) else (", ".join(m.abas) if m.abas else (m.aba or "1ª aba"))
+    info = {"nome": m.nome, "abas": abas, "apenas_mapeadas": m.apenas_mapeadas,
+            "consolida": m.consolida_abas, "n_colunas": len(colunas)}
+    return _pagina("modelo.html", request, _ctx(request, escopo, s, "admin",
+                   slug=slug, modelo=info, colunas=colunas, regras=regras))
 
 
 @router.post("/admin/centro")
@@ -731,3 +833,201 @@ def admin_relatorio(request: Request, nome: str = Form(...), centro_custo_id: in
     except _Erro as e:
         return _redir("/web/admin", erro=str(e))
     return _redir("/web/admin", ok=f"Relatório «{nome.strip()}» criado.")
+
+
+# ============================================================== gestão de relatório + planilhas (versões)
+_ROT_STATUS = {"RASCUNHO": "Rascunho", "PUBLICADA": "Publicada", "SUBSTITUIDA": "Substituída"}
+
+
+def _relatorio_gerenciavel(s, escopo, slug):
+    """Relatório que o escopo pode GERIR (ADM: qualquer; Gestor: só do próprio setor), ativo ou não."""
+    q = select(Relatorio).where(Relatorio.slug == slug)
+    if not escopo.eh_adm:
+        q = q.where(Relatorio.centro_custo_id == escopo.centro_custo_id)
+    rel = s.scalar(q)
+    if rel is None:
+        raise _Erro("Relatório não encontrado (ou fora do seu setor).")
+    return rel
+
+
+@router.get("/gestao/relatorio/{slug}", response_class=HTMLResponse)
+def gestao_relatorio(slug: str, request: Request, s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    try:
+        if not _pode(escopo, GESTOR, ADM):
+            raise _Erro("Acesso restrito a gestores.")
+        rel = _relatorio_gerenciavel(s, escopo, slug)
+    except _Erro as e:
+        return _pagina("erro.html", request, _ctx(request, escopo, s, "relatorios", mensagem=str(e)))
+    nomes_u = dict(s.execute(select(Usuario.id, Usuario.nome)).all())
+    nomes_cc = {c.id: c.codigo for c in s.scalars(select(CentroCusto))}
+    versoes = [{"id": c.id, "arquivo": c.nome_original, "situacao": _ROT_STATUS.get(c.status, c.status),
+                "status": c.status, "tam": f"{c.tamanho // 1024} KB", "por": nomes_u.get(c.enviado_por, "—"),
+                "hash": (c.hash_sha256 or "")[:10],
+                "quando": (c.publicado_em or c.criado_em).strftime("%d/%m/%Y %H:%M") if (c.publicado_em or c.criado_em) else "—"}
+               for c in s.scalars(select(Carga).where(Carga.relatorio_id == rel.id).order_by(Carga.id.desc()))]
+    from analise_planilha.modelo import listar_modelos
+    modelos = [{"slug": p.stem, "nome": nome} for nome, p in listar_modelos().items()]
+    centros = [{"id": c.id, "codigo": c.codigo, "nome": c.nome}
+               for c in s.scalars(select(CentroCusto).where(CentroCusto.ativo.is_(True)).order_by(CentroCusto.nome))]
+    tem_publicada = any(v["status"] == PUBLICADA for v in versoes)
+    info = {"slug": rel.slug, "nome": rel.nome, "ativo": rel.ativo, "modelo": rel.modelo or "",
+            "setor": nomes_cc.get(rel.centro_custo_id, "?"), "centro_custo_id": rel.centro_custo_id,
+            "tem_publicada": tem_publicada}
+    return _pagina("gestao_relatorio.html", request, _ctx(request, escopo, s, "relatorios",
+                   rel=info, versoes=versoes, modelos=modelos, centros=centros, eh_adm=escopo.eh_adm))
+
+
+@router.post("/gestao/relatorio/{slug}/editar")
+def gestao_relatorio_editar(slug: str, request: Request, nome: str = Form(...), modelo: str = Form(""),
+                            centro_custo_id: str = Form(""), s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    try:
+        if not _pode(escopo, GESTOR, ADM):
+            raise _Erro("Acesso restrito a gestores.")
+        rel = _relatorio_gerenciavel(s, escopo, slug)
+        if not nome.strip():
+            raise _Erro("O nome não pode ficar vazio.")
+        rel.nome = nome.strip()
+        rel.modelo = modelo or None
+        if escopo.eh_adm and centro_custo_id:          # só ADM troca o setor
+            cc = int(centro_custo_id)
+            if s.get(CentroCusto, cc) is None:
+                raise _Erro("Setor inexistente.")
+            rel.centro_custo_id = cc
+            for c in s.scalars(select(Carga).where(Carga.relatorio_id == rel.id)):
+                c.centro_custo_id = cc                  # mantém o escopo das cargas coerente
+        _audit(s, escopo, "editar_relatorio", slug)
+        s.commit()
+    except _Erro as e:
+        return _redir(f"/web/gestao/relatorio/{slug}", erro=str(e))
+    except ValueError:
+        return _redir(f"/web/gestao/relatorio/{slug}", erro="Setor inválido.")
+    return _redir(f"/web/gestao/relatorio/{slug}", ok="Relatório atualizado.")
+
+
+@router.post("/gestao/relatorio/{slug}/ativo")
+def gestao_relatorio_ativo(slug: str, request: Request, ativo: str = Form(...), s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    try:
+        if not _pode(escopo, GESTOR, ADM):
+            raise _Erro("Acesso restrito a gestores.")
+        rel = _relatorio_gerenciavel(s, escopo, slug)
+        rel.ativo = ativo in ("1", "true", "on", "sim")
+        _audit(s, escopo, "ativar_relatorio" if rel.ativo else "desativar_relatorio", slug)
+        s.commit()
+    except _Erro as e:
+        return _redir(f"/web/gestao/relatorio/{slug}", erro=str(e))
+    return _redir(f"/web/gestao/relatorio/{slug}", ok="Relatório reativado." if rel.ativo else "Relatório desativado.")
+
+
+@router.post("/gestao/relatorio/{slug}/excluir")
+def gestao_relatorio_excluir(slug: str, request: Request, s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    srv = _srv()
+    try:
+        if not _pode(escopo, GESTOR, ADM):
+            raise _Erro("Acesso restrito a gestores.")
+        rel = _relatorio_gerenciavel(s, escopo, slug)
+        cargas = list(s.scalars(select(Carga).where(Carga.relatorio_id == rel.id)))
+        if any(c.status == PUBLICADA for c in cargas):
+            raise _Erro("Há uma versão publicada. Desative o relatório em vez de excluir.")
+        for c in cargas:                                # remove rascunhos/substituídas e seus arquivos
+            (srv.CARGAS_DIR / c.arquivo_uuid).unlink(missing_ok=True)
+            s.delete(c)
+        for ac in s.scalars(select(AcessoTemporario).where(AcessoTemporario.relatorio_id == rel.id)):
+            s.delete(ac)
+        s.delete(rel)
+        _audit(s, escopo, "excluir_relatorio", slug)
+        s.commit()
+    except _Erro as e:
+        return _redir(f"/web/gestao/relatorio/{slug}", erro=str(e))
+    return _redir("/web/admin" if escopo.eh_adm else "/web", ok="Relatório excluído.")
+
+
+@router.get("/gestao/carga/{carga_id}/baixar")
+def gestao_carga_baixar(carga_id: int, request: Request, s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    if not _pode(escopo, GESTOR, ADM):
+        return _pagina("erro.html", request, _ctx(request, escopo, s, "relatorios",
+                                                   mensagem="Acesso restrito a gestores."))
+    srv = _srv()
+    carga = RepoCargas(s, escopo).obter(carga_id)       # escopado ao setor do Gestor
+    if carga is None:
+        return _pagina("erro.html", request, _ctx(request, escopo, s, "relatorios",
+                                                   mensagem="Planilha não encontrada."))
+    caminho = srv.CARGAS_DIR / carga.arquivo_uuid
+    if not caminho.exists():
+        return _pagina("erro.html", request, _ctx(request, escopo, s, "relatorios",
+                                                   mensagem="Arquivo não está mais no servidor."))
+    _audit(s, escopo, "baixar_carga", f"{carga.relatorio_id}:{carga.id}")
+    s.commit()
+    return FileResponse(str(caminho), filename=carga.nome_original or f"planilha-{carga_id}.xlsx",
+                        media_type="application/octet-stream")
+
+
+@router.post("/gestao/carga/{carga_id}/republicar")
+def gestao_carga_republicar(carga_id: int, request: Request, s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    srv = _srv()
+    destino = "/web"
+    try:
+        if not _pode(escopo, GESTOR, ADM):
+            raise _Erro("Acesso restrito a gestores.")
+        carga = RepoCargas(s, escopo).obter(carga_id)
+        if carga is None:
+            raise _Erro("Versão não encontrada.")
+        rel = s.get(Relatorio, carga.relatorio_id)
+        destino = f"/web/gestao/relatorio/{rel.slug}"
+        try:
+            srv._dataset_da_carga(carga, srv._modelo_do(rel))   # confirma que ainda lê
+        except Exception as e:  # noqa: BLE001
+            raise _Erro(f"Esta versão não pôde ser processada: {type(e).__name__}") from e
+        for ant in s.scalars(select(Carga).where(Carga.relatorio_id == rel.id, Carga.status == PUBLICADA)):
+            ant.status = SUBSTITUIDA
+        carga.status = PUBLICADA
+        carga.publicado_em = utcnow()
+        rel.ativo = True
+        _audit(s, escopo, "republicar_carga", f"{rel.slug}:{carga.id}")
+        s.commit()
+    except _Erro as e:
+        return _redir(destino, erro=str(e))
+    return _redir(destino, ok="Esta versão voltou a ser a publicada.")
+
+
+@router.post("/gestao/carga/{carga_id}/descartar")
+def gestao_carga_descartar(carga_id: int, request: Request, s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    srv = _srv()
+    slug = "/web"
+    try:
+        if not _pode(escopo, GESTOR, ADM):
+            raise _Erro("Acesso restrito a gestores.")
+        carga = RepoCargas(s, escopo).obter(carga_id)
+        if carga is None:
+            raise _Erro("Versão não encontrada.")
+        rel = s.get(Relatorio, carga.relatorio_id)
+        slug = f"/web/gestao/relatorio/{rel.slug}"
+        if carga.status == PUBLICADA:
+            raise _Erro("Não dá para descartar a versão publicada. Publique outra antes.")
+        (srv.CARGAS_DIR / carga.arquivo_uuid).unlink(missing_ok=True)
+        s.delete(carga)
+        _audit(s, escopo, "descartar_carga", f"{rel.slug}:{carga_id}")
+        s.commit()
+    except _Erro as e:
+        return _redir(slug, erro=str(e))
+    return _redir(slug, ok="Versão descartada.")

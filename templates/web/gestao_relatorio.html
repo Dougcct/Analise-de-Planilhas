@@ -1,0 +1,117 @@
+{% extends "web/base.html" %}
+{% block titulo %}Gerir {{ rel.nome }} — Análise de Planilhas{% endblock %}
+{% block conteudo %}
+<style>
+  .cab-rel{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap}
+  .acoes-top{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+  .cartao{background:var(--superficie);border:1px solid var(--borda);border-radius:var(--raio);
+    box-shadow:var(--sombra);padding:18px;margin-top:14px}
+  .cartao .campos{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+  .acoes-item{display:flex;gap:5px;justify-content:flex-end}
+  .ic-btn{display:grid;place-items:center;width:32px;height:32px;border-radius:8px;border:1px solid var(--borda);
+    background:var(--superficie);color:var(--apoio);cursor:pointer;margin:0;padding:0;transition:all var(--rapido)}
+  .ic-btn svg{width:16px;height:16px}
+  .ic-btn:hover{border-color:var(--marca);color:var(--marca-escura);background:var(--marca-clara);box-shadow:none}
+  .ic-btn.perigo:hover{border-color:var(--perigo);color:var(--perigo);background:var(--perigo-claro)}
+  .hashcol{font-family:ui-monospace,Consolas,monospace;font-size:12px;color:var(--fraco)}
+</style>
+
+<a class="voltar" href="{{ '/web/admin' if eh_adm else '/web' }}">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  Voltar</a>
+
+<div class="cab-rel">
+  <div>
+    <h1>{{ rel.nome }}
+      {% if rel.ativo %}<span class="selo selo-ok" style="vertical-align:middle">Ativo</span>
+      {% else %}<span class="selo selo-off" style="vertical-align:middle">Inativo</span>{% endif %}</h1>
+    <p class="apoio">Setor {{ rel.setor }} · modelo {{ rel.modelo or 'auto' }} · {{ versoes|length }} versão(ões)</p>
+  </div>
+  <div class="acoes-top">
+    <a class="btn-sec" href="/web/r/{{ rel.slug }}" style="padding:8px 14px">Ver relatório</a>
+    <a class="btn-sec" href="/web/enviar" style="padding:8px 14px">Enviar nova planilha</a>
+  </div>
+</div>
+
+<!-- editar -->
+<p class="secao-tit">Dados do relatório</p>
+<form method="post" action="/web/gestao/relatorio/{{ rel.slug }}/editar" class="cartao validar">
+  <div class="campos">
+    <div><label>Nome <span class="obrig">*</span></label><input name="nome" value="{{ rel.nome }}" required></div>
+    <div><label>Modelo de análise</label>
+      <select name="modelo">
+        <option value="">(detecta pela planilha)</option>
+        {% for m in modelos %}<option value="{{ m.slug }}" {{ 'selected' if m.slug == rel.modelo }}>{{ m.nome }}</option>{% endfor %}
+      </select>
+    </div>
+    {% if eh_adm %}
+    <div><label>Setor</label>
+      <select name="centro_custo_id">
+        {% for c in centros %}<option value="{{ c.id }}" {{ 'selected' if c.id == rel.centro_custo_id }}>{{ c.codigo }} — {{ c.nome }}</option>{% endfor %}
+      </select>
+    </div>
+    {% endif %}
+  </div>
+  <button type="submit"><span class="giro"></span><span class="rotulo">Salvar alterações</span></button>
+</form>
+
+<!-- status / excluir -->
+<p class="secao-tit">Situação</p>
+<div class="cartao" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+  <form method="post" action="/web/gestao/relatorio/{{ rel.slug }}/ativo" class="inline">
+    <input type="hidden" name="ativo" value="{{ '0' if rel.ativo else '1' }}">
+    <button class="btn-sec" style="margin:0;padding:9px 15px">{{ 'Desativar (ocultar)' if rel.ativo else 'Reativar' }}</button>
+  </form>
+  {% if not rel.tem_publicada %}
+  <form method="post" action="/web/gestao/relatorio/{{ rel.slug }}/excluir" class="inline"
+        onsubmit="return confirm('Excluir este relatório e seus rascunhos? Não há versão publicada.')">
+    <button class="btn-perigo" style="margin:0;padding:9px 15px">Excluir relatório</button>
+  </form>
+  <span class="apoio" style="font-size:12.5px">Sem versão publicada — pode excluir.</span>
+  {% else %}
+  <span class="apoio" style="font-size:12.5px">Há versão publicada: para remover, desative (mantém o histórico).</span>
+  {% endif %}
+</div>
+
+<!-- versões / planilhas -->
+<p class="secao-tit">Versões da planilha</p>
+<div class="tabela-caixa">
+<table>
+  <thead><tr><th>Arquivo</th><th>Situação</th><th>Enviado por</th><th>Quando</th><th>Tamanho</th><th>Hash</th><th style="text-align:right">Ações</th></tr></thead>
+  <tbody>
+  {% for v in versoes %}
+  <tr>
+    <td>{{ v.arquivo }}</td>
+    <td>
+      {% if v.status == 'PUBLICADA' %}<span class="selo selo-ok">{{ v.situacao }}</span>
+      {% elif v.status == 'RASCUNHO' %}<span class="selo selo-aviso">{{ v.situacao }}</span>
+      {% else %}<span class="selo selo-neutro">{{ v.situacao }}</span>{% endif %}
+    </td>
+    <td class="apoio">{{ v.por }}</td><td class="apoio">{{ v.quando }}</td><td class="apoio">{{ v.tam }}</td>
+    <td class="hashcol">{{ v.hash }}</td>
+    <td>
+      <div class="acoes-item">
+        <a class="ic-btn" href="/web/gestao/carga/{{ v.id }}/baixar" title="Baixar original">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 4v10m0 0 4-4m-4 4-4-4M5 20h14" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        {% if v.status != 'PUBLICADA' %}
+        <form method="post" action="/web/gestao/carga/{{ v.id }}/republicar" class="inline"
+              onsubmit="return confirm('Tornar esta versão a publicada?')">
+          <button class="ic-btn" title="Tornar a publicada">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12a8 8 0 0 1 8-8 8 8 0 0 1 7 4" stroke-linecap="round"/><path d="M19 4v4h-4M20 12a8 8 0 0 1-8 8 8 8 0 0 1-7-4" stroke-linecap="round"/><path d="M5 20v-4h4"/></svg>
+          </button></form>
+        <form method="post" action="/web/gestao/carga/{{ v.id }}/descartar" class="inline"
+              onsubmit="return confirm('Descartar esta versão?')">
+          <button class="ic-btn perigo" title="Descartar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button></form>
+        {% endif %}
+      </div>
+    </td>
+  </tr>
+  {% else %}
+  <tr><td colspan="7" class="apoio">Nenhuma planilha enviada ainda. Use «Enviar nova planilha».</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

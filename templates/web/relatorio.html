@@ -4,7 +4,14 @@
 <a class="voltar" href="/web">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
   Relatórios</a>
-<h1>{{ titulo }}</h1>
+<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
+  <h1>{{ titulo }}</h1>
+  {% if pode_compartilhar %}
+  <a class="btn-sec" href="/web/gestao/relatorio/{{ slug }}" style="padding:8px 14px;margin-top:4px">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="15" height="15"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 13a7.9 7.9 0 0 0 0-2l1.5-1.2-1.5-2.6-1.8.6a7.6 7.6 0 0 0-1.7-1l-.3-1.9h-3l-.3 1.9a7.6 7.6 0 0 0-1.7 1l-1.8-.6-1.5 2.6L6.6 11a7.9 7.9 0 0 0 0 2l-1.5 1.2 1.5 2.6 1.8-.6a7.6 7.6 0 0 0 1.7 1l.3 1.9h3l.3-1.9a7.6 7.6 0 0 0 1.7-1l1.8.6 1.5-2.6L19.4 13z" stroke-linejoin="round"/></svg>
+    Gerenciar</a>
+  {% endif %}
+</div>
 {% if pode_compartilhar %}
 <details class="compart">
   <summary>

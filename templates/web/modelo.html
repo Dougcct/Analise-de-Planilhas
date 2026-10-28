@@ -1,0 +1,63 @@
+{% extends "web/base.html" %}
+{% block titulo %}{{ modelo.nome }} — Modelo{% endblock %}
+{% block conteudo %}
+<style>
+  .chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+  .chip{display:flex;align-items:center;gap:8px;background:var(--superficie);border:1px solid var(--borda);
+    border-radius:var(--raio-s);padding:8px 13px;font-size:13px;box-shadow:var(--sombra)}
+  .chip b{font-size:15px} .chip span{color:var(--apoio)}
+  .regras{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
+  .regra{font-size:12px;font-weight:700;color:var(--marca-mais-escura);background:var(--marca-clara);
+    padding:3px 10px;border-radius:999px}
+  .lgpd{display:inline-flex;align-items:center;gap:7px;background:var(--aviso-claro);color:var(--aviso);
+    font-weight:700;font-size:12.5px;padding:5px 12px;border-radius:999px;margin-top:10px}
+  .tbadge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;background:var(--superficie-2);
+    color:var(--apoio);border:1px solid var(--borda)}
+</style>
+
+<a class="voltar" href="/web/admin">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  Administração</a>
+<h1>{{ modelo.nome }}</h1>
+<p class="apoio">Modelo <b>{{ slug }}</b> — como a planilha é lida e analisada.</p>
+
+<div class="chips">
+  <span class="chip"><b>{{ modelo.n_colunas }}</b><span>colunas mapeadas</span></span>
+  <span class="chip"><span>Abas:</span><b style="font-size:13px">{{ modelo.abas }}</b></span>
+  {% if modelo.consolida %}<span class="chip"><span>consolida várias abas</span></span>{% endif %}
+</div>
+{% if modelo.apenas_mapeadas %}
+<div class="lgpd">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+  LGPD: descarta colunas não declaradas (só as mapeadas entram na análise)
+</div>
+{% endif %}
+
+{% if regras %}
+<p class="secao-tit">Regras de negócio</p>
+<div class="regras">{% for r in regras %}<span class="regra">{{ r }}</span>{% endfor %}</div>
+{% endif %}
+
+<p class="secao-tit">Colunas do modelo</p>
+<div class="tabela-caixa">
+<table>
+  <thead><tr><th>Rótulo</th><th>Canônico</th><th>Tipo</th><th>Obrigatória</th><th>Sinônimos aceitos</th></tr></thead>
+  <tbody>
+  {% for c in colunas %}
+  <tr>
+    <td><b>{{ c.rotulo }}</b></td>
+    <td class="apoio">{{ c.canonico }}</td>
+    <td><span class="tbadge">{{ c.tipo }}</span></td>
+    <td>{% if c.obrigatoria %}<span class="selo selo-ok">sim</span>
+        {% elif c.opcional %}<span class="selo selo-neutro">opcional</span>
+        {% else %}<span class="apoio">—</span>{% endif %}</td>
+    <td class="apoio">{{ c.sinonimos or '—' }}</td>
+  </tr>
+  {% else %}
+  <tr><td colspan="5" class="apoio">Este modelo não declara colunas (leitura genérica).</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+<p class="apoio" style="font-size:12px;margin-top:12px">Modelos são definidos em <b>config/modelos/{{ slug }}.toml</b> (dentro do servidor). Edição por arquivo, por ora.</p>
+{% endblock %}

@@ -236,6 +236,69 @@ def test_web_enviar_descartar(web):
     assert "Pra Descartar" not in c.get("/web").text        # relatório novo descartado não fica órfão
 
 
+# ---------------- gestão: setores, modelos, relatórios/planilhas ----------------
+def test_admin_setor_ciclo(web):
+    import re
+    c = _cli("admin", "admin123")
+    c.post("/web/admin/centro", data={"codigo": "gtest", "nome": "Gestao Teste"})
+    cid = re.search(r'edCentro\((\d+), "GTEST"', c.get("/web/admin").text).group(1)
+    r = c.post(f"/web/admin/centro/{cid}/editar", data={"codigo": "GTEST", "nome": "Gestao Renomeada"},
+               follow_redirects=False)
+    assert r.status_code == 303 and "ok=" in r.headers["location"]
+    assert "Gestao Renomeada" in c.get("/web/admin").text
+    c.post(f"/web/admin/centro/{cid}/ativo", data={"ativo": "0"})           # desativar
+    rx = c.post(f"/web/admin/centro/{cid}/excluir", follow_redirects=False)  # vazio -> exclui
+    assert rx.status_code == 303 and "ok=" in rx.headers["location"]
+    assert "Gestao Renomeada" not in c.get("/web/admin").text
+    # setor com conteúdo (id 1) não pode ser excluído
+    assert "erro=" in c.post("/web/admin/centro/1/excluir", follow_redirects=False).headers["location"]
+
+
+def test_admin_modelo_detalhe(web):
+    c = _cli("admin", "admin123")
+    r = c.get("/web/admin/modelo/resumo_cesariana")
+    assert r.status_code == 200 and "Colunas do modelo" in r.text
+    assert "não encontrado" in c.get("/web/admin/modelo/naoexiste").text.lower()
+    # gestor não acessa modelos
+    assert "restrito" in _cli("gestor.fin").get("/web/admin/modelo/resumo_cesariana").text.lower()
+
+
+def test_gestao_relatorio_e_versoes(web):
+    import re
+    c = _cli("gestor.fat")
+    cid = _subir(c, modo="novo", nome="Gerir Teste", modelo="resumo_cesariana", n=6)
+    c.post(f"/web/enviar/previa/{cid}/publicar")
+    pg = c.get("/web/gestao/relatorio/gerir-teste")
+    assert pg.status_code == 200 and "Versões da planilha" in pg.text
+    r = c.post("/web/gestao/relatorio/gerir-teste/editar",
+               data={"nome": "Gerir Teste 2", "modelo": "resumo_cesariana"}, follow_redirects=False)
+    assert r.status_code == 303 and "ok=" in r.headers["location"]
+    bid = re.search(r"/web/gestao/carga/(\d+)/baixar", c.get("/web/gestao/relatorio/gerir-teste").text).group(1)
+    assert c.get(f"/web/gestao/carga/{bid}/baixar").status_code == 200       # baixa o original
+    # com versão publicada, excluir é bloqueado
+    assert "erro=" in c.post("/web/gestao/relatorio/gerir-teste/excluir", follow_redirects=False).headers["location"]
+    # desativar funciona
+    assert "ok=" in c.post("/web/gestao/relatorio/gerir-teste/ativo", data={"ativo": "0"},
+                           follow_redirects=False).headers["location"]
+    # isolamento: gestor de outro setor não gere este
+    assert "fora do seu setor" in _cli("gestor.fin").get("/web/gestao/relatorio/gerir-teste").text.lower()
+
+
+def test_gestao_rollback_versao(web):
+    import re
+    c = _cli("gestor.fat")
+    cid1 = _subir(c, modo="novo", nome="Roll Teste", modelo="resumo_cesariana", n=4)
+    c.post(f"/web/enviar/previa/{cid1}/publicar")
+    cid2 = _subir(c, modo="atualizar", slug="roll-teste", n=9)
+    c.post(f"/web/enviar/previa/{cid2}/publicar")
+    assert "9 registro" in c.get("/web/r/roll-teste/conteudo").text          # publicada = a nova
+    ids = re.findall(r"/web/gestao/carga/(\d+)/baixar", c.get("/web/gestao/relatorio/roll-teste").text)
+    antiga = ids[-1]                                                         # a mais antiga (lista desc)
+    rr = c.post(f"/web/gestao/carga/{antiga}/republicar", follow_redirects=False)
+    assert rr.status_code == 303 and "ok=" in rr.headers["location"]
+    assert "4 registro" in c.get("/web/r/roll-teste/conteudo").text          # rollback voltou a antiga
+
+
 def test_web_compartilhar(web):
     c = _cli("gestor.fin")
     r = c.post("/web/r/faturamento-hunf/compartilhar",
