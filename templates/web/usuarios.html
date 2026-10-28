@@ -51,6 +51,13 @@
   .obrig{color:var(--perigo)}
   /* validação discreta: só marca depois que o usuário mexeu */
   form.validar input:user-invalid{border-color:var(--perigo);box-shadow:0 0 0 3px var(--perigo-claro)}
+  /* seletor de cor do avatar */
+  .cores{display:flex;gap:9px;flex-wrap:wrap;margin-top:2px}
+  .cores input{position:absolute;opacity:0;width:0;height:0}
+  .cores label{width:28px;height:28px;border-radius:50%;cursor:pointer;display:inline-block;margin:0;
+    box-shadow:0 0 0 2px var(--superficie),0 0 0 3px var(--borda);transition:transform var(--rapido)}
+  .cores label:hover{transform:scale(1.12)}
+  .cores input:checked + label{box-shadow:0 0 0 2px var(--superficie),0 0 0 4px var(--texto)}
 </style>
 
 <div class="u-topo">
@@ -90,7 +97,7 @@
   <tr>
     <td>
       <span class="u-nome">
-        <span class="u-avatar">{{ u.nome[:1]|upper }}</span>
+        <span class="u-avatar" style="background:{{ u.cor }};color:#fff">{{ u.nome[:1]|upper }}</span>
         <span class="meta">{{ u.nome }}{% if u.eu %}<span class="u-eu">você</span>{% endif %}
           {% if u.email %}<small>{{ u.email }}</small>{% endif %}</span>
       </span>
@@ -100,7 +107,7 @@
     <td>
       <div class="acoes">
         <button type="button" class="ic-btn" title="Editar"
-          onclick='abrirEditar({{ u.id }}, {{ u.nome|tojson }}, {{ u.email|tojson }}, {{ u.papel|tojson }}, {{ (u.centro_custo_id or "")|tojson }}, {{ u.login|tojson }})'>
+          onclick='abrirEditar({{ u.id }}, {{ u.nome|tojson }}, {{ u.email|tojson }}, {{ u.papel|tojson }}, {{ (u.centro_custo_id or "")|tojson }}, {{ u.login|tojson }}, {{ u.cor|tojson }})'>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3z" stroke-linejoin="round"/><path d="M13.5 6.5l3 3" stroke-linecap="round"/></svg>
         </button>
         {% if not u.eu %}
@@ -175,6 +182,14 @@
       </select>
     </div>
     {% endif %}
+    <div><label>Cor do avatar</label>
+      <div class="cores">
+        {% for cor in paleta %}
+        <input type="radio" id="c-{{ loop.index }}" name="cor" value="{{ cor }}" {{ 'checked' if loop.first }}>
+        <label for="c-{{ loop.index }}" style="background:{{ cor }}" title="{{ cor }}"></label>
+        {% endfor %}
+      </div>
+    </div>
   </div>
   <p class="linha-obrig">Campos com <span class="obrig">*</span> são obrigatórios. A senha é provisória — o usuário troca no 1º acesso.</p>
   <button type="submit"><span class="giro"></span><span class="rotulo">Criar usuário</span></button>
@@ -190,6 +205,13 @@
       <input name="nome" id="ed-nome" required>
       <label>E-mail</label>
       <input name="email" id="ed-email" type="email" placeholder="(opcional)">
+      <label>Cor do avatar</label>
+      <div class="cores" id="ed-cores">
+        {% for cor in paleta %}
+        <input type="radio" id="ec-{{ loop.index }}" name="cor" value="{{ cor }}">
+        <label for="ec-{{ loop.index }}" style="background:{{ cor }}" title="{{ cor }}"></label>
+        {% endfor %}
+      </div>
       {% if eh_adm %}
       <div id="ed-adm">
         <label>Papel</label>
@@ -242,12 +264,14 @@
     var s = Array.prototype.map.call(a, function(n){ return cj[n % cj.length]; }).join("");
     var i = document.getElementById(id); i.type = "text"; i.value = s;
   }
-  function abrirEditar(id, nome, email, papel, cc, login){
+  function abrirEditar(id, nome, email, papel, cc, login, cor){
     var f = document.getElementById("form-editar");
     f.action = "/web/usuarios/" + id + "/editar";
     document.getElementById("ed-login").textContent = "· " + login;
     document.getElementById("ed-nome").value = nome || "";
     document.getElementById("ed-email").value = email || "";
+    var r = document.querySelector('#ed-cores input[value="' + cor + '"]');
+    if (r) r.checked = true;                                   // marca a cor atual
     var sp = document.getElementById("ed-papel");
     if (sp){ sp.value = papel; document.getElementById("ed-setor").value = cc || ""; }
     document.getElementById("dlg-editar").showModal();

@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
   <title>{% block titulo %}Análise de Planilhas{% endblock %}</title>
+  <script>
+    // aplica o tema salvo o quanto antes (evita flash); vazio = segue o sistema
+    try{ var t = localStorage.getItem("tema"); if(t) document.documentElement.setAttribute("data-tema", t); }catch(e){}
+  </script>
   <style>
     :root{
       --marca:#00995D; --marca-escura:#007A4B; --marca-mais-escura:#005F3A; --marca-clara:#E8F4EF;
@@ -22,6 +26,7 @@
       /* faixa slim atrás das telas internas (bem sutil) */
       --sis-linha:#dbe3e9; --sis-face:#eef2f5;
     }
+    /* tema escuro: segue o sistema (salvo se o usuário forçou claro) OU é forçado pelo botão */
     @media (prefers-color-scheme:dark){
       :root:not([data-tema="light"]){
         --fundo:#0E141B; --superficie:#161E27; --superficie-2:#1C2733; --borda:#283340;
@@ -31,6 +36,14 @@
         --sombra-forte:0 10px 34px rgba(0,0,0,.55);
         --sis-linha:#1f2a36; --sis-face:#141d27;
       }
+    }
+    :root[data-tema="dark"]{
+      --fundo:#0E141B; --superficie:#161E27; --superficie-2:#1C2733; --borda:#283340;
+      --texto:#E6ECF2; --apoio:#9CABB8; --fraco:#6B7987;
+      --marca-clara:#0E2A20; --perigo-claro:#2A1512; --aviso-claro:#271E0D;
+      --sombra:0 1px 2px rgba(0,0,0,.4),0 2px 10px rgba(0,0,0,.35);
+      --sombra-forte:0 10px 34px rgba(0,0,0,.55);
+      --sis-linha:#1f2a36; --sis-face:#141d27;
     }
     *{box-sizing:border-box}
     html{-webkit-text-size-adjust:100%}
@@ -64,13 +77,19 @@
     .lateral .usuario{margin-top:auto;border-top:1px solid var(--borda);padding:14px 16px;display:flex;
       align-items:center;gap:11px}
     .usuario .avatar{width:36px;height:36px;border-radius:50%;flex:0 0 36px;display:grid;place-items:center;
-      background:var(--marca-clara);color:var(--marca-mais-escura);font-weight:800;font-size:14px}
+      background:var(--cor-avatar,var(--marca));color:#fff;font-weight:800;font-size:14px}
     .usuario .quem{min-width:0;flex:1}
     .usuario .quem b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .usuario .quem span{display:block;font-size:11px;color:var(--fraco)}
-    .usuario .sair{color:var(--apoio);text-decoration:none;display:grid;place-items:center;width:34px;height:34px;
-      border-radius:8px;transition:background var(--rapido),color var(--rapido)}
+    .usuario .sair,.usuario .tema-btn{color:var(--apoio);text-decoration:none;display:grid;place-items:center;
+      width:34px;height:34px;border-radius:8px;border:0;background:transparent;cursor:pointer;
+      transition:background var(--rapido),color var(--rapido);margin:0;padding:0}
+    .usuario .tema-btn:hover{background:var(--superficie-2);color:var(--texto);box-shadow:none}
     .usuario .sair:hover{background:var(--perigo-claro);color:var(--perigo)}
+    .tema-btn .lua{display:none} .tema-btn .sol{display:block}
+    :root[data-tema="dark"] .tema-btn .lua{display:block} :root[data-tema="dark"] .tema-btn .sol{display:none}
+    @media (prefers-color-scheme:dark){:root:not([data-tema="light"]) .tema-btn .lua{display:block}
+      :root:not([data-tema="light"]) .tema-btn .sol{display:none}}
 
     /* ---------- Topo mobile ---------- */
     .topo-mob{display:none}
@@ -269,8 +288,12 @@
         {% endif %}
       </nav>
       <div class="usuario">
-        <span class="avatar">{{ nome[:1]|upper }}</span>
+        <span class="avatar" style="background:{{ cor or '#00995D' }}">{{ nome[:1]|upper }}</span>
         <span class="quem"><b>{{ nome }}</b><span>{{ papel }}</span></span>
+        <button type="button" class="tema-btn" onclick="alternarTema()" title="Alternar tema claro/escuro" aria-label="Alternar tema">
+          <svg class="sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" stroke-linecap="round"/></svg>
+          <svg class="lua" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" stroke-linejoin="round"/></svg>
+        </button>
         <a href="/web/logout" class="sair" title="Sair" aria-label="Sair">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><path d="M15 17l5-5-5-5M20 12H9M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
@@ -383,6 +406,14 @@
   {% endif %}
 
   <script>
+    // Alterna tema claro/escuro e salva a escolha (sobrepõe o tema do sistema).
+    function alternarTema(){
+      var el = document.documentElement, atual = el.getAttribute("data-tema");
+      var escuro = atual ? atual === "dark" : matchMedia("(prefers-color-scheme:dark)").matches;
+      var novo = escuro ? "light" : "dark";
+      el.setAttribute("data-tema", novo);
+      try{ localStorage.setItem("tema", novo); }catch(e){}
+    }
     // Botões mostram "enviando…" ao submeter (feedback imediato em telas que recarregam).
     document.addEventListener("submit", function(ev){
       var b = ev.target.querySelector('button[type=submit], button:not([type])');

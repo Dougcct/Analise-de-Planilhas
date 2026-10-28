@@ -91,7 +91,7 @@ def test_web_gestao_de_usuarios(web):
 def _id_do_login(c, login):
     import re
     pagina = c.get("/web/usuarios").text
-    m = re.search(r'abrirEditar\((\d+),.*?"' + re.escape(login) + r'"\)', pagina)
+    m = re.search(r'abrirEditar\((\d+),[^)]*"' + re.escape(login) + r'"', pagina)
     return m.group(1) if m else None
 
 
@@ -147,6 +147,22 @@ def test_web_busca_e_filtro(web):
     # filtro por papel ADM não traz o usuário comum recém-criado
     so_adm = c.get("/web/usuarios?papel=ADM").text
     assert "diana.bf" not in so_adm
+
+
+def test_web_cor_avatar(web):
+    c = _cli("admin", "admin123")
+    c.post("/web/usuarios", data={"login": "eva.cor", "nome": "Eva", "senha": "senha123",
+                                  "papel": "USUARIO", "centro_custo_id": 1, "cor": "#2D6CDF"})
+    assert "background:#2D6CDF" in c.get("/web/usuarios?busca=eva.cor").text
+    # cor fora da paleta cai no padrão (evita injeção)
+    c.post("/web/usuarios", data={"login": "edu.cor", "nome": "Edu", "senha": "senha123",
+                                  "papel": "USUARIO", "centro_custo_id": 1, "cor": "javascript:alert(1)"})
+    pg = c.get("/web/usuarios?busca=edu.cor").text
+    assert "background:#00995D" in pg and "javascript:alert" not in pg
+
+
+def test_web_botao_tema(web):
+    assert "alternarTema()" in _cli("admin", "admin123").get("/web").text
 
 
 def test_web_home_resumo(web):

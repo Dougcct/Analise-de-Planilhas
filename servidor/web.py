@@ -41,6 +41,16 @@ COOKIE = "sessao"
 router = APIRouter(prefix="/web", tags=["web"])
 
 
+# Paleta fixa de cores de avatar (hex). Guardar só o que está aqui evita injeção via style.
+PALETA_AVATAR = ["#00995D", "#2D6CDF", "#7C3AED", "#DB2777", "#DC2626",
+                 "#EA580C", "#D97706", "#0D9488", "#475569"]
+COR_AVATAR_PADRAO = PALETA_AVATAR[0]
+
+
+def _cor_valida(cor: str) -> str:
+    return cor if cor in PALETA_AVATAR else COR_AVATAR_PADRAO
+
+
 class _Erro(Exception):
     """Regra de negócio violada — vira uma faixa de erro na tela."""
 
@@ -75,7 +85,7 @@ def _audit(s, escopo, acao, alvo=None, det=None):
 def _ctx(request: Request, escopo: Escopo, s: Session, secao: str, **extra) -> dict:
     u = s.get(Usuario, escopo.usuario_id)
     return {"versao": __version__, "nome": u.nome if u else "", "papel": _papel_rotulo(escopo.papel),
-            "papel_cod": escopo.papel, "secao": secao,
+            "papel_cod": escopo.papel, "secao": secao, "cor": (u.cor_avatar if u else None) or COR_AVATAR_PADRAO,
             "ok": request.query_params.get("ok"), "erro": request.query_params.get("erro"), **extra}
 
 
@@ -268,7 +278,7 @@ def usuarios(request: Request, busca: str = "", papel: str = "", setor: str = ""
     itens, total, paginas = RepoUsuarios(s, escopo).listar_paginado(
         busca=busca, papel=papel_f, centro_id=setor_id, pagina=pagina)
     lista = [{"id": u.id, "login": u.login, "nome": u.nome, "email": u.email or "", "papel": u.papel,
-              "centro_custo_id": u.centro_custo_id,
+              "centro_custo_id": u.centro_custo_id, "cor": u.cor_avatar or COR_AVATAR_PADRAO,
               "setor": nomes.get(u.centro_custo_id, "—" if u.papel == ADM else "?"),
               "ativo": u.ativo, "eu": u.id == escopo.usuario_id}
              for u in itens]
@@ -277,13 +287,13 @@ def usuarios(request: Request, busca: str = "", papel: str = "", setor: str = ""
            "fim": min(min(max(1, pagina), paginas) * 8, total)}
     return _pagina("usuarios.html", request, _ctx(request, escopo, s, "usuarios",
                    usuarios=lista, centros=centros, eh_adm=escopo.eh_adm, papeis=PAPEIS,
-                   busca=busca, papel_sel=papel_f, setor_sel=setor, pag=pag))
+                   busca=busca, papel_sel=papel_f, setor_sel=setor, pag=pag, paleta=PALETA_AVATAR))
 
 
 @router.post("/usuarios")
 def usuarios_criar(request: Request, login: str = Form(...), nome: str = Form(...), senha: str = Form(...),
-                   email: str = Form(""), papel: str = Form(USUARIO), centro_custo_id: str = Form(""),
-                   s: Session = Depends(_sessao)):
+                   email: str = Form(""), cor: str = Form(""), papel: str = Form(USUARIO),
+                   centro_custo_id: str = Form(""), s: Session = Depends(_sessao)):
     escopo, redir = _exige_login(request, s)
     if redir:
         return redir
@@ -310,7 +320,7 @@ def usuarios_criar(request: Request, login: str = Form(...), nome: str = Form(..
         if s.scalar(select(Usuario).where(Usuario.login == login.strip())) is not None:
             raise _Erro("Login já existe.")
         s.add(Usuario(login=login.strip(), nome=nome.strip(), email=(email.strip() or None),
-                      senha_hash=hash_senha(senha), papel=papel,
+                      cor_avatar=_cor_valida(cor), senha_hash=hash_senha(senha), papel=papel,
                       centro_custo_id=(None if papel == ADM else cc), precisa_trocar_senha=True))
         _audit(s, escopo, "criar_usuario", login.strip())
         s.commit()
@@ -398,7 +408,8 @@ def usuarios_resetar_senha(usuario_id: int, request: Request, nova: str = Form(.
 
 @router.post("/usuarios/{usuario_id}/editar")
 def usuarios_editar(usuario_id: int, request: Request, nome: str = Form(...), email: str = Form(""),
-                    papel: str = Form(""), centro_custo_id: str = Form(""), s: Session = Depends(_sessao)):
+                    cor: str = Form(""), papel: str = Form(""), centro_custo_id: str = Form(""),
+                    s: Session = Depends(_sessao)):
     escopo, redir = _exige_login(request, s)
     if redir:
         return redir
@@ -427,6 +438,8 @@ def usuarios_editar(usuario_id: int, request: Request, nome: str = Form(...), em
                 raise _Erro("Informe o centro de custo.")
         RepoUsuarios(s, escopo).editar(alvo, nome=nome.strip(), email=email.strip(),
                                        papel=novo_papel, centro_custo_id=novo_cc)
+        if cor:
+            alvo.cor_avatar = _cor_valida(cor)
         _audit(s, escopo, "editar_usuario", alvo.login)
         s.commit()
     except _Erro as e:

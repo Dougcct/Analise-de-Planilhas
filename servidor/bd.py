@@ -46,7 +46,7 @@ def _migrar_colunas_leves() -> None:
     from sqlalchemy import inspect, text
 
     desejadas = {  # tabela -> {coluna: DDL do tipo}
-        "usuarios": {"email": "VARCHAR(160)"},
+        "usuarios": {"email": "VARCHAR(160)", "cor_avatar": "VARCHAR(9)"},
     }
     insp = inspect(engine)
     with engine.begin() as con:

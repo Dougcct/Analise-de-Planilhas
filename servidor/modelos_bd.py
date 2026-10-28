@@ -35,6 +35,7 @@ class Usuario(Base):
     login: Mapped[str] = mapped_column(String(64), unique=True, index=True)
     nome: Mapped[str] = mapped_column(String(120))
     email: Mapped[str | None] = mapped_column(String(160))                # opcional; dado pessoal (LGPD)
+    cor_avatar: Mapped[str | None] = mapped_column(String(9))             # cor da bolinha (hex da paleta)
     senha_hash: Mapped[str] = mapped_column(String(255))
     papel: Mapped[str] = mapped_column(String(16))                       # ADM | GESTOR | USUARIO
     centro_custo_id: Mapped[int | None] = mapped_column(ForeignKey("centros_custo.id"))  # ADM = None
