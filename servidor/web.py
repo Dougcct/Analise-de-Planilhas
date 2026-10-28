@@ -19,7 +19,7 @@ from urllib.parse import urlencode
 from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from analise_planilha import __version__, relatorio_html, servico
@@ -176,14 +176,43 @@ def senha_enviar(request: Request, atual: str = Form(...), nova: str = Form(...)
 
 
 # ============================================================== relatórios (ver)
+def _resumo_home(s: Session, escopo: Escopo, rels: list) -> dict:
+    """Números do painel inicial, sempre dentro do escopo (Gestor só o próprio setor)."""
+    gestor = escopo.papel in (GESTOR, ADM)
+    pub_q = select(Carga).where(Carga.status == PUBLICADA)
+    rasc_q = select(Carga).where(Carga.status == RASCUNHO)
+    if not escopo.eh_adm:
+        pub_q = pub_q.where(Carga.centro_custo_id == escopo.centro_custo_id)
+        rasc_q = rasc_q.where(Carga.centro_custo_id == escopo.centro_custo_id)
+    nomes_rel = {r.id: r.nome for r in s.scalars(select(Relatorio))}
+    ultimas = [{"rel": nomes_rel.get(c.relatorio_id, "?"),
+                "quando": c.publicado_em.strftime("%d/%m/%Y %H:%M") if c.publicado_em else "—"}
+               for c in s.scalars(pub_q.order_by(Carga.publicado_em.desc()).limit(5))]
+    rascunhos = s.scalar(select(func.count()).select_from(rasc_q.subquery())) or 0
+
+    metricas = [{"rotulo": "Relatórios", "valor": len(rels), "ic": "rel"}]
+    if escopo.eh_adm:
+        metricas.append({"rotulo": "Setores", "valor": s.scalar(select(func.count()).select_from(CentroCusto)) or 0, "ic": "setor"})
+        metricas.append({"rotulo": "Usuários", "valor": s.scalar(select(func.count()).select_from(Usuario)) or 0, "ic": "user"})
+    elif gestor:
+        n = s.scalar(select(func.count()).select_from(
+            select(Usuario.id).where(Usuario.centro_custo_id == escopo.centro_custo_id).subquery())) or 0
+        metricas.append({"rotulo": "Usuários do setor", "valor": n, "ic": "user"})
+    if gestor:
+        metricas.append({"rotulo": "Rascunhos p/ publicar", "valor": rascunhos, "ic": "rascunho", "alerta": rascunhos > 0})
+    return {"metricas": metricas, "ultimas": ultimas, "gestor": gestor}
+
+
 @router.get("", response_class=HTMLResponse)
 @router.get("/", response_class=HTMLResponse)
 def home(request: Request, s: Session = Depends(_sessao)):
     escopo, redir = _exige_login(request, s)
     if redir:
         return redir
-    relatorios = [{"slug": r.slug, "nome": r.nome} for r in RepoRelatorios(s, escopo).listar()]
-    return _pagina("home.html", request, _ctx(request, escopo, s, "relatorios", relatorios=relatorios))
+    rels = RepoRelatorios(s, escopo).listar()
+    relatorios = [{"slug": r.slug, "nome": r.nome} for r in rels]
+    return _pagina("home.html", request, _ctx(request, escopo, s, "relatorios",
+                   relatorios=relatorios, resumo=_resumo_home(s, escopo, rels)))
 
 
 @router.get("/r/{slug}", response_class=HTMLResponse)
@@ -563,10 +592,21 @@ def admin(request: Request, s: Session = Depends(_sessao)):
         return _pagina("erro.html", request, _ctx(request, escopo, s, "admin",
                                                    mensagem="Acesso restrito ao administrador."))
     from analise_planilha.modelo import listar_modelos
-    centros = [{"id": c.id, "codigo": c.codigo, "nome": c.nome}
-               for c in s.scalars(select(CentroCusto).where(CentroCusto.ativo.is_(True)).order_by(CentroCusto.nome))]
+    cc_rows = list(s.scalars(select(CentroCusto).where(CentroCusto.ativo.is_(True)).order_by(CentroCusto.nome)))
+    centros = [{"id": c.id, "codigo": c.codigo, "nome": c.nome} for c in cc_rows]
+    n_usr = dict(s.execute(select(Usuario.centro_custo_id, func.count()).group_by(Usuario.centro_custo_id)).all())
+    n_rel = dict(s.execute(select(Relatorio.centro_custo_id, func.count())
+                           .where(Relatorio.ativo.is_(True)).group_by(Relatorio.centro_custo_id)).all())
+    centros_info = [{"codigo": c.codigo, "nome": c.nome,
+                     "usuarios": n_usr.get(c.id, 0), "relatorios": n_rel.get(c.id, 0)} for c in cc_rows]
+    nomes_cc = {c.id: c.codigo for c in cc_rows}
+    publicados = {rid for (rid,) in s.execute(select(Carga.relatorio_id).where(Carga.status == PUBLICADA)).all()}
+    rel_rows = list(s.scalars(select(Relatorio).where(Relatorio.ativo.is_(True)).order_by(Relatorio.nome)))
+    relatorios_info = [{"nome": r.nome, "setor": nomes_cc.get(r.centro_custo_id, "?"),
+                        "modelo": r.modelo or "auto", "publicado": r.id in publicados} for r in rel_rows]
     modelos = [{"slug": p.stem, "nome": nome} for nome, p in listar_modelos().items()]
-    return _pagina("admin.html", request, _ctx(request, escopo, s, "admin", centros=centros, modelos=modelos))
+    return _pagina("admin.html", request, _ctx(request, escopo, s, "admin", centros=centros, modelos=modelos,
+                   centros_info=centros_info, relatorios_info=relatorios_info))
 
 
 @router.post("/admin/centro")

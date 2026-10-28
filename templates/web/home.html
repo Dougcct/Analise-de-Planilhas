@@ -1,27 +1,88 @@
 {% extends "web/base.html" %}
-{% block titulo %}Relatórios — Análise de Planilhas{% endblock %}
+{% block titulo %}Início — Análise de Planilhas{% endblock %}
 {% block conteudo %}
-<h1>Relatórios</h1>
-<p class="apoio">Escolha um relatório para visualizar no navegador.</p>
-{% if relatorios %}
-<div class="grade">
-  {% for r in relatorios %}
-  <a class="cartao" href="/web/r/{{ r.slug }}">
+<style>
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-top:18px}
+  .kpi{background:var(--superficie);border:1px solid var(--borda);border-radius:var(--raio);padding:16px 18px;
+    box-shadow:var(--sombra);display:flex;align-items:center;gap:14px;transition:transform var(--suave)}
+  .kpi:hover{transform:translateY(-2px)}
+  .kpi .ic{width:44px;height:44px;border-radius:12px;flex:0 0 44px;display:grid;place-items:center;
+    background:var(--marca-clara);color:var(--marca-escura)}
+  .kpi .ic svg{width:22px;height:22px}
+  .kpi.alerta .ic{background:var(--aviso-claro);color:var(--aviso)}
+  .kpi .n{font-size:26px;font-weight:800;line-height:1}
+  .kpi .r{font-size:12.5px;color:var(--apoio);margin-top:3px}
+  .painel-2{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-top:10px}
+  @media (max-width:780px){.painel-2{grid-template-columns:1fr}}
+  .bloco{background:var(--superficie);border:1px solid var(--borda);border-radius:var(--raio);
+    box-shadow:var(--sombra);overflow:hidden}
+  .bloco h2{font-size:14px;margin:0;padding:13px 16px;border-bottom:1px solid var(--borda);
+    background:var(--superficie-2);color:var(--apoio);text-transform:uppercase;letter-spacing:.04em}
+  .pub{display:flex;align-items:center;gap:11px;padding:11px 16px;border-bottom:1px solid var(--borda)}
+  .pub:last-child{border-bottom:0}
+  .pub .pt{width:30px;height:30px;border-radius:8px;flex:0 0 30px;display:grid;place-items:center;
+    background:var(--marca-clara);color:var(--marca-escura)}
+  .pub .pt svg{width:16px;height:16px}
+  .pub b{font-size:14px}.pub small{display:block;color:var(--fraco);font-size:12px}
+  .rel-lista a{display:flex;align-items:center;gap:11px;padding:12px 16px;border-bottom:1px solid var(--borda);
+    text-decoration:none;color:var(--texto);transition:background var(--rapido)}
+  .rel-lista a:last-child{border-bottom:0}
+  .rel-lista a:hover{background:var(--superficie-2)}
+  .rel-lista .seta{margin-left:auto;color:var(--fraco)}
+</style>
+
+<h1>Olá, {{ nome.split(' ')[0] }} 👋</h1>
+<p class="apoio">Resumo do seu {{ 'ambiente' if papel_cod == 'ADM' else 'setor' }}.</p>
+
+{% if resumo.metricas %}
+<div class="kpis">
+  {% for m in resumo.metricas %}
+  <div class="kpi {{ 'alerta' if m.alerta }}">
     <span class="ic">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V5a1 1 0 0 1 1-1h11l4 4v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" stroke-linejoin="round"/><path d="M8 13h8M8 16h5M15 4v4h4" stroke-linecap="round"/></svg>
+      {% if m.ic == 'rel' %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V5a1 1 0 0 1 1-1h11l4 4v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" stroke-linejoin="round"/><path d="M8 13h8M8 16h5" stroke-linecap="round"/></svg>
+      {% elif m.ic == 'setor' %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 21V9l7-5 7 5v12M9 21v-6h2v6M14 12h3v9" stroke-linejoin="round"/></svg>
+      {% elif m.ic == 'user' %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0M16 5.2a3.2 3.2 0 0 1 0 5.6M20.5 20a5.5 5.5 0 0 0-4-5.3" stroke-linecap="round"/></svg>
+      {% else %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3 8-8M4 7v12a1 1 0 0 0 1 1h12" stroke-linecap="round" stroke-linejoin="round"/></svg>{% endif %}
     </span>
-    <span>
-      <span class="nome">{{ r.nome }}</span>
-      <span class="sub">Abrir relatório</span>
-    </span>
-  </a>
+    <span><span class="n">{{ m.valor }}</span><span class="r">{{ m.rotulo }}</span></span>
+  </div>
   {% endfor %}
 </div>
-{% else %}
-<div class="vazio">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 19V5a1 1 0 0 1 1-1h11l4 4v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" stroke-linejoin="round"/></svg>
-  <p>Nenhum relatório disponível para o seu acesso.</p>
-</div>
 {% endif %}
+
+<div class="painel-2">
+  <div class="bloco">
+    <h2>Relatórios {{ '(seu acesso)' if papel_cod != 'ADM' }}</h2>
+    {% if relatorios %}
+    <div class="rel-lista">
+      {% for r in relatorios %}
+      <a href="/web/r/{{ r.slug }}">
+        <span class="pt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V5a1 1 0 0 1 1-1h11l4 4v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" stroke-linejoin="round"/></svg></span>
+        <b>{{ r.nome }}</b>
+        <span class="seta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="vazio" style="border:0;margin:0"><p>Nenhum relatório disponível para o seu acesso.</p></div>
+    {% endif %}
+  </div>
+
+  {% if resumo.gestor %}
+  <div class="bloco">
+    <h2>Últimas publicações</h2>
+    {% if resumo.ultimas %}
+    {% for p in resumo.ultimas %}
+    <div class="pub">
+      <span class="pt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <span><b>{{ p.rel }}</b><small>publicado em {{ p.quando }}</small></span>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="vazio" style="border:0;margin:0"><p>Nenhuma planilha publicada ainda.</p></div>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
 <p class="rodape">Versão {{ versao }}</p>
 {% endblock %}

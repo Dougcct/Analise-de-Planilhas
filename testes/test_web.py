@@ -149,6 +149,15 @@ def test_web_busca_e_filtro(web):
     assert "diana.bf" not in so_adm
 
 
+def test_web_home_resumo(web):
+    c = _cli("admin", "admin123")
+    pg = c.get("/web").text
+    assert "Relatórios" in pg and "Setores" in pg and "Usuários" in pg   # KPIs do ADM
+    assert "Últimas publicações" in pg                                   # bloco de gestor/adm
+    # usuário comum não vê o bloco de publicações
+    assert "Últimas publicações" not in _cli("user.fin").get("/web").text
+
+
 def test_web_admin_cria_setor_e_relatorio(web):
     c = _cli("admin", "admin123")
     r = c.post("/web/admin/centro", data={"codigo": "webrh", "nome": "RH Web"}, follow_redirects=False)
@@ -179,7 +188,7 @@ def test_web_enviar_e_publicar(web):
                files={"arquivo": ("cesariana.xlsx", _cesariana_xlsx(7), "x")}, follow_redirects=False)
     assert r.status_code == 303 and "ok=" in r.headers["location"]
     pagina = c.get("/web/enviar?slug=resumo-cesariana").text
-    cid = re.search(r"/web/cargas/(\d+)/publicar", pagina).group(1)
+    cid = re.search(r"/web/cargas/(\d+)/testar", pagina).group(1)   # publicar é via modal (JS); id vem do Testar
     rp = c.post(f"/web/cargas/{cid}/publicar", data={"slug": "resumo-cesariana"}, follow_redirects=False)
     assert rp.status_code == 303 and "ok=" in rp.headers["location"]
     assert "7 registro" in c.get("/web/r/resumo-cesariana/conteudo").text   # relatório refletiu o upload
