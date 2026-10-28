@@ -1,0 +1,464 @@
+{
+ "versao": 1,
+ "regras": [
+  {
+   "contexto": "Gestão de Custos/Convenio",
+   "assinatura": "codatd",
+   "papel": "identificador",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "Cód. Atd."
+  },
+  {
+   "contexto": "Gestão de Custos/Convenio",
+   "assinatura": "convenio",
+   "papel": "dimensao",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "Convênio"
+  },
+  {
+   "contexto": "Gestão de Custos/Convenio",
+   "assinatura": "descricao",
+   "papel": "dimensao",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "Descrição"
+  },
+  {
+   "contexto": "Gestão de Custos/Convenio",
+   "assinatura": "diariasqtd",
+   "papel": "quantidade",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "DIARIAS (Qtd)"
+  },
+  {
+   "contexto": "Gestão de Custos/Convenio",
+   "assinatura": "diariasvalor",
+   "papel": "valor",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "DIARIAS (Valor)"
+  },
+  {
+   "contexto": "Gestão de Custos/Convenio",
+   "assinatura": "examesediagnosticosqtd",
+   "papel": "quantidade",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "EXAMES E DIAGNOSTICOS (Qtd)"
+  },
+  {
+   "contexto": "Gestão de Custos/Convenio",
+   "assinatura": "examesediagnosticosvalor",
+   "papel": "valor",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "EXAMES E DIAGNOSTICOS (Valor)"
+  },
+  {
+   "contexto": "Gestão de Custos/Convenio",
+   "assinatura": "gasesmedicinaisqtd",
+   "papel": "quantidade",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "GASES MEDICINAIS (Qtd)"
+  },
+  {
+   "contexto": "Gestão de Custos/Convenio",
+   "assinatura": "gasesmedicinaisvalor",
+   "papel": "valor",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "GASES MEDICINAIS (Valor)"
+  },
+  {
+   "contexto": "Gestão de Custos/Convenio",
+   "assinatura": "gastosextrasqtd",
+   "papel": "quantidade",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "GASTOS EXTRAS (Qtd)"
+  },
+  {
+   "contexto": "Gestão de Custos/Convenio",
+   "assinatura": "gastosextrasvalor",
+   "papel": "ignorar",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "GASTOS EXTRAS (Valor)"
+  },
+  {
+   "contexto": "Gestão de Custos/Convenio",
+   "assinatura": "honorariosmedicosqtd",
+   "papel": "quantidade",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "HONORARIOS MEDICOS (Qtd)"
+  },
+  {
+   "contexto": "Gestão de Custos/Convenio",
+   "assinatura": "honorariosmedicosvalor",
+   "papel": "valor",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "HONORARIOS MEDICOS (Valor)"
+  },
+  {
+   "contexto": "Gestão de Custos/Convenio",
+   "assinatura": "itens",
+   "papel": "quantidade",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "Itens"
+  },
+  {
+   "contexto": "Gestão de Custos/Convenio",
+   "assinatura": "matespeciaisorteseseprotesesopmeqtd",
+   "papel": "quantidade",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "MAT ESPECIAIS, ORTESES E PROTESES (OPME) (Qtd)"
+  },
+  {
+   "contexto": "Gestão de Custos/Convenio",
+   "assinatura": "matespeciaisorteseseprotesesopmevalor",
+   "papel": "valor",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "MAT ESPECIAIS, ORTESES E PROTESES (OPME) (Valor)"
+  },
+  {
+   "contexto": "Gestão de Custos/Convenio",
+   "assinatura": "matmedqtd",
+   "papel": "quantidade",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "Mat/Med (Qtd)"
+  },
+  {
+   "contexto": "Gestão de Custos/Convenio",
+   "assinatura": "matmedvalor",
+   "papel": "valor",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "Mat/Med (Valor)"
+  },
+  {
+   "contexto": "Gestão de Custos/Convenio",
+   "assinatura": "paciente",
+   "papel": "pessoa",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "Paciente"
+  },
+  {
+   "contexto": "Gestão de Custos/Convenio",
+   "assinatura": "pacotesespeciaisqtd",
+   "papel": "quantidade",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "PACOTES ESPECIAIS (Qtd)"
+  },
+  {
+   "contexto": "Gestão de Custos/Convenio",
+   "assinatura": "pacotesespeciaisvalor",
+   "papel": "valor",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "PACOTES ESPECIAIS (Valor)"
+  },
+  {
+   "contexto": "Gestão de Custos/Convenio",
+   "assinatura": "taxasqtd",
+   "papel": "quantidade",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "TAXAS (Qtd)"
+  },
+  {
+   "contexto": "Gestão de Custos/Convenio",
+   "assinatura": "taxasvalor",
+   "papel": "valor",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "TAXAS (Valor)"
+  },
+  {
+   "contexto": "Gestão de Custos/Convenio",
+   "assinatura": "valortotal",
+   "papel": "valor",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "Valor total"
+  },
+  {
+   "contexto": "Gestão de Custos/Dados Hunf",
+   "assinatura": "conta",
+   "papel": "dimensao",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "Conta"
+  },
+  {
+   "contexto": "Gestão de Custos/Dados Hunf",
+   "assinatura": "contas",
+   "papel": "dimensao",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "Contas"
+  },
+  {
+   "contexto": "Gestão de Custos/Dados Hunf",
+   "assinatura": "convenio",
+   "papel": "dimensao",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "Convenio"
+  },
+  {
+   "contexto": "Gestão de Custos/Dados Hunf",
+   "assinatura": "grupo",
+   "papel": "dimensao",
+   "agregacao": null,
+   "confirmacoes": 2,
+   "origem": "leitura_inicial",
+   "rotulo": "Grupo"
+  },
+  {
+   "contexto": "Gestão de Custos/Dados Hunf",
+   "assinatura": "mes",
+   "papel": "data",
+   "agregacao": null,
+   "confirmacoes": 3,
+   "origem": "leitura_inicial",
+   "rotulo": "Mês"
+  },
+  {
+   "contexto": "Gestão de Custos/Dados Hunf",
+   "assinatura": "valor",
+   "papel": "valor",
+   "agregacao": null,
+   "confirmacoes": 3,
+   "origem": "leitura_inicial",
+   "rotulo": "Valor"
+  },
+  {
+   "contexto": "Gestão de Custos/Glosa",
+   "assinatura": "atdmv",
+   "papel": "identificador",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "ATD. MV"
+  },
+  {
+   "contexto": "Gestão de Custos/Glosa",
+   "assinatura": "conferencia1",
+   "papel": "dimensao",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "CONFERÊNCIA 1"
+  },
+  {
+   "contexto": "Gestão de Custos/Glosa",
+   "assinatura": "conferencia2",
+   "papel": "dimensao",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "CONFERÊNCIA 2"
+  },
+  {
+   "contexto": "Gestão de Custos/Glosa",
+   "assinatura": "convenio",
+   "papel": "dimensao",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "CONVÊNIO"
+  },
+  {
+   "contexto": "Gestão de Custos/Glosa",
+   "assinatura": "datadoenvio",
+   "papel": "data",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "DATA DO ENVIO"
+  },
+  {
+   "contexto": "Gestão de Custos/Glosa",
+   "assinatura": "datadopagamento",
+   "papel": "data",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "DATA DO PAGAMENTO"
+  },
+  {
+   "contexto": "Gestão de Custos/Glosa",
+   "assinatura": "datadopagamentorecurso",
+   "papel": "data",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "DATA DO PAGAMENTO RECURSO"
+  },
+  {
+   "contexto": "Gestão de Custos/Glosa",
+   "assinatura": "datadorecurso",
+   "papel": "data",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "DATA DO RECURSO"
+  },
+  {
+   "contexto": "Gestão de Custos/Glosa",
+   "assinatura": "nºprotocolo",
+   "papel": "identificador",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "Nº PROTOCOLO"
+  },
+  {
+   "contexto": "Gestão de Custos/Glosa",
+   "assinatura": "paciente",
+   "papel": "pessoa",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "PACIENTE"
+  },
+  {
+   "contexto": "Gestão de Custos/Glosa",
+   "assinatura": "status",
+   "papel": "dimensao",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "STATUS"
+  },
+  {
+   "contexto": "Gestão de Custos/Glosa",
+   "assinatura": "statusdorecurso",
+   "papel": "dimensao",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "STATUS DO RECURSO"
+  },
+  {
+   "contexto": "Gestão de Custos/Glosa",
+   "assinatura": "statusrecurso",
+   "papel": "dimensao",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "STATUS RECURSO"
+  },
+  {
+   "contexto": "Gestão de Custos/Glosa",
+   "assinatura": "tipodeatend",
+   "papel": "dimensao",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "Tipo de Atend."
+  },
+  {
+   "contexto": "Gestão de Custos/Glosa",
+   "assinatura": "valoracatado",
+   "papel": "valor",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "VALOR ACATADO"
+  },
+  {
+   "contexto": "Gestão de Custos/Glosa",
+   "assinatura": "valordaglosa",
+   "papel": "valor",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "VALOR DA GLOSA"
+  },
+  {
+   "contexto": "Gestão de Custos/Glosa",
+   "assinatura": "valorfaturado",
+   "papel": "valor",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "VALOR FATURADO"
+  },
+  {
+   "contexto": "Gestão de Custos/Glosa",
+   "assinatura": "valornegado",
+   "papel": "ignorar",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "VALOR NEGADO"
+  },
+  {
+   "contexto": "Gestão de Custos/Glosa",
+   "assinatura": "valorpago",
+   "papel": "valor",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "VALOR PAGO"
+  },
+  {
+   "contexto": "Gestão de Custos/Glosa",
+   "assinatura": "valorpagorecurso",
+   "papel": "valor",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "VALOR PAGO RECURSO"
+  },
+  {
+   "contexto": "Gestão de Custos/Glosa",
+   "assinatura": "valorrecursado",
+   "papel": "valor",
+   "agregacao": null,
+   "confirmacoes": 1,
+   "origem": "leitura_inicial",
+   "rotulo": "VALOR RECURSADO"
+  }
+ ]
+}

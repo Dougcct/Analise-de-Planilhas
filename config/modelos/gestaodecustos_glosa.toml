@@ -1,0 +1,149 @@
+# Gerado pelo Cérebro a partir de 2 planilha(s). Só estrutura — nenhum dado de célula.
+versao = 2
+nome = "Glosa"
+setor = "Gestão de Custos"
+tipo_documento = "Glosa"
+
+[leitura]
+layout = "plana"
+
+[[coluna]]
+canonico  = "convenio"
+rotulo    = "CONVÊNIO"
+tipo      = "categorico"
+papel     = "dimensao"
+sinonimos = []
+
+[[coluna]]
+canonico  = "paciente"
+rotulo    = "PACIENTE"
+tipo      = "texto_livre"
+papel     = "pessoa"
+sinonimos = []
+
+[[coluna]]
+canonico  = "atdmv"
+rotulo    = "ATD. MV"
+tipo      = "identificador"
+papel     = "identificador"
+sinonimos = []
+
+[[coluna]]
+canonico  = "tipodeatend"
+rotulo    = "Tipo de Atend."
+tipo      = "categorico"
+papel     = "dimensao"
+sinonimos = []
+
+[[coluna]]
+canonico  = "nºprotocolo"
+rotulo    = "Nº PROTOCOLO"
+tipo      = "identificador"
+papel     = "identificador"
+sinonimos = []
+
+[[coluna]]
+canonico  = "valorfaturado"
+rotulo    = "VALOR FATURADO"
+tipo      = "moeda"
+papel     = "valor"
+sinonimos = []
+
+[[coluna]]
+canonico  = "datadoenvio"
+rotulo    = "DATA DO ENVIO"
+tipo      = "data"
+papel     = "data"
+sinonimos = []
+
+[[coluna]]
+canonico  = "status"
+rotulo    = "STATUS"
+tipo      = "categorico"
+papel     = "dimensao"
+sinonimos = []
+
+[[coluna]]
+canonico  = "valorpago"
+rotulo    = "VALOR PAGO"
+tipo      = "moeda"
+papel     = "valor"
+sinonimos = []
+
+[[coluna]]
+canonico  = "datadopagamento"
+rotulo    = "DATA DO PAGAMENTO"
+tipo      = "data"
+papel     = "data"
+sinonimos = []
+
+[[coluna]]
+canonico  = "valordaglosa"
+rotulo    = "VALOR DA GLOSA"
+tipo      = "moeda"
+papel     = "valor"
+sinonimos = []
+
+[[coluna]]
+canonico  = "valorrecursado"
+rotulo    = "VALOR RECURSADO"
+tipo      = "moeda"
+papel     = "valor"
+sinonimos = []
+
+[[coluna]]
+canonico  = "valoracatado"
+rotulo    = "VALOR ACATADO"
+tipo      = "moeda"
+papel     = "valor"
+sinonimos = []
+
+[[coluna]]
+canonico  = "datadorecurso"
+rotulo    = "DATA DO RECURSO"
+tipo      = "data"
+papel     = "data"
+sinonimos = []
+opcional  = true
+
+[[coluna]]
+canonico  = "statusrecurso"
+rotulo    = "STATUS RECURSO"
+tipo      = "categorico"
+papel     = "dimensao"
+sinonimos = ["STATUS DO RECURSO"]
+
+[[coluna]]
+canonico  = "valorpagorecurso"
+rotulo    = "VALOR PAGO RECURSO"
+tipo      = "moeda"
+papel     = "valor"
+sinonimos = []
+
+[[coluna]]
+canonico  = "valornegado"
+rotulo    = "VALOR NEGADO"
+tipo      = "vazio"
+papel     = "ignorar"
+sinonimos = []
+
+[[coluna]]
+canonico  = "datadopagamentorecurso"
+rotulo    = "DATA DO PAGAMENTO RECURSO"
+tipo      = "data"
+papel     = "data"
+sinonimos = []
+
+[[coluna]]
+canonico  = "conferencia1"
+rotulo    = "CONFERÊNCIA 1"
+tipo      = "categorico"
+papel     = "dimensao"
+sinonimos = []
+
+[[coluna]]
+canonico  = "conferencia2"
+rotulo    = "CONFERÊNCIA 2"
+tipo      = "categorico"
+papel     = "dimensao"
+sinonimos = []

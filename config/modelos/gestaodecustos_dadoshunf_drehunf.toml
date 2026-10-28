@@ -1,0 +1,37 @@
+# Gerado pelo Cérebro a partir de 1 planilha(s). Só estrutura — nenhum dado de célula.
+versao = 2
+nome = "Dados Hunf — DRE HUNF"
+setor = "Gestão de Custos"
+tipo_documento = "Dados Hunf"
+aba = "DRE HUNF"
+
+[leitura]
+layout = "matriz_mensal"
+
+[[coluna]]
+canonico  = "grupo"
+rotulo    = "Grupo"
+tipo      = "categorico"
+papel     = "dimensao"
+sinonimos = []
+
+[[coluna]]
+canonico  = "conta"
+rotulo    = "Conta"
+tipo      = "categorico"
+papel     = "dimensao"
+sinonimos = []
+
+[[coluna]]
+canonico  = "mes"
+rotulo    = "Mês"
+tipo      = "data"
+papel     = "data"
+sinonimos = []
+
+[[coluna]]
+canonico  = "valor"
+rotulo    = "Valor"
+tipo      = "moeda"
+papel     = "valor"
+sinonimos = []

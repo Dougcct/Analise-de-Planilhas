@@ -1,0 +1,178 @@
+# Gerado pelo Cérebro a partir de 2 planilha(s). Só estrutura — nenhum dado de célula.
+versao = 2
+nome = "Convenio"
+setor = "Gestão de Custos"
+tipo_documento = "Convenio"
+
+[leitura]
+layout = "blocos"
+
+[[coluna]]
+canonico  = "codatd"
+rotulo    = "Cód. Atd."
+tipo      = "identificador"
+papel     = "identificador"
+sinonimos = []
+
+[[coluna]]
+canonico  = "paciente"
+rotulo    = "Paciente"
+tipo      = "texto_livre"
+papel     = "pessoa"
+sinonimos = []
+
+[[coluna]]
+canonico  = "convenio"
+rotulo    = "Convênio"
+tipo      = "categorico"
+papel     = "dimensao"
+sinonimos = []
+
+[[coluna]]
+canonico  = "diariasqtd"
+rotulo    = "DIARIAS (Qtd)"
+tipo      = "inteiro"
+papel     = "quantidade"
+sinonimos = []
+
+[[coluna]]
+canonico  = "diariasvalor"
+rotulo    = "DIARIAS (Valor)"
+tipo      = "moeda"
+papel     = "valor"
+sinonimos = []
+
+[[coluna]]
+canonico  = "matmedqtd"
+rotulo    = "Mat/Med (Qtd)"
+tipo      = "inteiro"
+papel     = "quantidade"
+sinonimos = []
+
+[[coluna]]
+canonico  = "matmedvalor"
+rotulo    = "Mat/Med (Valor)"
+tipo      = "moeda"
+papel     = "valor"
+sinonimos = []
+
+[[coluna]]
+canonico  = "pacotesespeciaisqtd"
+rotulo    = "PACOTES ESPECIAIS (Qtd)"
+tipo      = "inteiro"
+papel     = "quantidade"
+sinonimos = []
+
+[[coluna]]
+canonico  = "pacotesespeciaisvalor"
+rotulo    = "PACOTES ESPECIAIS (Valor)"
+tipo      = "moeda"
+papel     = "valor"
+sinonimos = []
+
+[[coluna]]
+canonico  = "honorariosmedicosqtd"
+rotulo    = "HONORARIOS MEDICOS (Qtd)"
+tipo      = "inteiro"
+papel     = "quantidade"
+sinonimos = []
+
+[[coluna]]
+canonico  = "honorariosmedicosvalor"
+rotulo    = "HONORARIOS MEDICOS (Valor)"
+tipo      = "moeda"
+papel     = "valor"
+sinonimos = []
+
+[[coluna]]
+canonico  = "examesediagnosticosqtd"
+rotulo    = "EXAMES E DIAGNOSTICOS (Qtd)"
+tipo      = "inteiro"
+papel     = "quantidade"
+sinonimos = []
+
+[[coluna]]
+canonico  = "examesediagnosticosvalor"
+rotulo    = "EXAMES E DIAGNOSTICOS (Valor)"
+tipo      = "moeda"
+papel     = "valor"
+sinonimos = []
+
+[[coluna]]
+canonico  = "valortotal"
+rotulo    = "Valor total"
+tipo      = "moeda"
+papel     = "valor"
+sinonimos = []
+
+[[coluna]]
+canonico  = "descricao"
+rotulo    = "Descrição"
+tipo      = "texto_livre"
+papel     = "dimensao"
+sinonimos = []
+
+[[coluna]]
+canonico  = "itens"
+rotulo    = "Itens"
+tipo      = "inteiro"
+papel     = "quantidade"
+sinonimos = []
+
+[[coluna]]
+canonico  = "taxasqtd"
+rotulo    = "TAXAS (Qtd)"
+tipo      = "inteiro"
+papel     = "quantidade"
+sinonimos = []
+
+[[coluna]]
+canonico  = "taxasvalor"
+rotulo    = "TAXAS (Valor)"
+tipo      = "moeda"
+papel     = "valor"
+sinonimos = []
+
+[[coluna]]
+canonico  = "matespeciaisorteseseprotesesopmeqtd"
+rotulo    = "MAT ESPECIAIS, ORTESES E PROTESES (OPME) (Qtd)"
+tipo      = "inteiro"
+papel     = "quantidade"
+sinonimos = []
+
+[[coluna]]
+canonico  = "matespeciaisorteseseprotesesopmevalor"
+rotulo    = "MAT ESPECIAIS, ORTESES E PROTESES (OPME) (Valor)"
+tipo      = "moeda"
+papel     = "valor"
+sinonimos = []
+
+[[coluna]]
+canonico  = "gasesmedicinaisqtd"
+rotulo    = "GASES MEDICINAIS (Qtd)"
+tipo      = "inteiro"
+papel     = "quantidade"
+sinonimos = []
+
+[[coluna]]
+canonico  = "gasesmedicinaisvalor"
+rotulo    = "GASES MEDICINAIS (Valor)"
+tipo      = "moeda"
+papel     = "valor"
+sinonimos = []
+
+[[coluna]]
+canonico  = "gastosextrasqtd"
+rotulo    = "GASTOS EXTRAS (Qtd)"
+tipo      = "vazio"
+papel     = "quantidade"
+sinonimos = []
+opcional  = true
+
+[[coluna]]
+canonico  = "gastosextrasvalor"
+rotulo    = "GASTOS EXTRAS (Valor)"
+tipo      = "vazio"
+papel     = "ignorar"
+sinonimos = []
+opcional  = true

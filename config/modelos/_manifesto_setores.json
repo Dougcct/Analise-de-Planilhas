@@ -1,0 +1,50 @@
+{
+ "versao": 1,
+ "tipos": [
+  {
+   "setor": "Gestão de Custos",
+   "tipo_documento": "Convenio",
+   "nome": "Convenio",
+   "aba": null,
+   "modelo": "gestaodecustos_convenio",
+   "arquivos": 2,
+   "layout": "blocos"
+  },
+  {
+   "setor": "Gestão de Custos",
+   "tipo_documento": "Dados Hunf",
+   "nome": "Dados Hunf — CUSTOS",
+   "aba": "CUSTOS",
+   "modelo": "gestaodecustos_dadoshunf_custos",
+   "arquivos": 1,
+   "layout": "matriz_mensal"
+  },
+  {
+   "setor": "Gestão de Custos",
+   "tipo_documento": "Dados Hunf",
+   "nome": "Dados Hunf — DRE HUNF",
+   "aba": "DRE HUNF",
+   "modelo": "gestaodecustos_dadoshunf_drehunf",
+   "arquivos": 1,
+   "layout": "matriz_mensal"
+  },
+  {
+   "setor": "Gestão de Custos",
+   "tipo_documento": "Dados Hunf",
+   "nome": "Dados Hunf — FATURAMENTO",
+   "aba": "FATURAMENTO",
+   "modelo": "gestaodecustos_dadoshunf_faturamento",
+   "arquivos": 1,
+   "layout": "matriz_mensal"
+  },
+  {
+   "setor": "Gestão de Custos",
+   "tipo_documento": "Glosa",
+   "nome": "Glosa",
+   "aba": null,
+   "modelo": "gestaodecustos_glosa",
+   "arquivos": 2,
+   "layout": "plana"
+  }
+ ]
+}
