@@ -4,6 +4,21 @@ Formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · [SemVer](
 
 ## [Não lançado]
 
+### Adicionado (relatório estilo painel/Power BI + comparativo)
+- **Painel executivo** no topo de cada relatório (pensado para diretoria): banda de KPIs grandes com
+  **variação ▲▼ vs. período anterior** (cor por bom/ruim/neutro), medidores de meta e os 2 gráficos-chave
+  promovidos. O «Resumo e achados» passou a focar nos achados/observações.
+- **Visual de dashboard** (antes as barras eram monótonas): gráfico de **rosca (donut)** com legenda
+  (valor + %) para composições de poucas categorias (`graficos.rosca`); **barras coloridas em trilho**
+  com paleta por categoria (`graficos.barras(..., paleta=True)`); **linhas com área preenchida** em
+  gradiente e colunas com gradiente suave; cards de KPI com accent colorido, sombra e hover.
+- **Comparativo entre períodos**: seção «Comparar» com dois seletores — escolhe dois períodos (ex.: 2025 ×
+  2026) e vê os indicadores lado a lado com Δ (absoluto e %). Dados embutidos; nada recalcula no navegador.
+- **Comparação sem coluna de data**: quando o relatório não tem data (ex.: Convênio), as vistas e o
+  comparativo passam a usar a dimensão **Ano** ou **Arquivo de origem** (cada planilha somada vira uma vista).
+- `KPI` ganhou `valor_num`/`fmt`/`sentido` (número + unidade + «maior/menor é melhor») para o delta ser
+  preciso; preenchido no motor genérico, na série do Cérebro e nos relatórios financeiros.
+
 ### Removido (produto passa a ser só web)
 - **App desktop PyQt6** (`app/` inteira e `main.py`) e o **build/distribuição `.exe`** (Nuitka): `build.bat`,
   `scripts/empacotar.py`, `scripts/versao.py`, `.github/workflows/release.yml`.

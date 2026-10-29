@@ -6,10 +6,20 @@ Sem regra de negócio: recebe categorias e valores prontos.
 """
 from __future__ import annotations
 
+import itertools
 import math
 from html import escape
 
 from markupsafe import Markup
+
+# Paleta categórica (mesmas variáveis do template; trocam no modo escuro).
+PALETA = ["var(--s1)", "var(--s3)", "var(--s4)", "var(--s5)", "var(--s2)", "var(--s6)", "var(--s8)", "var(--s7)"]
+_SEQ = itertools.count()
+
+
+def _gid(prefixo: str = "g") -> str:
+    """ID único para <defs> de gradiente (evita colisão entre vários gráficos na mesma página)."""
+    return f"{prefixo}{next(_SEQ)}"
 
 
 def rotulo(texto) -> str:
@@ -36,7 +46,7 @@ def _fmt(v: float) -> str:
 def curto(v: float) -> str:
     """Valor compacto para eixos e rótulos de gráfico: 12.345.678 → '12,3 mi'; 850.000 → '850 mil'."""
     a, s = abs(v), "-" if v < 0 else ""
-    num = lambda x, c: f"{x:,.{c}f}".replace(",", "X").replace(".", ",").replace("X", ".")  # noqa: E731
+    num = lambda x, c: f"{x:,.{c}f}".replace(",", "X").replace(".", ",").replace("X", ".")
     if a >= 1e9:
         return f"{s}{num(a / 1e9, 1)} bi"
     if a >= 1e6:
@@ -85,10 +95,17 @@ def colunas(categorias: list[str], series: list[tuple[str, list[float], str]], u
     ymax = passo * math.ceil((max(totais) or 1) / passo)
     banda = pw / n
     larg = min(24 if n > 8 else 32, banda * 0.66)
-    y = lambda v: mt + ph - (v / ymax) * ph  # noqa: E731
+    y = lambda v: mt + ph - (v / ymax) * ph
     cada = _passo_rotulos(n, max(6, W // 55))
 
-    p = [f'<svg viewBox="0 0 {W} {H}" class="grafico" role="img" aria-label="Gráfico de colunas">']
+    cores = list(dict.fromkeys(c for _, _, c in series))     # cores distintas → gradiente vertical suave
+    grad = {c: _gid("col") for c in cores}
+    defs = "".join(f'<linearGradient id="{g}" x1="0" y1="0" x2="0" y2="1">'
+                   f'<stop offset="0%" stop-color="{c}" stop-opacity="0.82"/>'
+                   f'<stop offset="100%" stop-color="{c}" stop-opacity="1"/></linearGradient>'
+                   for c, g in grad.items())
+    p = [f'<svg viewBox="0 0 {W} {H}" class="grafico" role="img" aria-label="Gráfico de colunas">',
+         f'<defs>{defs}</defs>']
     v = 0
     while v <= ymax + 1e-9:
         yy = y(v)
@@ -108,10 +125,11 @@ def colunas(categorias: list[str], series: list[tuple[str, list[float], str]], u
             tip = escape(f"{cat} · {rotulo(nome)}: {f_tip(val)}" if len(series) > 1 else f"{cat}: {f_tip(val)}")
             if len(series) > 1 and topo:
                 tip = escape(f"{cat} · {rotulo(nome)}: {f_tip(val)} · total {f_tip(totais[i])}")
+            fill = f"url(#{grad[cor]})"
             if topo:
-                p.append(f'<path d="{_rect_topo_arredondado(x, y1, larg, h)}" fill="{cor}" data-tip="{tip}"/>')
+                p.append(f'<path d="{_rect_topo_arredondado(x, y1, larg, h)}" fill="{fill}" data-tip="{tip}"/>')
             else:
-                p.append(f'<rect x="{x:.1f}" y="{y1 + 2:.1f}" width="{larg:.1f}" height="{h:.1f}" fill="{cor}" data-tip="{tip}"/>')
+                p.append(f'<rect x="{x:.1f}" y="{y1 + 2:.1f}" width="{larg:.1f}" height="{h:.1f}" fill="{fill}" data-tip="{tip}"/>')
             acumulado += val
         cx = x + larg / 2
         if totais[i] and banda >= 34:            # cabe o rótulo sobre a coluna sem sobrepor
@@ -146,11 +164,19 @@ def linhas(categorias: list[str], series: list[tuple[str, list, str]], moeda: bo
     ymax = passo * math.ceil(hi / passo) if hi > 0 else 0.0
     if ymax == ymin:
         ymax = ymin + passo
-    x = lambda i: ml + (pw * (i + 0.5) / n)  # noqa: E731
-    y = lambda v: mt + ph - ((v - ymin) / (ymax - ymin)) * ph  # noqa: E731
+    x = lambda i: ml + (pw * (i + 0.5) / n)
+    y = lambda v: mt + ph - ((v - ymin) / (ymax - ymin)) * ph
     cada = _passo_rotulos(n, max(6, W // 55))
 
+    y0 = y(0) if ymin <= 0 <= ymax else y(ymin)      # linha de base p/ a área
+    area = len(series) == 1
+    gid = _gid("area") if area else ""
     p = [f'<svg viewBox="0 0 {W} {H}" class="grafico" role="img" aria-label="Gráfico de linhas">']
+    if area:
+        cor0 = series[0][2]
+        p.append(f'<defs><linearGradient id="{gid}" x1="0" y1="0" x2="0" y2="1">'
+                 f'<stop offset="0%" stop-color="{cor0}" stop-opacity="0.28"/>'
+                 f'<stop offset="100%" stop-color="{cor0}" stop-opacity="0.02"/></linearGradient></defs>')
     v = ymin
     while v <= ymax + 1e-9:
         yy = y(v)
@@ -158,17 +184,25 @@ def linhas(categorias: list[str], series: list[tuple[str, list, str]], moeda: bo
         p.append(f'<line class="{cls}" x1="{ml}" x2="{W - mr}" y1="{yy:.1f}" y2="{yy:.1f}"/>')
         p.append(f'<text class="eixo" x="{ml - 6}" y="{yy + 4:.1f}" text-anchor="end">{f_eixo(v)}</text>')
         v += passo
+    def _fechar(tr: list[str], cor: str):
+        if len(tr) <= 1:
+            return
+        if area:
+            x_ini, x_fim = tr[0].split(",")[0], tr[-1].split(",")[0]
+            p.append(f'<polygon fill="url(#{gid})" stroke="none" '
+                     f'points="{x_ini},{y0:.1f} {" ".join(tr)} {x_fim},{y0:.1f}"/>')
+        p.append(f'<polyline fill="none" stroke="{cor}" stroke-width="2.5" stroke-linejoin="round" '
+                 f'stroke-linecap="round" points="{" ".join(tr)}"/>')
+
     for nome, vs, cor in series:
         trecho: list[str] = []
         for i, val in enumerate(vs):
             if val is None:
-                if len(trecho) > 1:
-                    p.append(f'<polyline fill="none" stroke="{cor}" stroke-width="2" points="{" ".join(trecho)}"/>')
+                _fechar(trecho, cor)
                 trecho = []
                 continue
             trecho.append(f"{x(i):.1f},{y(val):.1f}")
-        if len(trecho) > 1:
-            p.append(f'<polyline fill="none" stroke="{cor}" stroke-width="2" points="{" ".join(trecho)}"/>')
+        _fechar(trecho, cor)
         for i, val in enumerate(vs):
             if val is not None:
                 tip = escape(f"{categorias[i]} · {nome}: {f_tip(val)}")
@@ -211,9 +245,11 @@ def medidor(metas) -> Markup:
 
 
 def barras(itens: list[dict], campo_valor: str = "n", campo_rotulo: str = "nome", sufixo: str = "",
-           cor: str = "var(--s1)", detalhe: str | None = None, moeda: bool = False) -> Markup:
-    """Barras horizontais em HTML. `detalhe` = chave do item exibida no tooltip. `moeda=True`: valor em
-    R$ compacto na barra e R$ completo no tooltip. Valores negativos são desenhados pelo módulo."""
+           cor: str = "var(--s1)", detalhe: str | None = None, moeda: bool = False,
+           paleta: bool = False) -> Markup:
+    """Barras horizontais em HTML, em «trilho» (fundo + preenchimento com leve gradiente) e valor alinhado
+    à direita. `detalhe` = chave do item no tooltip. `moeda=True`: R$ compacto na barra e completo no tooltip.
+    `paleta=True`: cada barra ganha uma cor da paleta categórica (bom p/ dimensões). Negativos em alerta."""
     if not itens:
         return Markup('<p class="vazio">Sem dados no recorte.</p>')
     from .formatacao import fmt_moeda
@@ -221,17 +257,49 @@ def barras(itens: list[dict], campo_valor: str = "n", campo_rotulo: str = "nome"
     f_tip = fmt_moeda if moeda else (lambda v: f"{_fmt(v)}{sufixo}")
     maximo = max(abs(i[campo_valor] or 0) for i in itens) or 1
     saida = []
-    for it in itens:
+    for i, it in enumerate(itens):
         val = it[campo_valor] or 0
-        larg = max(abs(val) / maximo * 100, 0.8)
+        larg = max(abs(val) / maximo * 100, 1.2)
         rot = escape(str(it[campo_rotulo]))
         tip = f"{it[campo_rotulo]}: {f_tip(val)}"
         if detalhe and it.get(detalhe):
             tip += f" · {it[detalhe]}"
-        cor_it = "var(--alerta)" if val < 0 else cor
+        cor_it = "var(--alerta)" if val < 0 else (PALETA[i % len(PALETA)] if paleta else cor)
         saida.append(
             f'<div class="barra-linha" data-tip="{escape(tip)}"><span class="barra-rot" title="{rot}">{rot}</span>'
-            f'<span class="barra-trilho"><span class="barra" style="width:{larg:.1f}%;--cor:{cor_it}"></span>'
-            f'<span class="barra-val">{escape(f_val(val))}</span></span></div>'
+            f'<span class="barra-trilho"><span class="barra" style="width:{larg:.1f}%;--cor:{cor_it}"></span></span>'
+            f'<span class="barra-val">{escape(f_val(val))}</span></div>'
         )
     return Markup(f'<div class="barras">{"".join(saida)}</div>')
+
+
+def rosca(itens: list[dict], campo_valor: str = "n", campo_rotulo: str = "nome", moeda: bool = False,
+          sufixo: str = "", centro: str | None = None) -> Markup:
+    """Gráfico de ROSCA (donut) + legenda com valor e %. Para composições de poucas categorias (ex.:
+    convênio, origem). `itens` = dicts; `centro` = rótulo do total no miolo (ex.: "Atendimentos")."""
+    dados = [(str(it[campo_rotulo]), float(it[campo_valor] or 0)) for it in itens if (it[campo_valor] or 0) > 0]
+    if not dados:
+        return Markup('<p class="vazio">Sem dados no recorte.</p>')
+    from .formatacao import fmt_moeda
+    f_val = fmt_moeda if moeda else (lambda v: f"{_fmt(v)}{sufixo}")
+    total = sum(v for _, v in dados)
+    r, cx, cy, esp = 52, 60, 60, 20          # raio, centro, espessura do anel
+    C = 2 * math.pi * r
+    segs, legs, off = [], [], 0.0
+    for i, (nome, val) in enumerate(dados):
+        frac = val / total if total else 0
+        cor = PALETA[i % len(PALETA)]
+        dash = f"{frac * C:.2f} {C - frac * C:.2f}"
+        tip = escape(f"{nome}: {f_val(val)} · {_fmt(round(frac * 100, 1))}%")
+        segs.append(f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="{cor}" stroke-width="{esp}" '
+                    f'stroke-dasharray="{dash}" stroke-dashoffset="{-off * C:.2f}" data-tip="{tip}"/>')
+        legs.append(f'<li><i style="background:{cor}"></i><span class="rz-nome" title="{escape(nome)}">'
+                    f'{escape(rotulo(nome))}</span><b>{escape(f_val(val))}</b>'
+                    f'<span class="rz-pct">{_fmt(round(frac * 100, 1))}%</span></li>')
+        off += frac
+    centro_txt = (f'<text class="rz-num" x="{cx}" y="{cy - 2}" text-anchor="middle">{escape(curto(total) if moeda else _fmt(total))}</text>'
+                  f'<text class="rz-rot" x="{cx}" y="{cy + 14}" text-anchor="middle">{escape(centro)}</text>') if centro else \
+                 (f'<text class="rz-num" x="{cx}" y="{cy + 4}" text-anchor="middle">{escape(curto(total) if moeda else _fmt(total))}</text>')
+    svg = (f'<svg viewBox="0 0 120 120" class="rosca-svg" role="img" aria-label="Gráfico de rosca">'
+           f'<g transform="rotate(-90 {cx} {cy})">{"".join(segs)}</g>{centro_txt}</svg>')
+    return Markup(f'<div class="rosca-wrap">{svg}<ul class="rosca-leg">{"".join(legs)}</ul></div>')

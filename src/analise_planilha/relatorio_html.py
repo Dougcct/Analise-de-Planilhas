@@ -13,6 +13,7 @@ inflar o arquivo.
 from __future__ import annotations
 
 import datetime as _dt
+import re
 from dataclasses import replace
 from pathlib import Path
 
@@ -21,7 +22,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from . import __version__, config, graficos
 from .especificacao import ESTATISTICAS
-from .formatacao import formatar_tabela
+from .formatacao import fmt_pct, formatar_tabela
 from .modelos import Analise, Filtros
 
 MAX_LINHAS_BASE = 5000          # base detalhada no HTML: acima disso, corta (o arquivo ficaria enorme)
@@ -50,6 +51,71 @@ def _ancora(texto: str) -> str:
     return "s-" + "".join(c if c.isalnum() else "-" for c in str(texto).lower())
 
 
+# ---- comparativo entre períodos (delta ▲▼ + modo Comparar) ------------------------------------
+_RE_PAREN = re.compile(r"\([^)]*\)")
+_RE_ANO = re.compile(r"\b(19|20)\d{2}\b")
+MAX_DESTAQUES = 2          # gráficos promovidos ao painel executivo (diretoria)
+
+
+def _chave_kpi(rotulo: str) -> str:
+    """Rótulo normalizado para casar o MESMO KPI entre períodos (tira o período do texto).
+
+    «Acumulado 2026 (jan–dez)» e «Último mês (dez/26)» viram «acumulado» e «último mês», então o
+    delta compara o indicador certo mesmo quando o rótulo embute o ano/mês do recorte."""
+    s = _RE_ANO.sub("", _RE_PAREN.sub("", str(rotulo)))
+    return " ".join(s.lower().split())
+
+
+def _mapa_num(analise: Analise) -> dict[str, float]:
+    """chave do KPI → valor numérico (só os que têm número), para buscar o valor do período anterior."""
+    out: dict[str, float] = {}
+    for k in analise.kpis:
+        if getattr(k, "valor_num", None) is not None:
+            out.setdefault(_chave_kpi(k.rotulo), float(k.valor_num))
+    return out
+
+
+def _periodo_anterior(per) -> tuple[str, str] | None:
+    """Janela imediatamente anterior, de MESMA duração (ano → ano anterior; 12 meses → 12 meses antes)."""
+    if not per or (isinstance(per, tuple) and per and per[0] == "meses"):
+        return None
+    try:
+        ini, fim = pd.Timestamp(per[0]), pd.Timestamp(per[1])
+    except (ValueError, TypeError):
+        return None
+    prev_fim = ini - pd.Timedelta(days=1)
+    prev_ini = prev_fim - (fim - ini)
+    return (prev_ini.date().isoformat(), prev_fim.date().isoformat())
+
+
+def _delta(cur: float | None, prev: float | None, sentido: str) -> dict | None:
+    """Variação relativa vs. período anterior: % + direção + classe de cor (bom/ruim/neutro)."""
+    if cur is None or prev is None or prev == 0:
+        return None
+    pct = (cur - prev) / abs(prev)
+    direc = "up" if cur > prev else ("down" if cur < prev else "flat")
+    if sentido == "+":
+        classe = "bom" if cur > prev else ("ruim" if cur < prev else "neutro")
+    elif sentido == "-":
+        classe = "ruim" if cur > prev else ("bom" if cur < prev else "neutro")
+    else:
+        classe = "neutro"
+    return {"pct": fmt_pct(pct), "dir": direc, "classe": classe}
+
+
+def _destaques(secoes: list[dict]) -> list[dict]:
+    """Até MAX_DESTAQUES gráficos (o 1º de cada seção com figura) promovidos ao painel executivo."""
+    out = []
+    for s in secoes:
+        for p in s.get("paineis", []):
+            if p.get("figura"):
+                out.append({"titulo": p["titulo"], "figura": p["figura"]})
+                break
+        if len(out) >= MAX_DESTAQUES:
+            break
+    return out[:MAX_DESTAQUES]
+
+
 def _secoes(analise: Analise) -> list[dict]:
     secoes: dict[str, dict] = {}
     for p in analise.paineis:
@@ -61,17 +127,30 @@ def _secoes(analise: Analise) -> list[dict]:
     return list(secoes.values())
 
 
-def _vista(analise: Analise, idx: int, rotulo: str = "") -> dict:
-    """Parte do relatório que muda com o período (filtros, resumo, KPIs, achados, seções)."""
+def _vista(analise: Analise, idx: int, rotulo: str = "",
+           anterior: dict[str, float] | None = None, rotulo_ant: str = "") -> dict:
+    """Parte do relatório que muda com o período (filtros, resumo, KPIs, achados, seções).
+
+    `anterior` = chave→valor do período imediatamente anterior (mesma duração): com ele, cada KPI
+    ganha o delta ▲▼ vs. esse período (usado no painel executivo e no modo Comparar)."""
+    ant = anterior or {}
+    kpis = []
+    for i, k in enumerate(analise.kpis):
+        chave = _chave_kpi(k.rotulo)
+        num = getattr(k, "valor_num", None)
+        kpis.append({
+            "rotulo": k.rotulo, "valor": k.valor, "nota": k.detalhe, "destaque": i == 0,
+            "chave": chave, "num": num, "fmt": getattr(k, "fmt", ""), "sentido": getattr(k, "sentido", ""),
+            "delta": _delta(num, ant.get(chave), getattr(k, "sentido", "")) if num is not None else None,
+        })
+    secoes = _secoes(analise)
     return {
-        "i": idx, "rotulo": rotulo, "total": analise.linhas,
+        "i": idx, "rotulo": rotulo, "total": analise.linhas, "rotulo_ant": rotulo_ant,
         "filtros": analise.filtros_desc, "arquivos": analise.arquivos,
         "avisos": [a.texto for a in analise.alertas if a.nivel in ("aviso", "erro")],
         "resumo": analise.resumo, "estatistica": ESTATISTICAS.get(analise.estatistica_tempo, "Mediana"),
-        "kpis": [{"rotulo": k.rotulo, "valor": k.valor, "nota": k.detalhe, "destaque": i == 0}
-                 for i, k in enumerate(analise.kpis)],
-        "metas": analise.metas, "observacoes": analise.observacoes, "achados": analise.achados,
-        "secoes": _secoes(analise),
+        "kpis": kpis, "metas": analise.metas, "observacoes": analise.observacoes, "achados": analise.achados,
+        "secoes": secoes, "destaques": _destaques(secoes),
     }
 
 
@@ -163,14 +242,23 @@ def _filtros_info(ds, filtros: Filtros | None) -> list[dict]:
 
 def _contexto(vistas: list[tuple[str, Analise]], titulo: str, subtitulo: str,
               base: pd.DataFrame | None, formatos_base: dict | None,
-              datas_info: dict | None = None, filtros_info: list[dict] | None = None) -> dict:
-    """Contexto do template: uma ou mais VISTAS (por período) + o que é comum (leitura, base, metodologia)."""
+              datas_info: dict | None = None, filtros_info: list[dict] | None = None,
+              anteriores: list[tuple[dict, str]] | None = None) -> dict:
+    """Contexto do template: uma ou mais VISTAS (por período) + o que é comum (leitura, base, metodologia).
+
+    `anteriores[i]` = (mapa do período anterior, rótulo) da vista i → alimenta o delta ▲▼ e o modo Comparar."""
+    ant = anteriores or [({}, "")] * len(vistas)
     a0 = vistas[0][1]
+    vistas_ctx = [_vista(a, i, rot, ant[i][0], ant[i][1]) for i, (rot, a) in enumerate(vistas)]
+    comparar = [{"i": v["i"], "rotulo": v["rotulo"] or "Período",
+                 "kpis": [{"chave": k["chave"], "rotulo": k["rotulo"], "valor": k["valor"],
+                           "num": k["num"], "fmt": k["fmt"], "sentido": k["sentido"]} for k in v["kpis"]]}
+                for v in vistas_ctx]
     return {
         "titulo": titulo, "sub": subtitulo, "versao": __version__,
         "gerado_em": _dt.datetime.now().strftime("%d/%m/%Y %H:%M"), "arquivos": a0.arquivos,
-        "vistas": [_vista(a, i, rot) for i, (rot, a) in enumerate(vistas)],
-        "multi": len(vistas) > 1,
+        "vistas": vistas_ctx,
+        "multi": len(vistas) > 1, "comparar": comparar,
         "periodo": (next((v for r, v in a0.filtros_desc if r == "Período"), "") if len(vistas) == 1 else ""),
         "alertas": [{"nivel": a.nivel, "texto": a.texto} for a in a0.alertas],
         "base": _base_ctx(base, formatos_base), "metodologia": a0.metodologia,
@@ -179,10 +267,24 @@ def _contexto(vistas: list[tuple[str, Analise]], titulo: str, subtitulo: str,
     }
 
 
-# ---- períodos prontos --------------------------------------------------------------------------
-def _presets(analise: Analise, ds, filtros: Filtros) -> list[tuple[str, tuple | None]]:
-    """Opções de período (rótulo, (ini, fim)|None). A 1ª é o recorte ATUAL (ou «Todo o período»);
-    depois cada ano e «Últimos 12 meses». Vazio = sem opções (relatório sem datas ou período único)."""
+# ---- vistas prontas (recortes trocáveis no seletor + comparativo) ------------------------------
+# Cada preset = (rótulo, recorte_kwargs, anterior_kwargs|None, rótulo_anterior). `recorte_kwargs`/
+# `anterior_kwargs` são passados a replace(filtros, **kwargs). A 1ª vista é o recorte atual (= tela).
+_Preset = tuple
+
+
+def _rot_periodo(per: tuple[str, str]) -> str:
+    """(ini, fim) ISO → «mm/aaaa–mm/aaaa» (rótulo do período anterior, quando não é um ano cheio)."""
+    try:
+        ini, fim = pd.Timestamp(per[0]), pd.Timestamp(per[1])
+    except (ValueError, TypeError):
+        return ""
+    return f"{ini:%m/%Y}–{fim:%m/%Y}"
+
+
+def _presets_data(analise: Analise, ds, filtros: Filtros) -> list[_Preset]:
+    """Presets por COLUNA DE DATA: recorte atual (ou «Todo o período»), cada ano e «Últimos 12 meses».
+    Cada ano/últimos-12m traz o período anterior de mesma duração (→ delta ano a ano)."""
     from . import servico
 
     col = servico.coluna_periodo(ds)
@@ -192,28 +294,35 @@ def _presets(analise: Analise, ds, filtros: Filtros) -> list[tuple[str, tuple | 
     if datas.empty:
         return []
     lo, hi = datas.min().normalize(), datas.max().normalize()
+    cd = filtros.coluna_data or col
     atual = filtros.periodo
     if atual:   # só conta como recorte se for de fato mais estreito que o total
         ci, cf = pd.Timestamp(atual[0]).normalize(), pd.Timestamp(atual[1]).normalize()
         if ci <= lo and cf >= hi:
             atual = None
 
-    presets: list[tuple[str, tuple | None]] = []
+    presets: list[_Preset] = []
     usados: set = set()
 
-    def add(rot: str, per: tuple | None):
-        if per not in usados:
-            usados.add(per)
-            presets.append((rot, per))
+    def add(rot: str, per: tuple | None, rot_ant: str = ""):
+        if per in usados:
+            return
+        usados.add(per)
+        rec = {"periodo": per, "meses": None, "coluna_data": cd}
+        prev = _periodo_anterior(per)
+        ant = {"periodo": prev, "meses": None, "coluna_data": cd} if prev else None
+        presets.append((rot, rec, ant, rot_ant or (_rot_periodo(prev) if prev else "")))
 
-    if filtros.meses:
-        add(next((v for r, v in analise.filtros_desc if r == "Período"), "Meses selecionados"),
-            ("meses", tuple(sorted(set(filtros.meses)))))
+    if filtros.meses:                     # meses marcados: vista única, sem período anterior claro
+        rot0 = next((v for r, v in analise.filtros_desc if r == "Período"), "Meses selecionados")
+        presets.append((rot0, {"periodo": None, "meses": filtros.meses, "coluna_data": cd}, None, ""))
+        usados.add(("meses",))
     elif atual:
         add(next((v for r, v in analise.filtros_desc if r == "Período"), "Recorte atual"), tuple(atual))
-    add("Todo o período", None)
+    presets.append(("Todo o período", {"periodo": None, "meses": None, "coluna_data": cd}, None, ""))
+    usados.add(None)
     for y in sorted(datas.dt.year.unique())[-MAX_ANOS_PRESET:]:
-        add(str(y), (f"{y}-01-01", f"{y}-12-31"))
+        add(str(y), (f"{y}-01-01", f"{y}-12-31"), str(y - 1))
     meses = (hi.year - lo.year) * 12 + (hi.month - lo.month) + 1
     if meses > 12:
         ini12 = (hi.to_period("M") - 11).to_timestamp()
@@ -221,24 +330,74 @@ def _presets(analise: Analise, ds, filtros: Filtros) -> list[tuple[str, tuple | 
     return presets if len(presets) >= 2 else []
 
 
-def _vistas_por_periodo(analise: Analise, ds, filtros: Filtros | None):
-    """[(rótulo, Analise)] por período + a base (período todo). None se não há opções de período.
+def _col_tipo_periodo(ds) -> str | None:
+    """Sem coluna de data, a dimensão que faz as vezes de período: «Ano» (se houver) ou «Arquivo de
+    origem» (planilhas somadas, ex.: Convênio 2025 × 2026). Permite comparar e dar delta sem datas."""
+    for cand in ("Ano", "ANO", "ano"):
+        if cand in ds.df.columns:
+            return cand
+    if config.COL_ARQUIVO in ds.df.columns:
+        return config.COL_ARQUIVO
+    return None
 
-    A 1ª visão reaproveita a análise já calculada (= tela); as demais são recalculadas no Python."""
+
+def _rot_valor(v, col: str) -> str:
+    s = str(v)
+    if col == config.COL_ARQUIVO:
+        for ext in (".xlsx", ".xlsm", ".xls", ".ods", ".csv"):
+            if s.lower().endswith(ext):
+                return s[: -len(ext)]
+    return s
+
+
+def _presets_categoria(ds, filtros: Filtros) -> list[_Preset]:
+    """Presets por DIMENSÃO tipo-período (quando não há datas): «Todas» + uma vista por valor
+    (ex.: cada planilha/ano), cada uma comparando com o valor anterior na ordem."""
+    col = _col_tipo_periodo(ds)
+    if not col:
+        return []
+    valores = [v for v in ds.df[col].dropna().astype(str).unique()]
+    try:
+        valores = sorted(valores)
+    except TypeError:
+        pass
+    valores = valores[-MAX_ANOS_PRESET:]
+    if len(valores) < 2:
+        return []
+    base_sel = dict(filtros.selecao or {})
+    rot_todas = "Todos os anos" if col in ("Ano", "ANO", "ano") else "Todas as planilhas"
+    presets: list[_Preset] = [(rot_todas, {}, None, "")]
+    for j, v in enumerate(valores):
+        rec = {"selecao": {**base_sel, col: [v]}}
+        if j > 0:
+            ant = {"selecao": {**base_sel, col: [valores[j - 1]]}}
+            presets.append((_rot_valor(v, col), rec, ant, _rot_valor(valores[j - 1], col)))
+        else:
+            presets.append((_rot_valor(v, col), rec, None, ""))
+    return presets
+
+
+def _vistas_por_periodo(analise: Analise, ds, filtros: Filtros | None):
+    """([(rótulo, Analise)], base, [(mapa_anterior, rótulo_anterior)]). (None, None, None) se não há opções.
+
+    Presets por data; sem datas, por dimensão tipo-período (Ano / Arquivo de origem). A 1ª vista reaproveita
+    a análise já calculada (= tela); as demais (e os períodos anteriores) são recalculadas no Python."""
     from . import servico
 
     fb = filtros or Filtros()
-    presets = _presets(analise, ds, fb)
+    presets = _presets_data(analise, ds, fb) or _presets_categoria(ds, fb)
     if not presets:
-        return None, None
-    col = servico.coluna_periodo(ds)
-    vistas = []
-    for i, (rot, per) in enumerate(presets):
-        a = analise if i == 0 else servico.analisar(
-            ds, replace(fb, periodo=per, meses=None, coluna_data=fb.coluna_data or col))
+        return None, None, None
+    vistas, anteriores = [], []
+    for i, (rot, rec, ant_kw, rot_ant) in enumerate(presets):
+        a = analise if i == 0 else servico.analisar(ds, replace(fb, **rec))
         vistas.append((rot, a))
+        if ant_kw:
+            anteriores.append((_mapa_num(servico.analisar(ds, replace(fb, **ant_kw))), rot_ant))
+        else:
+            anteriores.append(({}, ""))
     base = servico.visiveis(servico.aplicar_filtros(ds, replace(fb, periodo=None, meses=None))).reset_index(drop=True)
-    return vistas, base
+    return vistas, base, anteriores
 
 
 # ---- API ---------------------------------------------------------------------------------------
@@ -246,10 +405,10 @@ def montar_html(analise: Analise, titulo: str, subtitulo: str = "", base: pd.Dat
                 formatos_base: dict | None = None, ds=None, filtros: Filtros | None = None) -> str:
     d_info = _datas_info(ds, filtros)
     f_info = _filtros_info(ds, filtros)
-    if ds is not None:                                 # tenta os períodos prontos (precisa de datas)
-        vistas, base_periodo = _vistas_por_periodo(analise, ds, filtros)
+    if ds is not None:                                 # tenta as vistas prontas (por data ou por dimensão)
+        vistas, base_periodo, anteriores = _vistas_por_periodo(analise, ds, filtros)
         if vistas:
-            ctx = _contexto(vistas, titulo, subtitulo, base_periodo, formatos_base, d_info, f_info)
+            ctx = _contexto(vistas, titulo, subtitulo, base_periodo, formatos_base, d_info, f_info, anteriores)
             return _ambiente().get_template("relatorio.html.j2").render(a=ctx)
     ctx = _contexto([("", analise)], titulo, subtitulo, base, formatos_base, d_info, f_info)
     return _ambiente().get_template("relatorio.html.j2").render(a=ctx)

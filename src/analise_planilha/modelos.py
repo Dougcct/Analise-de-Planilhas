@@ -80,6 +80,9 @@ class KPI:
     rotulo: str
     valor: str
     detalhe: str = ""
+    valor_num: float | None = None   # valor numérico p/ o comparativo entre períodos (delta ▲▼ e modo Comparar)
+    fmt: str = ""                    # moeda | pct | dias | int | dec — como formatar o valor/delta no comparativo
+    sentido: str = ""               # "+" se "maior é melhor", "-" se "menor é melhor", "" = neutro (cor do delta)
 
 
 @dataclass

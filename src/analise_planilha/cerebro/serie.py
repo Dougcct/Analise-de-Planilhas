@@ -44,13 +44,16 @@ def montar(df: pd.DataFrame, conta: str, data: str, valor: str, grupo: str | Non
     ano_ant = ultimo_p - 12
     yoy = float(mensal[ano_ant]) if ano_ant in mensal.index else None
 
-    kpis = [KPI("Total no período", fmt_moeda(total), f"{n_meses} meses"),
-            KPI("Média mensal", fmt_moeda(media), f"{_rot_mes(mensal.index[0])} a {_rot_mes(ultimo_p)}"),
+    kpis = [KPI("Total no período", fmt_moeda(total), f"{n_meses} meses", valor_num=total, fmt="moeda"),
+            KPI("Média mensal", fmt_moeda(media), f"{_rot_mes(mensal.index[0])} a {_rot_mes(ultimo_p)}",
+                valor_num=media, fmt="moeda"),
             KPI(f"Último mês ({_rot_mes(ultimo_p)})", fmt_moeda(ultimo),
-                f"{fmt_pct(_var(ultimo, anterior))} vs mês anterior" if anterior is not None else "")]
+                f"{fmt_pct(_var(ultimo, anterior))} vs mês anterior" if anterior is not None else "",
+                valor_num=ultimo, fmt="moeda")]
     if yoy is not None:
-        kpis.append(KPI("Vs. mesmo mês do ano anterior", fmt_pct(_var(ultimo, yoy)), f"{_rot_mes(ano_ant)}: {fmt_moeda(yoy)}"))
-    kpis.append(KPI(conta, fmt_int(n_contas), "linhas da matriz com valor"))
+        kpis.append(KPI("Vs. mesmo mês do ano anterior", fmt_pct(_var(ultimo, yoy)),
+                        f"{_rot_mes(ano_ant)}: {fmt_moeda(yoy)}", valor_num=_var(ultimo, yoy), fmt="pct"))
+    kpis.append(KPI(conta, fmt_int(n_contas), "linhas da matriz com valor", valor_num=n_contas, fmt="int"))
 
     paineis, achados = [], []
     cats = [_rot_mes(p) for p in mensal.index]
@@ -76,8 +79,11 @@ def montar(df: pd.DataFrame, conta: str, data: str, valor: str, grupo: str | Non
     if grupo and grupo in base.columns and base[grupo].notna().any():
         pgt = base.groupby(grupo)["_v"].sum().sort_values(ascending=False)
         tab_g = pd.DataFrame({grupo: pgt.index, "Total": pgt.values, "% do total": pgt.values / total if total else None})
-        fig_g = graficos.barras([{"nome": str(g), "n": float(v), "pct": fmt_pct(v / total if total else None)}
-                                 for g, v in pgt.items()], moeda=True, detalhe="pct")
+        itens_g = [{"nome": str(g), "n": float(v), "pct": fmt_pct(v / total if total else None)} for g, v in pgt.items()]
+        if 1 < len(itens_g) <= 7:
+            fig_g = graficos.rosca(itens_g, moeda=True, centro=grupo)
+        else:
+            fig_g = graficos.barras(itens_g, moeda=True, detalhe="pct", paleta=True)
         paineis.append(Painel(grupo, f"Composição por {grupo.lower()}", fig_g, tab_g,
                               formatos={"Total": "moeda", "% do total": "pct"}, meia=True))
         achados.append(f"{grupo} de maior peso: {pgt.index[0]} ({fmt_pct(pgt.iloc[0] / total if total else None)} do total).")

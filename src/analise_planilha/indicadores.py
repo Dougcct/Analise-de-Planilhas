@@ -415,18 +415,23 @@ def gerar_kpis(df: pd.DataFrame, spec: Especificacao, tipo_medida,
                tipos: dict[str, str] | None = None) -> list[KPI]:
     total = len(df)
     kpis = [KPI(spec.rotulo_registros, fmt_int(total),
-                f"{fmt_int(df[spec.entidade].nunique())} {spec.plural_entidade} distintos" if spec.entidade else "")]
+                f"{fmt_int(df[spec.entidade].nunique())} {spec.plural_entidade} distintos" if spec.entidade else "",
+                valor_num=float(total), fmt="int")]
     for t in spec.taxas[:4]:
-        kpis.append(KPI(t.rotulo, fmt_pct(valor_taxa(df, t)), "ponderada por valor" if t.ponderada else "dos registros"))
+        vt = valor_taxa(df, t)
+        kpis.append(KPI(t.rotulo, fmt_pct(vt), "ponderada por valor" if t.ponderada else "dos registros",
+                        valor_num=vt, fmt="pct"))
     est = spec.estatistica_tempo
     for t in spec.tempos[:3]:
         v = estatistica(df[t.col_dias], est)
         pm = _pct_meta(df, t)
         kpis.append(KPI(f"{t.rotulo} ({ESTATISTICAS[est].lower()})", f"{fmt_dec(v, 0)} dias" if v is not None else "—",
-                        f"{fmt_pct(pm)} dentro da meta" if pm is not None else "dias corridos"))
+                        f"{fmt_pct(pm)} dentro da meta" if pm is not None else "dias corridos",
+                        valor_num=v, fmt="dias", sentido="-"))   # tempos: menor é melhor
     abertos = sum(_em_aberto(df, t) for t in spec.tempos if t.em_aberto)
     if any(t.em_aberto for t in spec.tempos):
-        kpis.append(KPI("Em aberto", fmt_int(abertos), "sem data de finalização"))
+        kpis.append(KPI("Em aberto", fmt_int(abertos), "sem data de finalização",
+                        valor_num=float(abertos), fmt="int", sentido="-"))
     if spec.medidas_quebra:
         for m in spec.medidas_quebra[:3]:
             s = pd.to_numeric(df[m], errors="coerce")
@@ -434,12 +439,18 @@ def gerar_kpis(df: pd.DataFrame, spec: Especificacao, tipo_medida,
             detalhe = f"média {_fmt_valor(s.mean(), tipo)}"
             if n < total:                    # cobertura parcial (ex.: custo só nos apurados)
                 detalhe += f" · em {fmt_int(n)} de {fmt_int(total)}"
-            kpis.append(KPI(f"{m} (soma)", _fmt_valor(s.sum(min_count=1), tipo), detalhe))
+            soma = s.sum(min_count=1)
+            kpis.append(KPI(f"{m} (soma)", _fmt_valor(soma, tipo), detalhe,
+                            valor_num=(float(soma) if pd.notna(soma) else None),
+                            fmt=("moeda" if tipo == MOEDA else "dec")))
         return kpis[:9]
     for m in spec.medidas[:2]:
         s = pd.to_numeric(df[m], errors="coerce")
         tipo = tipo_medida if m == spec.medida_principal else None
-        kpis.append(KPI(f"{m} (soma)", _fmt_valor(s.sum(), tipo), f"média {_fmt_valor(s.mean(), tipo)}"))
+        soma = s.sum()
+        kpis.append(KPI(f"{m} (soma)", _fmt_valor(soma, tipo), f"média {_fmt_valor(s.mean(), tipo)}",
+                        valor_num=(float(soma) if pd.notna(soma) else None),
+                        fmt=("moeda" if tipo == MOEDA else "dec")))
     return kpis[:9]
 
 
@@ -458,9 +469,13 @@ def gerar_paineis(df: pd.DataFrame, spec: Especificacao, esquema: Esquema, probl
     if not comp.empty:
         fm = "moeda" if tipo_medida == MOEDA else "dec"
         col_pct = f"% de {spec.medida_principal}"
-        fig = graficos.barras([{"nome": r["Componente"], "v": round((r[col_pct] or 0) * 100, 1)}
-                               for _, r in comp.iterrows() if r["Soma"]], campo_valor="v", sufixo="%",
-                              cor="var(--marca)")
+        itens_comp = [{"nome": r["Componente"], "v": round((r[col_pct] or 0) * 100, 1), "s": r["Soma"]}
+                      for _, r in comp.iterrows() if r["Soma"]]
+        if 1 < len(itens_comp) <= 7:
+            fig = graficos.rosca([{"nome": it["nome"], "v": it["s"]} for it in itens_comp],
+                                 campo_valor="v", moeda=(tipo_medida == MOEDA), centro=spec.medida_principal)
+        else:
+            fig = graficos.barras(itens_comp, campo_valor="v", sufixo="%", paleta=True)
         paineis.append(Painel("Composição", f"Composição de {spec.medida_principal}", fig, comp,
                               descricao="Quanto cada parte soma e quanto representa do total.",
                               formatos={"Soma": fm, col_pct: "pct",
@@ -471,9 +486,14 @@ def gerar_paineis(df: pd.DataFrame, spec: Especificacao, esquema: Esquema, probl
             continue
         tab = quebra(df, dim, spec, tipo_medida, spec.top)
         fig = None
-        if df[dim].nunique() > 1 and not tab.empty:
-            fig = graficos.barras([{"nome": r[dim], "n": int(r["Registros"]), "pct": fmt_pct(r["% do total"])}
-                                   for _, r in tab.iterrows()], detalhe="pct")
+        nu = df[dim].nunique()
+        if nu > 1 and not tab.empty:
+            itens_dim = [{"nome": r[dim], "n": int(r["Registros"]), "pct": fmt_pct(r["% do total"])}
+                         for _, r in tab.iterrows()]
+            if nu <= 7:
+                fig = graficos.rosca(itens_dim, centro=spec.rotulo_registros)
+            else:
+                fig = graficos.barras(itens_dim, detalhe="pct", paleta=True)
         paineis.append(Painel(dim, f"{dim}: registros e indicadores", fig, tab, formatos=fmt_grupo))
 
     if spec.tempos:

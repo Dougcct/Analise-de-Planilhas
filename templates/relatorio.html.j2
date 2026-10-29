@@ -111,6 +111,56 @@ section.resumo > h2::before { content: ""; width: 6px; height: 21px; background:
 /* Achados em cartões */
 ul.achados.cartoes { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 8px; }
 ul.achados.cartoes li { margin: 0; background: var(--surface-2); border-left: 3px solid var(--marca); border-radius: 0 6px 6px 0; padding: 9px 13px; }
+/* ============ Painel executivo (diretoria) — estilo dashboard/Power BI ============ */
+section.exec { border: 1.5px solid var(--marca); border-radius: 14px; padding: 0; overflow: hidden;
+  box-shadow: 0 0 0 3px rgba(0,153,93,0.06), 0 6px 22px rgba(0,0,0,.06); background: var(--surface); }
+.exec-cab { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px;
+  padding: 14px 20px; background: linear-gradient(100deg, var(--marca), var(--ok)); color: #fff; }
+.exec-cab h2 { font-size: 16px; margin: 0; color: #fff; letter-spacing: .3px; display: flex; align-items: center; gap: 8px; }
+.exec-cab h2::before { content: "▦"; opacity: .85; }
+.exec-per { font-size: 13px; color: rgba(255,255,255,0.92); font-weight: 600; }
+.exec-corpo { padding: 16px 20px 20px; }
+.kpis-exec { display: grid; grid-template-columns: repeat(auto-fit, minmax(176px, 1fr)); gap: 12px; }
+.kpi-exec { position: relative; background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px;
+  padding: 14px 16px 13px; border-top: 3px solid var(--axis); min-width: 0; overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04); transition: transform .12s, box-shadow .12s; }
+.kpi-exec:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,.09); }
+.kpi-exec::after { content: ""; position: absolute; inset: 0 auto 0 0; width: 3px; background: transparent; }
+.kpi-exec:nth-child(2) { border-top-color: var(--s1); }
+.kpi-exec:nth-child(3) { border-top-color: var(--s3); }
+.kpi-exec:nth-child(4) { border-top-color: var(--s4); }
+.kpi-exec:nth-child(5) { border-top-color: var(--s5); }
+.kpi-exec:nth-child(6) { border-top-color: var(--s2); }
+.kpi-exec:nth-child(7) { border-top-color: var(--s6); }
+.kpi-exec.destaque { border-top-color: var(--marca); background:
+  linear-gradient(160deg, rgba(0,153,93,0.14), var(--surface-2) 72%); grid-column: span 2; }
+.kpi-exec .rot { color: var(--ink-2); font-size: 11.5px; text-transform: uppercase; letter-spacing: .4px;
+  font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kpi-exec .val { font-size: 28px; font-weight: 700; line-height: 1.12; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.kpi-exec.destaque .val { font-size: 36px; color: var(--marca); }
+.kpi-exec .nota { color: var(--muted); font-size: 11.5px; margin-top: 3px; }
+@media (max-width: 560px) { .kpi-exec.destaque { grid-column: 1 / -1; } }
+/* badge de variação vs período anterior */
+.delta { display: inline-flex; align-items: center; gap: 3px; font-size: 12px; font-weight: 700; margin-top: 7px;
+  padding: 2px 8px; border-radius: 999px; font-variant-numeric: tabular-nums; width: fit-content; }
+.delta .seta { font-size: 10px; line-height: 1; }
+.delta.bom { color: var(--ok); background: rgba(0,99,0,0.12); }
+.delta.ruim { color: var(--alerta); background: rgba(180,82,31,0.14); }
+.delta.neutro { color: var(--ink-2); background: var(--surface); border: 1px solid var(--border); }
+.delta-vs { color: var(--muted); font-size: 10.5px; font-weight: 500; margin-left: 6px; }
+.exec-graficos { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; margin-top: 18px; }
+.exec-fig { min-width: 0; background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+.exec-fig h3 { margin: 0 0 12px; color: var(--ink); font-size: 13.5px; }
+/* ============ Comparativo entre períodos ============ */
+section.comparar .cmp-sel { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: flex-end; margin: 4px 0 14px; }
+.cmp-grp { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--ink-2); }
+.cmp-grp select { background: var(--surface-2); border: 1px solid var(--border); color: var(--ink); border-radius: 8px;
+  padding: 6px 10px; font: inherit; min-width: 150px; }
+.cmp-swap { background: var(--surface-2); border: 1px solid var(--border); color: var(--ink-2); border-radius: 8px;
+  padding: 7px 11px; cursor: pointer; font: inherit; }
+table.cmp td.delta-cell { font-weight: 700; font-variant-numeric: tabular-nums; }
+table.cmp .bom { color: var(--ok); } table.cmp .ruim { color: var(--alerta); } table.cmp .neutro { color: var(--ink-2); }
+table.cmp .seta { font-size: 10px; }
 .legenda { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink-2); margin: 4px 0 6px; }
 .leg-item i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
 svg.grafico { width: 100%; height: auto; display: block; }
@@ -118,13 +168,25 @@ svg .grade { stroke: var(--grid); stroke-width: 1; } svg .base { stroke: var(--a
 svg .eixo { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
 svg .valor { fill: var(--ink-2); font-size: 11px; font-weight: 600; }
 svg [data-tip]:hover { opacity: .82; }
-.barras { display: grid; gap: 4px; }
-.barra-linha { display: grid; grid-template-columns: minmax(120px, 38%) 1fr; gap: 10px; align-items: center; padding: 2px 0; border-radius: 4px; }
-.barra-linha:hover { background: var(--surface-2); }
+.barras { display: grid; gap: 8px; }
+.barra-linha { display: grid; grid-template-columns: minmax(110px, 32%) 1fr auto; gap: 12px; align-items: center; padding: 1px 0; }
 .barra-rot { font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink); }
-.barra-trilho { display: flex; align-items: center; width: calc(100% - 64px); }
-.barra { display: block; height: 14px; flex: none; background: var(--cor); border-radius: 0 4px 4px 0; }
-.barra-val { margin-left: 6px; font-size: 12px; color: var(--ink-2); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.barra-trilho { background: var(--surface-2); border: 1px solid var(--border); border-radius: 999px; height: 16px; overflow: hidden; }
+.barra { display: block; height: 100%; min-width: 3px; border-radius: 999px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.20), rgba(255,255,255,0) 42%), var(--cor); }
+.barra-val { font-size: 12.5px; font-weight: 600; color: var(--ink); white-space: nowrap; font-variant-numeric: tabular-nums; }
+/* Rosca (donut) + legenda */
+.rosca-wrap { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.rosca-svg { width: 148px; height: 148px; flex: none; }
+.rosca-svg circle { transition: opacity .1s; } .rosca-svg circle:hover { opacity: .8; }
+.rz-num { fill: var(--ink); font-size: 21px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.rz-rot { fill: var(--muted); font-size: 8px; text-transform: uppercase; letter-spacing: .4px; }
+.rosca-leg { list-style: none; margin: 0; padding: 0; flex: 1; min-width: 190px; display: grid; gap: 7px; }
+.rosca-leg li { display: grid; grid-template-columns: 12px 1fr auto auto; align-items: center; gap: 9px; font-size: 12.5px; }
+.rosca-leg i { width: 11px; height: 11px; border-radius: 3px; }
+.rz-nome { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink); }
+.rosca-leg b { font-variant-numeric: tabular-nums; color: var(--ink); }
+.rz-pct { color: var(--muted); font-variant-numeric: tabular-nums; min-width: 44px; text-align: right; }
 .tabela-wrap { overflow-x: auto; }
 table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
 th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--grid); vertical-align: top; }
@@ -148,7 +210,7 @@ ul.alertas { margin: 0; padding-left: 18px; font-size: 13px; } ul.alertas li { m
 footer { color: var(--muted); font-size: 12px; text-align: center; padding: 12px 16px 32px; }
 @media (max-width: 600px) {
   .meta { text-align: left; }
-  .barra-linha { grid-template-columns: 1fr; gap: 0; }
+  .barra-linha { grid-template-columns: minmax(74px, 38%) 1fr auto; gap: 8px; }
   section { padding: 14px 14px; }
 }
 @media print {
@@ -170,10 +232,11 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 12px
   <div class="meta">Gerado em {{ a.gerado_em }} · v{{ a.versao }}<br>{{ a.arquivos|length }} arquivo(s)</div>
 </div></header>
 <nav class="indice"><div>
-  <a data-sec="filtros" href="#filtros-v0">Filtros</a><a data-sec="resumo" href="#resumo-v0">Resumo e achados</a>
+  <a data-sec="filtros" href="#filtros-v0">Filtros</a><a data-sec="exec" href="#exec-v0">Painel</a><a data-sec="resumo" href="#resumo-v0">Resumo e achados</a>
   {% for s in a.vistas[0].secoes %}<a data-sec="{{ s.id }}" href="#{{ s.id }}-v0">{{ s.titulo }}</a>{% endfor %}
+  {% if a.multi %}<a href="#comparar">Comparar</a>{% endif %}
   <a href="#leitura">Leitura e qualidade</a>{% if a.base %}<a href="#base">Base detalhada</a>{% endif %}<a href="#metodologia">Metodologia</a>
-  {% if a.multi %}<label id="periodo-l" title="Troca o período do relatório (recalculado no Python, embutido)">Período
+  {% if a.multi %}<label id="periodo-l" title="Troca a vista do relatório (recalculada no Python, embutida)">{{ 'Período' if a.datas_info else 'Ver' }}
     <select id="periodo">{% for v in a.vistas %}<option value="{{ loop.index0 }}">{{ v.rotulo }}</option>{% endfor %}</select></label>{% endif %}
   <button id="tema" type="button" aria-label="Alternar tema">◐ tema</button>
 </div></nav>
@@ -251,33 +314,50 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 12px
 {% if v.total == 0 %}
 <section><h2>Sem dados</h2><p class="vazio">Nenhum registro neste período.</p></section>
 {% else %}
+<section id="exec-v{{ v.i }}" class="exec">
+  <div class="exec-cab">
+    <h2>Painel executivo</h2>
+    <span class="exec-per">{{ v.rotulo or a.periodo or 'Todo o período' }} · {{ v.total }} registro(s){% if v.rotulo_ant %} · comparado a {{ v.rotulo_ant }}{% endif %}</span>
+  </div>
+  <div class="exec-corpo">
+    <div class="kpis-exec">
+      {% for k in v.kpis %}
+      <div class="kpi-exec{{ ' destaque' if k.destaque }}">
+        <div class="rot">{{ k.rotulo }}</div>
+        <div class="val">{{ k.valor }}</div>
+        {% if k.delta %}<div><span class="delta {{ k.delta.classe }}"><span class="seta">{{ '▲' if k.delta.dir == 'up' else ('▼' if k.delta.dir == 'down' else '▬') }}</span>{{ k.delta.pct }}</span>{% if v.rotulo_ant %}<span class="delta-vs">vs {{ v.rotulo_ant }}</span>{% endif %}</div>{% endif %}
+        {% if k.nota %}<div class="nota">{{ k.nota }}</div>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% if v.metas %}
+    {% set med = g.medidor(v.metas) %}
+    {% if med %}<h3>Metas do gestor</h3>{{ med }}{% endif %}
+    {% endif %}
+    {% if v.destaques %}
+    <div class="exec-graficos">
+      {% for d in v.destaques %}<div class="exec-fig"><h3>{{ d.titulo }}</h3>{{ d.figura }}</div>{% endfor %}
+    </div>
+    {% endif %}
+  </div>
+</section>
+
 <section id="resumo-v{{ v.i }}" class="resumo">
   <h2>Resumo e achados</h2>
   <p class="desc lead">{% if v.resumo %}{{ v.resumo }}{% else %}{{ v.total }} registro(s) no recorte · tempos pela {{ v.estatistica|lower }}.{% endif %}</p>
-  <div class="kpis kpis-resumo">
-    {% for k in v.kpis %}
-    <div class="kpi{{ ' hero' if k.destaque }}"><div class="rot">{{ k.rotulo }}</div>
-      <div class="val{{ ' marca' if k.destaque }}">{{ k.valor }}</div>
-      <div class="nota">{{ k.nota }}</div></div>
-    {% endfor %}
-  </div>
+  <h3>Principais achados</h3>
+  {% if v.achados %}<ul class="achados cartoes">{% for t in v.achados %}<li>{{ t }}</li>{% endfor %}</ul>
+  {% else %}<p class="vazio">Sem achados no recorte.</p>{% endif %}
+  {% if v.observacoes %}<h3>Observações do gestor</h3><div class="obs">{{ v.observacoes }}</div>{% endif %}
   {% if v.metas %}
-  <h3>Metas do gestor</h3>
-  {% set med = g.medidor(v.metas) %}
-  {% if med %}{{ med }}
-  <details><summary>Ver metas em tabela</summary>
-  {% endif %}
+  <details><summary>Ver metas do gestor em tabela</summary>
   <table class="metas">{% for m in v.metas %}
     <tr><td class="{{ 'ok' if m.ok is sameas true else ('nok' if m.ok is sameas false else 'nd') }}">{{ '✔' if m.ok is sameas true else ('✗' if m.ok is sameas false else '•') }}</td>
         <td>{{ m.rotulo }}</td><td><b>{{ m.valor_fmt }}</b></td>
         <td class="nd">meta {{ '≥' if m.sentido == '>=' else '≤' }} {{ m.alvo_fmt }}</td></tr>{% endfor %}
   </table>
-  {% if med %}</details>{% endif %}
+  </details>
   {% endif %}
-  {% if v.observacoes %}<h3>Observações do gestor</h3><div class="obs">{{ v.observacoes }}</div>{% endif %}
-  <h3>Principais achados</h3>
-  {% if v.achados %}<ul class="achados cartoes">{% for t in v.achados %}<li>{{ t }}</li>{% endfor %}</ul>
-  {% else %}<p class="vazio">Sem achados no recorte.</p>{% endif %}
 </section>
 
 {% for s in v.secoes %}
@@ -306,6 +386,24 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 12px
 {% endif %}
 </div>
 {% endfor %}
+
+{% if a.multi %}
+<section id="comparar" class="comparar">
+  <h2>Comparativo entre períodos</h2>
+  <p class="desc">Escolha dois períodos e compare os indicadores lado a lado, com a variação (Δ) entre eles.
+  Os números são os mesmos dos painéis de cada período — nada é recalculado aqui.</p>
+  <div class="cmp-sel">
+    <div class="cmp-grp"><label>Período A</label><select id="cmp-a"></select></div>
+    <button type="button" class="cmp-swap" onclick="cmpTrocar()" title="Inverter A e B" aria-label="Inverter">⇄</button>
+    <div class="cmp-grp"><label>Período B</label><select id="cmp-b"></select></div>
+  </div>
+  <div class="tabela-wrap"><table class="cmp">
+    <thead><tr><th>Indicador</th><th class="n" id="cmp-ha">A</th><th class="n" id="cmp-hb">B</th>
+      <th class="n">Δ (B − A)</th><th class="n">Δ %</th></tr></thead>
+    <tbody id="cmp-corpo"></tbody>
+  </table></div>
+</section>
+{% endif %}
 
 <section id="leitura">
   <h2>Leitura e qualidade</h2>
@@ -365,6 +463,65 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 12px
     raiz.setAttribute('data-theme', novo);
     try { localStorage.setItem('tema-relatorio', novo); } catch (e) {}
   });
+
+  // ---- comparativo entre períodos (modo Comparar) ----
+  var CMP = {{ a.comparar|tojson }};
+  var selA = document.getElementById('cmp-a'), selB = document.getElementById('cmp-b');
+  if (CMP && CMP.length >= 2 && selA && selB) {
+    for (var ci = 0; ci < CMP.length; ci++) {
+      var oa = document.createElement('option'); oa.value = ci; oa.textContent = CMP[ci].rotulo; selA.appendChild(oa);
+      var ob = document.createElement('option'); ob.value = ci; ob.textContent = CMP[ci].rotulo; selB.appendChild(ob);
+    }
+    selA.value = 0; selB.value = CMP.length - 1;
+    var nbr = function (v, casas) {
+      return v.toLocaleString('pt-BR', { minimumFractionDigits: casas, maximumFractionDigits: casas });
+    };
+    var fmtNum = function (v, f) {
+      if (v === null || v === undefined || isNaN(v)) return '—';
+      if (f === 'moeda') return 'R$ ' + nbr(v, 2);
+      if (f === 'pct') return nbr(v * 100, 1) + '%';
+      if (f === 'dias') return nbr(v, Number.isInteger(v) ? 0 : 1) + ' dias';
+      if (f === 'int') return nbr(Math.round(v), 0);
+      return nbr(v, 2);
+    };
+    var esc = function (s) {
+      return String(s).replace(/[&<>]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; });
+    };
+    var cmpRender = function () {
+      var A = CMP[+selA.value], B = CMP[+selB.value];
+      document.getElementById('cmp-ha').textContent = A.rotulo;
+      document.getElementById('cmp-hb').textContent = B.rotulo;
+      var mapA = {};
+      for (var i = 0; i < A.kpis.length; i++) mapA[A.kpis[i].chave] = A.kpis[i];
+      var corpo = document.getElementById('cmp-corpo');
+      corpo.innerHTML = '';
+      for (var j = 0; j < B.kpis.length; j++) {
+        var kb = B.kpis[j], ka = mapA[kb.chave];
+        var va = ka ? ka.valor : '—', vb = kb.valor;
+        var dAbs = '—', dPct = '—', classe = 'neutro', seta = '';
+        if (ka && ka.num !== null && kb.num !== null) {
+          var diff = kb.num - ka.num;
+          dAbs = (diff > 0 ? '+' : '') + fmtNum(diff, kb.fmt);
+          seta = diff > 0 ? '▲' : (diff < 0 ? '▼' : '▬');
+          if (ka.num !== 0) {
+            var p = diff / Math.abs(ka.num);
+            dPct = (diff > 0 ? '+' : '') + nbr(p * 100, 1) + '%';
+          }
+          if (kb.sentido === '+') classe = diff > 0 ? 'bom' : (diff < 0 ? 'ruim' : 'neutro');
+          else if (kb.sentido === '-') classe = diff > 0 ? 'ruim' : (diff < 0 ? 'bom' : 'neutro');
+        }
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td>' + esc(kb.rotulo) + '</td><td class="n">' + esc(va) + '</td><td class="n">' + esc(vb) +
+          '</td><td class="n delta-cell ' + classe + '">' + esc(dAbs) + '</td>' +
+          '<td class="n delta-cell ' + classe + '"><span class="seta">' + seta + '</span> ' + esc(dPct) + '</td>';
+        corpo.appendChild(tr);
+      }
+    };
+    window.cmpTrocar = function () { var t = selA.value; selA.value = selB.value; selB.value = t; cmpRender(); };
+    selA.addEventListener('change', cmpRender);
+    selB.addEventListener('change', cmpRender);
+    cmpRender();
+  }
 
   // ---- filtros de dimensão (Convênio, Ano, Arquivo de origem, …) — valem no servidor web ----
   function relNavegarDims(params) {

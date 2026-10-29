@@ -222,8 +222,9 @@ def _kpis_gerais(df, c: _Ctx, meses, base) -> tuple[list[KPI], dict]:
     s = _mensal(df, c)
     total, media = float(s.sum()), float(s.mean())
     ult, info = meses[-1], {}
-    k = [KPI(f"{c.nome} total ({rm(meses[0])}–{rm(ult)})", rs(total), f"{len(meses)} meses com lançamento"),
-         KPI("Média mensal", rs(media), f"mediana {rs(float(s.median()))}")]
+    k = [KPI(f"{c.nome} total ({rm(meses[0])}–{rm(ult)})", rs(total), f"{len(meses)} meses com lançamento",
+             valor_num=total, fmt="moeda"),
+         KPI("Média mensal", rs(media), f"mediana {rs(float(s.median()))}", valor_num=media, fmt="moeda")]
     v_ult = float(s[ult])
     notas = []
     if len(meses) >= 2:
@@ -233,12 +234,12 @@ def _kpis_gerais(df, c: _Ctx, meses, base) -> tuple[list[KPI], dict]:
     if mesmo in s.index:
         info["var_ano"] = _var(v_ult, float(s[mesmo]))
         notas.append(f"{_pct_txt(info['var_ano'])} vs {rm(mesmo)}")
-    k.append(KPI(f"Último mês ({rm(ult)})", rs(v_ult), " · ".join(notas)))
+    k.append(KPI(f"Último mês ({rm(ult)})", rs(v_ult), " · ".join(notas), valor_num=v_ult, fmt="moeda"))
     if base:
         a, p = float(s[s.index.isin(base[0])].sum()), float(s[s.index.isin(base[1])].sum())
         info["var_base"], info["base"] = _var(a, p), base[2]
         k.append(KPI(f"Período {rm(base[0][0])}–{rm(base[0][-1])}", rs(a),
-                     f"{_pct_txt(info['var_base'])} vs {rm(base[1][0])}–{rm(base[1][-1])}"))
+                     f"{_pct_txt(info['var_base'])} vs {rm(base[1][0])}–{rm(base[1][-1])}", valor_num=a, fmt="moeda"))
     ano = [m for m in meses if m.year == ult.year]
     if ano and (not base or ano != base[0]):
         ytd = float(s[s.index.isin(ano)].sum())
@@ -247,7 +248,7 @@ def _kpis_gerais(df, c: _Ctx, meses, base) -> tuple[list[KPI], dict]:
         if all(m in s.index for m in ant):
             info["var_ytd"] = _var(ytd, float(s[s.index.isin(ant)].sum()))
             nota = f"{_pct_txt(info['var_ytd'])} vs {rm(ant[0])}–{rm(ant[-1])}"
-        k.append(KPI(f"Acumulado {ult.year} ({rm(ano[0])}–{rm(ano[-1])})", rs(ytd), nota))
+        k.append(KPI(f"Acumulado {ult.year} ({rm(ano[0])}–{rm(ano[-1])})", rs(ytd), nota, valor_num=ytd, fmt="moeda"))
     info.update(total=total, media=media, ultimo=v_ult)
     return k, info
 
@@ -572,25 +573,31 @@ def _paineis_dre(df, c: _Ctx, ext: dict, meses) -> tuple[list[Painel], list[KPI]
     cats = [rm(m) for m in meses]
     if rec is not None:
         r_tot = float(rec.sum())
-        kpis.append(KPI(f"Receita bruta ({rm(meses[0])}–{rm(meses[-1])})", rs(r_tot), f"média {rs(float(rec.mean()))}/mês"))
+        kpis.append(KPI(f"Receita bruta ({rm(meses[0])}–{rm(meses[-1])})", rs(r_tot), f"média {rs(float(rec.mean()))}/mês",
+                        valor_num=r_tot, fmt="moeda", sentido="+"))
         info["receita"] = r_tot
     if res is not None:
         l_tot = float(res.sum())
-        kpis.append(KPI("Resultado líquido", rs(l_tot), f"média {rs(float(res.mean()))}/mês"))
+        kpis.append(KPI("Resultado líquido", rs(l_tot), f"média {rs(float(res.mean()))}/mês",
+                        valor_num=l_tot, fmt="moeda", sentido="+"))
         info["resultado"] = l_tot
         if rec is not None and r_tot:
             info["margem"] = l_tot / r_tot
-            kpis.append(KPI("Margem líquida", fmt_pct(l_tot / r_tot), "resultado ÷ receita bruta"))
+            kpis.append(KPI("Margem líquida", fmt_pct(l_tot / r_tot), "resultado ÷ receita bruta",
+                            valor_num=l_tot / r_tot, fmt="pct", sentido="+"))
         prej = [m for m, v in res.items() if pd.notna(v) and v < 0]
-        kpis.append(KPI("Meses com prejuízo", fmt_int(len(prej)), ", ".join(rm(m) for m in prej[:6]) or "nenhum"))
+        kpis.append(KPI("Meses com prejuízo", fmt_int(len(prej)), ", ".join(rm(m) for m in prej[:6]) or "nenhum",
+                        valor_num=float(len(prej)), fmt="int", sentido="-"))
         if prej:
             frases.append(f"Resultado líquido negativo em {len(prej)} mês(es): " + ", ".join(rm(m) for m in prej) + ".")
     if op is not None:
         kpis.append(KPI("Resultado operacional", rs(float(op.sum())),
-                        fmt_pct(float(op.sum()) / info["receita"]) + " da receita" if info.get("receita") else ""))
+                        fmt_pct(float(op.sum()) / info["receita"]) + " da receita" if info.get("receita") else "",
+                        valor_num=float(op.sum()), fmt="moeda", sentido="+"))
     desp = float(df[df[c.V] < 0][c.V].sum())
     kpis.append(KPI("Custos e despesas (contas)", rs(abs(desp)),
-                    fmt_pct(abs(desp) / info["receita"]) + " da receita" if info.get("receita") else ""))
+                    fmt_pct(abs(desp) / info["receita"]) + " da receita" if info.get("receita") else "",
+                    valor_num=abs(desp), fmt="moeda", sentido="-"))
     # demonstrativo por ano e por mês
     piv = sub.pivot_table(index=col_g, columns=c.M, values="Valor", aggfunc="sum").reindex(linhas_dre)
     piv = piv.reindex(columns=meses)
