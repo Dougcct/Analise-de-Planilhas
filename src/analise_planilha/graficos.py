@@ -181,6 +181,35 @@ def linhas(categorias: list[str], series: list[tuple[str, list, str]], moeda: bo
     return Markup(str(legenda([(nm, c) for nm, _, c in series])) + "".join(p))
 
 
+def medidor(metas) -> Markup:
+    """Medidores (gauges) horizontais das metas do gestor: valor × alvo, com marcador da meta e cor pelo
+    status (verde = na meta, laranja = fora, cinza = sem dado). Destaca o «resumo» visualmente.
+
+    Recebe objetos com .rotulo .valor_fmt .alvo_fmt .sentido .ok .valor_num .alvo_num; ignora os sem número."""
+    linhas = []
+    for m in metas or []:
+        v, alvo = getattr(m, "valor_num", None), getattr(m, "alvo_num", None)
+        if v is None or alvo is None:
+            continue
+        escala = (max(abs(v), abs(alvo)) * 1.25) or 1.0
+        fx, fa = min(abs(v) / escala * 100, 100), min(abs(alvo) / escala * 100, 100)
+        ok = getattr(m, "ok", None)
+        cls = "ok" if ok is True else ("nok" if ok is False else "nd")
+        cor = "var(--ok)" if ok is True else ("var(--alerta)" if ok is False else "var(--axis)")
+        sent = "≥" if getattr(m, "sentido", ">=") == ">=" else "≤"
+        meta_txt = f"meta {sent} {m.alvo_fmt}"
+        tip = escape(f"{m.rotulo}: {m.valor_fmt} ({meta_txt})")
+        linhas.append(
+            f'<div class="medidor" data-tip="{tip}">'
+            f'<div class="med-top"><span class="med-rot">{escape(str(m.rotulo))}</span>'
+            f'<span class="med-val {cls}">{escape(str(m.valor_fmt))}</span></div>'
+            f'<div class="med-trilho"><span class="med-barra" style="width:{fx:.1f}%;background:{cor}"></span>'
+            f'<span class="med-alvo" style="left:{fa:.1f}%" title="{escape(meta_txt)}"></span></div>'
+            f'<div class="med-meta">{escape(meta_txt)}</div></div>'
+        )
+    return Markup(f'<div class="medidores">{"".join(linhas)}</div>') if linhas else Markup("")
+
+
 def barras(itens: list[dict], campo_valor: str = "n", campo_rotulo: str = "nome", sufixo: str = "",
            cor: str = "var(--s1)", detalhe: str | None = None, moeda: bool = False) -> Markup:
     """Barras horizontais em HTML. `detalhe` = chave do item exibida no tooltip. `moeda=True`: valor em

@@ -7,3 +7,8 @@ services:
     ports:
       - "80:8000"       # link sem porta: http://<servidor>   (ex.: http://analise)
       - "8000:8000"     # mantém o :8000 (descoberta automática do cliente desktop usa essa porta)
+    volumes:
+      - ./src:/app/src:ro
+      - ./servidor:/app/servidor:ro
+      - ./templates:/app/templates:ro
+      - ./assets:/app/assets:ro

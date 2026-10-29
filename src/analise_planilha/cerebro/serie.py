@@ -94,7 +94,7 @@ def montar(df: pd.DataFrame, conta: str, data: str, valor: str, grupo: str | Non
                           formatos={"Total": "moeda", "% do total": "pct", "Média mensal": "moeda"}, meia=True))
     achados.append(f"{conta} de maior peso: {pc.index[0]} ({fmt_moeda(float(pc['sum'].iloc[0]))}).")
 
-    # variação do último mês (vs média dos 3 anteriores) por conta
+    # variação do último mês (vs média dos 3 anteriores) por conta + matriz comparativa mês a mês
     if n_meses >= 2:
         piv = base.groupby([conta, "_p"])["_v"].sum().unstack(fill_value=0).reindex(columns=mensal.index, fill_value=0)
         ref = piv.iloc[:, -4:-1].mean(axis=1) if n_meses >= 4 else piv.iloc[:, -2]
@@ -107,6 +107,20 @@ def montar(df: pd.DataFrame, conta: str, data: str, valor: str, grupo: str | Non
                               descricao="Último mês comparado à média dos 3 meses anteriores (ou ao mês anterior).",
                               formatos={f"{_rot_mes(ultimo_p)}": "moeda", "Referência": "moeda",
                                         "Diferença": "moeda", "Variação": "pct"}, aberta=True))
+        mat = piv.copy()
+        mat.columns = cats
+        mat["Total"] = mat.sum(axis=1)
+        c_ini, c_ult = cats[0], cats[-1]
+        col_vr = f"Var. {c_ult} × {c_ini} (R$)"
+        col_vp = f"Var. {c_ult} × {c_ini} (%)"
+        mat[col_vr] = mat[c_ult] - mat[c_ini]
+        mat[col_vp] = [_var(a, b) for a, b in zip(mat[c_ult], mat[c_ini])]
+        mat = mat.reindex(mat["Total"].abs().sort_values(ascending=False).index).reset_index()
+        fmts_mat = {c: "moeda" for c in [*cats, "Total", col_vr]}
+        fmts_mat[col_vp] = "pct"
+        paineis.append(Painel("Variações", f"Comparativo mês a mês por {conta.lower()}", tabela=mat,
+                              descricao="Valores de cada mês lado a lado e variação direta entre as pontas do recorte.",
+                              formatos=fmts_mat, aberta=(n_meses <= 12)))
         if anterior is not None:
             achados.append(f"{_rot_mes(ultimo_p)}: {fmt_moeda(ultimo)} ({fmt_pct(_var(ultimo, anterior))} vs "
                            f"{_rot_mes(mensal.index[-2])}).")
@@ -138,6 +152,22 @@ def montar(df: pd.DataFrame, conta: str, data: str, valor: str, grupo: str | Non
                                   descricao="Linhas de total/subtotal da planilha: mostradas para conferência e "
                                             "não somadas à série (evita contar duas vezes).",
                                   formatos={"Valor": "moeda"}))
+            if n_meses >= 2:
+                ordem_r = r.drop_duplicates(rot)[rot].tolist()
+                piv_r = r.pivot_table(index=rot, columns="_p", values="Valor", aggfunc="sum").reindex(ordem_r)
+                piv_r = piv_r.reindex(columns=mensal.index)
+                piv_r.columns = cats
+                piv_r["Total"] = piv_r.sum(axis=1)
+                c_ini, c_ult = cats[0], cats[-1]
+                col_vr = f"Var. {c_ult} × {c_ini} (R$)"
+                col_vp = f"Var. {c_ult} × {c_ini} (%)"
+                piv_r[col_vr] = piv_r[c_ult].fillna(0) - piv_r[c_ini].fillna(0)
+                piv_r[col_vp] = [_var(a, b) for a, b in zip(piv_r[c_ult], piv_r[c_ini])]
+                fmts_r = {c: "moeda" for c in [*cats, "Total", col_vr]}
+                fmts_r[col_vp] = "pct"
+                paineis.append(Painel("Conferência", "Subtotais / demonstrativo mês a mês",
+                                      tabela=piv_r.reset_index(), formatos=fmts_r, aberta=(n_meses <= 12),
+                                      descricao="Evolução mensal dos subtotais da planilha (ex.: linhas de DRE) e variação direta."))
 
     resumo = (f"Série mensal de {n_meses} meses ({_rot_mes(mensal.index[0])} a {_rot_mes(ultimo_p)}), "
               f"{fmt_int(n_contas)} {conta.lower()}(s), total de {fmt_moeda(total)}.")

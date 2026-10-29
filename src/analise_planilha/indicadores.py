@@ -384,26 +384,29 @@ def avaliar_metas(df: pd.DataFrame, spec: Especificacao, tipos: dict[str, str] |
         if m.indicador == "ticket_medio" and spec.medida_principal in df.columns:
             v = pd.to_numeric(df[spec.medida_principal], errors="coerce").mean()
             valor = None if pd.isna(v) else float(v)
-            fmt = fmt_moeda if (tipos or {}).get(spec.medida_principal) == MOEDA else (lambda x: fmt_dec(x, 2))
+            eh_moeda = (tipos or {}).get(spec.medida_principal) == MOEDA
+            fmt = fmt_moeda if eh_moeda else (lambda x: fmt_dec(x, 2))
             ok = None if valor is None else (valor >= m.alvo if m.sentido == ">=" else valor <= m.alvo)
             saida.append(ResultadoMeta(f"Ticket médio — {spec.medida_principal}",
-                                       fmt(valor) if valor is not None else "—", fmt(m.alvo), m.sentido, ok))
+                                       fmt(valor) if valor is not None else "—", fmt(m.alvo), m.sentido, ok,
+                                       valor_num=valor, alvo_num=float(m.alvo), tipo="moeda" if eh_moeda else "num"))
             continue
-        alvo, valor, rot = m.alvo, None, m.indicador
+        alvo, valor, rot, tipo = m.alvo, None, m.indicador, "num"
         if (t := spec.taxa(m.indicador)) is not None:
             rot, v = t.rotulo, valor_taxa(df, t)
-            valor, vf, af = (v * 100 if v is not None else None), fmt_pct(v), f"{fmt_dec(alvo, 0)}%"
+            valor, vf, af, tipo = (v * 100 if v is not None else None), fmt_pct(v), f"{fmt_dec(alvo, 0)}%", "pct"
         elif (t := spec.tempo(m.indicador)) is not None:
             rot = f"{t.rotulo} ({ESTATISTICAS[spec.estatistica_tempo].lower()})"
             valor = estatistica(df[t.col_dias], spec.estatistica_tempo)
-            vf, af = (f"{fmt_dec(valor, 0)} dias" if valor is not None else "—"), f"{fmt_dec(alvo, 0)} dias"
+            vf, af, tipo = (f"{fmt_dec(valor, 0)} dias" if valor is not None else "—"), f"{fmt_dec(alvo, 0)} dias", "dias"
         elif m.indicador.lower() == "registros":
             rot, valor, vf, af = "Registros", float(len(df)), fmt_int(len(df)), fmt_int(alvo)
         else:
             saida.append(ResultadoMeta(m.indicador, "—", fmt_dec(alvo, 0), m.sentido, None))
             continue
         ok = None if valor is None else (valor >= alvo if m.sentido == ">=" else valor <= alvo)
-        saida.append(ResultadoMeta(rot, vf, af, m.sentido, ok))
+        saida.append(ResultadoMeta(rot, vf, af, m.sentido, ok,
+                                   valor_num=valor, alvo_num=float(alvo), tipo=tipo))
     return saida
 
 

@@ -1,20 +1,8 @@
 """Caminhos e limiares do motor de inferência (ajustáveis em um lugar só)."""
-import sys
 from pathlib import Path
 
 
-EMPACOTADO = getattr(sys, "frozen", False) or "__compiled__" in globals()   # .exe (Nuitka/PyInstaller)
-
-
-def _raiz() -> Path:
-    """Em desenvolvimento, a raiz do repositório. Compilado (Nuitka/PyInstaller), a pasta do .exe
-    — onde ficam, graváveis, as pastas de trabalho (dados/, saida/, config/)."""
-    if EMPACOTADO:
-        return Path(sys.argv[0]).resolve().parent
-    return Path(__file__).resolve().parents[2]
-
-
-RAIZ = _raiz()
+RAIZ = Path(__file__).resolve().parents[2]   # raiz do repositório / pasta do app (templates/, config/, dados/)
 NOME_APLICACAO = "Análise de Planilhas"
 ID_APLICACAO = "NucleoInovacao.AnalisePlanilhas"      # ícone próprio na barra de tarefas do Windows
 PASTA_DADOS = RAIZ / "dados"                          # uma subpasta por relatório (não versionar — LGPD)

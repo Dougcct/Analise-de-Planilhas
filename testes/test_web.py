@@ -201,8 +201,9 @@ def _subir(c, **campos):
     """Sobe uma planilha pelo fluxo novo e devolve o id da prévia (carga)."""
     import re
     n = campos.pop("n", 7)
+    fname = campos.pop("fname", "planilha.xlsx")
     r = c.post("/web/enviar", data=campos,
-               files={"arquivo": ("planilha.xlsx", _cesariana_xlsx(n), "x")}, follow_redirects=False)
+               files={"arquivo": (fname, _cesariana_xlsx(n), "x")}, follow_redirects=False)
     assert r.status_code == 303, r.text
     m = re.search(r"/previa/(\d+)", r.headers["location"])
     assert m, r.headers["location"]
@@ -222,10 +223,25 @@ def test_web_enviar_novo_e_publicar(web):
 
 
 def test_web_enviar_atualizar_existente(web):
+    """Reenviar a MESMA planilha (mesmo nome) substitui a versão anterior (que vira backup)."""
     c = _cli("gestor.fat")
-    cid = _subir(c, modo="atualizar", slug="resumo-cesariana", n=5)
+    cid = _subir(c, modo="novo", nome="Atualiza Teste", modelo="resumo_cesariana", n=7)
     c.post(f"/web/enviar/previa/{cid}/publicar")
-    assert "5 registro" in c.get("/web/r/resumo-cesariana/conteudo").text
+    cid2 = _subir(c, modo="atualizar", slug="atualiza-teste", n=5)      # mesmo nome de arquivo -> substitui
+    c.post(f"/web/enviar/previa/{cid2}/publicar")
+    assert "5 registro" in c.get("/web/r/atualiza-teste/conteudo").text  # vale a nova; a antiga fica no histórico
+
+
+def test_web_somar_varias_planilhas(web):
+    """Planilhas DIFERENTES (nomes distintos) no mesmo relatório somam nos indicadores + filtro por planilha."""
+    c = _cli("gestor.fat")
+    cid = _subir(c, modo="novo", nome="Soma Planilhas", modelo="resumo_cesariana", n=4)
+    c.post(f"/web/enviar/previa/{cid}/publicar")
+    cid2 = _subir(c, modo="atualizar", slug="soma-planilhas", n=6, fname="outra.xlsx")  # nome diferente -> soma
+    c.post(f"/web/enviar/previa/{cid2}/publicar")
+    html = c.get("/web/r/soma-planilhas/conteudo").text
+    assert "10 registro" in html               # 4 + 6 consolidados numa base só
+    assert "Arquivo de origem" in html         # vira filtro: ler uma planilha ou todas
 
 
 def test_web_enviar_descartar(web):
@@ -419,6 +435,78 @@ def test_excluir_setor_em_cascata(web):
     assert "ze.cascata" in c.get("/web/usuarios?busca=ze.cascata").text              # usuário ficou (sem setor)
 
 
+_MODELO_TOML = ('versao = 2\nnome = "Exemplo"\n\n[leitura]\nlayout = "plana"\n\n'
+                '[[coluna]]\ncanonico = "a"\nrotulo = "A"\ntipo = "texto_livre"\npapel = "dimensao"\nsinonimos = []\n')
+
+
+def _pasta_modelos(tmp_path, monkeypatch):
+    from analise_planilha import config, modelo
+    from servidor import modelos_fs
+    d = tmp_path / "modelos"
+    d.mkdir()
+    (d / "exemplo.toml").write_text(_MODELO_TOML, encoding="utf-8")
+    monkeypatch.setattr(config, "PASTA_MODELOS", d)
+    monkeypatch.setattr(modelo, "PASTA_MODELOS", d)
+    monkeypatch.setattr(modelos_fs, "PASTA", d)
+    return d
+
+
+def test_modelos_crud_completo(web, tmp_path, monkeypatch):
+    from servidor import modelos_fs
+    d = _pasta_modelos(tmp_path, monkeypatch)
+    c = _cli("admin", "admin123")
+    assert "Exemplo" in c.get("/web/admin/modelos").text                     # lista
+    # editar TOML inválido -> erro e NÃO grava
+    bad = c.post("/web/admin/modelo/exemplo/editar", data={"conteudo": "isto [ nao ] e valido"},
+                 follow_redirects=False)
+    assert "erro=" in bad.headers["location"] and 'nome = "Exemplo"' in (d / "exemplo.toml").read_text(encoding="utf-8")
+    # editar válido
+    ok = c.post("/web/admin/modelo/exemplo/editar", data={"conteudo": _MODELO_TOML.replace("Exemplo", "Exemplo 2")},
+                follow_redirects=False)
+    assert "ok=" in ok.headers["location"] and "Exemplo 2" in (d / "exemplo.toml").read_text(encoding="utf-8")
+    # duplicar
+    assert "ok=" in c.post("/web/admin/modelo/exemplo/duplicar", data={"nome": "Copia X"},
+                           follow_redirects=False).headers["location"]
+    assert (d / "copia-x.toml").exists()
+    # bloquear -> some do seletor; liberar volta
+    c.post("/web/admin/modelo/exemplo/bloquear", data={"bloquear": "1"})
+    assert "exemplo" not in [m["slug"] for m in modelos_fs.disponiveis()]
+    c.post("/web/admin/modelo/exemplo/bloquear", data={"bloquear": "0"})
+    assert "exemplo" in [m["slug"] for m in modelos_fs.disponiveis()]
+    # exportar um e todos
+    ex = c.get("/web/admin/modelo/exemplo/exportar")
+    assert ex.status_code == 200 and b"[[coluna]]" in ex.content
+    assert c.get("/web/admin/modelos/exportar").status_code == 200
+    # importar (.toml válido)
+    imp = c.post("/web/admin/modelo/importar",
+                 files={"arquivo": ("importado.toml", _MODELO_TOML.encode(), "application/toml")}, follow_redirects=False)
+    assert "ok=" in imp.headers["location"] and (d / "importado.toml").exists()
+    # importar inválido -> erro
+    assert "erro=" in c.post("/web/admin/modelo/importar",
+                             files={"arquivo": ("ruim.toml", b"xxx [", "x")}, follow_redirects=False).headers["location"]
+    # novo + excluir
+    assert "ok=" in c.post("/web/admin/modelo/novo", data={"nome": "Zero", "conteudo": modelos_fs.MODELO_EXEMPLO},
+                           follow_redirects=False).headers["location"]
+    assert (d / "zero.toml").exists()
+    assert "ok=" in c.post("/web/admin/modelo/zero/excluir", follow_redirects=False).headers["location"]
+    assert not (d / "zero.toml").exists()
+    # só ADM
+    g = _cli("gestor.fin")
+    assert "restrito" in g.get("/web/admin/modelos").text.lower()
+    assert "restrito" in g.post("/web/admin/modelo/exemplo/excluir", follow_redirects=False).headers["location"].lower()
+
+
+def test_modelo_renomear_repoint(web, tmp_path, monkeypatch):
+    d = _pasta_modelos(tmp_path, monkeypatch)
+    c = _cli("admin", "admin123")
+    c.post("/web/admin/relatorio", data={"nome": "Usa Modelo", "centro_custo_id": 1, "modelo": "exemplo"})
+    r = c.post("/web/admin/modelo/exemplo/renomear", data={"nome": "Exemplo", "novo_slug": "exemplo-novo"},
+               follow_redirects=False)
+    assert "ok=" in r.headers["location"]
+    assert (d / "exemplo-novo.toml").exists() and not (d / "exemplo.toml").exists()
+    assert "exemplo-novo" in c.get("/web/admin").text        # relatório foi repontado para o novo slug
+
+
 def test_admin_modelo_detalhe(web):
     c = _cli("admin", "admin123")
     r = c.get("/web/admin/modelo/resumo_cesariana")
@@ -470,3 +558,18 @@ def test_web_compartilhar(web):
                data={"login_destino": "gestor.fat", "dias": 7, "anonimizar": "on"}, follow_redirects=False)
     assert r.status_code == 303 and "ok=" in r.headers["location"]
     assert "Faturamento HUNF" in _cli("gestor.fat").get("/web").text   # convidado passa a ver o relatório
+
+
+def test_web_relatorio_filtro_datas_e_comparacao_meses(web):
+    _entrar(web)
+    # 1. Na tela do relatório com coluna de data aparece a barra de filtros e comparação de meses
+    shell = web.get("/web/r/faturamento-hunf?meses=2025-01,2025-03")
+    assert shell.status_code == 200
+    assert 'id="barra-filtro-datas"' in shell.text
+    assert 'meses=2025-01%2C2025-03' in shell.text or 'meses=2025-01,2025-03' in shell.text
+    # 2. O conteúdo do iframe recebe os filtros, embute o seletor de período e filtra os meses
+    conteudo = web.get("/web/r/faturamento-hunf/conteudo?meses=2025-01,2025-03")
+    assert conteudo.status_code == 200
+    assert '<select id="periodo">' in conteudo.text
+    assert "jan/25, mar/25" in conteudo.text
+

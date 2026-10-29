@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(.venv/**)",
+      "Read(dist/**)",
+      "Read(build/**)",
+      "Read(build_nuitka/**)",
+      "Read(.git/**)",
+      "Read(**/__pycache__/**)",
+      "Read(**/*.pyc)"
+    ]
+  }
+}

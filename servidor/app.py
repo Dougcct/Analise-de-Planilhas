@@ -1,49 +1,47 @@
-"""API v2 — FASE 2: banco (PostgreSQL), login e isolamento por centro de custo.
+"""Servidor v2 — aplicação FastAPI que serve o site web (`/web`) e os datasets por trás dele.
 
-Login devolve um token opaco (guardado como hash no banco → revogação imediata). Toda rota de dados
-recebe um `Escopo` montado da sessão e repositórios que já nascem filtrados pelo centro de custo
-(DOCS/18 §5). O relatório ainda é SINTÉTICO (upload real vem na fase 4); o que esta fase prova é o
-CONTROLE: cada setor só enxerga o que é seu, e tudo fica auditado.
+Monta o app, prepara o banco e o volume de cargas no start e expõe os *helpers* de dados (cache de
+modelos e de datasets, consolidação de várias planilhas publicadas) que as rotas web (`servidor/web.py`)
+consomem. A interface é toda web (navegador): não há mais API `/api/v1` nem cliente desktop.
 """
 from __future__ import annotations
 
-import datetime as dt
-import hashlib
 import os
 import sys
-import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(RAIZ / "src"))
 
-from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Request, UploadFile
-from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
-from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse, RedirectResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from analise_planilha import __version__, relatorio_html, serializacao, servico
+from analise_planilha import __version__, servico
 from analise_planilha.modelo import carregar_modelo
-from analise_planilha.modelos import Filtros
 
-from . import aprendizado, atualizacao, bd, dados_demo, seed, validacao
-from .autenticacao import escopo_por_token
-from .modelos_bd import (
-    ADM, GESTOR, PAPEIS, PUBLICADA, RASCUNHO, SUBSTITUIDA, USUARIO,
-    AcessoTemporario, Auditoria, Carga, CentroCusto, Relatorio, SessaoUsuario, Usuario, utcnow,
-)
-from .repositorio import RepoCargas, RepoRelatorios, RepoUsuarios
-from .seguranca import (
-    DURACAO_SESSAO, MAX_TENTATIVAS, Escopo, conferir_senha, gerar_token, hash_senha, hash_token,
-)
+from . import aprendizado, bd, dados_demo, seed
+from .modelos_bd import PUBLICADA, AcessoTemporario, Carga, Relatorio, utcnow
 
 CARGAS_DIR = Path(os.getenv("CARGAS_DIR", "/app/dados_cargas"))   # volume: arquivos brutos enviados
+SEMENTE_MODELOS = Path(os.getenv("SEMENTE_MODELOS", "/app/_seed_modelos"))  # cópia baked p/ semear o volume
 
-# Rotas abaixo deste prefixo NÃO passam pela trava de versão: a checagem pública e o download do
-# pacote precisam funcionar JUSTAMENTE para um cliente velho conseguir se atualizar (DOCS/17 §4).
-_SEM_TRAVA_VERSAO = ("/api/v1/status/", "/api/v1/atualizacao")
+
+def _semear_modelos() -> None:
+    """config/modelos é um volume (editável em runtime) e começa vazio: na 1ª vez, copia os modelos
+    da pasta-semente baked. Idempotente; em dev (sem a semente) não faz nada e usa os arquivos do repo."""
+    import shutil
+    from analise_planilha import config as _cfg
+
+    destino = _cfg.PASTA_MODELOS
+    destino.mkdir(parents=True, exist_ok=True)
+    if any(destino.glob("*.toml")) or not SEMENTE_MODELOS.is_dir():
+        return
+    for p in SEMENTE_MODELOS.glob("*.toml"):
+        shutil.copy2(p, destino / p.name)
+    print(f"[modelos] volume semeado com {len(list(destino.glob('*.toml')))} modelo(s)")
 
 
 @asynccontextmanager
@@ -51,29 +49,14 @@ async def lifespan(app: FastAPI):
     bd.esperar_banco()
     bd.criar_schema()
     CARGAS_DIR.mkdir(parents=True, exist_ok=True)
-    atualizacao.ATUALIZACOES_DIR.mkdir(parents=True, exist_ok=True)
+    _semear_modelos()
     with bd.Sessao() as s:
         if seed.semear(s):
             print("[seed] dados de demonstração criados")
     yield
 
 
-app = FastAPI(title="Análise de Planilhas — API v2", version=__version__, lifespan=lifespan)
-
-
-@app.middleware("http")
-async def trava_de_versao(request: Request, call_next):
-    """426 para cliente abaixo da versão mínima — burlar a tela não adianta (DOCS/17 §4).
-    Vale para toda rota /api/v1, menos a checagem pública e o espelho de atualização."""
-    caminho = request.url.path
-    if caminho.startswith("/api/v1") and not caminho.startswith(_SEM_TRAVA_VERSAO):
-        minima = atualizacao.politica()["minima"]
-        if atualizacao.cliente_desatualizado(request.headers.get("X-Client-Version"), minima):
-            return JSONResponse(status_code=426,
-                                content={"detail": "Versão do cliente desatualizada.",
-                                         "versao_minima_cliente": minima,
-                                         "pacote": f"/api/v1/atualizacao/{atualizacao.politica()['recomendada']}"})
-    return await call_next(request)
+app = FastAPI(title="Análise de Planilhas — v2 (web)", version=__version__, lifespan=lifespan)
 
 
 # ---- modelos e datasets ---------------------------------------------------------------
@@ -83,6 +66,7 @@ async def trava_de_versao(request: Request, call_next):
 _cache_modelos: dict[str, object] = {}
 _cache_cargas: dict[int, object] = {}         # Dataset por carga (arquivos são imutáveis)
 _cache_demo: dict[str, object] = {}           # Dataset sintético por modelo
+_cache_consolidado: dict[tuple, object] = {}  # Dataset somando várias cargas publicadas (chave: ids)
 
 
 def _modelo_do(rel: Relatorio):
@@ -106,9 +90,40 @@ def _dataset_da_carga(carga: Carga, modelo=None, s: Session | None = None):
     return _cache_cargas[carga.id]
 
 
+def _dataset_consolidado(cargas: list[Carga], modelo=None, s: Session | None = None):
+    """Soma TODAS as planilhas publicadas do relatório numa base só (`servico.carregar_varios`):
+    planilhas de períodos/convênios diferentes somam nos indicadores; duas que cobrem os mesmos meses
+    são tratadas como versões (vale a mais recente, não conta em dobro). A coluna «Arquivo de origem»
+    permite filtrar por uma planilha ou ver todas de uma vez."""
+    if len(cargas) == 1:
+        return _dataset_da_carga(cargas[0], modelo, s)
+    chave = tuple(sorted(c.id for c in cargas))
+    if chave not in _cache_consolidado:
+        arquivos = [((CARGAS_DIR / c.arquivo_uuid).read_bytes(), c.nome_original) for c in cargas]
+        kw: dict = {}
+        if s is not None:
+            correcoes: dict[str, str] = {}
+            for c in cargas:                 # correções de todas as cargas (a mais recente, por último, vence)
+                correcoes.update(aprendizado.correcoes_da(c))
+            kw = {"conhecimento": aprendizado.base(s),
+                  "contexto": aprendizado.contexto_de(s, s.get(Relatorio, cargas[0].relatorio_id), modelo),
+                  "correcoes": correcoes}
+        _cache_consolidado[chave] = servico.carregar_varios(arquivos, modelo=modelo, **kw)
+    return _cache_consolidado[chave]
+
+
 def esquecer_dataset(carga_id: int) -> None:
     """Força reler a carga (ex.: o usuário corrigiu papéis na prévia)."""
     _cache_cargas.pop(carga_id, None)
+    _cache_consolidado.clear()           # o conjunto consolidado pode conter esta carga
+
+
+def esquecer_modelos() -> None:
+    """Depois de editar/excluir/renomear um modelo: zera os caches para a mudança valer na hora."""
+    _cache_modelos.clear()
+    _cache_demo.clear()
+    _cache_cargas.clear()
+    _cache_consolidado.clear()
 
 
 def _dataset_demo(rel: Relatorio, modelo):
@@ -123,13 +138,15 @@ def _dataset_demo(rel: Relatorio, modelo):
 
 
 def _dataset_do_relatorio(s: Session, rel: Relatorio):
-    """A carga PUBLICADA mais recente; sem nenhuma, a planilha sintética do modelo (demo).
-    Busca pela carga do relatório (acesso já autorizado), não pelo setor do leitor — assim o convidado
+    """TODAS as cargas publicadas do relatório, somadas numa base só; sem nenhuma, a planilha sintética
+    (demo). Cada planilha enviada continua publicada e soma nos indicadores; só uma NOVA VERSÃO da mesma
+    planilha (mesmo nome) manda a anterior para o histórico (backup) — ver o fluxo de publicação.
+    Busca pelas cargas do relatório (acesso já autorizado), não pelo setor do leitor — assim o convidado
     (acesso temporário) lê os dados do relatório emprestado (anonimizados)."""
     modelo = _modelo_do(rel)
-    carga = s.scalar(select(Carga).where(Carga.relatorio_id == rel.id, Carga.status == PUBLICADA)
-                     .order_by(Carga.id.desc()))
-    return _dataset_da_carga(carga, modelo, s) if carga is not None else _dataset_demo(rel, modelo)
+    cargas = list(s.scalars(select(Carga).where(Carga.relatorio_id == rel.id, Carga.status == PUBLICADA)
+                            .order_by(Carga.publicado_em, Carga.id)))   # ordem de publicação: a última vence em versões
+    return _dataset_consolidado(cargas, modelo, s) if cargas else _dataset_demo(rel, modelo)
 
 
 def acesso_vigente(s: Session, usuario_id: int, relatorio_id: int) -> AcessoTemporario | None:
@@ -138,498 +155,40 @@ def acesso_vigente(s: Session, usuario_id: int, relatorio_id: int) -> AcessoTemp
         AcessoTemporario.revogado.is_(False), AcessoTemporario.expira_em > utcnow()))
 
 
-# ---- dependências ----
-def get_sessao():
-    with bd.Sessao() as s:
-        yield s
-
-
-def registrar(s: Session, usuario_id, centro_custo_id, acao, alvo=None, ip=None, detalhes=None):
-    s.add(Auditoria(usuario_id=usuario_id, centro_custo_id=centro_custo_id, acao=acao,
-                    alvo=alvo, ip=ip, detalhes=detalhes))
-
-
-def escopo_da_sessao(authorization: str = Header(default=""), s: Session = Depends(get_sessao)) -> Escopo:
-    token = authorization[7:] if authorization.lower().startswith("bearer ") else ""
-    escopo = escopo_por_token(s, token)
-    if escopo is None:
-        raise HTTPException(401, "Sessão inválida ou expirada.")
-    return escopo
-
-
-def sessao_pronta(escopo: Escopo = Depends(escopo_da_sessao)) -> Escopo:
-    """Gate: enquanto a troca de senha estiver pendente, só dá para trocar a senha (DOCS/18 §7)."""
-    if escopo.precisa_trocar_senha:
-        raise HTTPException(409, "Troque a senha antes de continuar.")
-    return escopo
-
-
-def exigir(escopo: Escopo, *papeis: str) -> None:
-    if escopo.papel not in papeis:
-        raise HTTPException(403, "Ação não permitida para o seu papel.")
-
-
-# ---- esquemas de entrada ----
-class LoginIn(BaseModel):
-    login: str
-    senha: str
-
-
-class FiltrosIn(BaseModel):
-    periodo: tuple[str, str] | None = None
-    selecao: dict[str, list] = {}
-    anonimizar: bool = False
-    coluna_data: str | None = None
-
-
-class SenhaIn(BaseModel):
-    senha_atual: str
-    nova: str
-
-
-class UsuarioIn(BaseModel):
-    login: str
-    nome: str
-    senha: str
-    email: str | None = None             # opcional; dado pessoal (LGPD)
-    papel: str = USUARIO
-    centro_custo_id: int | None = None   # ADM escolhe; Gestor ignora (usa o próprio setor)
-
-
-class CompartilharIn(BaseModel):
-    login_destino: str
-    dias: int = 7
-    anonimizar: bool = True
-
-
-class AprovarIn(BaseModel):
-    recomendada: str
-    minima: str | None = None    # sem valor: mantém a mínima atual
-
-
-class CentroIn(BaseModel):
-    codigo: str
-    nome: str
-
-
-class RelatorioIn(BaseModel):
-    nome: str
-    centro_custo_id: int
-    modelo: str | None = None
-    slug: str | None = None      # sem valor: derivado do nome
-
-
-# ---- rotas ----
-@app.get("/", include_in_schema=False)
-def raiz():
-    """Abrir o endereço "pelado" (http://servidor) leva direto para o site web."""
-    return RedirectResponse("/web")
-
-
-@app.get("/api/v1/status/versao")
-def versao():
-    """Público (sem login): o cliente consulta ANTES de entrar para saber se precisa atualizar."""
-    pol = atualizacao.politica()
-    resp = {"versao_servidor": __version__, "versao_minima_cliente": pol["minima"],
-            "versao_recomendada_cliente": pol["recomendada"]}
-    if atualizacao.caminho_pacote(pol["recomendada"]) is not None:    # há pacote espelhado para baixar
-        resp["pacote"] = f"/api/v1/atualizacao/{pol['recomendada']}"
-        resp["sha256"] = atualizacao.sha256_pacote(pol["recomendada"])
-    return resp
-
-
-@app.get("/api/v1/atualizacao/{versao}")
-def baixar_atualizacao(versao: str):
-    """Espelho do pacote pela LAN — fora da trava de versão, para o cliente velho conseguir baixar."""
-    p = atualizacao.caminho_pacote(versao)
-    if p is None:
-        raise HTTPException(404, "Pacote não disponível para esta versão.")
-    return FileResponse(p, media_type="application/zip", filename=p.name)
-
-
-@app.post("/api/v1/atualizacao", status_code=201)
-async def subir_atualizacao(versao: str = Form(...), arquivo: UploadFile = File(...),
-                            escopo: Escopo = Depends(sessao_pronta), s: Session = Depends(get_sessao)):
-    """ADM espelha um pacote de cliente no servidor (o `.zip` gerado pela Release)."""
-    exigir(escopo, ADM)
-    if atualizacao.versao_tupla(versao) is None:
-        raise HTTPException(422, "Versão inválida (use algo como 2.1.0).")
-    conteudo = await arquivo.read(atualizacao.MAX_PACOTE + 1)     # pacote do cliente é grande (≠ planilha)
-    if len(conteudo) > atualizacao.MAX_PACOTE:
-        raise HTTPException(413, "Pacote acima do limite.")
-    sha = atualizacao.guardar_pacote(versao, conteudo)
-    registrar(s, escopo.usuario_id, None, "subir_atualizacao", versao, escopo.ip, detalhes=sha)
-    s.commit()
-    return {"versao": versao, "sha256": sha, "tamanho": len(conteudo)}
-
-
-@app.post("/api/v1/atualizacao/sincronizar")
-def sincronizar_atualizacao(escopo: Escopo = Depends(sessao_pronta), s: Session = Depends(get_sessao)):
-    """ADM: busca a última Release no GitHub e espelha no servidor (ligação GitHub→Docker→LAN)."""
-    exigir(escopo, ADM)
-    try:
-        r = atualizacao.sincronizar_github()
-    except Exception as e:
-        raise HTTPException(502, f"Não foi possível buscar a atualização no GitHub: {type(e).__name__}") from e
-    registrar(s, escopo.usuario_id, None, "sincronizar_github", r["versao"], escopo.ip, detalhes=r["sha256"])
-    s.commit()
-    return r
-
-
-@app.post("/api/v1/atualizacao/aprovar")
-def aprovar_atualizacao(dados: AprovarIn, escopo: Escopo = Depends(sessao_pronta),
-                        s: Session = Depends(get_sessao)):
-    """ADM decide a versão recomendada (e, se preciso, sobe a mínima obrigatória)."""
-    exigir(escopo, ADM)
-    if atualizacao.versao_tupla(dados.recomendada) is None:
-        raise HTTPException(422, "Versão recomendada inválida.")
-    if atualizacao.caminho_pacote(dados.recomendada) is None:
-        raise HTTPException(422, "Não há pacote espelhado para essa versão; suba o pacote antes.")
-    minima = dados.minima or atualizacao.politica()["minima"]
-    if atualizacao.versao_tupla(minima) is None:
-        raise HTTPException(422, "Versão mínima inválida.")
-    if atualizacao.versao_tupla(minima) > atualizacao.versao_tupla(dados.recomendada):
-        raise HTTPException(422, "A mínima não pode ser maior que a recomendada.")
-    pol = atualizacao.salvar_politica(minima, dados.recomendada)
-    registrar(s, escopo.usuario_id, None, "aprovar_atualizacao", dados.recomendada, escopo.ip,
-              detalhes=f"minima={minima}")
-    s.commit()
-    return pol
-
-
-@app.post("/api/v1/sessao")
-def login(dados: LoginIn, request: Request, s: Session = Depends(get_sessao)):
-    ip = request.client.host if request.client else None
-    u = s.scalar(select(Usuario).where(Usuario.login == dados.login))
-    if u is None or not u.ativo or not conferir_senha(u.senha_hash, dados.senha):
-        if u is not None and u.ativo:
-            u.tentativas_falhas += 1
-            if u.tentativas_falhas >= MAX_TENTATIVAS:
-                u.ativo = False                       # bloqueio por tentativas (DOCS/18 §7)
-        registrar(s, u.id if u else None, u.centro_custo_id if u else None, "login_falha", dados.login, ip)
-        s.commit()
-        raise HTTPException(401, "Login ou senha inválidos.")
-
-    u.tentativas_falhas = 0
-    u.ultimo_acesso = utcnow()
-    token = gerar_token()
-    s.add(SessaoUsuario(usuario_id=u.id, token_hash=hash_token(token), expira_em=utcnow() + DURACAO_SESSAO,
-                        ip=ip, versao_cliente=request.headers.get("X-Client-Version")))
-    registrar(s, u.id, u.centro_custo_id, "login", ip=ip)
-    s.commit()
-    return {"token": token, "papel": u.papel, "centro_custo_id": u.centro_custo_id,
-            "precisa_trocar_senha": u.precisa_trocar_senha, "nome": u.nome}
-
-
-@app.delete("/api/v1/sessao")
-def logout(authorization: str = Header(default=""), s: Session = Depends(get_sessao)):
-    token = authorization[7:] if authorization.lower().startswith("bearer ") else ""
-    sess = s.scalar(select(SessaoUsuario).where(SessaoUsuario.token_hash == hash_token(token))) if token else None
-    if sess is not None:
-        sess.revogada = True
-        s.commit()
-    return {"ok": True}
-
-
-@app.post("/api/v1/sessao/senha")
-def trocar_senha(dados: SenhaIn, escopo: Escopo = Depends(escopo_da_sessao), s: Session = Depends(get_sessao)):
-    u = s.get(Usuario, escopo.usuario_id)
-    if not conferir_senha(u.senha_hash, dados.senha_atual):
-        raise HTTPException(401, "Senha atual incorreta.")
-    if len(dados.nova) < 6:
-        raise HTTPException(422, "A nova senha precisa de ao menos 6 caracteres.")
-    u.senha_hash = hash_senha(dados.nova)
-    u.precisa_trocar_senha = False
-    registrar(s, u.id, u.centro_custo_id, "trocar_senha", ip=escopo.ip)
-    s.commit()
-    return {"ok": True}
-
-
-@app.get("/api/v1/relatorios")
-def relatorios(escopo: Escopo = Depends(sessao_pronta), s: Session = Depends(get_sessao)):
-    return [{"slug": r.slug, "nome": r.nome, "centro_custo_id": r.centro_custo_id}
-            for r in RepoRelatorios(s, escopo).listar()]
-
-
-@app.post("/api/v1/relatorios/{slug}/analise")
-def analise(slug: str, filtros: FiltrosIn, escopo: Escopo = Depends(sessao_pronta),
-            s: Session = Depends(get_sessao)):
-    rel = RepoRelatorios(s, escopo).obter(slug)
-    if rel is None:                                   # de outro setor sem acesso (ou inexistente) → 404
-        raise HTTPException(404, "Relatório não encontrado.")
-    f = _filtros(filtros)
-    if not escopo.eh_adm and rel.centro_custo_id != escopo.centro_custo_id:   # convidado de outro setor
-        ac = acesso_vigente(s, escopo.usuario_id, rel.id)
-        if ac is not None and ac.anonimizar:
-            f.anonimizar = True                       # forçado no servidor; o convidado não desliga
-    registrar(s, escopo.usuario_id, escopo.centro_custo_id, "abrir_relatorio", slug, escopo.ip)
-    s.commit()
-    return serializacao.analise_para_json(servico.analisar(_dataset_do_relatorio(s, rel), f))
-
-
-@app.get("/api/v1/relatorios/{slug}/html", response_class=HTMLResponse)
-def exportar_html(slug: str, escopo: Escopo = Depends(sessao_pronta), s: Session = Depends(get_sessao)):
-    exigir(escopo, GESTOR, ADM)                       # Usuário não exporta (DOCS/18 §3)
-    rel = RepoRelatorios(s, escopo).obter_proprio(slug)   # convidado não exporta relatório alheio
-    if rel is None:
-        raise HTTPException(404, "Relatório não encontrado.")
-    registrar(s, escopo.usuario_id, escopo.centro_custo_id, "exportar_html", slug, escopo.ip)
-    s.commit()
-    return relatorio_html.montar_html(servico.analisar(_dataset_do_relatorio(s, rel), Filtros()), rel.nome)
-
-
-def _usuario_json(u: Usuario) -> dict:
-    return {"id": u.id, "login": u.login, "nome": u.nome, "email": u.email, "papel": u.papel,
-            "centro_custo_id": u.centro_custo_id, "ativo": u.ativo}
-
-
-@app.get("/api/v1/usuarios")
-def listar_usuarios(escopo: Escopo = Depends(sessao_pronta), s: Session = Depends(get_sessao)):
-    exigir(escopo, GESTOR, ADM)                        # Usuário comum não gerencia ninguém
-    return [_usuario_json(u) for u in RepoUsuarios(s, escopo).listar()]
-
-
-@app.get("/api/v1/centros")
-def listar_centros(escopo: Escopo = Depends(sessao_pronta), s: Session = Depends(get_sessao)):
-    """Para o ADM escolher o setor ao criar usuário/relatório. Gestor recebe só o próprio."""
-    exigir(escopo, GESTOR, ADM)
-    q = select(CentroCusto).where(CentroCusto.ativo.is_(True))
-    if not escopo.eh_adm:
-        q = q.where(CentroCusto.id == escopo.centro_custo_id)
-    return [{"id": c.id, "codigo": c.codigo, "nome": c.nome}
-            for c in s.scalars(q.order_by(CentroCusto.nome))]
-
-
-@app.get("/api/v1/modelos")
-def listar_modelos_disponiveis(escopo: Escopo = Depends(sessao_pronta)):
-    """Modelos de análise disponíveis (config/modelos/*.toml), para o ADM montar um relatório novo."""
-    exigir(escopo, GESTOR, ADM)
-    from analise_planilha.modelo import listar_modelos
-    return [{"slug": p.stem, "nome": nome} for nome, p in listar_modelos().items()]
-
-
-@app.post("/api/v1/centros", status_code=201)
-def criar_centro(dados: CentroIn, escopo: Escopo = Depends(sessao_pronta), s: Session = Depends(get_sessao)):
-    """ADM cria um centro de custo (setor) — o sistema cresce um setor de cada vez."""
-    exigir(escopo, ADM)
-    codigo = dados.codigo.strip().upper()
-    nome = dados.nome.strip()
-    if not codigo or not nome:
-        raise HTTPException(422, "Informe código e nome do setor.")
-    if s.scalar(select(CentroCusto).where(CentroCusto.codigo == codigo)) is not None:
-        raise HTTPException(409, "Já existe um setor com esse código.")
-    centro = CentroCusto(codigo=codigo, nome=nome)
-    s.add(centro)
-    s.flush()
-    registrar(s, escopo.usuario_id, None, "criar_centro", codigo, escopo.ip)
-    s.commit()
-    return {"id": centro.id, "codigo": centro.codigo, "nome": centro.nome}
-
-
 def _slugificar(texto: str) -> str:
     import unicodedata
     base = unicodedata.normalize("NFKD", texto).encode("ascii", "ignore").decode()
     return "-".join("".join(c if c.isalnum() else " " for c in base.lower()).split())
 
 
-@app.post("/api/v1/relatorios", status_code=201)
-def criar_relatorio(dados: RelatorioIn, escopo: Escopo = Depends(sessao_pronta), s: Session = Depends(get_sessao)):
-    """ADM cria um relatório num setor, opcionalmente ligado a um modelo de análise."""
-    exigir(escopo, ADM)
-    nome = dados.nome.strip()
-    slug = _slugificar(dados.slug or nome)
-    if not nome or not slug:
-        raise HTTPException(422, "Informe o nome do relatório.")
-    if s.get(CentroCusto, dados.centro_custo_id) is None:
-        raise HTTPException(422, "Centro de custo inexistente.")
-    if s.scalar(select(Relatorio).where(Relatorio.slug == slug)) is not None:
-        raise HTTPException(409, "Já existe um relatório com esse identificador.")
-    rel = Relatorio(slug=slug, nome=nome, centro_custo_id=dados.centro_custo_id, modelo=dados.modelo or None)
-    s.add(rel)
-    s.flush()
-    registrar(s, escopo.usuario_id, None, "criar_relatorio", slug, escopo.ip)
-    s.commit()
-    return {"id": rel.id, "slug": rel.slug, "nome": rel.nome,
-            "centro_custo_id": rel.centro_custo_id, "modelo": rel.modelo}
+# ---- arquivos estáticos (ícone / logo em /assets) e raiz ----
+PASTA_ASSETS = (RAIZ / "assets").resolve()
 
 
-@app.post("/api/v1/usuarios", status_code=201)
-def criar_usuario(dados: UsuarioIn, escopo: Escopo = Depends(sessao_pronta), s: Session = Depends(get_sessao)):
-    exigir(escopo, GESTOR, ADM)
-    papel = dados.papel.upper()
-    if papel not in PAPEIS:
-        raise HTTPException(422, "Papel inválido.")
-    if escopo.eh_gestor:                              # Gestor: só cria USUARIO no próprio setor
-        if papel != USUARIO:
-            raise HTTPException(403, "Gestor só cadastra usuários comuns.")
-        cc = escopo.centro_custo_id
-    else:                                             # ADM: escolhe papel e setor
-        cc = dados.centro_custo_id
-        if papel != ADM and cc is None:
-            raise HTTPException(422, "Informe o centro de custo.")
-        if cc is not None and s.get(CentroCusto, cc) is None:
-            raise HTTPException(422, "Centro de custo inexistente.")
-    if s.scalar(select(Usuario).where(Usuario.login == dados.login)) is not None:
-        raise HTTPException(409, "Login já existe.")
-    novo = Usuario(login=dados.login, nome=dados.nome, email=(dados.email or None),
-                   senha_hash=hash_senha(dados.senha),
-                   papel=papel, centro_custo_id=(None if papel == ADM else cc), precisa_trocar_senha=True)
-    s.add(novo)
-    s.flush()
-    registrar(s, escopo.usuario_id, escopo.centro_custo_id, "criar_usuario", dados.login, escopo.ip)
-    s.commit()
-    return {"id": novo.id, "login": novo.login, "papel": novo.papel, "centro_custo_id": novo.centro_custo_id}
+@app.get("/", include_in_schema=False)
+def raiz():
+    """Abrir o endereço "pelado" (http://servidor) leva direto para o site web."""
+    return RedirectResponse("/web")
 
 
-@app.post("/api/v1/usuarios/{usuario_id}/bloquear")
-def bloquear_usuario(usuario_id: int, escopo: Escopo = Depends(sessao_pronta), s: Session = Depends(get_sessao)):
-    exigir(escopo, GESTOR, ADM)
-    alvo = RepoUsuarios(s, escopo).obter(usuario_id)   # Gestor só alcança o próprio setor → 404 fora dele
-    if alvo is None:
-        raise HTTPException(404, "Usuário não encontrado.")
-    if escopo.eh_gestor and alvo.papel != USUARIO:
-        raise HTTPException(403, "Gestor só bloqueia usuários comuns.")
-    if alvo.id == escopo.usuario_id:
-        raise HTTPException(422, "Não é possível bloquear a si mesmo.")
-    alvo.ativo = False
-    for sess in s.scalars(select(SessaoUsuario).where(SessaoUsuario.usuario_id == alvo.id, ~SessaoUsuario.revogada)):
-        sess.revogada = True                          # tira o bloqueado na hora
-    registrar(s, escopo.usuario_id, escopo.centro_custo_id, "bloquear_usuario", alvo.login, escopo.ip)
-    s.commit()
-    return {"ok": True}
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon():
+    ico = PASTA_ASSETS / "icon.ico"
+    if not ico.is_file():
+        raise HTTPException(404)
+    return FileResponse(str(ico), media_type="image/x-icon")
 
 
-def _carga_json(c: Carga) -> dict:
-    return {"id": c.id, "status": c.status, "nome_original": c.nome_original, "tamanho": c.tamanho,
-            "criado_em": c.criado_em.isoformat() if c.criado_em else None,
-            "publicado_em": c.publicado_em.isoformat() if c.publicado_em else None}
+@app.get("/assets/{nome_arquivo:path}", include_in_schema=False)
+def servir_asset(nome_arquivo: str):
+    alvo = (PASTA_ASSETS / nome_arquivo).resolve()
+    if not alvo.is_relative_to(PASTA_ASSETS) or not alvo.is_file():
+        raise HTTPException(404, "Arquivo não encontrado.")
+    media = "image/x-icon" if alvo.suffix.lower() == ".ico" else None
+    return FileResponse(str(alvo), media_type=media)
 
 
-@app.post("/api/v1/cargas", status_code=201)
-async def enviar_carga(slug: str = Form(...), arquivo: UploadFile = File(...),
-                       escopo: Escopo = Depends(sessao_pronta), s: Session = Depends(get_sessao)):
-    exigir(escopo, GESTOR, ADM)
-    rel = RepoRelatorios(s, escopo).obter_proprio(slug)   # só envia para relatório do próprio setor
-    if rel is None:
-        raise HTTPException(404, "Relatório não encontrado.")
-    conteudo = await arquivo.read(validacao.MAX_BYTES + 1)
-    if len(conteudo) > validacao.MAX_BYTES:
-        raise HTTPException(413, "Arquivo acima do limite.")
-    try:
-        validacao.validar(arquivo.filename or "", conteudo)
-    except validacao.ErroArquivo as e:
-        raise HTTPException(422, str(e)) from e
-    nome_uuid = uuid.uuid4().hex + Path(arquivo.filename or "").suffix.lower()
-    CARGAS_DIR.mkdir(parents=True, exist_ok=True)
-    (CARGAS_DIR / nome_uuid).write_bytes(conteudo)
-    carga = Carga(relatorio_id=rel.id, centro_custo_id=rel.centro_custo_id, enviado_por=escopo.usuario_id,
-                  nome_original=arquivo.filename or "sem-nome", hash_sha256=hashlib.sha256(conteudo).hexdigest(),
-                  arquivo_uuid=nome_uuid, tamanho=len(conteudo), status=RASCUNHO)
-    s.add(carga)
-    s.flush()
-    registrar(s, escopo.usuario_id, escopo.centro_custo_id, "enviar_carga", f"{slug}:{carga.id}", escopo.ip,
-              detalhes=carga.hash_sha256)
-    s.commit()
-    return _carga_json(carga)
-
-
-@app.get("/api/v1/relatorios/{slug}/cargas")
-def listar_cargas(slug: str, escopo: Escopo = Depends(sessao_pronta), s: Session = Depends(get_sessao)):
-    rel = RepoRelatorios(s, escopo).obter_proprio(slug)   # gestão de cargas é do próprio setor
-    if rel is None:
-        raise HTTPException(404, "Relatório não encontrado.")
-    return [_carga_json(c) for c in RepoCargas(s, escopo).do_relatorio(rel.id)]
-
-
-@app.post("/api/v1/cargas/{carga_id}/analise")
-def analise_rascunho(carga_id: int, filtros: FiltrosIn, escopo: Escopo = Depends(sessao_pronta),
-                     s: Session = Depends(get_sessao)):
-    exigir(escopo, GESTOR, ADM)                        # testar antes de publicar é do gestor
-    carga = RepoCargas(s, escopo).obter(carga_id)
-    if carga is None:
-        raise HTTPException(404, "Carga não encontrada.")
-    modelo = _modelo_do(s.get(Relatorio, carga.relatorio_id))
-    try:
-        ds = _dataset_da_carga(carga, modelo, s)
-    except Exception as e:                             # arquivo que o motor não consegue ler
-        raise HTTPException(422, f"Não foi possível ler a planilha: {type(e).__name__}") from e
-    return serializacao.analise_para_json(servico.analisar(ds, _filtros(filtros)))
-
-
-@app.post("/api/v1/cargas/{carga_id}/publicar")
-def publicar_carga(carga_id: int, escopo: Escopo = Depends(sessao_pronta), s: Session = Depends(get_sessao)):
-    exigir(escopo, GESTOR, ADM)
-    carga = RepoCargas(s, escopo).obter(carga_id)
-    if carga is None:
-        raise HTTPException(404, "Carga não encontrada.")
-    try:
-        _dataset_da_carga(carga, _modelo_do(s.get(Relatorio, carga.relatorio_id)), s)   # só publica o que o motor lê
-    except Exception as e:
-        raise HTTPException(422, f"A planilha não pôde ser processada: {type(e).__name__}") from e
-    for anterior in s.scalars(select(Carga).where(Carga.relatorio_id == carga.relatorio_id,
-                                                  Carga.status == PUBLICADA)):
-        anterior.status = SUBSTITUIDA                  # vale a mais recente; não soma em dobro
-    carga.status = PUBLICADA
-    carga.publicado_em = utcnow()
-    registrar(s, escopo.usuario_id, escopo.centro_custo_id, "publicar_carga",
-              f"{carga.relatorio_id}:{carga.id}", escopo.ip)
-    s.commit()
-    return _carga_json(carga)
-
-
-@app.post("/api/v1/relatorios/{slug}/compartilhar", status_code=201)
-def compartilhar(slug: str, dados: CompartilharIn, escopo: Escopo = Depends(sessao_pronta),
-                 s: Session = Depends(get_sessao)):
-    exigir(escopo, GESTOR, ADM)
-    rel = RepoRelatorios(s, escopo).obter_proprio(slug)   # só compartilha relatório do próprio setor
-    if rel is None:
-        raise HTTPException(404, "Relatório não encontrado.")
-    if not (1 <= dados.dias <= 90):
-        raise HTTPException(422, "Prazo deve ser de 1 a 90 dias.")
-    destino = s.scalar(select(Usuario).where(Usuario.login == dados.login_destino))
-    if destino is None or not destino.ativo:
-        raise HTTPException(404, "Usuário destino não encontrado.")
-    if destino.centro_custo_id == rel.centro_custo_id:
-        raise HTTPException(422, "O destinatário já é do setor deste relatório.")
-    ac = AcessoTemporario(relatorio_id=rel.id, usuario_destino=destino.id, autorizado_por=escopo.usuario_id,
-                          expira_em=utcnow() + dt.timedelta(days=dados.dias), anonimizar=dados.anonimizar)
-    s.add(ac)
-    s.flush()
-    registrar(s, escopo.usuario_id, escopo.centro_custo_id, "compartilhar",
-              f"{slug}->{destino.login}", escopo.ip, detalhes=f"dias={dados.dias} anon={dados.anonimizar}")
-    s.commit()
-    return {"id": ac.id, "expira_em": ac.expira_em.isoformat(), "anonimizar": ac.anonimizar}
-
-
-@app.get("/api/v1/compartilhados")
-def compartilhados_comigo(escopo: Escopo = Depends(sessao_pronta), s: Session = Depends(get_sessao)):
-    linhas = s.execute(
-        select(AcessoTemporario, Relatorio).join(Relatorio, Relatorio.id == AcessoTemporario.relatorio_id)
-        .where(AcessoTemporario.usuario_destino == escopo.usuario_id,
-               AcessoTemporario.revogado.is_(False), AcessoTemporario.expira_em > utcnow())).all()
-    return [{"slug": rel.slug, "nome": rel.nome, "anonimizar": ac.anonimizar,
-             "dias_restantes": max(0, (ac.expira_em - utcnow()).days)} for ac, rel in linhas]
-
-
-@app.post("/api/v1/acessos/{acesso_id}/revogar")
-def revogar_acesso(acesso_id: int, escopo: Escopo = Depends(sessao_pronta), s: Session = Depends(get_sessao)):
-    exigir(escopo, GESTOR, ADM)
-    ac = s.get(AcessoTemporario, acesso_id)
-    if ac is not None:
-        rel = s.get(Relatorio, ac.relatorio_id)
-        if escopo.eh_adm or (rel is not None and rel.centro_custo_id == escopo.centro_custo_id):
-            ac.revogado = True                        # só o dono (ou ADM) revoga
-            registrar(s, escopo.usuario_id, escopo.centro_custo_id, "revogar_acesso", str(acesso_id), escopo.ip)
-            s.commit()
-            return {"ok": True}
-    raise HTTPException(404, "Acesso não encontrado.")
-
-
-def _filtros(f: FiltrosIn) -> Filtros:
-    return Filtros(periodo=f.periodo, selecao=f.selecao, anonimizar=f.anonimizar, coluna_data=f.coluna_data)
-
-
-# ---- versão web (navegador), servida pela mesma API em /web ----
+# ---- site web (navegador), servido em /web ----
 from . import web  # noqa: E402  (importado no fim: web faz import tardio de helpers deste módulo)
 
 app.include_router(web.router)

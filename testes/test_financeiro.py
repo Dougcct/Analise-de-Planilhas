@@ -230,6 +230,25 @@ def test_filtro_de_periodo_embutido_no_html(modelo_custos):
     assert '<select id="periodo">' not in relatorio_html.montar_html(a, "Custos")
 
 
+def test_dre_comparar_meses_especificos(tmp_path):
+    from analise_planilha.modelos import Filtros
+    p = tmp_path / "dre.toml"
+    p.write_text(MODELO_DRE, encoding="utf-8")
+    ds = servico.carregar(_xlsx({"DRE": DRE}), "d.xlsx", modelo=carregar_modelo(p))
+    # Comparando jan/24 e mar/24 (pulando fev/24 que teve prejuízo de -25)
+    f = Filtros(meses=["2024-01", "2024-03"], coluna_data="Mês")
+    a = servico.analisar(ds, f, metas_cfg={})
+    kpi = {k.rotulo: k.valor for k in a.kpis}
+    assert kpi["Meses com prejuízo"] == "0"
+    assert any(r == "Período" and "jan/24, mar/24" in v for r, v in a.filtros_desc)
+    dre_mes = next(pn for pn in a.paineis if pn.titulo == "DRE mês a mês")
+    cols = list(dre_mes.tabela.columns)
+    assert "jan/24" in cols and "mar/24" in cols and "fev/24" not in cols
+    assert "Var. mar/24 × jan/24 (R$)" in cols and "Var. mar/24 × jan/24 (%)" in cols
+    html = relatorio_html.montar_html(a, "DRE teste", ds=ds, filtros=f)
+    assert "jan/24, mar/24" in html and '<select id="periodo">' in html
+
+
 def test_grafico_de_linhas_com_negativos_nao_escapa_svg():
     fig = graficos.linhas(["jan/24", "fev/24"], [("Resultado", [10.0, -5.0], "var(--s1)"),
                                                  ("Receita", [20.0, None], "var(--s2)")])

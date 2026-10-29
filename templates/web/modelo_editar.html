@@ -1,0 +1,40 @@
+{% extends "web/base.html" %}
+{% block titulo %}{{ 'Novo modelo' if novo else 'Editar modelo' }} — Administração{% endblock %}
+{% block conteudo %}
+<style>
+  .edt{background:var(--superficie);border:1px solid var(--borda);border-radius:var(--raio);
+    box-shadow:var(--especular-card),var(--sombra);padding:18px;margin-top:16px}
+  .edt label{margin-bottom:6px}
+  .edt textarea{width:100%;min-height:58dvh;resize:vertical;padding:14px;border:1px solid var(--borda);
+    border-radius:var(--raio-s);background:var(--superficie-2);color:var(--texto);
+    font-family:ui-monospace,'JetBrains Mono','Cascadia Mono',Consolas,monospace;font-size:13px;line-height:1.5;
+    tab-size:2;white-space:pre}
+  .edt textarea:focus{outline:none;border-color:var(--marca);box-shadow:0 0 0 3px var(--marca-clara)}
+  .barra{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px}
+  .dica{color:var(--fraco);font-size:12.5px;margin-top:10px}
+  .dica code{font-family:ui-monospace,Consolas,monospace;background:var(--superficie-2);padding:1px 5px;border-radius:5px}
+</style>
+
+<a class="voltar" href="{{ '/web/admin/modelos' if novo else '/web/admin/modelo/' ~ slug }}">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  Voltar</a>
+<h1>{{ 'Novo modelo' if novo else 'Editar modelo' }}{{ '' if novo else ' · ' ~ slug }}</h1>
+<p class="apoio">Edição direta do arquivo <b>.toml</b>. É validado ao salvar — se tiver erro, nada é gravado.</p>
+
+<form method="post" action="{{ '/web/admin/modelo/novo' if novo else '/web/admin/modelo/' ~ slug ~ '/editar' }}" class="edt">
+  {% if novo %}
+  <label>Nome do modelo <span style="color:var(--perigo)">*</span></label>
+  <input name="nome" required placeholder="ex.: Faturamento HUNF" style="margin-bottom:12px">
+  {% endif %}
+  <label>Conteúdo (TOML)</label>
+  <textarea name="conteudo" spellcheck="false" autocomplete="off">{{ toml }}</textarea>
+  <div class="barra">
+    <button type="submit"><span class="giro"></span><span class="rotulo">{{ 'Criar modelo' if novo else 'Salvar' }}</span></button>
+    <a class="btn-sec" style="margin:0" href="{{ '/web/admin/modelos' if novo else '/web/admin/modelo/' ~ slug }}">Cancelar</a>
+  </div>
+  <p class="dica">Campos: <code>versao</code>, <code>nome</code>, <code>[leitura] layout</code>
+    (<code>plana</code>/<code>matriz_mensal</code>/<code>blocos</code>), <code>[grao] chave</code> e blocos
+    <code>[[coluna]]</code> (<code>canonico</code>, <code>rotulo</code>, <code>tipo</code>, <code>papel</code>,
+    <code>sinonimos</code>). Papéis: identificador, valor, quantidade, dimensao, pessoa, data, periodo, flag, texto, ignorar.</p>
+</form>
+{% endblock %}

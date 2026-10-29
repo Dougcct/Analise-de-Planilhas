@@ -1,0 +1,188 @@
+{% if datas_filtro %}
+<style>
+  .filtro-datas{margin:10px 0 12px;background:var(--superficie);border:1px solid var(--borda);
+    border-radius:var(--raio);padding:12px 16px;box-shadow:var(--especular-card),var(--sombra)}
+  .filtro-linha{display:flex;align-items:flex-end;gap:10px 14px;flex-wrap:wrap}
+  .filtro-campo{display:flex;flex-direction:column;gap:3px}
+  .filtro-campo label{font-size:12px;margin:0;color:var(--apoio);font-weight:700}
+  .filtro-campo input[type=date],.filtro-campo select{width:auto;min-width:142px;padding:7px 10px;font-size:13px}
+  .filtro-anos{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+  .filtro-anos span{font-size:12px;color:var(--apoio);font-weight:600;margin-right:2px}
+  .chip-btn{margin:0;padding:6px 11px;font-size:12.5px;border-radius:999px;background:var(--superficie-2);
+    color:var(--texto);border:1px solid var(--borda);box-shadow:none;font-weight:600;cursor:pointer}
+  .chip-btn:hover{background:var(--marca-clara);border-color:var(--marca);color:var(--acento-texto);filter:none}
+  .chip-btn.ativo{background:var(--marca);border-color:var(--marca);color:#fff}
+  details.comp-meses{margin-top:10px;padding-top:10px;border-top:1px solid var(--borda)}
+  details.comp-meses>summary{cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:7px;
+    font-size:13px;font-weight:700;color:var(--acento-texto)}
+  details.comp-meses>summary::-webkit-details-marker{display:none}
+  .atalho-meses{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin:10px 0 8px}
+  .atalho-meses span{font-size:12px;color:var(--apoio);font-weight:600;margin-right:4px}
+  .grade-anos-meses{display:flex;flex-direction:column;gap:6px;margin:8px 0 10px}
+  .linha-ano-mes{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .linha-ano-mes b{font-size:12.5px;min-width:42px;color:var(--apoio)}
+  label.chip-mes{display:inline-flex;align-items:center;gap:4px;margin:0;padding:4px 10px;border-radius:999px;
+    border:1px solid var(--borda);background:var(--superficie-2);font-size:12.5px;font-weight:600;
+    color:var(--texto);cursor:pointer;user-select:none;transition:background var(--rapido),border-color var(--rapido)}
+  label.chip-mes:hover{border-color:var(--marca)}
+  label.chip-mes:has(input:checked){background:var(--marca-clara);border-color:var(--marca);color:var(--acento-texto)}
+  label.chip-mes input{margin:0;width:13px;height:13px}
+</style>
+
+<div class="filtro-datas" id="barra-filtro-datas" data-url-conteudo="{{ url_conteudo }}">
+  <div class="filtro-linha">
+    {% if datas_filtro.colunas_data|length > 1 %}
+    <div class="filtro-campo">
+      <label for="f-col-data">Período por</label>
+      <select id="f-col-data">
+        {% for c in datas_filtro.colunas_data %}
+        <option value="{{ c }}" {{ 'selected' if c == datas_filtro.coluna_atual }}>{{ c }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    {% else %}
+    <input type="hidden" id="f-col-data" value="{{ datas_filtro.coluna_atual }}">
+    {% endif %}
+    <div class="filtro-campo">
+      <label for="f-de">De</label>
+      <input type="date" id="f-de" value="{{ datas_filtro.de }}" min="{{ datas_filtro.min_data }}" max="{{ datas_filtro.max_data }}">
+    </div>
+    <div class="filtro-campo">
+      <label for="f-ate">Até</label>
+      <input type="date" id="f-ate" value="{{ datas_filtro.ate }}" min="{{ datas_filtro.min_data }}" max="{{ datas_filtro.max_data }}">
+    </div>
+    <button type="button" class="btn-sec" style="margin:0;padding:8px 14px;background:var(--marca);color:#fff;border-color:var(--marca)" onclick="aplicarPeriodo()">Filtrar datas</button>
+    <button type="button" class="btn-sec" style="margin:0;padding:8px 12px" onclick="limparFiltroDatas()">Todo o período</button>
+
+    {% if datas_filtro.anos|length > 1 %}
+    <div class="filtro-anos" style="margin-left:auto">
+      <span>Ano:</span>
+      {% for a in datas_filtro.anos %}
+      <button type="button" class="chip-btn" onclick="filtrarAno({{ a }})">{{ a }}</button>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  {% if datas_filtro.meses_por_ano %}
+  <details class="comp-meses" id="det-comp-meses" {{ 'open' if datas_filtro.tem_meses }}>
+    <summary>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Comparar meses específicos (ex.: comparar um mês de 2024 com 2025 ou 2026)
+    </summary>
+
+    {% if datas_filtro.anos|length > 1 %}
+    <div class="atalho-meses">
+      <span>Mesmo mês em todos os anos:</span>
+      {% for m in datas_filtro.meses_nomes %}
+      <button type="button" class="chip-btn" onclick="compararMesmoMes({{ m.num }})" title="Marca {{ m.nome }} em todos os anos disponíveis">{{ m.nome[:3] }}</button>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="grade-anos-meses">
+      {% for ano, lista in datas_filtro.meses_por_ano %}
+      <div class="linha-ano-mes">
+        <b>{{ ano }}</b>
+        {% for item in lista %}
+        <label class="chip-mes">
+          <input type="checkbox" class="ck-mes-comp" value="{{ item.ym }}" data-mes="{{ item.mes }}" {{ 'checked' if item.sel }}>
+          <span>{{ item.rotulo }}</span>
+        </label>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <button type="button" class="btn-sec" style="margin:0;padding:7px 14px;background:var(--marca);color:#fff;border-color:var(--marca)" onclick="aplicarMeses()">Comparar meses marcados</button>
+      <button type="button" class="btn-sec" style="margin:0;padding:7px 12px" onclick="desmarcarMeses()">Limpar meses</button>
+      <span class="apoio" style="font-size:12px">Marque 2 ou mais meses (do mesmo ano ou de anos diferentes) para comparar lado a lado.</span>
+    </div>
+  </details>
+  {% endif %}
+</div>
+
+<script>
+(function(){
+  var barra = document.getElementById('barra-filtro-datas');
+  if (!barra) return;
+  var baseUrl = barra.getAttribute('data-url-conteudo');
+  var minData = {{ datas_filtro.min_data|tojson }};
+  var maxData = {{ datas_filtro.max_data|tojson }};
+
+  function atualizarIframe(params) {
+    var colEl = document.getElementById('f-col-data');
+    if (colEl && colEl.value) params.set('coluna_data', colEl.value);
+    var qs = params.toString();
+    var iframe = document.querySelector('iframe.relatorio');
+    if (iframe) {
+      iframe.src = baseUrl + (qs ? '?' + qs : '');
+    }
+    try {
+      var novaUrl = window.location.pathname + (qs ? '?' + qs : '');
+      window.history.replaceState(null, '', novaUrl);
+    } catch (e) {}
+  }
+
+  window.aplicarPeriodo = function() {
+    var de = document.getElementById('f-de').value;
+    var ate = document.getElementById('f-ate').value;
+    desmarcarInputsMeses();
+    var p = new URLSearchParams();
+    if (de) p.set('de', de);
+    if (ate) p.set('ate', ate);
+    atualizarIframe(p);
+  };
+
+  window.filtrarAno = function(ano) {
+    var de = ano + '-01-01';
+    var ate = ano + '-12-31';
+    if (de < minData) de = minData;
+    if (ate > maxData) ate = maxData;
+    document.getElementById('f-de').value = de;
+    document.getElementById('f-ate').value = ate;
+    window.aplicarPeriodo();
+  };
+
+  function desmarcarInputsMeses() {
+    var cks = document.querySelectorAll('.ck-mes-comp');
+    for (var i = 0; i < cks.length; i++) cks[i].checked = false;
+  }
+
+  window.desmarcarMeses = function() {
+    desmarcarInputsMeses();
+    window.limparFiltroDatas();
+  };
+
+  window.compararMesmoMes = function(mesNum) {
+    var cks = document.querySelectorAll('.ck-mes-comp');
+    for (var i = 0; i < cks.length; i++) {
+      cks[i].checked = (parseInt(cks[i].getAttribute('data-mes'), 10) === mesNum);
+    }
+    window.aplicarMeses();
+  };
+
+  window.aplicarMeses = function() {
+    var cks = document.querySelectorAll('.ck-mes-comp:checked');
+    var escolhidos = [];
+    for (var i = 0; i < cks.length; i++) escolhidos.push(cks[i].value);
+    if (!escolhidos.length) {
+      window.limparFiltroDatas();
+      return;
+    }
+    var p = new URLSearchParams();
+    p.set('meses', escolhidos.join(','));
+    atualizarIframe(p);
+  };
+
+  window.limparFiltroDatas = function() {
+    document.getElementById('f-de').value = minData;
+    document.getElementById('f-ate').value = maxData;
+    desmarcarInputsMeses();
+    atualizarIframe(new URLSearchParams());
+  };
+})();
+</script>
+{% endif %}
+

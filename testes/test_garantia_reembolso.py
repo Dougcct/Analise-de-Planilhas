@@ -5,7 +5,6 @@ arquivo sem abas (CSV), motor tabular (taxa ponderada + tempo) e a página «Tod
 """
 import datetime as dt
 import io
-import os
 
 import pytest
 
@@ -136,41 +135,3 @@ def test_consolida_csv_sem_abas(modelo_reemb):
     ds = servico.carregar(csv, "reembolsos.csv", modelo=modelo_reemb)
     assert len(ds.df) == 2
     assert config.COL_ABA in ds.df.columns and (ds.df[config.COL_ABA] == "reembolsos").all()
-
-
-def test_janela_pagina_todas_as_abas(tmp_path, monkeypatch):
-    QtWidgets = pytest.importorskip("PyQt6.QtWidgets")
-    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
-    from analise_planilha import modelo as modelo_mod
-
-    dados = tmp_path / "dados"
-    (dados / "entrada").mkdir(parents=True)
-    (dados / "Reemb").mkdir(parents=True)
-    junho = [CAB, _linha(1, "Ana", "AUTORIZADO", 100, 80, 5)]
-    julho = [CAB, _linha(3, "Carla", "AUTORIZADO", 300, 300, 6)]
-    (dados / "Reemb" / "controle.xlsx").write_bytes(_xlsx({"JUNHO": junho, "JULHO": julho}))
-    modelos = tmp_path / "modelos"
-    modelos.mkdir()
-    (modelos / "reemb.toml").write_text(MOD_REEMB.replace('nome = "Reemb"', 'nome = "Reemb"\npasta = "Reemb"'),
-                                        encoding="utf-8")
-    for nome, val in (("PASTA_DADOS", dados), ("PASTA_ENTRADA", dados / "entrada"), ("PASTA_SAIDA", tmp_path / "saida")):
-        monkeypatch.setattr(config, nome, val)
-    monkeypatch.setattr(modelo_mod, "PASTA_MODELOS", modelos)
-
-    from app import tema
-    from app.janela import JanelaPrincipal, ABAS_TODAS, ROT_ABAS_TODAS
-    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    tema.aplicar(app)
-    j = JanelaPrincipal()
-    import time
-    fim = time.time() + 20
-    while time.time() < fim and (j.ds is None or j.analise is None):
-        app.processEvents(); time.sleep(0.02)
-    j.combo_pasta.setCurrentIndex([j.combo_pasta.itemText(i) for i in range(j.combo_pasta.count())].index("Reemb"))
-    fim = time.time() + 20
-    while time.time() < fim and (j.ds is None or getattr(j.modelo_rel, "nome", None) != "Reemb"):
-        app.processEvents(); time.sleep(0.02)
-    assert [j.combo_pagina.itemData(i) for i in range(j.combo_pagina.count())] == [ABAS_TODAS]
-    assert j.combo_pagina.itemText(0) == ROT_ABAS_TODAS
-    assert j.analise.linhas == 2                                  # JUNHO + JULHO consolidados
-    j.close()

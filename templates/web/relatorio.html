@@ -1,16 +1,32 @@
 {% extends "web/base.html" %}
 {% block titulo %}{{ titulo }} — Análise de Planilhas{% endblock %}
 {% block conteudo %}
+<style>
+  /* Nesta página o relatório ocupa quase toda a largura e altura disponíveis */
+  body:has(.rel-caixa) main{max-width:min(1680px,97vw);padding-left:18px;padding-right:18px}
+  .rel-caixa iframe.relatorio{height:calc(100dvh - 150px);min-height:520px}
+  /* Tela cheia nativa: o iframe toma a tela inteira */
+  .rel-caixa:fullscreen{background:var(--superficie-2);padding:0;margin:0}
+  .rel-caixa:fullscreen iframe.relatorio{height:100dvh;min-height:0;border:0;border-radius:0}
+  .rel-caixa .sair-cheia{display:none}
+  .rel-caixa:fullscreen .sair-cheia{display:inline-flex;position:fixed;top:12px;right:14px;z-index:10}
+  .btn-cheia{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+</style>
 <a class="voltar" href="/web">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
   Relatórios</a>
 <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
   <h1>{{ titulo }}</h1>
-  {% if pode_compartilhar %}
-  <a class="btn-sec" href="/web/gestao/relatorio/{{ slug }}" style="padding:8px 14px;margin-top:4px">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="15" height="15"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 13a7.9 7.9 0 0 0 0-2l1.5-1.2-1.5-2.6-1.8.6a7.6 7.6 0 0 0-1.7-1l-.3-1.9h-3l-.3 1.9a7.6 7.6 0 0 0-1.7 1l-1.8-.6-1.5 2.6L6.6 11a7.9 7.9 0 0 0 0 2l-1.5 1.2 1.5 2.6 1.8-.6a7.6 7.6 0 0 0 1.7 1l.3 1.9h3l.3-1.9a7.6 7.6 0 0 0 1.7-1l1.8.6 1.5-2.6L19.4 13z" stroke-linejoin="round"/></svg>
-    Gerenciar</a>
-  {% endif %}
+  <div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap">
+    <button type="button" class="btn-sec btn-cheia" onclick="telaCheiaRelatorio()" style="padding:8px 14px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="15" height="15"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Tela cheia</button>
+    {% if pode_compartilhar %}
+    <a class="btn-sec" href="/web/gestao/relatorio/{{ slug }}" style="padding:8px 14px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="15" height="15"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 13a7.9 7.9 0 0 0 0-2l1.5-1.2-1.5-2.6-1.8.6a7.6 7.6 0 0 0-1.7-1l-.3-1.9h-3l-.3 1.9a7.6 7.6 0 0 0-1.7 1l-1.8-.6-1.5 2.6L6.6 11a7.9 7.9 0 0 0 0 2l-1.5 1.2 1.5 2.6 1.8-.6a7.6 7.6 0 0 0 1.7 1l.3 1.9h3l.3-1.9a7.6 7.6 0 0 0 1.7-1l1.8.6 1.5-2.6L19.4 13z" stroke-linejoin="round"/></svg>
+      Gerenciar</a>
+    {% endif %}
+  </div>
 </div>
 {% if pode_compartilhar %}
 <details class="compart">
@@ -27,9 +43,22 @@
   </form>
 </details>
 {% endif %}
-<div class="rel-caixa">
+{% set url_conteudo = "/web/r/" ~ slug ~ "/conteudo" %}
+{% include "web/_filtro_datas.html" %}
+<div class="rel-caixa" id="rel-caixa">
+  <button type="button" class="btn-sec sair-cheia" onclick="telaCheiaRelatorio()">Sair da tela cheia</button>
   <div class="rel-carregando" id="rel-load"><span class="giro2"></span><span>Carregando relatório…</span></div>
-  <iframe class="relatorio" src="/web/r/{{ slug }}/conteudo" title="{{ titulo }}"
+  <iframe class="relatorio" src="{{ url_conteudo }}{{ query_conteudo or '' }}" title="{{ titulo }}"
           onload="var l=document.getElementById('rel-load'); if(l){l.style.opacity=0; setTimeout(function(){l.remove()},300);}"></iframe>
 </div>
+<script>
+  function telaCheiaRelatorio(){
+    var c = document.getElementById('rel-caixa');
+    if(!document.fullscreenElement){
+      (c.requestFullscreen ? c.requestFullscreen() : c.webkitRequestFullscreen && c.webkitRequestFullscreen());
+    }else{
+      (document.exitFullscreen ? document.exitFullscreen() : document.webkitExitFullscreen && document.webkitExitFullscreen());
+    }
+  }
+</script>
 {% endblock %}

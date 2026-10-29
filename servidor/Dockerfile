@@ -18,11 +18,15 @@ RUN pip install -r servidor/requirements.txt
 COPY src/ src/
 COPY servidor/ servidor/
 COPY templates/ templates/
+COPY assets/ assets/
 COPY config/modelos/ config/modelos/
+# cópia-semente FORA do volume: config/modelos vira um volume (editável em runtime) e começa vazio,
+# então o start semeia a partir daqui na 1ª vez (ver servidor.app._semear_modelos).
+COPY config/modelos/ _seed_modelos/
 
 # usuário sem privilégio (não rodar como root). A pasta das cargas é criada aqui com o dono certo,
 # para o volume nomeado (montado nela) herdar a permissão de escrita do usuário app.
-RUN useradd --create-home app && mkdir -p /app/dados_cargas /app/dados_atualizacoes && chown -R app:app /app
+RUN useradd --create-home app && mkdir -p /app/dados_cargas && chown -R app:app /app
 USER app
 
 EXPOSE 8000

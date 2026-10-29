@@ -282,6 +282,29 @@ def _anonimizar(nome):
     return " ".join(f"{p[0].upper()}." for p in partes)
 
 
+_MESES_CURTOS = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"]
+
+
+def rotulo_mes_iso(ym: str) -> str:
+    """'2024-03' → 'mar/24'."""
+    try:
+        ano, mes = ym.split("-")[:2]
+        return f"{_MESES_CURTOS[int(mes) - 1]}/{ano[-2:]}"
+    except Exception:
+        return str(ym)
+
+
+def meses_disponiveis(ds: Dataset, coluna: str | None = None) -> list[str]:
+    """Lista ordenada de meses 'YYYY-MM' presentes na coluna de data principal (ou `coluna`)."""
+    col = coluna if (coluna and coluna in ds.df.columns) else coluna_periodo(ds)
+    if not col or col not in ds.df.columns:
+        return []
+    datas = pd.to_datetime(ds.df[col], errors="coerce").dropna()
+    if datas.empty:
+        return []
+    return sorted(datas.dt.strftime("%Y-%m").unique().tolist())
+
+
 def colunas_data(ds: Dataset) -> list[str]:
     """Datas disponíveis para o "Período pela" — a principal primeiro."""
     datas = [c.nome for c in ds.esquema.colunas if c.tipo in ("data", "data_hora") and c.n_validos]
@@ -311,6 +334,11 @@ def aplicar_filtros(ds: Dataset, filtros: Filtros | None) -> pd.DataFrame:
         ini, fim = (pd.Timestamp(x) for x in filtros.periodo)
         dentro = (df[col] >= ini) & (df[col] < fim + pd.Timedelta(days=1))
         df = df[dentro | df[col].isna()]  # mantém linhas sem data (não descarta em silêncio)
+    if filtros.meses and col and col in df.columns:
+        alvos = {str(m)[:7] for m in filtros.meses if m}
+        if alvos:
+            ym = pd.to_datetime(df[col], errors="coerce").dt.strftime("%Y-%m")
+            df = df[ym.isin(alvos)]
     for coluna, valores in (filtros.selecao or {}).items():
         if coluna in df.columns and valores:
             df = df[df[coluna].isin(valores)]
@@ -331,8 +359,12 @@ def visiveis(df: pd.DataFrame) -> pd.DataFrame:
 def _descrever_filtros(ds: Dataset, filtros: Filtros | None) -> list[tuple[str, str]]:
     f = filtros or Filtros()
     col = _coluna_do_periodo(ds, filtros)
-    itens = [("Período", (f"{pd.Timestamp(f.periodo[0]):%d/%m/%Y} a {pd.Timestamp(f.periodo[1]):%d/%m/%Y}"
-                          if f.periodo else "Todo o período") + (f" (por {col.lower()})" if col else ""))]
+    if f.meses:
+        rot_meses = ", ".join(rotulo_mes_iso(m) for m in sorted({str(x)[:7] for x in f.meses if x}))
+        itens = [("Período", f"Meses: {rot_meses}" + (f" (por {col.lower()})" if col else ""))]
+    else:
+        itens = [("Período", (f"{pd.Timestamp(f.periodo[0]):%d/%m/%Y} a {pd.Timestamp(f.periodo[1]):%d/%m/%Y}"
+                              if f.periodo else "Todo o período") + (f" (por {col.lower()})" if col else ""))]
     itens += [(c, ", ".join(map(str, v))) for c, v in (f.selecao or {}).items() if v]
     itens += [(c, f"{lo:g} a {hi:g}") for c, (lo, hi) in (f.faixas or {}).items()]
     if f.anonimizar:
@@ -381,11 +413,12 @@ def _analisar_serie(ds: Dataset, df: pd.DataFrame, spec, regras_an: dict, filtro
     from . import financeiro
 
     periodo = filtros.periodo if (filtros and filtros.periodo) else None
+    meses_sel = filtros.meses if (filtros and filtros.meses) else None
     sel = (filtros.selecao if filtros else {}) or {}
     dims = [d for d in spec.dimensoes if d in df.columns]
     grupos = sel.get(dims[0]) if len(dims) >= 2 else None
     por_conta = bool(dims and sel.get(dims[-1]))           # filtro por conta: conferência por bloco não se aplica
-    extras = financeiro.recortar(ds.meta.extras, periodo, grupos)
+    extras = financeiro.recortar(ds.meta.extras, periodo, grupos, meses_sel)
     kpis, paineis, achados, res_metas, resumo, metodologia = financeiro.montar(df, spec, extras, regras_an, por_conta)
     return Analise(
         kpis=kpis, paineis=paineis, alertas=alertas_de_leitura(ds), esquema=ds.esquema,

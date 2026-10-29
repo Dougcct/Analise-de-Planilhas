@@ -82,8 +82,88 @@ def _base_ctx(base: pd.DataFrame | None, formatos_base: dict | None) -> dict | N
     return {"colunas": colunas, "linhas": linhas, "total": len(base), "cortado": len(base) > MAX_LINHAS_BASE}
 
 
+_NOMES_MESES_ABREV = [
+    (1, "Jan"), (2, "Fev"), (3, "Mar"), (4, "Abr"), (5, "Mai"), (6, "Jun"),
+    (7, "Jul"), (8, "Ago"), (9, "Set"), (10, "Out"), (11, "Nov"), (12, "Dez"),
+]
+
+
+def _datas_info(ds, filtros: Filtros | None) -> dict | None:
+    if ds is None:
+        return None
+    from . import servico
+
+    f = filtros or Filtros()
+    col = f.coluna_data or servico.coluna_periodo(ds)
+    if not col or col not in ds.df.columns:
+        return None
+    datas = pd.to_datetime(ds.df[col], errors="coerce").dropna()
+    if datas.empty:
+        return None
+    min_d = datas.min().strftime("%Y-%m-%d")
+    max_d = datas.max().strftime("%Y-%m-%d")
+    yms = servico.meses_disponiveis(ds, col)
+    if len(yms) < 2:
+        return None
+    sel_set = set(f.meses or [])
+    por_ano: dict[int, list[dict]] = {}
+    anos_por_mes: dict[int, int] = {}
+    for ym in yms:
+        ano, mes_num = int(ym[:4]), int(ym[5:7])
+        anos_por_mes[mes_num] = anos_por_mes.get(mes_num, 0) + 1
+        por_ano.setdefault(ano, []).append({
+            "ym": ym,
+            "rotulo": servico.rotulo_mes_iso(ym),
+            "mes": mes_num,
+            "sel": ym in sel_set,
+        })
+    return {
+        "coluna": col,
+        "min_data": min_d,
+        "max_data": max_d,
+        "de": f.periodo[0] if f.periodo else min_d,
+        "ate": f.periodo[1] if f.periodo else max_d,
+        "tem_meses": bool(f.meses),
+        "anos": sorted(por_ano.keys()),
+        "meses_por_ano": [(ano, itens) for ano, itens in sorted(por_ano.items())],
+        "meses_nomes": [{"num": m, "abrev": ab} for m, ab in _NOMES_MESES_ABREV if m in anos_por_mes],
+    }
+
+
+MAX_VALORES_FILTRO = 60    # valores por dimensão no filtro (evita HTML gigante em dimensões muito variadas)
+
+
+def _filtros_info(ds, filtros: Filtros | None) -> list[dict]:
+    """Dimensões que viram filtro de LISTA no relatório (Convênio, Ano, …) + «Arquivo de origem» quando
+    há mais de uma planilha somada (escolher uma planilha ou ver todas). Valores já marcados vêm do recorte."""
+    if ds is None:
+        return []
+    from . import servico
+
+    f = filtros or Filtros()
+    dims = list(servico.dimensoes_filtro(ds))
+    if config.COL_ARQUIVO in ds.df.columns and config.COL_ARQUIVO not in dims:
+        dims = [config.COL_ARQUIVO, *dims]      # primeiro: 1 planilha ou todas
+    sel = f.selecao or {}
+    out = []
+    for dim in dims:
+        if dim not in ds.df.columns:
+            continue
+        col = ds.df[dim].dropna().astype(str)
+        if col.empty:
+            continue
+        ordem = list(col.value_counts().index)
+        marcados = {str(v) for v in sel.get(dim, [])}
+        valores = [{"v": v, "sel": v in marcados} for v in ordem[:MAX_VALORES_FILTRO]]
+        out.append({"nome": dim, "valores": valores, "n_total": len(ordem),
+                    "cortado": len(ordem) > MAX_VALORES_FILTRO, "ativo": bool(marcados),
+                    "arquivo": dim == config.COL_ARQUIVO})
+    return out
+
+
 def _contexto(vistas: list[tuple[str, Analise]], titulo: str, subtitulo: str,
-              base: pd.DataFrame | None, formatos_base: dict | None) -> dict:
+              base: pd.DataFrame | None, formatos_base: dict | None,
+              datas_info: dict | None = None, filtros_info: list[dict] | None = None) -> dict:
     """Contexto do template: uma ou mais VISTAS (por período) + o que é comum (leitura, base, metodologia)."""
     a0 = vistas[0][1]
     return {
@@ -95,6 +175,7 @@ def _contexto(vistas: list[tuple[str, Analise]], titulo: str, subtitulo: str,
         "alertas": [{"nivel": a.nivel, "texto": a.texto} for a in a0.alertas],
         "base": _base_ctx(base, formatos_base), "metodologia": a0.metodologia,
         "estatistica": ESTATISTICAS.get(a0.estatistica_tempo, "Mediana"),   # usado na metodologia genérica
+        "datas_info": datas_info, "filtros_info": filtros_info or [],
     }
 
 
@@ -125,7 +206,10 @@ def _presets(analise: Analise, ds, filtros: Filtros) -> list[tuple[str, tuple | 
             usados.add(per)
             presets.append((rot, per))
 
-    if atual:
+    if filtros.meses:
+        add(next((v for r, v in analise.filtros_desc if r == "Período"), "Meses selecionados"),
+            ("meses", tuple(sorted(set(filtros.meses)))))
+    elif atual:
         add(next((v for r, v in analise.filtros_desc if r == "Período"), "Recorte atual"), tuple(atual))
     add("Todo o período", None)
     for y in sorted(datas.dt.year.unique())[-MAX_ANOS_PRESET:]:
@@ -150,21 +234,24 @@ def _vistas_por_periodo(analise: Analise, ds, filtros: Filtros | None):
     col = servico.coluna_periodo(ds)
     vistas = []
     for i, (rot, per) in enumerate(presets):
-        a = analise if i == 0 else servico.analisar(ds, replace(fb, periodo=per, coluna_data=fb.coluna_data or col))
+        a = analise if i == 0 else servico.analisar(
+            ds, replace(fb, periodo=per, meses=None, coluna_data=fb.coluna_data or col))
         vistas.append((rot, a))
-    base = servico.visiveis(servico.aplicar_filtros(ds, replace(fb, periodo=None))).reset_index(drop=True)
+    base = servico.visiveis(servico.aplicar_filtros(ds, replace(fb, periodo=None, meses=None))).reset_index(drop=True)
     return vistas, base
 
 
 # ---- API ---------------------------------------------------------------------------------------
 def montar_html(analise: Analise, titulo: str, subtitulo: str = "", base: pd.DataFrame | None = None,
                 formatos_base: dict | None = None, ds=None, filtros: Filtros | None = None) -> str:
+    d_info = _datas_info(ds, filtros)
+    f_info = _filtros_info(ds, filtros)
     if ds is not None:                                 # tenta os períodos prontos (precisa de datas)
         vistas, base_periodo = _vistas_por_periodo(analise, ds, filtros)
         if vistas:
-            ctx = _contexto(vistas, titulo, subtitulo, base_periodo, formatos_base)
+            ctx = _contexto(vistas, titulo, subtitulo, base_periodo, formatos_base, d_info, f_info)
             return _ambiente().get_template("relatorio.html.j2").render(a=ctx)
-    ctx = _contexto([("", analise)], titulo, subtitulo, base, formatos_base)
+    ctx = _contexto([("", analise)], titulo, subtitulo, base, formatos_base, d_info, f_info)
     return _ambiente().get_template("relatorio.html.j2").render(a=ctx)
 
 

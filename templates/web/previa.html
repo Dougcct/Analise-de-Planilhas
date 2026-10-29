@@ -105,9 +105,11 @@
   <a class="btn-sec" href="/web/enviar" style="padding:11px 16px">Enviar outra</a>
 </div>
 
+{% set url_conteudo = "/web/enviar/previa/" ~ carga_id ~ "/conteudo" %}
+{% include "web/_filtro_datas.html" %}
 <div class="rel-caixa">
   <div class="rel-carregando" id="rel-load"><span class="giro2"></span><span>Montando a prévia…</span></div>
-  <iframe class="relatorio" src="/web/enviar/previa/{{ carga_id }}/conteudo" title="Prévia de {{ titulo }}"
+  <iframe class="relatorio" src="{{ url_conteudo }}{{ query_conteudo or '' }}" title="Prévia de {{ titulo }}"
           onload="var l=document.getElementById('rel-load'); if(l){l.style.opacity=0; setTimeout(function(){l.remove()},300);}"></iframe>
 </div>
 {% endblock %}

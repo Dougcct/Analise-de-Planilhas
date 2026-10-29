@@ -4,6 +4,15 @@ Formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · [SemVer](
 
 ## [Não lançado]
 
+### Removido (produto passa a ser só web)
+- **App desktop PyQt6** (`app/` inteira e `main.py`) e o **build/distribuição `.exe`** (Nuitka): `build.bat`,
+  `scripts/empacotar.py`, `scripts/versao.py`, `.github/workflows/release.yml`.
+- **Auto-update**: `analise_planilha/atualizacao.py`, `servidor/atualizacao.py`, a trava de versão por
+  `X-Client-Version`, as rotas `/api/v1/atualizacao*` e o volume `atualizacoes`.
+- **API `/api/v1`** (era o backend do cliente desktop) e `analise_planilha/serializacao.py`; sobraram as
+  rotas `/web`. `requirements.txt` sem `pyqt6`/`nuitka`; docs 08/17 e DOCS14 removidas.
+- Produto único: o **servidor web** (`docker compose up`). CLI `gerar_relatorio.py`/`analisar.py` mantidas.
+
 ## [1.0.0] — 2026-10-26
 
 Primeira versão distribuída: executável publicado nas Releases do repositório público, com atualização

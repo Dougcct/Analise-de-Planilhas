@@ -102,6 +102,9 @@ class ResultadoMeta:
     alvo_fmt: str
     sentido: str              # ">=" | "<="
     ok: bool | None           # None = sem dados
+    valor_num: float | None = None   # valor numérico p/ o medidor (% em 0–100, dias, moeda ou nº)
+    alvo_num: float | None = None     # alvo na mesma unidade de valor_num
+    tipo: str = "num"                # pct | dias | moeda | num (como interpretar os números)
 
 
 @dataclass
@@ -135,3 +138,4 @@ class Filtros:
     faixas: dict[str, tuple] = field(default_factory=dict)    # coluna numérica → (mínimo, máximo)
     anonimizar: bool = False                            # nomes da entidade (cliente) viram iniciais
     coluna_data: str | None = None                      # "Período pela": qual data recorta (None = a principal)
+    meses: list[str] | None = None                      # meses específicos "YYYY-MM" para filtrar/comparar

@@ -74,8 +74,10 @@ class _Ctx:
 
 
 def _bases(meses: list[pd.Timestamp]):
-    """Período atual × anterior para variações: 12 meses × 12 anteriores, ou o ano corrente × o mesmo
-    período do ano anterior. None se não houver base."""
+    """Período atual × anterior para variações: 12 meses × 12 anteriores, o ano corrente × o mesmo
+    período do ano anterior, ou comparação direta quando 2 meses são selecionados. None se não houver base."""
+    if len(meses) == 2:
+        return [meses[1]], [meses[0]], f"{rm(meses[1])} × {rm(meses[0])}"
     if len(meses) >= 24:
         atual, anterior = meses[-12:], meses[-24:-12]
         return atual, anterior, f"{rm(atual[0])}–{rm(atual[-1])} × {rm(anterior[0])}–{rm(anterior[-1])}"
@@ -84,14 +86,18 @@ def _bases(meses: list[pd.Timestamp]):
     conj = set(meses)
     anterior = [m.replace(year=m.year - 1) for m in atual if m.replace(year=m.year - 1) in conj]
     if atual and len(anterior) == len(atual):
+        if len(atual) == 1:
+            return atual, anterior, f"{rm(atual[0])} × {rm(anterior[0])}"
         return atual, anterior, f"{rm(atual[0])}–{rm(atual[-1])} × mesmo período de {ult.year - 1}"
     return None
 
 
-def recortar(extras: dict, periodo: tuple | None, grupos: list | None) -> dict:
-    """Aplica o período (e o filtro de grupos) às tabelas auxiliares do leitor (totais da planilha)."""
+def recortar(extras: dict, periodo: tuple | None, grupos: list | None,
+             meses: list[str] | None = None) -> dict:
+    """Aplica o período, meses específicos e o filtro de grupos às tabelas auxiliares do leitor (totais da planilha)."""
     out = dict(extras or {})
     col_m = out.get("coluna_mes", "Mês")
+    alvos_ym = {str(m)[:7] for m in (meses or []) if m}
     for chave in ("referencias", "subtotais"):
         t = out.get(chave)
         if t is None or t.empty:
@@ -100,12 +106,17 @@ def recortar(extras: dict, periodo: tuple | None, grupos: list | None) -> dict:
         if periodo:
             ini, fim = (pd.Timestamp(x) for x in periodo)
             t = t[(t[col_m] >= ini.replace(day=1)) & (t[col_m] <= fim)]
+        if alvos_ym and col_m in t.columns:
+            t = t[pd.to_datetime(t[col_m], errors="coerce").dt.strftime("%Y-%m").isin(alvos_ym)]
         if chave == "subtotais" and grupos and out.get("coluna_grupo") in t.columns:
             t = t[t[out["coluna_grupo"]].isin(grupos)]
         out[chave] = t
     if periodo:
         ini, fim = (pd.Timestamp(x) for x in periodo)
         out["meses_so_totais"] = [m for m in out.get("meses_so_totais", []) if ini.replace(day=1) <= m <= fim]
+    if alvos_ym:
+        out["meses_so_totais"] = [m for m in out.get("meses_so_totais", [])
+                                  if pd.Timestamp(m).strftime("%Y-%m") in alvos_ym]
     return out
 
 
@@ -599,8 +610,22 @@ def _paineis_dre(df, c: _Ctx, ext: dict, meses) -> tuple[list[Painel], list[KPI]
     mens = piv.copy()
     mens.columns = cats
     mens = mens.reset_index().rename(columns={col_g: "Linha da DRE"})
+    fmts_mens = {col: "moeda" for col in cats}
+    if len(cats) >= 2:
+        c_ini, c_ult = cats[0], cats[-1]
+        col_r = f"Var. {c_ult} × {c_ini} (R$)"
+        col_p = f"Var. {c_ult} × {c_ini} (%)"
+        mens[col_r] = mens[c_ult].fillna(0) - mens[c_ini].fillna(0)
+        mens[col_p] = [_var(a, b) for a, b in zip(mens[c_ult], mens[c_ini])]
+        fmts_mens[col_r], fmts_mens[col_p] = "moeda", "pct"
+        if len(cats) >= 3:
+            c_pen = cats[-2]
+            col_p2 = f"Var. {c_ult} × {c_pen} (%)"
+            mens[col_p2] = [_var(a, b) for a, b in zip(mens[c_ult], mens[c_pen])]
+            fmts_mens[col_p2] = "pct"
     paineis.append(Painel("Demonstrativo (DRE)", "DRE mês a mês", tabela=mens,
-                          formatos={col: "moeda" for col in cats}))
+                          formatos=fmts_mens, aberta=(len(cats) <= 12),
+                          descricao="Compare os meses lado a lado; as últimas colunas mostram a variação direta entre os meses do recorte."))
     series = []
     if rec is not None:
         series.append(("Receita bruta", [None if pd.isna(v) else float(v) for v in rec], CORES[0]))
@@ -670,7 +695,8 @@ def _metas(spec, info: dict) -> list[ResultadoMeta]:
         else:
             v, alvo, vf, af = val, m.alvo, fmt_moeda(val), fmt_moeda(m.alvo)
         ok = None if v is None else (v >= alvo if m.sentido == ">=" else v <= alvo)
-        saida.append(ResultadoMeta(rot, vf, af, m.sentido, ok))
+        saida.append(ResultadoMeta(rot, vf, af, m.sentido, ok,
+                                   valor_num=v, alvo_num=float(alvo), tipo=tipo))
     return saida
 
 

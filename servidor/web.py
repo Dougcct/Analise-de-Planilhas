@@ -18,17 +18,17 @@ from pathlib import Path
 from urllib.parse import urlencode
 
 from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
-from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from analise_planilha import __version__, relatorio_html, servico
+from analise_planilha import __version__, config as _cfg, relatorio_html, servico
 from analise_planilha.cerebro import layout as _cl
 from analise_planilha.cerebro import papeis as _cp
 from analise_planilha.modelos import Filtros
 
-from . import aprendizado, bd, validacao
+from . import aprendizado, bd, modelos_fs, validacao
 from .autenticacao import escopo_por_token
 from .modelos_bd import (
     ADM, GESTOR, PAPEIS, PUBLICADA, RASCUNHO, SUBSTITUIDA, USUARIO,
@@ -437,6 +437,112 @@ def relatorio_mover(slug: str, request: Request, pasta_id: str = Form(""), s: Se
     return _redir(destino, ok=f"«{rel.nome}» movido.")
 
 
+_NOMES_MESES = [
+    (1, "Janeiro"), (2, "Fevereiro"), (3, "Março"), (4, "Abril"),
+    (5, "Maio"), (6, "Junho"), (7, "Julho"), (8, "Agosto"),
+    (9, "Setembro"), (10, "Outubro"), (11, "Novembro"), (12, "Dezembro"),
+]
+
+
+def _ler_filtros_query(request: Request, ds) -> Filtros:
+    """Lê filtros de período (`de`, `ate`) ou comparação de meses (`meses`) da query string."""
+    import pandas as pd
+
+    qp = request.query_params
+    cols_disp = servico.colunas_data(ds)
+    col_req = (qp.get("coluna_data") or "").strip()
+    col = col_req if col_req in cols_disp else servico.coluna_periodo(ds)
+    meses: list[str] = []
+    if hasattr(qp, "getlist"):
+        for item in qp.getlist("meses"):
+            for m in str(item).split(","):
+                m = m.strip()[:7]
+                if len(m) == 7 and m[:4].isdigit() and m[4] == "-" and m[5:7].isdigit() and 1 <= int(m[5:7]) <= 12:
+                    meses.append(m)
+    meses = sorted(dict.fromkeys(meses))
+    de = (qp.get("de") or "").strip()
+    ate = (qp.get("ate") or "").strip()
+    periodo = None
+    if (de or ate) and not meses and col and col in ds.df.columns:
+        datas = pd.to_datetime(ds.df[col], errors="coerce").dropna()
+        if not datas.empty:
+            try:
+                lo = pd.Timestamp(de + "-01" if len(de) == 7 else de) if de else datas.min().normalize()
+                if ate and len(ate) == 7:
+                    hi = pd.Period(ate, freq="M").end_time.normalize()
+                else:
+                    hi = pd.Timestamp(ate) if ate else datas.max().normalize()
+                if lo <= hi:
+                    periodo = (lo.strftime("%Y-%m-%d"), hi.strftime("%Y-%m-%d"))
+            except Exception:
+                periodo = None
+    selecao = _ler_selecao_query(qp, ds)
+    return Filtros(periodo=periodo, meses=meses or None, coluna_data=col, selecao=selecao)
+
+
+def _dimensoes_filtravel(ds) -> list[str]:
+    """Dimensões expostas como filtro de lista na web: as do relatório + «Arquivo de origem» (quando há
+    mais de uma planilha somada), que primeiro permite escolher uma planilha ou ver todas de uma vez."""
+    dims = list(servico.dimensoes_filtro(ds))
+    if _cfg.COL_ARQUIVO in ds.df.columns and _cfg.COL_ARQUIVO not in dims:
+        dims = [_cfg.COL_ARQUIVO, *dims]
+    return dims
+
+
+def _ler_selecao_query(qp, ds) -> dict:
+    """Filtros de dimensão vindos da query (`sel:<Dimensão>=valor`, repetível)."""
+    if not hasattr(qp, "getlist"):
+        return {}
+    selecao: dict[str, list] = {}
+    for dim in _dimensoes_filtravel(ds):
+        vals = [v for v in qp.getlist("sel:" + dim) if v]
+        if vals:
+            selecao[dim] = vals
+    return selecao
+
+
+def _info_datas_tela(ds, f: Filtros) -> dict | None:
+    """Metadados de datas/meses disponíveis no Dataset para montar a barra de filtros e comparação na web."""
+    import pandas as pd
+
+    col = f.coluna_data or servico.coluna_periodo(ds)
+    if not col or col not in ds.df.columns:
+        return None
+    datas = pd.to_datetime(ds.df[col], errors="coerce").dropna()
+    if datas.empty:
+        return None
+    min_d = datas.min().strftime("%Y-%m-%d")
+    max_d = datas.max().strftime("%Y-%m-%d")
+    yms = servico.meses_disponiveis(ds, col)
+    sel_set = set(f.meses or [])
+    por_ano: dict[int, list[dict]] = {}
+    anos_por_mes: dict[int, int] = {}
+    for ym in yms:
+        ano, mes_num = int(ym[:4]), int(ym[5:7])
+        anos_por_mes[mes_num] = anos_por_mes.get(mes_num, 0) + 1
+        por_ano.setdefault(ano, []).append({
+            "ym": ym,
+            "rotulo": servico.rotulo_mes_iso(ym),
+            "mes": mes_num,
+            "sel": ym in sel_set,
+        })
+    meses_nomes = [{"num": m, "nome": nome, "multi_ano": anos_por_mes.get(m, 0) >= 2}
+                   for m, nome in _NOMES_MESES if m in anos_por_mes]
+    return {
+        "coluna_atual": col,
+        "colunas_data": servico.colunas_data(ds),
+        "min_data": min_d,
+        "max_data": max_d,
+        "de": f.periodo[0] if f.periodo else min_d,
+        "ate": f.periodo[1] if f.periodo else max_d,
+        "tem_periodo": bool(f.periodo),
+        "tem_meses": bool(f.meses),
+        "anos": sorted(por_ano.keys()),
+        "meses_por_ano": [(ano, itens) for ano, itens in sorted(por_ano.items())],
+        "meses_nomes": meses_nomes,
+    }
+
+
 @router.get("/r/{slug}", response_class=HTMLResponse)
 def ver_relatorio(slug: str, request: Request, s: Session = Depends(_sessao)):
     escopo, redir = _exige_login(request, s)
@@ -446,9 +552,19 @@ def ver_relatorio(slug: str, request: Request, s: Session = Depends(_sessao)):
     if rel is None:
         return _pagina("erro.html", request, _ctx(request, escopo, s, "relatorios",
                                                    mensagem="Relatório não encontrado."))
+    srv = _srv()
+    datas_filtro = None
+    try:
+        ds = srv._dataset_do_relatorio(s, rel)
+        f = _ler_filtros_query(request, ds)
+        datas_filtro = _info_datas_tela(ds, f)
+    except Exception:
+        pass
+    qs = request.url.query
     dono = escopo.eh_adm or rel.centro_custo_id == escopo.centro_custo_id
     return _pagina("relatorio.html", request, _ctx(request, escopo, s, "relatorios",
-                   slug=slug, titulo=rel.nome, pode_compartilhar=(dono and _pode(escopo, GESTOR, ADM))))
+                   slug=slug, titulo=rel.nome, pode_compartilhar=(dono and _pode(escopo, GESTOR, ADM)),
+                   datas_filtro=datas_filtro, query_conteudo=(f"?{qs}" if qs else "")))
 
 
 @router.get("/r/{slug}/conteudo", response_class=HTMLResponse)
@@ -460,14 +576,15 @@ def conteudo_relatorio(slug: str, request: Request, s: Session = Depends(_sessao
     rel = RepoRelatorios(s, escopo).obter(slug)
     if rel is None:
         return HTMLResponse("<p>Relatório não encontrado.</p>", status_code=404)
-    f = Filtros()
+    ds = srv._dataset_do_relatorio(s, rel)
+    f = _ler_filtros_query(request, ds)
     if not escopo.eh_adm and rel.centro_custo_id != escopo.centro_custo_id:
         ac = srv.acesso_vigente(s, escopo.usuario_id, rel.id)
         if ac is not None and ac.anonimizar:
             f.anonimizar = True                      # forçado no servidor
     _audit(s, escopo, "abrir_relatorio", f"web:{slug}")
     s.commit()
-    html = relatorio_html.montar_html(servico.analisar(srv._dataset_do_relatorio(s, rel), f), rel.nome)
+    html = relatorio_html.montar_html(servico.analisar(ds, f), rel.nome, ds=ds, filtros=f)
     return HTMLResponse(html)
 
 
@@ -713,9 +830,8 @@ def enviar(request: Request, setor: str = "", pasta: str = "", s: Session = Depe
     if not _pode(escopo, GESTOR, ADM):
         return _pagina("erro.html", request, _ctx(request, escopo, s, "enviar",
                                                    mensagem="Acesso restrito a gestores."))
-    from analise_planilha.modelo import listar_modelos
     rels = [{"slug": r.slug, "nome": r.nome} for r in _relatorios_proprios(s, escopo)]
-    modelos = [{"slug": p.stem, "nome": nome} for nome, p in listar_modelos().items()]
+    modelos = _modelos_disponiveis()
     centros = [{"id": c.id, "codigo": c.codigo, "nome": c.nome}
                for c in s.scalars(select(CentroCusto).where(CentroCusto.ativo.is_(True)).order_by(CentroCusto.nome))
                if escopo.eh_adm or c.id == escopo.centro_custo_id]
@@ -837,14 +953,17 @@ def enviar_previa(carga_id: int, request: Request, s: Session = Depends(_sessao)
             raise _Erro("Acesso restrito a gestores.")
         carga, rel = _carga_previa(s, escopo, carga_id)
         ds = srv._dataset_da_carga(carga, srv._modelo_do(rel), s)
-        a = servico.analisar(ds)
+        f = _ler_filtros_query(request, ds)
+        a = servico.analisar(ds, f)
     except _Erro as e:
         return _pagina("erro.html", request, _ctx(request, escopo, s, "enviar", mensagem=str(e)))
+    qs = request.url.query
     novo = not rel.ativo and not s.scalar(select(Carga).where(Carga.relatorio_id == rel.id, Carga.status == PUBLICADA))
     return _pagina("previa.html", request, _ctx(request, escopo, s, "enviar",
                    carga_id=carga_id, titulo=rel.nome, arquivo=carga.nome_original,
                    registros=a.linhas, paineis=len(a.paineis), novo=novo,
-                   entendimento=_entendimento_tela(ds.entendimento)))
+                   entendimento=_entendimento_tela(ds.entendimento),
+                   datas_filtro=_info_datas_tela(ds, f), query_conteudo=(f"?{qs}" if qs else "")))
 
 
 @router.post("/enviar/previa/{carga_id}/reanalisar")
@@ -895,7 +1014,9 @@ def enviar_previa_conteudo(carga_id: int, request: Request, s: Session = Depends
         carga, rel = _carga_previa(s, escopo, carga_id)
     except _Erro:
         return HTMLResponse("<p>Prévia não encontrada.</p>", status_code=404)
-    html = relatorio_html.montar_html(servico.analisar(srv._dataset_da_carga(carga, srv._modelo_do(rel), s)), rel.nome)
+    ds = srv._dataset_da_carga(carga, srv._modelo_do(rel), s)
+    f = _ler_filtros_query(request, ds)
+    html = relatorio_html.montar_html(servico.analisar(ds, f), rel.nome, ds=ds, filtros=f)
     return HTMLResponse(html)
 
 
@@ -910,9 +1031,11 @@ def enviar_previa_publicar(carga_id: int, request: Request, s: Session = Depends
         carga, rel = _carga_previa(s, escopo, carga_id)
         srv = _srv()
         ent = srv._dataset_da_carga(carga, srv._modelo_do(rel), s).entendimento
-        for ant in s.scalars(select(Carga).where(Carga.relatorio_id == rel.id, Carga.status == PUBLICADA)):
-            ant.status = SUBSTITUIDA                      # histórico: a anterior vira "substituída"
-        carga.status = PUBLICADA
+        for ant in s.scalars(select(Carga).where(Carga.relatorio_id == rel.id, Carga.status == PUBLICADA,
+                                                 Carga.nome_original == carga.nome_original)):
+            ant.status = SUBSTITUIDA                      # só a versão anterior DESTA planilha vira backup;
+        carga.status = PUBLICADA                          # planilhas diferentes continuam somando
+        srv._cache_consolidado.clear()                    # recompõe a base somada no próximo acesso
         carga.publicado_em = utcnow()
         rel.ativo = True                                 # se era novo (oculto), aparece agora
         _audit(s, escopo, "publicar_carga", f"{rel.slug}:{carga.id}")
@@ -990,7 +1113,6 @@ def admin(request: Request, s: Session = Depends(_sessao)):
     if not _pode(escopo, ADM):
         return _pagina("erro.html", request, _ctx(request, escopo, s, "admin",
                                                    mensagem="Acesso restrito ao administrador."))
-    from analise_planilha.modelo import listar_modelos
     cc_rows = list(s.scalars(select(CentroCusto).order_by(CentroCusto.ativo.desc(), CentroCusto.nome)))
     ativos = [c for c in cc_rows if c.ativo]
     centros = [{"id": c.id, "codigo": c.codigo, "nome": c.nome} for c in ativos]   # p/ os <select>
@@ -1007,12 +1129,13 @@ def admin(request: Request, s: Session = Depends(_sessao)):
     relatorios_info = [{"nome": r.nome, "slug": r.slug, "ativo": r.ativo,
                         "setor": nomes_cc.get(r.centro_custo_id, "?"), "modelo": r.modelo or "auto",
                         "publicado": r.id in publicados, "versoes": n_ver.get(r.id, 0)} for r in rel_rows]
-    modelos = [{"slug": p.stem, "nome": nome} for nome, p in listar_modelos().items()]
+    modelos = _modelos_disponiveis()
+    n_modelos = len(modelos_fs.listar_info())
     n_conhecimento = s.scalar(select(func.count()).select_from(ConhecimentoColuna)) or 0
     tipos_lidos = _manifesto_setores()
     return _pagina("admin.html", request, _ctx(request, escopo, s, "admin", centros=centros, modelos=modelos,
                    centros_info=centros_info, relatorios_info=relatorios_info, n_conhecimento=n_conhecimento,
-                   tipos_lidos=len(tipos_lidos) if tipos_lidos else 0))
+                   n_modelos=n_modelos, tipos_lidos=len(tipos_lidos) if tipos_lidos else 0))
 
 
 # ----- setores (ADM): editar, desativar/reativar, excluir ---------------------------------------
@@ -1097,7 +1220,42 @@ def admin_centro_excluir(cc_id: int, request: Request, s: Session = Depends(_ses
     return _redir("/web/admin", ok=f"Setor excluído com tudo dentro.{extra}")
 
 
-# ----- modelos (ADM): ver detalhes -------------------------------------------------------------
+# ====================================================== modelos de análise (ADM) ================
+def _modelos_disponiveis() -> list[dict]:
+    """Modelos escolhíveis num relatório: não bloqueados e que carregam (para os <select>)."""
+    return modelos_fs.disponiveis()
+
+
+def _uso_dos_modelos(s) -> dict[str, int]:
+    return dict(s.execute(select(Relatorio.modelo, func.count()).where(Relatorio.modelo.is_not(None))
+                          .group_by(Relatorio.modelo)).all())
+
+
+@router.get("/admin/modelos", response_class=HTMLResponse)
+def admin_modelos(request: Request, s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    if not _pode(escopo, ADM):
+        return _pagina("erro.html", request, _ctx(request, escopo, s, "admin",
+                                                   mensagem="Acesso restrito ao administrador."))
+    uso = _uso_dos_modelos(s)
+    modelos = [{**i, "uso": uso.get(i["slug"], 0)} for i in modelos_fs.listar_info()]
+    return _pagina("modelos.html", request, _ctx(request, escopo, s, "admin", modelos=modelos))
+
+
+@router.get("/admin/modelo/novo", response_class=HTMLResponse)
+def admin_modelo_novo(request: Request, s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    if not _pode(escopo, ADM):
+        return _pagina("erro.html", request, _ctx(request, escopo, s, "admin",
+                                                   mensagem="Acesso restrito ao administrador."))
+    return _pagina("modelo_editar.html", request, _ctx(request, escopo, s, "admin",
+                   novo=True, slug="", toml=modelos_fs.MODELO_EXEMPLO))
+
+
 @router.get("/admin/modelo/{slug}", response_class=HTMLResponse)
 def admin_modelo(slug: str, request: Request, s: Session = Depends(_sessao)):
     escopo, redir = _exige_login(request, s)
@@ -1106,19 +1264,199 @@ def admin_modelo(slug: str, request: Request, s: Session = Depends(_sessao)):
     if not _pode(escopo, ADM):
         return _pagina("erro.html", request, _ctx(request, escopo, s, "admin",
                                                    mensagem="Acesso restrito ao administrador."))
-    from analise_planilha.modelo import carregar_modelo, listar_modelos
-    if slug not in {p.stem for p in listar_modelos().values()}:
+    from analise_planilha.modelo import carregar_modelo
+    if not modelos_fs.existe(slug):
         return _pagina("erro.html", request, _ctx(request, escopo, s, "admin", mensagem="Modelo não encontrado."))
-    m = carregar_modelo(slug)
-    colunas = [{"rotulo": c.rotulo, "canonico": c.canonico, "tipo": c.tipo,
+    try:
+        m = carregar_modelo(slug)
+    except Exception as e:  # noqa: BLE001 - modelo quebrado: deixa editar o TOML para consertar
+        return _pagina("erro.html", request, _ctx(request, escopo, s, "admin",
+                       mensagem=f"Modelo «{slug}» com erro ({type(e).__name__}). Edite o TOML para corrigir."))
+    colunas = [{"rotulo": c.rotulo, "canonico": c.canonico, "tipo": c.tipo, "papel": getattr(c, "papel", None),
                 "obrigatoria": c.obrigatoria, "opcional": c.opcional,
                 "sinonimos": ", ".join(c.sinonimos)} for c in m.colunas]
-    regras = sorted(m.regras.keys())
     abas = m.abas if isinstance(m.abas, str) else (", ".join(m.abas) if m.abas else (m.aba or "1ª aba"))
-    info = {"nome": m.nome, "abas": abas, "apenas_mapeadas": m.apenas_mapeadas,
-            "consolida": m.consolida_abas, "n_colunas": len(colunas)}
+    info = {"nome": m.nome, "abas": abas, "apenas_mapeadas": m.apenas_mapeadas, "consolida": m.consolida_abas,
+            "n_colunas": len(colunas), "versao": m.versao, "bloqueado": modelos_fs.esta_bloqueado(slug),
+            "uso": _uso_dos_modelos(s).get(slug, 0)}
     return _pagina("modelo.html", request, _ctx(request, escopo, s, "admin",
-                   slug=slug, modelo=info, colunas=colunas, regras=regras))
+                   slug=slug, modelo=info, colunas=colunas, regras=sorted(m.regras.keys()), eh_adm=escopo.eh_adm))
+
+
+@router.get("/admin/modelo/{slug}/editar", response_class=HTMLResponse)
+def admin_modelo_editar_form(slug: str, request: Request, s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    if not _pode(escopo, ADM):
+        return _pagina("erro.html", request, _ctx(request, escopo, s, "admin",
+                                                   mensagem="Acesso restrito ao administrador."))
+    if not modelos_fs.existe(slug):
+        return _pagina("erro.html", request, _ctx(request, escopo, s, "admin", mensagem="Modelo não encontrado."))
+    return _pagina("modelo_editar.html", request, _ctx(request, escopo, s, "admin",
+                   novo=False, slug=slug, toml=modelos_fs.ler_toml(slug)))
+
+
+@router.post("/admin/modelo/{slug}/editar")
+def admin_modelo_salvar(slug: str, request: Request, conteudo: str = Form(...), s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    srv = _srv()
+    try:
+        _exige_adm(escopo)
+        if not modelos_fs.existe(slug):
+            raise _Erro("Modelo não encontrado.")
+        modelos_fs.salvar_toml(slug, conteudo)
+        srv.esquecer_modelos()
+        _audit(s, escopo, "editar_modelo", slug)
+        s.commit()
+    except (modelos_fs.ErroModelo, _Erro) as e:
+        return _redir(f"/web/admin/modelo/{slug}/editar", erro=str(e))
+    return _redir(f"/web/admin/modelo/{slug}", ok="Modelo salvo.")
+
+
+@router.post("/admin/modelo/novo")
+def admin_modelo_criar(request: Request, nome: str = Form(...), conteudo: str = Form(...),
+                       s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    srv = _srv()
+    try:
+        _exige_adm(escopo)
+        slug = modelos_fs.criar(nome, conteudo)
+        srv.esquecer_modelos()
+        _audit(s, escopo, "criar_modelo", slug)
+        s.commit()
+    except (modelos_fs.ErroModelo, _Erro) as e:
+        return _redir("/web/admin/modelo/novo", erro=str(e))
+    return _redir(f"/web/admin/modelo/{slug}", ok="Modelo criado.")
+
+
+@router.post("/admin/modelo/importar")
+async def admin_modelo_importar(request: Request, arquivo: UploadFile = File(...), s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    srv = _srv()
+    try:
+        _exige_adm(escopo)
+        conteudo = await arquivo.read(2 * 1024 * 1024)       # modelo é texto pequeno
+        slug = modelos_fs.importar(arquivo.filename or "", conteudo)
+        srv.esquecer_modelos()
+        _audit(s, escopo, "importar_modelo", slug)
+        s.commit()
+    except (modelos_fs.ErroModelo, _Erro) as e:
+        return _redir("/web/admin/modelos", erro=str(e))
+    return _redir(f"/web/admin/modelo/{slug}", ok="Modelo importado.")
+
+
+@router.post("/admin/modelo/{slug}/duplicar")
+def admin_modelo_duplicar(slug: str, request: Request, nome: str = Form(...), s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    srv = _srv()
+    try:
+        _exige_adm(escopo)
+        novo = modelos_fs.duplicar(slug, nome)
+        srv.esquecer_modelos()
+        _audit(s, escopo, "duplicar_modelo", f"{slug}->{novo}")
+        s.commit()
+    except (modelos_fs.ErroModelo, _Erro) as e:
+        return _redir("/web/admin/modelos", erro=str(e))
+    return _redir(f"/web/admin/modelo/{novo}", ok="Modelo copiado.")
+
+
+@router.post("/admin/modelo/{slug}/renomear")
+def admin_modelo_renomear(slug: str, request: Request, nome: str = Form(...), novo_slug: str = Form(""),
+                          s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    srv = _srv()
+    destino = slug
+    try:
+        _exige_adm(escopo)
+        if not modelos_fs.existe(slug):
+            raise _Erro("Modelo não encontrado.")
+        novo = srv._slugificar(novo_slug) if novo_slug.strip() else slug
+        if novo != slug:
+            modelos_fs.renomear_arquivo(slug, novo)
+            for rel in s.scalars(select(Relatorio).where(Relatorio.modelo == slug)):
+                rel.modelo = novo                            # relatórios seguem apontando para o modelo certo
+            destino = novo
+        if nome.strip():
+            modelos_fs.definir_nome(destino, nome.strip())
+        srv.esquecer_modelos()
+        _audit(s, escopo, "renomear_modelo", f"{slug}->{destino}")
+        s.commit()
+    except (modelos_fs.ErroModelo, _Erro) as e:
+        return _redir(f"/web/admin/modelo/{slug}", erro=str(e))
+    return _redir(f"/web/admin/modelo/{destino}", ok="Modelo renomeado.")
+
+
+@router.post("/admin/modelo/{slug}/bloquear")
+def admin_modelo_bloquear(slug: str, request: Request, bloquear: str = Form("1"), s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    try:
+        _exige_adm(escopo)
+        if not modelos_fs.existe(slug):
+            raise _Erro("Modelo não encontrado.")
+        liga = bloquear in ("1", "true", "on", "sim")
+        modelos_fs.bloquear(slug, liga)
+        _audit(s, escopo, "bloquear_modelo" if liga else "desbloquear_modelo", slug)
+        s.commit()
+    except _Erro as e:
+        return _redir("/web/admin/modelos", erro=str(e))
+    return _redir("/web/admin/modelos", ok="Modelo bloqueado (fora do seletor)." if liga else "Modelo liberado.")
+
+
+@router.post("/admin/modelo/{slug}/excluir")
+def admin_modelo_excluir(slug: str, request: Request, s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    srv = _srv()
+    try:
+        _exige_adm(escopo)
+        n = 0
+        for rel in s.scalars(select(Relatorio).where(Relatorio.modelo == slug)):
+            rel.modelo = None                                # relatório não quebra: cai na auto-detecção
+            n += 1
+        modelos_fs.excluir(slug)
+        srv.esquecer_modelos()
+        _audit(s, escopo, "excluir_modelo", slug, f"relatorios_para_auto={n}")
+        s.commit()
+    except (modelos_fs.ErroModelo, _Erro) as e:
+        return _redir(f"/web/admin/modelo/{slug}", erro=str(e))
+    extra = f" {n} relatório(s) passaram a detectar o modelo pela planilha." if n else ""
+    return _redir("/web/admin/modelos", ok=f"Modelo excluído.{extra}")
+
+
+@router.get("/admin/modelo/{slug}/exportar")
+def admin_modelo_exportar(slug: str, request: Request, s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    if not _pode(escopo, ADM) or not modelos_fs.existe(slug):
+        return _pagina("erro.html", request, _ctx(request, escopo, s, "admin", mensagem="Modelo não encontrado."))
+    return Response(modelos_fs.exportar_bytes(slug), media_type="application/toml",
+                    headers={"Content-Disposition": f'attachment; filename="{slug}.toml"'})
+
+
+@router.get("/admin/modelos/exportar")
+def admin_modelos_exportar(request: Request, s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    if not _pode(escopo, ADM):
+        return _pagina("erro.html", request, _ctx(request, escopo, s, "admin", mensagem="Acesso restrito."))
+    return Response(modelos_fs.exportar_zip(), media_type="application/zip",
+                    headers={"Content-Disposition": 'attachment; filename="modelos.zip"'})
 
 
 # ----- importar a leitura da pasta Setores/ (ADM) -----------------------------------------------
@@ -1376,8 +1714,7 @@ def gestao_relatorio(slug: str, request: Request, s: Session = Depends(_sessao))
                 "hash": (c.hash_sha256 or "")[:10],
                 "quando": (c.publicado_em or c.criado_em).strftime("%d/%m/%Y %H:%M") if (c.publicado_em or c.criado_em) else "—"}
                for c in s.scalars(select(Carga).where(Carga.relatorio_id == rel.id).order_by(Carga.id.desc()))]
-    from analise_planilha.modelo import listar_modelos
-    modelos = [{"slug": p.stem, "nome": nome} for nome, p in listar_modelos().items()]
+    modelos = _modelos_disponiveis()
     centros = [{"id": c.id, "codigo": c.codigo, "nome": c.nome}
                for c in s.scalars(select(CentroCusto).where(CentroCusto.ativo.is_(True)).order_by(CentroCusto.nome))]
     tem_publicada = any(v["status"] == PUBLICADA for v in versoes)

@@ -1,0 +1,116 @@
+{% extends "web/base.html" %}
+{% block titulo %}Modelos de análise — Administração{% endblock %}
+{% block conteudo %}
+<style>
+  .topo-mod{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .acoes-topo{display:flex;gap:8px;flex-wrap:wrap}
+  .item{display:flex;align-items:center;gap:12px;padding:13px 15px;border-bottom:1px solid var(--borda)}
+  .item:last-child{border-bottom:0} .item.off{opacity:.6}
+  .item .mic{width:40px;height:40px;border-radius:11px;flex:0 0 40px;display:grid;place-items:center;
+    background:var(--marca-clara);color:var(--acento-texto)}
+  .item .mic svg{width:20px;height:20px}
+  .item .meio{flex:1;min-width:0} .item .meio b{font-size:14.5px}
+  .item .meio small{display:block;color:var(--fraco);font-size:12px}
+  .selos{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+  .mini{font-size:11px;color:var(--apoio);background:var(--superficie-2);border:1px solid var(--borda);
+    padding:2px 8px;border-radius:999px;white-space:nowrap}
+  .acoes-item{display:flex;gap:5px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+  .acoes-item form{margin:0}
+  .ic-btn{display:grid;place-items:center;width:32px;height:32px;border-radius:8px;border:1px solid var(--borda);
+    background:var(--superficie);color:var(--apoio);cursor:pointer;margin:0;padding:0;transition:all var(--rapido)}
+  .ic-btn svg{width:16px;height:16px}
+  .ic-btn:hover{border-color:var(--marca);color:var(--acento-texto);background:var(--marca-clara);box-shadow:none}
+  .ic-btn.perigo:hover{border-color:var(--perigo);color:var(--perigo);background:var(--perigo-claro)}
+  .dica{color:var(--fraco);font-size:12px;margin-top:14px}
+  dialog .cab{padding:16px 20px;border-bottom:1px solid var(--borda);font-weight:700}
+  dialog .corpo{padding:18px 20px} dialog .pe{padding:14px 20px;border-top:1px solid var(--borda);display:flex;justify-content:flex-end;gap:10px}
+  .btn-fantasma{background:var(--superficie);color:var(--apoio);border:1px solid var(--borda);margin:0}
+</style>
+
+<a class="voltar" href="/web/admin">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  Administração</a>
+
+<div class="topo-mod">
+  <div>
+    <h1>Modelos de análise</h1>
+    <p class="apoio">{{ modelos|length }} modelo(s). Editar/renomear/copiar/bloquear/exportar/importar/excluir — só ADM.</p>
+  </div>
+  <div class="acoes-topo">
+    <a class="btn" style="margin:0" href="/web/admin/modelo/novo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="16" height="16"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg> Novo modelo</a>
+    <button type="button" class="btn-sec" style="margin:0" onclick="document.getElementById('dlg-importar').showModal()">Importar .toml</button>
+    <a class="btn-sec" style="margin:0" href="/web/admin/modelos/exportar">Exportar todos (.zip)</a>
+  </div>
+</div>
+
+<div class="tabela-caixa" style="margin-top:18px">
+  {% for m in modelos %}
+  <div class="item {{ 'off' if m.bloqueado }}">
+    <span class="mic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 7h16M4 12h16M4 17h10" stroke-linecap="round"/></svg></span>
+    <span class="meio">
+      <b>{{ m.nome }}</b>
+      <small>{{ m.slug }}</small>
+    </span>
+    <span class="selos">
+      {% if m.erro %}<span class="selo selo-off" title="{{ m.erro }}">erro</span>
+      {% else %}<span class="mini">v{{ m.versao }}</span><span class="mini">{{ m.layout }}</span>
+        <span class="mini">{{ m.colunas }} col.</span>{% endif %}
+      {% if m.uso %}<span class="mini">{{ m.uso }} relatório(s)</span>{% endif %}
+      {% if m.bloqueado %}<span class="selo selo-aviso">Bloqueado</span>{% endif %}
+    </span>
+    <span class="acoes-item">
+      <a class="ic-btn" href="/web/admin/modelo/{{ m.slug }}" title="Ver"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></a>
+      <a class="ic-btn" href="/web/admin/modelo/{{ m.slug }}/editar" title="Editar TOML"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3z" stroke-linejoin="round"/><path d="M13.5 6.5l3 3" stroke-linecap="round"/></svg></a>
+      <button type="button" class="ic-btn" title="Copiar" onclick='dupModelo({{ m.slug|tojson }}, {{ m.nome|tojson }})'><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8" stroke-linecap="round"/></svg></button>
+      <form method="post" action="/web/admin/modelo/{{ m.slug }}/bloquear">
+        <input type="hidden" name="bloquear" value="{{ '0' if m.bloqueado else '1' }}">
+        <button class="ic-btn" title="{{ 'Liberar' if m.bloqueado else 'Bloquear' }}">
+          {% if m.bloqueado %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-1.9"/></svg>
+          {% else %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>{% endif %}
+        </button></form>
+      <a class="ic-btn" href="/web/admin/modelo/{{ m.slug }}/exportar" title="Exportar .toml"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 4v10m0 0 4-4m-4 4-4-4M5 20h14" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      <form method="post" action="/web/admin/modelo/{{ m.slug }}/excluir"
+            onsubmit="return confirm('EXCLUIR o modelo «{{ m.nome }}»?\n\n{% if m.uso %}{{ m.uso }} relatório(s) passarão a detectar o modelo pela planilha. {% endif %}Não dá para desfazer.')">
+        <button class="ic-btn perigo" title="Excluir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13M10 11v6M14 11v6" stroke-linecap="round" stroke-linejoin="round"/></svg></button></form>
+    </span>
+  </div>
+  {% else %}
+  <div class="item apoio">Nenhum modelo. Crie um ou importe um .toml.</div>
+  {% endfor %}
+</div>
+<p class="dica">Modelos gerados pelo Cérebro a partir de «Setores» podem ser sobrescritos ao reimportar os setores.
+  Bloquear tira o modelo do seletor sem apagá-lo.</p>
+
+<dialog id="dlg-dup">
+  <form method="post" id="form-dup">
+    <div class="cab">Copiar modelo</div>
+    <div class="corpo"><label>Nome da cópia</label><input name="nome" id="dup-nome" required></div>
+    <div class="pe">
+      <button type="button" class="btn-fantasma" onclick="document.getElementById('dlg-dup').close()">Cancelar</button>
+      <button type="submit" style="margin:0">Copiar</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlg-importar">
+  <form method="post" action="/web/admin/modelo/importar" enctype="multipart/form-data">
+    <div class="cab">Importar modelo</div>
+    <div class="corpo"><label>Arquivo .toml</label><input type="file" name="arquivo" accept=".toml" required>
+      <p class="dica" style="margin-top:8px">O arquivo é validado ao importar. O identificador vem do nome do arquivo.</p></div>
+    <div class="pe">
+      <button type="button" class="btn-fantasma" onclick="document.getElementById('dlg-importar').close()">Cancelar</button>
+      <button type="submit" style="margin:0">Importar</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+  function dupModelo(slug, nome){
+    var f = document.getElementById("form-dup");
+    f.action = "/web/admin/modelo/" + slug + "/duplicar";
+    document.getElementById("dup-nome").value = nome + " (cópia)";
+    document.getElementById("dlg-dup").showModal();
+  }
+</script>
+{% endblock %}

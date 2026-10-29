@@ -13,13 +13,34 @@
     font-weight:700;font-size:12.5px;padding:5px 12px;border-radius:999px;margin-top:10px}
   .tbadge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;background:var(--superficie-2);
     color:var(--apoio);border:1px solid var(--borda)}
+  .barra-mod{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  dialog .cab{padding:16px 20px;border-bottom:1px solid var(--borda);font-weight:700}
+  dialog .corpo{padding:18px 20px} dialog label{margin-top:12px} dialog label:first-child{margin-top:0}
+  dialog .pe{padding:14px 20px;border-top:1px solid var(--borda);display:flex;justify-content:flex-end;gap:10px}
+  .btn-fantasma{background:var(--superficie);color:var(--apoio);border:1px solid var(--borda);margin:0}
 </style>
 
-<a class="voltar" href="/web/admin">
+<a class="voltar" href="/web/admin/modelos">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-  Administração</a>
-<h1>{{ modelo.nome }}</h1>
-<p class="apoio">Modelo <b>{{ slug }}</b> — como a planilha é lida e analisada.</p>
+  Modelos</a>
+<h1>{{ modelo.nome }}
+  {% if modelo.bloqueado %}<span class="selo selo-aviso" style="vertical-align:middle">Bloqueado</span>{% endif %}</h1>
+<p class="apoio">Modelo <b>{{ slug }}</b> · v{{ modelo.versao }}{{ ' · usado por ' ~ modelo.uso ~ ' relatório(s)' if modelo.uso }} — como a planilha é lida e analisada.</p>
+
+{% if eh_adm %}
+<div class="barra-mod">
+  <a class="btn-sec" style="margin:0" href="/web/admin/modelo/{{ slug }}/editar">Editar TOML</a>
+  <button type="button" class="btn-sec" style="margin:0" onclick="document.getElementById('dlg-ren').showModal()">Renomear</button>
+  <button type="button" class="btn-sec" style="margin:0" onclick="document.getElementById('dlg-dup').showModal()">Copiar</button>
+  <form method="post" action="/web/admin/modelo/{{ slug }}/bloquear" class="inline">
+    <input type="hidden" name="bloquear" value="{{ '0' if modelo.bloqueado else '1' }}">
+    <button class="btn-sec" style="margin:0">{{ 'Liberar' if modelo.bloqueado else 'Bloquear' }}</button></form>
+  <a class="btn-sec" style="margin:0" href="/web/admin/modelo/{{ slug }}/exportar">Exportar</a>
+  <form method="post" action="/web/admin/modelo/{{ slug }}/excluir" class="inline"
+        onsubmit="return confirm('EXCLUIR o modelo «{{ modelo.nome }}»?\n\n{% if modelo.uso %}{{ modelo.uso }} relatório(s) passarão a detectar o modelo pela planilha. {% endif %}Não dá para desfazer.')">
+    <button class="btn-perigo" style="margin:0">Excluir</button></form>
+</div>
+{% endif %}
 
 <div class="chips">
   <span class="chip"><b>{{ modelo.n_colunas }}</b><span>colunas mapeadas</span></span>
@@ -41,23 +62,51 @@
 <p class="secao-tit">Colunas do modelo</p>
 <div class="tabela-caixa">
 <table>
-  <thead><tr><th>Rótulo</th><th>Canônico</th><th>Tipo</th><th>Obrigatória</th><th>Sinônimos aceitos</th></tr></thead>
+  <thead><tr><th>Rótulo</th><th>Canônico</th><th>Tipo</th><th>Papel</th><th>Obrigatória</th><th>Sinônimos aceitos</th></tr></thead>
   <tbody>
   {% for c in colunas %}
   <tr>
     <td><b>{{ c.rotulo }}</b></td>
     <td class="apoio">{{ c.canonico }}</td>
     <td><span class="tbadge">{{ c.tipo }}</span></td>
+    <td>{% if c.papel %}<span class="tbadge">{{ c.papel }}</span>{% else %}<span class="apoio">—</span>{% endif %}</td>
     <td>{% if c.obrigatoria %}<span class="selo selo-ok">sim</span>
         {% elif c.opcional %}<span class="selo selo-neutro">opcional</span>
         {% else %}<span class="apoio">—</span>{% endif %}</td>
     <td class="apoio">{{ c.sinonimos or '—' }}</td>
   </tr>
   {% else %}
-  <tr><td colspan="5" class="apoio">Este modelo não declara colunas (leitura genérica).</td></tr>
+  <tr><td colspan="6" class="apoio">Este modelo não declara colunas (leitura genérica).</td></tr>
   {% endfor %}
   </tbody>
 </table>
 </div>
-<p class="apoio" style="font-size:12px;margin-top:12px">Modelos são definidos em <b>config/modelos/{{ slug }}.toml</b> (dentro do servidor). Edição por arquivo, por ora.</p>
+<p class="apoio" style="font-size:12px;margin-top:12px">Definido em <b>config/modelos/{{ slug }}.toml</b>. Use «Editar TOML» para alterar tudo.</p>
+
+{% if eh_adm %}
+<dialog id="dlg-ren">
+  <form method="post" action="/web/admin/modelo/{{ slug }}/renomear">
+    <div class="cab">Renomear modelo</div>
+    <div class="corpo">
+      <label>Nome de exibição</label><input name="nome" value="{{ modelo.nome }}" required>
+      <label>Identificador (slug) — mudar move o arquivo e aponta os relatórios</label>
+      <input name="novo_slug" value="{{ slug }}" placeholder="{{ slug }}">
+    </div>
+    <div class="pe">
+      <button type="button" class="btn-fantasma" onclick="document.getElementById('dlg-ren').close()">Cancelar</button>
+      <button type="submit" style="margin:0">Salvar</button>
+    </div>
+  </form>
+</dialog>
+<dialog id="dlg-dup">
+  <form method="post" action="/web/admin/modelo/{{ slug }}/duplicar">
+    <div class="cab">Copiar modelo</div>
+    <div class="corpo"><label>Nome da cópia</label><input name="nome" value="{{ modelo.nome }} (cópia)" required></div>
+    <div class="pe">
+      <button type="button" class="btn-fantasma" onclick="document.getElementById('dlg-dup').close()">Cancelar</button>
+      <button type="submit" style="margin:0">Copiar</button>
+    </div>
+  </form>
+</dialog>
+{% endif %}
 {% endblock %}
