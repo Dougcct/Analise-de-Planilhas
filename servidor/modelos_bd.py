@@ -57,12 +57,24 @@ class SessaoUsuario(Base):
     versao_cliente: Mapped[str | None] = mapped_column(String(32))
 
 
+class Pasta(Base):
+    """Pasta de organização (estilo coleção do Metabase). Pertence a um setor (herda a permissão) e pode
+    aninhar em outra pasta do mesmo setor (`pai_id` nulo = topo do setor). Só o ADM cria/edita."""
+    __tablename__ = "pastas"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    centro_custo_id: Mapped[int] = mapped_column(ForeignKey("centros_custo.id"), index=True)
+    pai_id: Mapped[int | None] = mapped_column(ForeignKey("pastas.id"), index=True)
+    nome: Mapped[str] = mapped_column(String(120))
+    criado_em: Mapped[dt.datetime] = mapped_column(DateTime, default=utcnow)
+
+
 class Relatorio(Base):
     __tablename__ = "relatorios"
     id: Mapped[int] = mapped_column(primary_key=True)
     slug: Mapped[str] = mapped_column(String(64), unique=True, index=True)
     nome: Mapped[str] = mapped_column(String(160))
     centro_custo_id: Mapped[int] = mapped_column(ForeignKey("centros_custo.id"), index=True)
+    pasta_id: Mapped[int | None] = mapped_column(ForeignKey("pastas.id"), index=True)  # nulo = raiz do setor
     modelo: Mapped[str | None] = mapped_column(String(64))   # slug do modelo (config/modelos/*.toml)
     ativo: Mapped[bool] = mapped_column(Boolean, default=True)
 

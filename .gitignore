@@ -22,6 +22,7 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 build/
+build_nuitka/
 dist/
 
 # Diagnóstico local (main.py --autoteste)

@@ -1,0 +1,145 @@
+{% extends "web/base.html" %}
+{% block titulo %}{{ titulo_local }} — Análise de Planilhas{% endblock %}
+{% block conteudo %}
+<style>
+  .migalhas{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:13.5px;color:var(--apoio);margin-top:4px}
+  .migalhas a{color:var(--marca-escura);text-decoration:none}.migalhas a:hover{text-decoration:underline}
+  .migalhas .sep{color:var(--fraco)}
+  .topo-local{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:6px}
+  .acoes-local{display:flex;gap:8px;flex-wrap:wrap}
+  .pastas-grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;margin-top:16px}
+  .pasta-card{display:flex;align-items:center;gap:13px;padding:15px 16px;border:1px solid var(--borda);
+    border-radius:var(--raio);background:var(--superficie);text-decoration:none;color:var(--texto);
+    box-shadow:var(--sombra);transition:transform var(--rapido),border-color var(--rapido)}
+  .pasta-card:hover{transform:translateY(-2px);border-color:var(--marca)}
+  .pasta-card .fic{width:42px;height:42px;border-radius:11px;flex:0 0 42px;display:grid;place-items:center;
+    background:var(--marca-clara);color:var(--marca-escura)}
+  .pasta-card .fic svg{width:22px;height:22px}
+  .pasta-card b{font-size:14.5px;display:block;line-height:1.25}.pasta-card small{color:var(--fraco);font-size:12px}
+  .docs{margin-top:16px;background:var(--superficie);border:1px solid var(--borda);border-radius:var(--raio);
+    box-shadow:var(--sombra);overflow:hidden}
+  .doc{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--borda)}
+  .doc:last-child{border-bottom:0}
+  .doc .pt{width:32px;height:32px;border-radius:8px;flex:0 0 32px;display:grid;place-items:center;
+    background:var(--marca-clara);color:var(--marca-escura)}.doc .pt svg{width:16px;height:16px}
+  .doc .nome{font-weight:600;text-decoration:none;color:var(--texto);flex:1;min-width:0}
+  .doc .nome:hover{color:var(--marca-escura)}
+  .doc .acoes{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+  .doc .acoes form{margin:0}
+  .doc select{width:auto;min-width:150px;padding:6px 8px;font-size:12.5px;margin:0}
+  .ic-btn{display:grid;place-items:center;width:32px;height:32px;border-radius:8px;border:1px solid var(--borda);
+    background:var(--superficie);color:var(--apoio);cursor:pointer;margin:0;padding:0;transition:all var(--rapido)}
+  .ic-btn svg{width:16px;height:16px}
+  .ic-btn:hover{border-color:var(--marca);color:var(--marca-escura);background:var(--marca-clara);box-shadow:none}
+  .ic-btn.perigo:hover{border-color:var(--perigo);color:var(--perigo);background:var(--perigo-claro)}
+  .vazio-nav{padding:28px 16px;color:var(--apoio);text-align:center}
+  .secao-rot{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--fraco);margin:22px 0 2px}
+  dialog{border:1px solid var(--borda);border-radius:var(--raio);padding:0;max-width:420px;width:92vw;
+    background:var(--superficie);color:var(--texto);box-shadow:var(--sombra-forte)}
+  dialog::backdrop{background:rgba(10,18,26,.5)} dialog .cab{padding:16px 20px;border-bottom:1px solid var(--borda);font-weight:700}
+  dialog .corpo{padding:18px 20px} dialog .pe{padding:14px 20px;border-top:1px solid var(--borda);display:flex;justify-content:flex-end;gap:10px}
+  .btn-fantasma{background:var(--superficie);color:var(--apoio);border:1px solid var(--borda);margin:0}
+  .btn-fantasma:hover{background:var(--superficie-2);color:var(--texto);box-shadow:none}
+</style>
+
+<nav class="migalhas">
+  {% for m in migalhas %}
+    {% if not loop.last %}<a href="{{ m.url }}">{{ m.nome }}</a><span class="sep">›</span>
+    {% else %}<span>{{ m.nome }}</span>{% endif %}
+  {% endfor %}
+</nav>
+
+<div class="topo-local">
+  <h1>{{ titulo_local }}</h1>
+  {% if eh_adm %}
+  <div class="acoes-local">
+    <button type="button" class="btn-sec" style="margin:0" onclick="document.getElementById('dlg-nova').showModal()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" width="15" height="15"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke-linejoin="round"/><path d="M12 11v4M10 13h4" stroke-linecap="round"/></svg>
+      Nova pasta</button>
+    <a class="btn-sec" style="margin:0" href="/web/enviar?setor={{ setor_id }}{{ '&pasta=' ~ pasta_atual if pasta_atual }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" width="15" height="15"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+      Novo documento</a>
+    {% if pasta_atual %}
+    <button type="button" class="btn-sec" style="margin:0" onclick="document.getElementById('dlg-renomear').showModal()">Renomear</button>
+    <form method="post" action="/web/pasta/{{ pasta_atual }}/excluir" style="margin:0"
+          onsubmit="return confirm('Excluir esta pasta? (só se estiver vazia)')">
+      <button class="btn-perigo" style="margin:0;padding:9px 14px">Excluir pasta</button></form>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+
+{% if pastas %}
+<p class="secao-rot">Pastas</p>
+<div class="pastas-grade">
+  {% for p in pastas %}
+  <a class="pasta-card" href="{{ p.url }}">
+    <span class="fic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke-linejoin="round"/></svg></span>
+    <span style="min-width:0"><b>{{ p.nome }}</b>
+      <small>{{ p.n_rel }} relatório(s){{ ' · ' ~ p.n_sub ~ ' pasta(s)' if p.n_sub }}</small></span>
+  </a>
+  {% endfor %}
+</div>
+{% endif %}
+
+<p class="secao-rot">Relatórios</p>
+<div class="docs">
+  {% for r in relatorios %}
+  <div class="doc">
+    <span class="pt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V5a1 1 0 0 1 1-1h11l4 4v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" stroke-linejoin="round"/></svg></span>
+    <a class="nome" href="/web/r/{{ r.slug }}">{{ r.nome }}</a>
+    {% if eh_adm %}
+    <div class="acoes">
+      <form method="post" action="/web/relatorio/{{ r.slug }}/mover" title="Mover para a pasta">
+        <select name="pasta_id" onchange="this.form.submit()">
+          <option value="" {{ 'selected' if not pasta_atual }}>— raiz do setor —</option>
+          {% for d in destinos %}<option value="{{ d.id }}" {{ 'selected' if d.id|string == pasta_atual|string }}>{{ d.nome }}</option>{% endfor %}
+        </select>
+      </form>
+      <a class="ic-btn" href="/web/gestao/relatorio/{{ r.slug }}" title="Gerenciar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 13a7.9 7.9 0 0 0 0-2l1.5-1.2-1.5-2.6-1.8.6a7.6 7.6 0 0 0-1.7-1l-.3-1.9h-3l-.3 1.9a7.6 7.6 0 0 0-1.7 1l-1.8-.6-1.5 2.6L6.6 11a7.9 7.9 0 0 0 0 2l-1.5 1.2 1.5 2.6 1.8-.6a7.6 7.6 0 0 0 1.7 1l.3 1.9h3l.3-1.9a7.6 7.6 0 0 0 1.7-1l1.8.6 1.5-2.6z" stroke-linejoin="round"/></svg></a>
+      <form method="post" action="/web/gestao/relatorio/{{ r.slug }}/excluir"
+            onsubmit="return confirm('Excluir «{{ r.nome }}»? (só sem versão publicada)')">
+        <input type="hidden" name="voltar" value="{{ migalhas[-1].url if migalhas[-1].url else '/web' }}">
+        <button class="ic-btn perigo" title="Excluir">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13" stroke-linecap="round" stroke-linejoin="round"/></svg></button></form>
+    </div>
+    {% else %}
+    <span class="seta" style="color:var(--fraco)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    {% endif %}
+  </div>
+  {% else %}
+  <div class="vazio-nav">Nenhum relatório neste nível{{ ' — use «Novo documento» ou mova um para cá' if eh_adm }}.</div>
+  {% endfor %}
+</div>
+
+{% if eh_adm %}
+<dialog id="dlg-nova">
+  <form method="post" action="/web/pasta/criar">
+    <div class="cab">Nova pasta</div>
+    <div class="corpo">
+      <input type="hidden" name="setor_id" value="{{ setor_id }}">
+      <input type="hidden" name="pai_id" value="{{ pasta_atual }}">
+      <label>Nome da pasta</label>
+      <input name="nome" required autofocus placeholder="ex.: Faturamento">
+    </div>
+    <div class="pe">
+      <button type="button" class="btn-fantasma" onclick="document.getElementById('dlg-nova').close()">Cancelar</button>
+      <button type="submit" style="margin:0">Criar</button>
+    </div>
+  </form>
+</dialog>
+{% if pasta_atual %}
+<dialog id="dlg-renomear">
+  <form method="post" action="/web/pasta/{{ pasta_atual }}/renomear">
+    <div class="cab">Renomear pasta</div>
+    <div class="corpo"><label>Novo nome</label><input name="nome" required value="{{ titulo_local }}"></div>
+    <div class="pe">
+      <button type="button" class="btn-fantasma" onclick="document.getElementById('dlg-renomear').close()">Cancelar</button>
+      <button type="submit" style="margin:0">Salvar</button>
+    </div>
+  </form>
+</dialog>
+{% endif %}
+{% endif %}
+{% endblock %}

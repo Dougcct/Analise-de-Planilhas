@@ -182,7 +182,7 @@ def test_web_admin_cria_setor_e_relatorio(web):
     r2 = c.post("/web/admin/relatorio", data={"nome": "Teste Web", "centro_custo_id": 1, "modelo": ""},
                 follow_redirects=False)
     assert r2.status_code == 303 and "ok=" in r2.headers["location"]
-    assert "Teste Web" in c.get("/web").text
+    assert "Teste Web" in c.get("/web/setor/1").text        # home do ADM mostra setores; o relatório fica no setor
     # gestor não entra na administração
     assert "restrito" in _cli("gestor.fin").get("/web/admin").text.lower()
 
@@ -321,6 +321,49 @@ def test_importar_setores_cria_setor_relatorio_e_conhecimento(web, tmp_path, mon
     de_novo = unquote_plus(adm.post("/web/admin/importar-setores", follow_redirects=False).headers["location"])
     assert "0 setor(es) e 0 relatório(s) novo(s)" in de_novo and "0 regra(s)" in de_novo
     assert "restrito" in _cli("gestor.fat").post("/web/admin/importar-setores").text.lower()
+
+
+# ---------------- organização em pastas (estilo Metabase) ----------------
+def test_home_adm_mostra_setores_como_pastas(web):
+    c = _cli("admin", "admin123")
+    pg = c.get("/web").text
+    assert "Central de Atendimentos" in pg and "/web/setor/" in pg     # setores viram pastas-raiz
+    assert "txt" in pg and "<span class=\"n\">" in pg                  # KPIs com número/rótulo separados
+
+
+def test_pastas_criar_mover_navegar_excluir(web):
+    import re
+    c = _cli("admin", "admin123")
+    # cria um relatório no setor 1 para ter o que mover
+    c.post("/web/admin/relatorio", data={"nome": "Doc Pasta", "centro_custo_id": 1, "modelo": ""})
+    # cria subpasta na raiz do setor 1
+    r = c.post("/web/pasta/criar", data={"setor_id": 1, "nome": "Faturamento", "pai_id": ""},
+               follow_redirects=False)
+    assert r.status_code == 303 and "ok=" in r.headers["location"]
+    setor = c.get("/web/setor/1").text
+    assert "Faturamento" in setor and "Doc Pasta" in setor
+    pid = re.search(r"/web/pasta/(\d+)", setor).group(1)
+    # move o relatório para a subpasta
+    rm = c.post("/web/relatorio/doc-pasta/mover", data={"pasta_id": pid}, follow_redirects=False)
+    assert rm.status_code == 303 and "ok=" in rm.headers["location"]
+    dentro = c.get(f"/web/pasta/{pid}").text
+    assert "Doc Pasta" in dentro and "Início" in dentro and "Faturamento" in dentro   # migalhas + conteúdo
+    assert "Doc Pasta" not in c.get("/web/setor/1").text.split("Relatórios")[-1]       # saiu da raiz
+    # pasta com relatório não pode ser excluída
+    assert "erro=" in c.post(f"/web/pasta/{pid}/excluir", follow_redirects=False).headers["location"]
+    # tira o relatório e exclui a pasta vazia
+    c.post("/web/relatorio/doc-pasta/mover", data={"pasta_id": ""})
+    assert "ok=" in c.post(f"/web/pasta/{pid}/excluir", follow_redirects=False).headers["location"]
+    assert f"/web/pasta/{pid}" not in c.get("/web/setor/1").text        # a pasta sumiu da listagem
+
+
+def test_pastas_isolamento_e_permissao(web):
+    g = _cli("gestor.fin")
+    # gestor não cria pasta (só ADM organiza)
+    loc = g.post("/web/pasta/criar", data={"setor_id": 1, "nome": "X"}, follow_redirects=False).headers["location"]
+    assert "restrito" in loc.lower()
+    # gestor.fin (FIN) não abre o setor de outro (ATD = 1)
+    assert "fora do seu setor" in g.get("/web/setor/1").text.lower()
 
 
 # ---------------- gestão: setores, modelos, relatórios/planilhas ----------------

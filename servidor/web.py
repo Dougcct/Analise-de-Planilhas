@@ -32,8 +32,8 @@ from . import aprendizado, bd, validacao
 from .autenticacao import escopo_por_token
 from .modelos_bd import (
     ADM, GESTOR, PAPEIS, PUBLICADA, RASCUNHO, SUBSTITUIDA, USUARIO,
-    AcessoTemporario, Auditoria, Carga, CentroCusto, ConhecimentoColuna, Relatorio, SessaoUsuario, Usuario,
-    utcnow,
+    AcessoTemporario, Auditoria, Carga, CentroCusto, ConhecimentoColuna, Pasta, Relatorio, SessaoUsuario,
+    Usuario, utcnow,
 )
 from .repositorio import RepoCargas, RepoRelatorios, RepoUsuarios
 from .seguranca import DURACAO_SESSAO, MAX_TENTATIVAS, Escopo, conferir_senha, gerar_token, hash_senha, hash_token
@@ -217,6 +217,68 @@ def _resumo_home(s: Session, escopo: Escopo, rels: list) -> dict:
     return {"metricas": metricas, "ultimas": ultimas, "gestor": gestor}
 
 
+# ---- navegação em pastas (estilo coleções do Metabase) -----------------------------------------
+def _setor_acessivel(s, escopo, cc_id: int):
+    cc = s.get(CentroCusto, cc_id)
+    if cc is None or not cc.ativo:
+        raise _Erro("Setor não encontrado.")
+    if not escopo.eh_adm and cc.id != escopo.centro_custo_id:
+        raise _Erro("Fora do seu setor.")
+    return cc
+
+
+def _pasta_acessivel(s, escopo, pasta_id: int) -> Pasta:
+    p = s.get(Pasta, pasta_id)
+    if p is None:
+        raise _Erro("Pasta não encontrada.")
+    _setor_acessivel(s, escopo, p.centro_custo_id)
+    return p
+
+
+def _card_pasta(s, p: Pasta) -> dict:
+    n_sub = s.scalar(select(func.count()).select_from(Pasta).where(Pasta.pai_id == p.id)) or 0
+    n_rel = s.scalar(select(func.count()).select_from(Relatorio)
+                     .where(Relatorio.pasta_id == p.id, Relatorio.ativo.is_(True))) or 0
+    return {"tipo": "pasta", "id": p.id, "nome": p.nome, "url": f"/web/pasta/{p.id}",
+            "n_sub": n_sub, "n_rel": n_rel}
+
+
+def _conteudo(s, cc_id: int, pasta_id: int | None) -> tuple[list, list]:
+    """(subpastas, relatórios) de um nível: a raiz do setor (pasta_id=None) ou dentro de uma subpasta."""
+    qp = select(Pasta).where(Pasta.centro_custo_id == cc_id)
+    qp = qp.where(Pasta.pai_id == pasta_id) if pasta_id else qp.where(Pasta.pai_id.is_(None))
+    subpastas = [_card_pasta(s, p) for p in s.scalars(qp.order_by(Pasta.nome))]
+    qr = select(Relatorio).where(Relatorio.centro_custo_id == cc_id, Relatorio.ativo.is_(True))
+    qr = qr.where(Relatorio.pasta_id == pasta_id) if pasta_id else qr.where(Relatorio.pasta_id.is_(None))
+    relatorios = [{"slug": r.slug, "nome": r.nome} for r in s.scalars(qr.order_by(Relatorio.nome))]
+    return subpastas, relatorios
+
+
+def _migalhas(s, cc: CentroCusto, pasta: Pasta | None) -> list[dict]:
+    trilha, p = [], pasta
+    while p is not None:
+        trilha.append({"nome": p.nome, "url": f"/web/pasta/{p.id}"})
+        p = s.get(Pasta, p.pai_id) if p.pai_id else None
+    trilha.reverse()
+    return [{"nome": "Início", "url": "/web"}, {"nome": cc.nome, "url": f"/web/setor/{cc.id}"}] + trilha
+
+
+def _destinos(s, cc_id: int) -> list[dict]:
+    """Pastas do setor (indentadas pela profundidade) para o seletor «mover para»."""
+    por_pai: dict[int | None, list[Pasta]] = {}
+    for p in s.scalars(select(Pasta).where(Pasta.centro_custo_id == cc_id).order_by(Pasta.nome)):
+        por_pai.setdefault(p.pai_id, []).append(p)
+    saida: list[dict] = []
+
+    def _desce(pai_id, nivel):
+        for p in por_pai.get(pai_id, []):
+            saida.append({"id": p.id, "nome": ("  " * nivel) + p.nome})
+            _desce(p.id, nivel + 1)
+
+    _desce(None, 0)
+    return saida
+
+
 @router.get("", response_class=HTMLResponse)
 @router.get("/", response_class=HTMLResponse)
 def home(request: Request, s: Session = Depends(_sessao)):
@@ -224,9 +286,148 @@ def home(request: Request, s: Session = Depends(_sessao)):
     if redir:
         return redir
     rels = RepoRelatorios(s, escopo).listar()
-    relatorios = [{"slug": r.slug, "nome": r.nome} for r in rels]
-    return _pagina("home.html", request, _ctx(request, escopo, s, "relatorios",
-                   relatorios=relatorios, resumo=_resumo_home(s, escopo, rels)))
+    # relatórios de OUTRO setor emprestados por acesso temporário (não aparecem nas pastas do próprio setor)
+    compart = [{"slug": r.slug, "nome": r.nome} for r in rels
+               if not escopo.eh_adm and r.centro_custo_id != escopo.centro_custo_id]
+    ctx = dict(resumo=_resumo_home(s, escopo, rels), raiz=True, compartilhados=compart)
+    if escopo.eh_adm:                       # ADM: a raiz são os setores (pastas-raiz)
+        cards = []
+        for cc in s.scalars(select(CentroCusto).where(CentroCusto.ativo.is_(True)).order_by(CentroCusto.nome)):
+            n_rel = s.scalar(select(func.count()).select_from(Relatorio)
+                             .where(Relatorio.centro_custo_id == cc.id, Relatorio.ativo.is_(True))) or 0
+            n_sub = s.scalar(select(func.count()).select_from(Pasta)
+                             .where(Pasta.centro_custo_id == cc.id, Pasta.pai_id.is_(None))) or 0
+            cards.append({"tipo": "setor", "id": cc.id, "nome": cc.nome, "codigo": cc.codigo,
+                          "url": f"/web/setor/{cc.id}", "n_sub": n_sub, "n_rel": n_rel})
+        ctx.update(titulo_local="Setores", pastas=cards, relatorios=[])
+    elif escopo.centro_custo_id:            # Gestor/Usuário: cai direto no conteúdo do próprio setor
+        subs, relatorios = _conteudo(s, escopo.centro_custo_id, None)
+        cc = s.get(CentroCusto, escopo.centro_custo_id)
+        ctx.update(titulo_local=cc.nome if cc else "Meu setor", pastas=subs, relatorios=relatorios)
+    else:
+        ctx.update(titulo_local="Relatórios", pastas=[], relatorios=[])
+    return _pagina("home.html", request, _ctx(request, escopo, s, "relatorios", **ctx))
+
+
+def _explorar(request: Request, s, escopo, cc: CentroCusto, pasta: Pasta | None):
+    subs, relatorios = _conteudo(s, cc.id, pasta.id if pasta else None)
+    return _pagina("explorar.html", request, _ctx(request, escopo, s, "relatorios",
+                   migalhas=_migalhas(s, cc, pasta), titulo_local=pasta.nome if pasta else cc.nome,
+                   pastas=subs, relatorios=relatorios, eh_adm=escopo.eh_adm, setor_id=cc.id,
+                   pasta_atual=pasta.id if pasta else "", destinos=_destinos(s, cc.id) if escopo.eh_adm else []))
+
+
+@router.get("/setor/{cc_id}", response_class=HTMLResponse)
+def explorar_setor(cc_id: int, request: Request, s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    try:
+        cc = _setor_acessivel(s, escopo, cc_id)
+    except _Erro as e:
+        return _pagina("erro.html", request, _ctx(request, escopo, s, "relatorios", mensagem=str(e)))
+    return _explorar(request, s, escopo, cc, None)
+
+
+@router.get("/pasta/{pasta_id}", response_class=HTMLResponse)
+def explorar_pasta(pasta_id: int, request: Request, s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    try:
+        pasta = _pasta_acessivel(s, escopo, pasta_id)
+    except _Erro as e:
+        return _pagina("erro.html", request, _ctx(request, escopo, s, "relatorios", mensagem=str(e)))
+    return _explorar(request, s, escopo, s.get(CentroCusto, pasta.centro_custo_id), pasta)
+
+
+def _volta_para(s, cc_id: int, pasta_id) -> str:
+    return f"/web/pasta/{pasta_id}" if pasta_id else f"/web/setor/{cc_id}"
+
+
+@router.post("/pasta/criar")
+def pasta_criar(request: Request, setor_id: int = Form(...), nome: str = Form(...),
+                pai_id: str = Form(""), s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    pai = int(pai_id) if pai_id.isdigit() else None
+    try:
+        _exige_adm(escopo)
+        cc = _setor_acessivel(s, escopo, setor_id)
+        if not nome.strip():
+            raise _Erro("Dê um nome à pasta.")
+        if pai is not None and _pasta_acessivel(s, escopo, pai).centro_custo_id != cc.id:
+            raise _Erro("A pasta-pai é de outro setor.")
+        s.add(Pasta(centro_custo_id=cc.id, pai_id=pai, nome=nome.strip()))
+        _audit(s, escopo, "criar_pasta", f"{cc.codigo}:{nome.strip()}")
+        s.commit()
+    except _Erro as e:
+        return _redir(_volta_para(s, setor_id, pai), erro=str(e))
+    return _redir(_volta_para(s, setor_id, pai), ok=f"Pasta «{nome.strip()}» criada.")
+
+
+@router.post("/pasta/{pasta_id}/renomear")
+def pasta_renomear(pasta_id: int, request: Request, nome: str = Form(...), s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    try:
+        _exige_adm(escopo)
+        p = _pasta_acessivel(s, escopo, pasta_id)
+        if not nome.strip():
+            raise _Erro("O nome não pode ficar vazio.")
+        p.nome = nome.strip()
+        _audit(s, escopo, "renomear_pasta", f"{pasta_id}:{nome.strip()}")
+        s.commit()
+    except _Erro as e:
+        return _redir(f"/web/pasta/{pasta_id}", erro=str(e))
+    return _redir(f"/web/pasta/{pasta_id}", ok="Pasta renomeada.")
+
+
+@router.post("/pasta/{pasta_id}/excluir")
+def pasta_excluir(pasta_id: int, request: Request, s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    destino = "/web"
+    try:
+        _exige_adm(escopo)
+        p = _pasta_acessivel(s, escopo, pasta_id)
+        destino = _volta_para(s, p.centro_custo_id, p.pai_id)
+        if s.scalar(select(func.count()).select_from(Pasta).where(Pasta.pai_id == p.id)):
+            raise _Erro("A pasta tem subpastas. Esvazie-a antes de excluir.")
+        if s.scalar(select(func.count()).select_from(Relatorio).where(Relatorio.pasta_id == p.id)):
+            raise _Erro("A pasta tem relatórios. Mova-os antes de excluir.")
+        s.delete(p)
+        _audit(s, escopo, "excluir_pasta", f"{p.centro_custo_id}:{p.nome}")
+        s.commit()
+    except _Erro as e:
+        return _redir(destino, erro=str(e))
+    return _redir(destino, ok="Pasta excluída.")
+
+
+@router.post("/relatorio/{slug}/mover")
+def relatorio_mover(slug: str, request: Request, pasta_id: str = Form(""), s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    destino = "/web"
+    try:
+        _exige_adm(escopo)
+        rel = _relatorio_gerenciavel(s, escopo, slug)
+        alvo = int(pasta_id) if pasta_id.isdigit() else None
+        if alvo is not None:
+            p = _pasta_acessivel(s, escopo, alvo)
+            if p.centro_custo_id != rel.centro_custo_id:
+                raise _Erro("Só dá para mover dentro do mesmo setor.")
+        rel.pasta_id = alvo
+        destino = _volta_para(s, rel.centro_custo_id, alvo)
+        _audit(s, escopo, "mover_relatorio", f"{slug}->pasta {alvo or 'raiz'}")
+        s.commit()
+    except _Erro as e:
+        return _redir(destino, erro=str(e))
+    return _redir(destino, ok=f"«{rel.nome}» movido.")
 
 
 @router.get("/r/{slug}", response_class=HTMLResponse)
@@ -462,8 +663,9 @@ def _relatorios_proprios(s, escopo):
 
 
 @router.get("/enviar", response_class=HTMLResponse)
-def enviar(request: Request, s: Session = Depends(_sessao)):
-    """Assistente unificado: subir planilha -> (novo relatório ou atualizar um) -> prévia -> publicar."""
+def enviar(request: Request, setor: str = "", pasta: str = "", s: Session = Depends(_sessao)):
+    """Assistente unificado: subir planilha -> (novo relatório ou atualizar um) -> prévia -> publicar.
+    `setor`/`pasta` pré-selecionam o destino quando o ADM vem de «Novo documento» numa pasta."""
     escopo, redir = _exige_login(request, s)
     if redir:
         return redir
@@ -476,14 +678,18 @@ def enviar(request: Request, s: Session = Depends(_sessao)):
     centros = [{"id": c.id, "codigo": c.codigo, "nome": c.nome}
                for c in s.scalars(select(CentroCusto).where(CentroCusto.ativo.is_(True)).order_by(CentroCusto.nome))
                if escopo.eh_adm or c.id == escopo.centro_custo_id]
+    p = s.get(Pasta, int(pasta)) if pasta.isdigit() else None   # pré-seleção vinda de uma pasta
     return _pagina("enviar.html", request, _ctx(request, escopo, s, "enviar",
-                   relatorios=rels, modelos=modelos, centros=centros, eh_adm=escopo.eh_adm))
+                   relatorios=rels, modelos=modelos, centros=centros, eh_adm=escopo.eh_adm,
+                   setor_pre=(p.centro_custo_id if p else (int(setor) if setor.isdigit() else "")),
+                   pasta_pre=(p.id if p else "")))
 
 
 @router.post("/enviar")
 async def enviar_carga(request: Request, modo: str = Form("novo"), arquivo: UploadFile = File(...),
                        slug: str = Form(""), nome: str = Form(""), modelo: str = Form(""),
-                       centro_custo_id: str = Form(""), s: Session = Depends(_sessao)):
+                       centro_custo_id: str = Form(""), pasta_id: str = Form(""),
+                       s: Session = Depends(_sessao)):
     """Recebe a planilha, cria o rascunho (e o relatório, se for novo, ainda inativo) e vai para a prévia."""
     escopo, redir = _exige_login(request, s)
     if redir:
@@ -520,7 +726,10 @@ async def enviar_carga(request: Request, modo: str = Form("novo"), arquivo: Uplo
                     raise _Erro("Setor inexistente.")
             if s.scalar(select(Relatorio).where(Relatorio.slug == novo_slug)) is not None:
                 raise _Erro("Já existe um relatório com esse nome.")
-            rel = Relatorio(slug=novo_slug, nome=nm, centro_custo_id=cc,
+            alvo = int(pasta_id) if pasta_id.isdigit() else None   # pasta de organização (opcional)
+            if alvo is not None and (s.get(Pasta, alvo) is None or s.get(Pasta, alvo).centro_custo_id != cc):
+                alvo = None
+            rel = Relatorio(slug=novo_slug, nome=nm, centro_custo_id=cc, pasta_id=alvo,
                             modelo=(modelo or None), ativo=False)   # nasce oculto até publicar
             s.add(rel)
             s.flush()
@@ -1167,11 +1376,12 @@ def gestao_relatorio_ativo(slug: str, request: Request, ativo: str = Form(...), 
 
 
 @router.post("/gestao/relatorio/{slug}/excluir")
-def gestao_relatorio_excluir(slug: str, request: Request, s: Session = Depends(_sessao)):
+def gestao_relatorio_excluir(slug: str, request: Request, voltar: str = Form(""), s: Session = Depends(_sessao)):
     escopo, redir = _exige_login(request, s)
     if redir:
         return redir
     srv = _srv()
+    voltar = voltar if voltar.startswith("/web/") else ""   # evita redirect externo
     try:
         if not _pode(escopo, GESTOR, ADM):
             raise _Erro("Acesso restrito a gestores.")
@@ -1189,8 +1399,8 @@ def gestao_relatorio_excluir(slug: str, request: Request, s: Session = Depends(_
         _audit(s, escopo, "excluir_relatorio", slug)
         s.commit()
     except _Erro as e:
-        return _redir(f"/web/gestao/relatorio/{slug}", erro=str(e))
-    return _redir("/web/admin" if escopo.eh_adm else "/web", ok="Relatório excluído.")
+        return _redir(voltar or f"/web/gestao/relatorio/{slug}", erro=str(e))
+    return _redir(voltar or ("/web/admin" if escopo.eh_adm else "/web"), ok="Relatório excluído.")
 
 
 @router.get("/gestao/carga/{carga_id}/baixar")
