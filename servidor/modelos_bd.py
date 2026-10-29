@@ -86,7 +86,7 @@ class Carga(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     relatorio_id: Mapped[int] = mapped_column(ForeignKey("relatorios.id"), index=True)
     centro_custo_id: Mapped[int] = mapped_column(Integer, index=True)   # denormalizado p/ o escopo
-    enviado_por: Mapped[int] = mapped_column(ForeignKey("usuarios.id"))
+    enviado_por: Mapped[int | None] = mapped_column(ForeignKey("usuarios.id"))  # nulo = quem enviou foi excluído
     nome_original: Mapped[str] = mapped_column(String(255))
     hash_sha256: Mapped[str] = mapped_column(String(64))
     arquivo_uuid: Mapped[str] = mapped_column(String(64))               # nome no disco (sem o nome real)

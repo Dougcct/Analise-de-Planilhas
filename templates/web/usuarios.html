@@ -127,6 +127,13 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-1.9"/></svg>
           </button></form>
         {% endif %}
+        {% if eh_adm %}
+        <form method="post" action="/web/usuarios/{{ u.id }}/excluir" class="inline"
+              onsubmit="return confirm('EXCLUIR {{ u.login }} em definitivo?\n\nNão dá para desfazer. As planilhas e a auditoria ficam, mas sem o vínculo com este usuário. (Para só suspender, use Bloquear.)')">
+          <button class="ic-btn perigo" title="Excluir em definitivo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13M10 11v6M14 11v6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button></form>
+        {% endif %}
         {% endif %}
       </div>
     </td>

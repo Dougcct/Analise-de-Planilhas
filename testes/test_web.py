@@ -90,7 +90,7 @@ def test_web_gestao_de_usuarios(web):
 
 def _id_do_login(c, login):
     import re
-    pagina = c.get("/web/usuarios").text
+    pagina = c.get("/web/usuarios?busca=" + login).text     # busca p/ cair na 1ª página (lista é paginada)
     m = re.search(r'abrirEditar\((\d+),[^)]*"' + re.escape(login) + r'"', pagina)
     return m.group(1) if m else None
 
@@ -349,12 +349,30 @@ def test_pastas_criar_mover_navegar_excluir(web):
     dentro = c.get(f"/web/pasta/{pid}").text
     assert "Doc Pasta" in dentro and "Início" in dentro and "Faturamento" in dentro   # migalhas + conteúdo
     assert "Doc Pasta" not in c.get("/web/setor/1").text.split("Relatórios")[-1]       # saiu da raiz
-    # pasta com relatório não pode ser excluída
-    assert "erro=" in c.post(f"/web/pasta/{pid}/excluir", follow_redirects=False).headers["location"]
-    # tira o relatório e exclui a pasta vazia
-    c.post("/web/relatorio/doc-pasta/mover", data={"pasta_id": ""})
+    # excluir a pasta leva junto o relatório que está dentro (cascata)
     assert "ok=" in c.post(f"/web/pasta/{pid}/excluir", follow_redirects=False).headers["location"]
-    assert f"/web/pasta/{pid}" not in c.get("/web/setor/1").text        # a pasta sumiu da listagem
+    assert f"/web/pasta/{pid}" not in c.get("/web/setor/1").text        # a pasta sumiu
+    assert "Doc Pasta" not in c.get("/web/setor/1").text               # o relatório foi junto
+
+
+def test_excluir_usuario_definitivo(web):
+    c = _cli("admin", "admin123")
+    c.post("/web/usuarios", data={"login": "del.user", "nome": "Para Excluir", "senha": "senha123",
+                                  "papel": "USUARIO", "centro_custo_id": 1})
+    uid = _id_do_login(c, "del.user")
+    # gestor não exclui (só ADM)
+    assert "restrito" in _cli("gestor.fin").post(f"/web/usuarios/{uid}/excluir",
+                                                 follow_redirects=False).headers["location"].lower()
+    r = c.post(f"/web/usuarios/{uid}/excluir", follow_redirects=False)
+    assert r.status_code == 303 and "ok=" in r.headers["location"]
+    assert "del.user" not in c.get("/web/usuarios").text
+    # login liberado de novo (sumiu de vez)
+    assert TestClient(app).post("/web/login", data={"login": "del.user", "senha": "senha123"},
+                                follow_redirects=False).status_code == 200
+    # ADM não exclui a si mesmo
+    meu = _id_do_login(c, "admin")
+    assert "si mesmo" in c.post(f"/web/usuarios/{meu}/excluir",
+                                follow_redirects=False).headers["location"].lower().replace("+", " ")
 
 
 def test_pastas_isolamento_e_permissao(web):
@@ -377,11 +395,28 @@ def test_admin_setor_ciclo(web):
     assert r.status_code == 303 and "ok=" in r.headers["location"]
     assert "Gestao Renomeada" in c.get("/web/admin").text
     c.post(f"/web/admin/centro/{cid}/ativo", data={"ativo": "0"})           # desativar
-    rx = c.post(f"/web/admin/centro/{cid}/excluir", follow_redirects=False)  # vazio -> exclui
+    rx = c.post(f"/web/admin/centro/{cid}/excluir", follow_redirects=False)  # exclui (força)
     assert rx.status_code == 303 and "ok=" in rx.headers["location"]
     assert "Gestao Renomeada" not in c.get("/web/admin").text
-    # setor com conteúdo (id 1) não pode ser excluído
-    assert "erro=" in c.post("/web/admin/centro/1/excluir", follow_redirects=False).headers["location"]
+    # gestor não exclui setor (só ADM)
+    assert "restrito" in _cli("gestor.fin").post("/web/admin/centro/1/excluir",
+                                                 follow_redirects=False).headers["location"].lower()
+
+
+def test_excluir_setor_em_cascata(web):
+    import re
+    c = _cli("admin", "admin123")
+    # setor novo com um relatório e um usuário dentro
+    c.post("/web/admin/centro", data={"codigo": "cascata", "nome": "Setor Cascata"})
+    cid = re.search(r'edCentro\((\d+), "CASCATA"', c.get("/web/admin").text).group(1)
+    c.post("/web/admin/relatorio", data={"nome": "Rel Cascata", "centro_custo_id": cid, "modelo": ""})
+    c.post("/web/usuarios", data={"login": "ze.cascata", "nome": "Zé", "senha": "senha123",
+                                  "papel": "USUARIO", "centro_custo_id": cid})
+    r = c.post(f"/web/admin/centro/{cid}/excluir", follow_redirects=False)
+    assert "ok=" in r.headers["location"] and "sem+setor" in r.headers["location"]   # usuário solto
+    admin = c.get("/web/admin").text
+    assert "Setor Cascata" not in admin and "Rel Cascata" not in admin               # relatório foi junto
+    assert "ze.cascata" in c.get("/web/usuarios?busca=ze.cascata").text              # usuário ficou (sem setor)
 
 
 def test_admin_modelo_detalhe(web):
@@ -405,9 +440,9 @@ def test_gestao_relatorio_e_versoes(web):
     assert r.status_code == 303 and "ok=" in r.headers["location"]
     bid = re.search(r"/web/gestao/carga/(\d+)/baixar", c.get("/web/gestao/relatorio/gerir-teste").text).group(1)
     assert c.get(f"/web/gestao/carga/{bid}/baixar").status_code == 200       # baixa o original
-    # com versão publicada, excluir é bloqueado
+    # excluir é só do ADM: o gestor é barrado
     assert "erro=" in c.post("/web/gestao/relatorio/gerir-teste/excluir", follow_redirects=False).headers["location"]
-    # desativar funciona
+    # desativar funciona (gestor)
     assert "ok=" in c.post("/web/gestao/relatorio/gerir-teste/ativo", data={"ativo": "0"},
                            follow_redirects=False).headers["location"]
     # isolamento: gestor de outro setor não gere este

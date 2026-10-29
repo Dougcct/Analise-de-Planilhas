@@ -390,21 +390,28 @@ def pasta_excluir(pasta_id: int, request: Request, s: Session = Depends(_sessao)
     escopo, redir = _exige_login(request, s)
     if redir:
         return redir
-    destino = "/web"
+    destino, srv = "/web", _srv()
     try:
         _exige_adm(escopo)
         p = _pasta_acessivel(s, escopo, pasta_id)
         destino = _volta_para(s, p.centro_custo_id, p.pai_id)
-        if s.scalar(select(func.count()).select_from(Pasta).where(Pasta.pai_id == p.id)):
-            raise _Erro("A pasta tem subpastas. Esvazie-a antes de excluir.")
-        if s.scalar(select(func.count()).select_from(Relatorio).where(Relatorio.pasta_id == p.id)):
-            raise _Erro("A pasta tem relatórios. Mova-os antes de excluir.")
-        s.delete(p)
-        _audit(s, escopo, "excluir_pasta", f"{p.centro_custo_id}:{p.nome}")
+        ids: list[int] = []                             # subárvore em pré-ordem (pai antes dos filhos)
+
+        def _coletar(pid):
+            ids.append(pid)
+            for ch in s.scalars(select(Pasta.id).where(Pasta.pai_id == pid)):
+                _coletar(ch)
+
+        _coletar(p.id)
+        for rel in s.scalars(select(Relatorio).where(Relatorio.pasta_id.in_(ids))):
+            _apagar_relatorio(s, srv, rel)              # relatórios da pasta e subpastas
+        for pid in reversed(ids):                       # filhas antes das pais (FK)
+            s.delete(s.get(Pasta, pid))
+        _audit(s, escopo, "excluir_pasta", f"{p.centro_custo_id}:{p.nome}", f"subpastas={len(ids) - 1}")
         s.commit()
     except _Erro as e:
         return _redir(destino, erro=str(e))
-    return _redir(destino, ok="Pasta excluída.")
+    return _redir(destino, ok="Pasta excluída com tudo dentro.")
 
 
 @router.post("/relatorio/{slug}/mover")
@@ -583,6 +590,40 @@ def usuarios_desbloquear(usuario_id: int, request: Request, s: Session = Depends
     except _Erro as e:
         return _redir("/web/usuarios", erro=str(e))
     return _redir("/web/usuarios", ok="Usuário reativado.")
+
+
+@router.post("/usuarios/{usuario_id}/excluir")
+def usuarios_excluir(usuario_id: int, request: Request, s: Session = Depends(_sessao)):
+    """Exclusão DEFINITIVA de usuário (só ADM). As planilhas e a auditoria ficam — apenas perdem o vínculo
+    com quem fez (anônimo). Sessões e empréstimos pessoais dele são removidos."""
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    try:
+        _exige_adm(escopo)
+        if usuario_id == escopo.usuario_id:
+            raise _Erro("Não é possível excluir a si mesmo.")
+        u = s.get(Usuario, usuario_id)
+        if u is None:
+            raise _Erro("Usuário não encontrado.")
+        login = u.login
+        for sess in s.scalars(select(SessaoUsuario).where(SessaoUsuario.usuario_id == usuario_id)):
+            s.delete(sess)
+        for ac in s.scalars(select(AcessoTemporario).where(
+                (AcessoTemporario.usuario_destino == usuario_id) | (AcessoTemporario.autorizado_por == usuario_id))):
+            s.delete(ac)
+        for c in s.scalars(select(Carga).where(Carga.enviado_por == usuario_id)):
+            c.enviado_por = None                        # mantém a planilha; some o "enviado por"
+        for a in s.scalars(select(Auditoria).where(Auditoria.usuario_id == usuario_id)):
+            a.usuario_id = None                         # mantém o registro de auditoria, anônimo
+        for k in s.scalars(select(ConhecimentoColuna).where(ConhecimentoColuna.atualizado_por == usuario_id)):
+            k.atualizado_por = None
+        _audit(s, escopo, "excluir_usuario", login)     # registra o ato (feito pelo ADM) antes de apagar
+        s.delete(u)
+        s.commit()
+    except _Erro as e:
+        return _redir("/web/usuarios", erro=str(e))
+    return _redir("/web/usuarios", ok=f"Usuário «{login}» excluído definitivamente.")
 
 
 @router.post("/usuarios/{usuario_id}/resetar-senha")
@@ -1028,24 +1069,32 @@ def admin_centro_excluir(cc_id: int, request: Request, s: Session = Depends(_ses
     escopo, redir = _exige_login(request, s)
     if redir:
         return redir
+    srv = _srv()
     try:
         _exige_adm(escopo)
         cc = s.get(CentroCusto, cc_id)
         if cc is None:
             raise _Erro("Setor não encontrado.")
-        tem_usr = s.scalar(select(func.count()).select_from(
-            select(Usuario.id).where(Usuario.centro_custo_id == cc_id).subquery())) or 0
-        tem_rel = s.scalar(select(func.count()).select_from(
-            select(Relatorio.id).where(Relatorio.centro_custo_id == cc_id).subquery())) or 0
-        if tem_usr or tem_rel:
-            raise _Erro("Só dá para excluir um setor sem usuários nem relatórios. Desative-o.")
+        for rel in s.scalars(select(Relatorio).where(Relatorio.centro_custo_id == cc_id)):
+            _apagar_relatorio(s, srv, rel)              # cada relatório leva suas planilhas/acessos
+        pastas = list(s.scalars(select(Pasta).where(Pasta.centro_custo_id == cc_id)))
+        for p in pastas:
+            p.pai_id = None                             # solta o aninhamento antes de apagar (FK)
+        s.flush()
+        for p in pastas:
+            s.delete(p)
+        n_usr = 0
+        for u in s.scalars(select(Usuario).where(Usuario.centro_custo_id == cc_id)):
+            u.centro_custo_id = None                    # usuários não somem: ficam sem setor (reatribua ou exclua)
+            n_usr += 1
         cod = cc.codigo
         s.delete(cc)
-        _audit(s, escopo, "excluir_centro", cod)
+        _audit(s, escopo, "excluir_centro", cod, f"usuarios_soltos={n_usr}")
         s.commit()
     except _Erro as e:
         return _redir("/web/admin", erro=str(e))
-    return _redir("/web/admin", ok="Setor excluído.")
+    extra = f" {n_usr} usuário(s) ficaram sem setor." if n_usr else ""
+    return _redir("/web/admin", ok=f"Setor excluído com tudo dentro.{extra}")
 
 
 # ----- modelos (ADM): ver detalhes -------------------------------------------------------------
@@ -1298,6 +1347,17 @@ def _relatorio_gerenciavel(s, escopo, slug):
     return rel
 
 
+def _apagar_relatorio(s, srv, rel) -> None:
+    """Apaga um relatório e TUDO dele: planilhas (arquivos no disco), cargas e acessos temporários."""
+    for c in s.scalars(select(Carga).where(Carga.relatorio_id == rel.id)):
+        (srv.CARGAS_DIR / c.arquivo_uuid).unlink(missing_ok=True)
+        srv.esquecer_dataset(c.id)
+        s.delete(c)
+    for ac in s.scalars(select(AcessoTemporario).where(AcessoTemporario.relatorio_id == rel.id)):
+        s.delete(ac)
+    s.delete(rel)
+
+
 @router.get("/gestao/relatorio/{slug}", response_class=HTMLResponse)
 def gestao_relatorio(slug: str, request: Request, s: Session = Depends(_sessao)):
     escopo, redir = _exige_login(request, s)
@@ -1383,24 +1443,14 @@ def gestao_relatorio_excluir(slug: str, request: Request, voltar: str = Form("")
     srv = _srv()
     voltar = voltar if voltar.startswith("/web/") else ""   # evita redirect externo
     try:
-        if not _pode(escopo, GESTOR, ADM):
-            raise _Erro("Acesso restrito a gestores.")
+        _exige_adm(escopo)                              # excluir é só do ADM (força, inclusive publicados)
         rel = _relatorio_gerenciavel(s, escopo, slug)
-        cargas = list(s.scalars(select(Carga).where(Carga.relatorio_id == rel.id)))
-        if any(c.status == PUBLICADA for c in cargas):
-            raise _Erro("Há uma versão publicada. Desative o relatório em vez de excluir.")
-        for c in cargas:                                # remove rascunhos/substituídas e seus arquivos
-            (srv.CARGAS_DIR / c.arquivo_uuid).unlink(missing_ok=True)
-            srv.esquecer_dataset(c.id)
-            s.delete(c)
-        for ac in s.scalars(select(AcessoTemporario).where(AcessoTemporario.relatorio_id == rel.id)):
-            s.delete(ac)
-        s.delete(rel)
+        _apagar_relatorio(s, srv, rel)
         _audit(s, escopo, "excluir_relatorio", slug)
         s.commit()
     except _Erro as e:
         return _redir(voltar or f"/web/gestao/relatorio/{slug}", erro=str(e))
-    return _redir(voltar or ("/web/admin" if escopo.eh_adm else "/web"), ok="Relatório excluído.")
+    return _redir(voltar or "/web/admin", ok="Relatório excluído definitivamente.")
 
 
 @router.get("/gestao/carga/{carga_id}/baixar")

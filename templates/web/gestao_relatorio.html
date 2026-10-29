@@ -62,14 +62,14 @@
     <input type="hidden" name="ativo" value="{{ '0' if rel.ativo else '1' }}">
     <button class="btn-sec" style="margin:0;padding:9px 15px">{{ 'Desativar (ocultar)' if rel.ativo else 'Reativar' }}</button>
   </form>
-  {% if not rel.tem_publicada %}
+  {% if eh_adm %}
   <form method="post" action="/web/gestao/relatorio/{{ rel.slug }}/excluir" class="inline"
-        onsubmit="return confirm('Excluir este relatório e seus rascunhos? Não há versão publicada.')">
-    <button class="btn-perigo" style="margin:0;padding:9px 15px">Excluir relatório</button>
+        onsubmit="return confirm('EXCLUIR «{{ rel.nome }}» em definitivo?\n\nApaga o relatório e TODAS as planilhas/versões (inclusive publicadas). Não dá para desfazer. Para só ocultar, use Desativar.')">
+    <button class="btn-perigo" style="margin:0;padding:9px 15px">Excluir em definitivo</button>
   </form>
-  <span class="apoio" style="font-size:12.5px">Sem versão publicada — pode excluir.</span>
+  <span class="apoio" style="font-size:12.5px">Exclusão é definitiva (só ADM). Para ocultar sem perder, desative.</span>
   {% else %}
-  <span class="apoio" style="font-size:12.5px">Há versão publicada: para remover, desative (mantém o histórico).</span>
+  <span class="apoio" style="font-size:12.5px">Para ocultar, desative. A exclusão definitiva é só do administrador.</span>
   {% endif %}
 </div>
 

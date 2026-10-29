@@ -37,6 +37,7 @@ def criar_schema() -> None:
     import servidor.modelos_bd  # noqa: F401  (registra as tabelas no metadata)
     Base.metadata.create_all(engine)
     _migrar_colunas_leves()
+    _afrouxar_nao_nulos()
 
 
 def _migrar_colunas_leves() -> None:
@@ -59,3 +60,22 @@ def _migrar_colunas_leves() -> None:
             for coluna, ddl in colunas.items():
                 if coluna not in existentes:
                     con.execute(text(f'ALTER TABLE {tabela} ADD COLUMN {coluna} {ddl}'))
+
+
+def _afrouxar_nao_nulos() -> None:
+    """Colunas que passaram a aceitar NULL (ex.: `cargas.enviado_por` após permitir excluir o usuário
+    que enviou). Só no Postgres existente; no SQLite dos testes o schema já nasce do modelo atual."""
+    if engine.dialect.name != "postgresql":
+        return
+    from sqlalchemy import inspect, text
+
+    insp = inspect(engine)
+    afrouxar = {"cargas": ["enviado_por"]}
+    with engine.begin() as con:
+        for tabela, colunas in afrouxar.items():
+            if not insp.has_table(tabela):
+                continue
+            nn = {c["name"] for c in insp.get_columns(tabela) if not c["nullable"]}
+            for coluna in colunas:
+                if coluna in nn:
+                    con.execute(text(f'ALTER TABLE {tabela} ALTER COLUMN {coluna} DROP NOT NULL'))

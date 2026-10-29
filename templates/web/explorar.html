@@ -62,7 +62,7 @@
     {% if pasta_atual %}
     <button type="button" class="btn-sec" style="margin:0" onclick="document.getElementById('dlg-renomear').showModal()">Renomear</button>
     <form method="post" action="/web/pasta/{{ pasta_atual }}/excluir" style="margin:0"
-          onsubmit="return confirm('Excluir esta pasta? (só se estiver vazia)')">
+          onsubmit="return confirm('EXCLUIR esta pasta em definitivo?\n\nApaga tudo dentro dela: subpastas e relatórios (com suas planilhas). Não dá para desfazer.')">
       <button class="btn-perigo" style="margin:0;padding:9px 14px">Excluir pasta</button></form>
     {% endif %}
   </div>
@@ -99,9 +99,9 @@
       <a class="ic-btn" href="/web/gestao/relatorio/{{ r.slug }}" title="Gerenciar">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 13a7.9 7.9 0 0 0 0-2l1.5-1.2-1.5-2.6-1.8.6a7.6 7.6 0 0 0-1.7-1l-.3-1.9h-3l-.3 1.9a7.6 7.6 0 0 0-1.7 1l-1.8-.6-1.5 2.6L6.6 11a7.9 7.9 0 0 0 0 2l-1.5 1.2 1.5 2.6 1.8-.6a7.6 7.6 0 0 0 1.7 1l.3 1.9h3l.3-1.9a7.6 7.6 0 0 0 1.7-1l1.8.6 1.5-2.6z" stroke-linejoin="round"/></svg></a>
       <form method="post" action="/web/gestao/relatorio/{{ r.slug }}/excluir"
-            onsubmit="return confirm('Excluir «{{ r.nome }}»? (só sem versão publicada)')">
+            onsubmit="return confirm('EXCLUIR «{{ r.nome }}» em definitivo?\n\nApaga o relatório e todas as planilhas/versões dele. Não dá para desfazer.')">
         <input type="hidden" name="voltar" value="{{ migalhas[-1].url if migalhas[-1].url else '/web' }}">
-        <button class="ic-btn perigo" title="Excluir">
+        <button class="ic-btn perigo" title="Excluir em definitivo">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13" stroke-linecap="round" stroke-linejoin="round"/></svg></button></form>
     </div>
     {% else %}
