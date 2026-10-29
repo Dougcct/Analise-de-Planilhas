@@ -24,7 +24,7 @@ dimensão (Convênio, Ano, Arquivo de origem…) na própria tela.
 Rede: só o servidor na LAN (o **Modo I.A** opcional envia apenas estrutura anonimizada —
 [DOCS/11](DOCS/11_modo_ia.md)).
 
-**Versão:** 1.0.0 · **Saídas:** HTML (PDF e DOCX previstos)
+**Versão:** 1.1.0 · **Saídas:** HTML (PDF e DOCX previstos)
 
 ## Uso
 

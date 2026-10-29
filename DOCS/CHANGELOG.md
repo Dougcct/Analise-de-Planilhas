@@ -2,7 +2,7 @@
 
 Formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · [SemVer](https://semver.org/lang/pt-BR/)
 
-## [Não lançado]
+## [1.1.0] — 2026-10-29
 
 ### Adicionado (relatório estilo painel/Power BI + comparativo)
 - **Painel executivo** no topo de cada relatório (pensado para diretoria): banda de KPIs grandes com
