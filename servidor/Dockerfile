@@ -32,6 +32,6 @@ USER app
 EXPOSE 8000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-    CMD python -c "import urllib.request as u; u.urlopen('http://127.0.0.1:8000/api/v1/status/versao', timeout=4)"
+    CMD python -c "import urllib.request as u; u.urlopen('http://127.0.0.1:8000/web/login', timeout=4)"
 
 CMD ["uvicorn", "servidor.app:app", "--host", "0.0.0.0", "--port", "8000"]

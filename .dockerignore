@@ -12,13 +12,11 @@ dados/
 saida/
 _revisar/
 
-# interface, build e planejamento não fazem parte do servidor
-app/
+# build e planejamento não fazem parte do servidor (assets/ ENTRA: favicon/logo em /assets)
 build_nuitka/
 build/
 dist/
 Planejamento/
-assets/
 
 # configuração local / segredos
 config/ia.toml
