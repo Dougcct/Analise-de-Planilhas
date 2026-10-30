@@ -37,6 +37,9 @@ editar o modelo, sem tocar no código:
 - "codigo"     — conta termina em código numérico; as demais são cabeçalho/subtotal de grupo;
 - "maiusculas" — linha em CAIXA ALTA é cabeçalho/subtotal de grupo; caixa mista é conta (ex.: DRE);
                  `contas = ["EPI"]` força rótulos em caixa alta a serem conta;
+- "negrito"    — a linha é cabeçalho/subtotal de grupo quando a célula do rótulo está em NEGRITO; texto
+                 normal é conta. É o sinal mais preciso quando a planilha marca os grupos em negrito
+                 (ex.: a DRE HUNF — EPI/IMPOSTOS estão em CAIXA ALTA mas NÃO em negrito, logo são conta);
 - "secoes"     — os blocos são declarados em `[[leitura.secao]]` (o mais robusto: segue a planilha).
 
 Subtotais/cabeçalhos nunca entram como dados (não contam em dobro): viram a coluna de grupo e são
@@ -101,6 +104,26 @@ def _grade(dados: bytes, aba: str) -> list[tuple]:
         wb.close()
 
 
+def _negrito_coluna(dados: bytes, aba: str, col: int) -> dict[int, bool]:
+    """Para cada linha (base 1), se a célula da coluna-rótulo está em NEGRITO. Na DRE o negrito marca
+    o grupo/subtotal (texto normal = conta) — sinal mais preciso que a CAIXA ALTA. Lê o estilo (sem
+    `data_only`, que não traz fonte de forma confiável no modo read_only)."""
+    import openpyxl
+
+    wb = openpyxl.load_workbook(io.BytesIO(dados), read_only=True)
+    try:
+        ws = wb[aba]
+        ws.reset_dimensions()
+        out: dict[int, bool] = {}
+        for i, linha in enumerate(ws.iter_rows(min_col=col + 1, max_col=col + 1), start=1):
+            cel = linha[0] if linha else None
+            fonte = getattr(cel, "font", None)
+            out[i] = bool(getattr(fonte, "bold", False)) if cel is not None else False
+        return out
+    finally:
+        wb.close()
+
+
 def _linha_de_meses(linhas: list[tuple]) -> tuple[int, list[tuple[int, pd.Timestamp]]]:
     """Linha-cabeçalho dos meses (a que tem mais datas) e as colunas de mês (índice, 1º dia do mês)."""
     melhor, melhor_cols = -1, []
@@ -118,7 +141,14 @@ def _eh_maiuscula(label: str) -> bool:
     return any(c.isalpha() for c in label) and label == label.upper()
 
 
-def _grupo_ou_conta(label: str, modo: str) -> str:
+_RE_SECAO_NUM = re.compile(r"^\d{1,2}[.)]\s")   # «8. RECEITAS FINANCEIRAS», «10. RESULTADO…» — subtotal numerado
+
+
+def _grupo_ou_conta(label: str, modo: str, negrito: bool = False) -> str:
+    if modo == "negrito":
+        # grupo = rótulo em negrito OU subtotal de seção numerada (ex.: «8. …», «10. …», que somam as de baixo
+        # e nem sempre vêm em negrito na planilha); o resto é conta.
+        return "grupo" if (negrito or _RE_SECAO_NUM.match(label)) else "conta"
     if modo == "codigo":
         return "conta" if _RE_CODIGO.search(label) else "grupo"
     if modo == "maiusculas":
@@ -156,6 +186,7 @@ def ler(dados: bytes, nome_arquivo: str, aba: str, cfg: dict) -> tuple[pd.DataFr
     ini = int(cfg.get("linha_inicio", i_cab + 2))     # padrão: logo abaixo do cabeçalho
     fim = int(cfg.get("linha_fim", len(linhas)))
     usa_grupo = modo != "nenhum"
+    negrito = _negrito_coluna(dados, aba, col_rot) if modo == "negrito" else {}
 
     registros: list[dict] = []
     unicas: dict[str, tuple[int, list[dict]]] = {}   # seção de linha única → (linha, registros); vale a última
@@ -213,7 +244,9 @@ def ler(dados: bytes, nome_arquivo: str, aba: str, cfg: dict) -> tuple[pd.DataFr
             ordem, rc = refs_cfg[k]
             refs[rc.get("nome", label)] = {"ordem": ordem, "papel": rc.get("papel", ""), "linha": nlin,
                                            "valores": valores(r, False)}
-            if modo == "maiusculas" and _eh_maiuscula(label) and k not in forcadas:
+            eh_cab = ((modo == "maiusculas" and _eh_maiuscula(label))
+                      or (modo == "negrito" and negrito.get(nlin, False)))
+            if eh_cab and k not in forcadas:
                 grupo_atual = graficos.rotulo(label)
                 subtotal(grupo_atual, refs[rc.get("nome", label)]["valores"], nlin)
             continue
@@ -248,7 +281,7 @@ def ler(dados: bytes, nome_arquivo: str, aba: str, cfg: dict) -> tuple[pd.DataFr
                 subtotal(grupo_atual, valores(r, False), nlin)
             n_pulos += 1
             continue
-        eh_grupo = k not in forcadas and _grupo_ou_conta(label, modo) == "grupo"
+        eh_grupo = k not in forcadas and _grupo_ou_conta(label, modo, negrito.get(nlin, False)) == "grupo"
         if eh_grupo and grupos_pref and not any(label.upper().startswith(p_) for p_ in grupos_pref):
             eh_grupo = False                           # não é cabeçalho de seção: trata como conta
         if eh_grupo:

@@ -2,6 +2,20 @@
 
 Formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · [SemVer](https://semver.org/lang/pt-BR/)
 
+## [1.2.2] — 2026-10-30
+
+### Melhorado (DRE HUNF: grupo × conta pelo NEGRITO da planilha)
+- O que é **grupo** e o que é **conta** na DRE passou a sair do **negrito da coluna A** (o setor marca os
+  blocos em negrito), em vez da CAIXA ALTA. Novo `agrupamento = "negrito"` no leitor de matriz
+  (`matriz.py`): rótulo em negrito = bloco/subtotal; texto normal = conta. Assim **EPI, IMPOSTOS, IOF,
+  Glosas Acatadas** — que estão em CAIXA ALTA mas **não** em negrito — voltam a ser **contas** dos blocos
+  acima delas (como na planilha), e não grupos. Seções numeradas («8. …», «9. …», «10. …»), que somam as
+  linhas abaixo e nem sempre vêm em negrito, também são tratadas como subtotal.
+- Resultado: a **soma das contas bate 100% com o subtotal de cada bloco da planilha** (conferência: 279/279
+  bloco×mês). O total de custos/despesas ficou mais completo porque EPI e IMPOSTOS (contas reais, antes
+  excluídas quando viravam grupo) voltaram a ser somadas. Modelo `gestaodecustos_dadoshunf_drehunf.toml`
+  atualizado para `agrupamento = "negrito"`.
+
 ## [1.2.1] — 2026-10-30
 
 ### Corrigido (DRE HUNF: grupo × conta não se misturam mais)

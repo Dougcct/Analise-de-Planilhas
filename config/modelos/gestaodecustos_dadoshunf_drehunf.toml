@@ -2,12 +2,13 @@
 # MODELO — Dados Hunf · DRE HUNF  (demonstrativo de resultado: conta × mês)
 # =============================================================================
 # A aba «DRE HUNF» é uma matriz: uma linha por conta, uma coluna por mês. A receita vem POSITIVA e os
-# custos/despesas NEGATIVOS. As linhas em CAIXA ALTA (RECEITA OPERACIONAL BRUTA, DESPESAS COM PESSOAL,
-# EPI, IMPOSTOS, RESULTADO LÍQUIDO…) são os BLOCOS da DRE: viram a coluna «Grupo» e o valor delas é o
-# subtotal da própria planilha (guardado para o demonstrativo e para a conferência — não entra na soma
-# das contas, para não contar em dobro). As linhas de fórmula/observação («*(Item …)*», «(Soma dos
-# itens …)») são ignoradas. A DRE vai da linha 2 (RECEITA…) até 117 (fecho do RESULTADO LÍQUIDO); as
-# mini-tabelas abaixo (oncologia etc.) ficam de fora.
+# custos/despesas NEGATIVOS. O que é GRUPO e o que é CONTA vem do NEGRITO da coluna A (o setor marca os
+# blocos em negrito): linha em negrito = bloco/subtotal (RECEITA OPERACIONAL BRUTA, DESPESAS COM PESSOAL,
+# RESULTADO LÍQUIDO…) → vira a coluna «Grupo» e o valor dela é o subtotal da planilha (guardado para o
+# demonstrativo e a conferência, não entra na soma das contas); texto normal = conta. Assim EPI e IMPOSTOS,
+# que estão em CAIXA ALTA mas NÃO em negrito, são contas (dos blocos acima deles), como no original. As
+# linhas de fórmula/observação («*(Item …)*», «(Soma dos itens …)») são ignoradas. A DRE vai da linha 2
+# (RECEITA…) até 117 (fecho do RESULTADO LÍQUIDO); as mini-tabelas abaixo (oncologia etc.) ficam de fora.
 #
 # Este modelo é v1 de propósito: usa o leitor de matriz (matriz.py) + o motor DRE dedicado
 # (financeiro.py, perfil="dre"), que separa BLOCO × CONTA corretamente — ao contrário da dedução
@@ -25,7 +26,7 @@ coluna_rotulo  = 0                # coluna A: nome da conta/bloco
 rotulo_conta   = "Conta"
 rotulo_grupo   = "Grupo"
 rotulo_valor   = "Valor"
-agrupamento    = "maiusculas"     # linha em CAIXA ALTA = bloco/subtotal (vira o grupo); caixa mista = conta
+agrupamento    = "negrito"        # célula do rótulo em NEGRITO = bloco/subtotal (vira o grupo); normal = conta
 pular_prefixos = ["*", "(Soma"]   # linhas de fórmula/observação («*(Item…)*», «(Soma dos itens…)») — não são dado
 a_partir_de    = "2024-01"
 linha_inicio   = 2
