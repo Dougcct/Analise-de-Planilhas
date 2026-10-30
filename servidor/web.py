@@ -204,16 +204,20 @@ def _resumo_home(s: Session, escopo: Escopo, rels: list) -> dict:
                for c in s.scalars(pub_q.order_by(Carga.publicado_em.desc()).limit(5))]
     rascunhos = s.scalar(select(func.count()).select_from(rasc_q.subquery())) or 0
 
+    # cada card leva à sua tela (o de Relatórios não navega — já é o conteúdo da própria home)
     metricas = [{"rotulo": "Relatórios", "valor": len(rels), "ic": "rel"}]
     if escopo.eh_adm:
-        metricas.append({"rotulo": "Setores", "valor": s.scalar(select(func.count()).select_from(CentroCusto)) or 0, "ic": "setor"})
-        metricas.append({"rotulo": "Usuários", "valor": s.scalar(select(func.count()).select_from(Usuario)) or 0, "ic": "user"})
+        metricas.append({"rotulo": "Setores", "valor": s.scalar(select(func.count()).select_from(CentroCusto)) or 0,
+                         "ic": "setor", "url": "/web/admin"})
+        metricas.append({"rotulo": "Usuários", "valor": s.scalar(select(func.count()).select_from(Usuario)) or 0,
+                         "ic": "user", "url": "/web/usuarios"})
     elif gestor:
         n = s.scalar(select(func.count()).select_from(
             select(Usuario.id).where(Usuario.centro_custo_id == escopo.centro_custo_id).subquery())) or 0
-        metricas.append({"rotulo": "Usuários do setor", "valor": n, "ic": "user"})
+        metricas.append({"rotulo": "Usuários do setor", "valor": n, "ic": "user", "url": "/web/usuarios"})
     if gestor:
-        metricas.append({"rotulo": "Rascunhos p/ publicar", "valor": rascunhos, "ic": "rascunho", "alerta": rascunhos > 0})
+        metricas.append({"rotulo": "Rascunhos p/ publicar", "valor": rascunhos, "ic": "rascunho",
+                         "alerta": rascunhos > 0, "url": "/web/rascunhos"})
     return {"metricas": metricas, "ultimas": ultimas, "gestor": gestor}
 
 
@@ -315,6 +319,32 @@ def _explorar(request: Request, s, escopo, cc: CentroCusto, pasta: Pasta | None)
                    migalhas=_migalhas(s, cc, pasta), titulo_local=pasta.nome if pasta else cc.nome,
                    pastas=subs, relatorios=relatorios, eh_adm=escopo.eh_adm, setor_id=cc.id,
                    pasta_atual=pasta.id if pasta else "", destinos=_destinos(s, cc.id) if escopo.eh_adm else []))
+
+
+@router.get("/rascunhos", response_class=HTMLResponse)
+def rascunhos(request: Request, s: Session = Depends(_sessao)):
+    """Lista os rascunhos (planilhas enviadas, ainda não publicadas) para revisar/publicar. Escopo: o
+    Gestor vê só os do próprio setor; o ADM vê todos. Cada item leva à prévia (publicar ou descartar)."""
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    if not _pode(escopo, GESTOR, ADM):
+        return _pagina("erro.html", request, _ctx(request, escopo, s, "rascunhos",
+                                                   mensagem="Acesso restrito a gestores."))
+    cargas = RepoCargas(s, escopo).rascunhos()
+    rels = {r.id: r for r in s.scalars(select(Relatorio))}
+    nomes_cc = {c.id: c.nome for c in s.scalars(select(CentroCusto))}
+    nomes_u = {u.id: u.nome for u in s.scalars(select(Usuario))}
+    itens = []
+    for c in cargas:
+        r = rels.get(c.relatorio_id)
+        itens.append({"id": c.id, "relatorio": r.nome if r else "?", "slug": r.slug if r else "",
+                      "ativo": r.ativo if r else False, "setor": nomes_cc.get(c.centro_custo_id, "—"),
+                      "arquivo": c.nome_original, "tamanho": f"{c.tamanho // 1024} KB" if c.tamanho else "—",
+                      "quando": c.criado_em.strftime("%d/%m/%Y %H:%M") if c.criado_em else "—",
+                      "quem": nomes_u.get(c.enviado_por, "—")})
+    return _pagina("rascunhos.html", request, _ctx(request, escopo, s, "rascunhos",
+                   itens=itens, eh_adm=escopo.eh_adm))
 
 
 @router.get("/setor/{cc_id}", response_class=HTMLResponse)
@@ -1125,11 +1155,13 @@ def enviar_previa_publicar(carga_id: int, request: Request, s: Session = Depends
 
 
 @router.post("/enviar/previa/{carga_id}/descartar")
-def enviar_previa_descartar(carga_id: int, request: Request, s: Session = Depends(_sessao)):
+def enviar_previa_descartar(carga_id: int, request: Request, voltar: str = Form(""),
+                            s: Session = Depends(_sessao)):
     escopo, redir = _exige_login(request, s)
     if redir:
         return redir
     srv = _srv()
+    voltar = voltar if voltar.startswith("/web/") else ""   # evita redirect externo (ex.: vindo da tela de rascunhos)
     try:
         if not _pode(escopo, GESTOR, ADM):
             raise _Erro("Acesso restrito a gestores.")
@@ -1145,7 +1177,9 @@ def enviar_previa_descartar(carga_id: int, request: Request, s: Session = Depend
         _audit(s, escopo, "descartar_rascunho", f"{rel.slug}:{carga_id}")
         s.commit()
     except _Erro as e:
-        return _redir("/web/enviar", erro=str(e))
+        return _redir(voltar or "/web/enviar", erro=str(e))
+    if voltar:                                             # veio da lista de rascunhos: volta pra lá
+        return _redir(voltar, ok="Rascunho descartado.")
     if prox is not None:                                   # continua na fila do mesmo envio
         return _redir(f"/web/enviar/previa/{prox}", ok="Planilha descartada — revise a próxima do envio.")
     return _redir("/web/enviar", ok="Envio descartado.")
@@ -1833,10 +1867,12 @@ def gestao_relatorio_editar(slug: str, request: Request, nome: str = Form(...), 
 
 
 @router.post("/gestao/relatorio/{slug}/ativo")
-def gestao_relatorio_ativo(slug: str, request: Request, ativo: str = Form(...), s: Session = Depends(_sessao)):
+def gestao_relatorio_ativo(slug: str, request: Request, ativo: str = Form(...), voltar: str = Form(""),
+                           s: Session = Depends(_sessao)):
     escopo, redir = _exige_login(request, s)
     if redir:
         return redir
+    destino = voltar if voltar.startswith("/web/") else f"/web/gestao/relatorio/{slug}"   # evita redirect externo
     try:
         if not _pode(escopo, GESTOR, ADM):
             raise _Erro("Acesso restrito a gestores.")
@@ -1845,8 +1881,8 @@ def gestao_relatorio_ativo(slug: str, request: Request, ativo: str = Form(...), 
         _audit(s, escopo, "ativar_relatorio" if rel.ativo else "desativar_relatorio", slug)
         s.commit()
     except _Erro as e:
-        return _redir(f"/web/gestao/relatorio/{slug}", erro=str(e))
-    return _redir(f"/web/gestao/relatorio/{slug}", ok="Relatório reativado." if rel.ativo else "Relatório desativado.")
+        return _redir(destino, erro=str(e))
+    return _redir(destino, ok="Relatório reativado." if rel.ativo else "Relatório desativado.")
 
 
 @router.post("/gestao/relatorio/{slug}/excluir")

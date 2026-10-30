@@ -197,6 +197,20 @@ def test_dre_demonstrativo_margem_e_sinal(tmp_path):
     assert any("sinal a conferir" in t and "Energia Eletrica" in t for t in a.achados)
     assert any(p.titulo == "DRE por ano" for p in a.paineis)
     assert any("bate com o subtotal" in t for t in a.achados)
+    # (3) evolução mensal: Receitas e Despesas mês a mês, com tabela
+    ev = next(p for p in a.paineis if p.titulo == "Evolução mensal — Receitas × Despesas")
+    assert {"Receitas", "Despesas", "Var. Receitas", "Var. Despesas"} <= set(ev.tabela.columns)
+    assert list(ev.tabela["Receitas"]) == [100, 100, 100]
+    assert list(ev.tabela["Despesas"]) == [70, 130, 70]                 # soma das contas negativas, valor absoluto
+    # (4) comparativo mês a mês por conta, separando Receitas de Despesas
+    comp = [p for p in a.paineis if p.aba == "Comparativo mês a mês por conta"]
+    titulos = {p.titulo for p in comp}
+    assert "Receitas — contas, mês a mês" in titulos and "Despesas — contas, mês a mês" in titulos
+    receitas = next(p for p in comp if p.titulo.startswith("Receitas"))
+    despesas = next(p for p in comp if p.titulo.startswith("Despesas"))
+    assert "Receita Particular" in set(receitas.tabela["Conta"])        # conta do bloco de receita
+    assert set(despesas.tabela["Conta"]) >= {"Medicamentos", "EPI"}     # contas dos blocos de despesa
+    assert "Receita Particular" not in set(despesas.tabela["Conta"])
 
 
 def test_versoes_da_mesma_planilha_nao_somam_em_dobro(tmp_path, modelo_custos):

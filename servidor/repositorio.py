@@ -134,6 +134,13 @@ class RepoCargas:
         """Planilhas enviadas no mesmo lote, na ordem de envio (p/ a fila de prévias)."""
         return list(self._s.scalars(self._base().where(Carga.lote == lote).order_by(Carga.id)))
 
+    def rascunhos(self) -> list[Carga]:
+        """Rascunhos (enviados, ainda não publicados) do escopo — Gestor só o próprio setor, ADM todos.
+        Mais recentes primeiro, para a tela «Rascunhos p/ publicar»."""
+        from .modelos_bd import RASCUNHO
+        return list(self._s.scalars(self._base().where(Carga.status == RASCUNHO)
+                                    .order_by(Carga.criado_em.desc(), Carga.id.desc())))
+
     def publicada(self, relatorio_id: int) -> Carga | None:
         from .modelos_bd import PUBLICADA
         return self._s.scalar(self._base().where(Carga.relatorio_id == relatorio_id,

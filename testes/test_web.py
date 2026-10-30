@@ -252,6 +252,33 @@ def test_web_enviar_descartar(web):
     assert "Pra Descartar" not in c.get("/web").text        # relatório novo descartado não fica órfão
 
 
+def test_web_tela_rascunhos(web):
+    """A tela «Rascunhos p/ publicar»: escopada ao setor (ADM vê tudo), com link para a prévia."""
+    c = _cli("gestor.fat")
+    cid = _subir(c, modo="novo", nome="Rascunho Tela Teste", modelo="resumo_cesariana", n=3)
+    home = c.get("/web").text
+    assert "/web/rascunhos" in home and "Rascunhos p/ publicar" in home   # card do dashboard navega
+    tela = c.get("/web/rascunhos")
+    assert tela.status_code == 200
+    assert "Rascunho Tela Teste" in tela.text and f"/web/enviar/previa/{cid}" in tela.text
+    # botões por linha: Editar (→ gestão), Inativar/Ativar e Excluir
+    assert "/web/gestao/relatorio/rascunho-tela-teste" in tela.text and ">Editar<" in tela.text
+    assert (">Inativar<" in tela.text or ">Ativar<" in tela.text) and ">Excluir<" in tela.text
+    assert "restrito" in _cli("user.fin").get("/web/rascunhos").text.lower()      # usuário comum não acessa
+    assert "Rascunho Tela Teste" not in _cli("gestor.fin").get("/web/rascunhos").text   # isolamento por setor
+    adm = _cli("admin", "admin123").get("/web/rascunhos").text
+    assert "Rascunho Tela Teste" in adm and "Setor" in adm                        # ADM vê tudo, com a coluna Setor
+    # ativar/inativar a partir da própria tela volta para /web/rascunhos
+    ri = c.post("/web/gestao/relatorio/rascunho-tela-teste/ativo",
+                data={"ativo": "1", "voltar": "/web/rascunhos"}, follow_redirects=False)
+    assert ri.status_code == 303 and ri.headers["location"].startswith("/web/rascunhos")
+    # Excluir descarta o rascunho e volta para a lista (não para a fila de prévias)
+    rx = c.post(f"/web/enviar/previa/{cid}/descartar",
+                data={"voltar": "/web/rascunhos"}, follow_redirects=False)
+    assert rx.status_code == 303 and rx.headers["location"].startswith("/web/rascunhos")
+    assert "Rascunho Tela Teste" not in c.get("/web/rascunhos").text              # sumiu da lista
+
+
 def _subir_lote(c, nomes, **campos):
     """Sobe VÁRIAS planilhas num envio só e devolve o id da primeira prévia (o começo da fila)."""
     import re

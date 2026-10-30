@@ -2,6 +2,38 @@
 
 Formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · [SemVer](https://semver.org/lang/pt-BR/)
 
+## [1.3.0] — 2026-10-30
+
+### Adicionado (dashboard navegável + tela de rascunhos)
+- **Cards do painel inicial agora são clicáveis** e levam à sua tela: **Setores** → Administração
+  (`/web/admin`), **Usuários** → Usuários (`/web/usuarios`) e **Rascunhos p/ publicar** → a nova tela de
+  rascunhos (`/web/rascunhos`). O card de **Relatórios** não navega (já é o conteúdo da própria home).
+- **Nova tela «Rascunhos p/ publicar»** (`/web/rascunhos`, também no menu lateral): lista as planilhas já
+  enviadas que **ainda não foram publicadas**, com relatório, arquivo, quem enviou, data e tamanho, e um
+  botão **Revisar** que abre a prévia (publicar ou descartar). Resolve o «não encontro meus rascunhos».
+- **Escopo por setor:** cada pessoa vê só os rascunhos do **próprio setor**; o **ADM vê todos** (com a
+  coluna «Setor»). A tela é restrita a gestores/ADM, como o restante do fluxo de publicação. O
+  isolamento reusa o `RepoCargas` (já filtrado pelo escopo) — novo método `RepoCargas.rascunhos()`.
+- **Ações por linha na tela de rascunhos:** além de **Revisar** (abre a prévia), cada linha tem
+  **Editar** (abre a gestão do relatório — nome/modelo/setor), **Inativar/Ativar** (liga/desliga a
+  visibilidade do relatório) e **Excluir** (descarta o rascunho; se for um relatório novo ainda sem nada
+  publicado, remove o relatório junto). As rotas `/gestao/relatorio/{slug}/ativo` e
+  `/enviar/previa/{id}/descartar` ganharam um parâmetro `voltar` (validado p/ `/web/…`) para retornarem à
+  lista de rascunhos. A exclusão definitiva de um relatório já publicado continua só no ADM, pela página
+  de gestão (botão Editar).
+
+## [1.2.3] — 2026-10-30
+
+### Melhorado (DRE: evolução Receitas × Despesas e comparativo por conta filtrável)
+- **Evolução mensal mostrando Receitas e Despesas mês a mês** (ponto 3 do feedback). No «Demonstrativo
+  (DRE)», o gráfico mensal virou **«Evolução mensal — Receitas × Despesas»** e ganhou **tabela** com
+  Receitas, Despesas (valor absoluto), Resultado líquido e a variação de cada uma em relação ao mês
+  anterior — fica fácil ver como receitas e despesas evoluem lado a lado.
+- **Comparativo mês a mês por conta, separado em Receita ou Despesa** (ponto 4 do feedback). Nova seção
+  **«Comparativo mês a mês por conta»** com **duas tabelas conta × mês**: uma só com as contas dos blocos
+  de **receita** e outra só com as de **despesa** (a conta herda o sinal do seu bloco) — permite olhar
+  receitas e despesas em separado, como pediram.
+
 ## [1.2.2] — 2026-10-30
 
 ### Melhorado (DRE HUNF: grupo × conta pelo NEGRITO da planilha)

@@ -1,0 +1,67 @@
+{% extends "web/base.html" %}
+{% block titulo %}Rascunhos — Análise de Planilhas{% endblock %}
+{% block conteudo %}
+<style>
+  .acoes{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .acoes form{margin:0}
+</style>
+<h1>Rascunhos p/ publicar</h1>
+<p class="apoio">
+  Planilhas já enviadas que ainda não foram publicadas.
+  {{ 'Todos os setores (você é administrador).' if eh_adm else 'Do seu setor.' }}
+  Revise cada uma e publique ou descarte.
+</p>
+
+{% if itens %}
+<div class="tabela-caixa">
+  <table>
+    <thead>
+      <tr>
+        <th>Relatório</th>
+        {% if eh_adm %}<th>Setor</th>{% endif %}
+        <th>Arquivo</th>
+        <th>Enviado por</th>
+        <th>Quando</th>
+        <th>Tamanho</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in itens %}
+      <tr>
+        <td><b>{{ r.relatorio }}</b></td>
+        {% if eh_adm %}<td class="apoio">{{ r.setor }}</td>{% endif %}
+        <td>{{ r.arquivo }}</td>
+        <td class="apoio">{{ r.quem }}</td>
+        <td class="apoio num">{{ r.quando }}</td>
+        <td class="num">{{ r.tamanho }}</td>
+        <td>
+          <div class="acoes">
+            <a class="btn-sec" href="/web/enviar/previa/{{ r.id }}">Revisar</a>
+            <a class="btn-sec" href="/web/gestao/relatorio/{{ r.slug }}">Editar</a>
+            <form method="post" action="/web/gestao/relatorio/{{ r.slug }}/ativo" class="inline">
+              <input type="hidden" name="ativo" value="{{ '0' if r.ativo else '1' }}">
+              <input type="hidden" name="voltar" value="/web/rascunhos">
+              <button type="submit" class="btn-sec">{{ 'Inativar' if r.ativo else 'Ativar' }}</button>
+            </form>
+            <form method="post" action="/web/enviar/previa/{{ r.id }}/descartar" class="inline"
+                  onsubmit="return confirm('Excluir este rascunho? Essa ação não pode ser desfeita.');">
+              <input type="hidden" name="voltar" value="/web/rascunhos">
+              <button type="submit" class="btn-perigo">Excluir</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="vazio">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 11l3 3 8-8M4 7v12a1 1 0 0 0 1 1h12" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  <p>Nenhum rascunho aguardando publicação.<br>
+  Envie uma planilha em <a href="/web/enviar">Enviar planilha</a> — ela aparece aqui como rascunho até você publicar.</p>
+</div>
+{% endif %}
+<p class="rodape">Versão {{ versao }}</p>
+{% endblock %}

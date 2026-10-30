@@ -633,15 +633,26 @@ def _paineis_dre(df, c: _Ctx, ext: dict, meses) -> tuple[list[Painel], list[KPI]
     paineis.append(Painel("Demonstrativo (DRE)", "DRE mês a mês", tabela=mens,
                           formatos=fmts_mens, aberta=(len(cats) <= 12),
                           descricao="Compare os meses lado a lado; as últimas colunas mostram a variação direta entre os meses do recorte."))
-    series = []
-    if rec is not None:
-        series.append(("Receita bruta", [None if pd.isna(v) else float(v) for v in rec], CORES[0]))
+    # evolução mensal: Receitas e Despesas (valor absoluto) lado a lado, mês a mês + o resultado
     custos_m = df[df[c.V] < 0].groupby(c.M)[c.V].sum().reindex(meses)
-    series.append(("Custos e despesas", [None if pd.isna(v) else float(-v) for v in custos_m], CORES[1]))
+    receitas_m = rec if rec is not None else df[df[c.V] > 0].groupby(c.M)[c.V].sum().reindex(meses)
+    rec_vals = [None if pd.isna(v) else float(v) for v in receitas_m]
+    desp_vals = [None if pd.isna(v) else float(-v) for v in custos_m]
+    series = [("Receitas", rec_vals, CORES[0]), ("Despesas", desp_vals, CORES[1])]
+    ev = pd.DataFrame({"Mês": cats, "Receitas": rec_vals, "Despesas": desp_vals})
     if res is not None:
-        series.append(("Resultado líquido", [None if pd.isna(v) else float(v) for v in res], CORES[2]))
-    paineis.append(Painel("Demonstrativo (DRE)", "Receita × custos × resultado, mês a mês",
-                          graficos.linhas(cats, series, largura=LARG_INTEIRA)))
+        res_vals = [None if pd.isna(v) else float(v) for v in res]
+        series.append(("Resultado líquido", res_vals, CORES[2]))
+        ev["Resultado líquido"] = res_vals
+    ev["Var. Receitas"] = [None] + [_var(a, b) for a, b in zip(rec_vals[1:], rec_vals[:-1])]
+    ev["Var. Despesas"] = [None] + [_var(a, b) for a, b in zip(desp_vals[1:], desp_vals[:-1])]
+    fmts_ev = {"Receitas": "moeda", "Despesas": "moeda", "Resultado líquido": "moeda",
+               "Var. Receitas": "pct", "Var. Despesas": "pct"}
+    paineis.append(Painel("Demonstrativo (DRE)", "Evolução mensal — Receitas × Despesas",
+                          graficos.linhas(cats, series, largura=LARG_INTEIRA), ev,
+                          formatos={k: v for k, v in fmts_ev.items() if k in ev.columns}, aberta=True,
+                          descricao="Receitas e despesas (valor absoluto) mês a mês; as duas últimas colunas mostram a "
+                                    "variação de cada uma em relação ao mês anterior."))
     if rec is not None and res is not None:
         marg = [None if (pd.isna(a) or not b) else float(a / b) for a, b in zip(res, rec)]
         paineis.append(Painel("Demonstrativo (DRE)", "Margem líquida mensal",
@@ -653,6 +664,19 @@ def _paineis_dre(df, c: _Ctx, ext: dict, meses) -> tuple[list[Painel], list[KPI]
             melhor, pior = max(validas, key=lambda x: x[1]), min(validas, key=lambda x: x[1])
             frases.append(f"Margem líquida de {fmt_pct(info.get('margem'))} no período; melhor mês {rm(melhor[0])} "
                           f"({fmt_pct(melhor[1])}), pior {rm(pior[0])} ({fmt_pct(pior[1])}).")
+    # comparativo mês a mês por conta, separado em Receitas × Despesas (a conta herda o sinal do seu bloco):
+    # duas tabelas conta × mês para olhar só as receitas ou só as despesas, como pediram.
+    tot_blocos = df.groupby(c.G, observed=True)[c.V].sum()
+    for rotulo, blocos in (("Receitas", [g for g, v in tot_blocos.items() if v >= 0]),
+                           ("Despesas", [g for g, v in tot_blocos.items() if v < 0])):
+        sub_df = df[df[c.G].isin(blocos)]
+        if sub_df.empty:
+            continue
+        mat = _matriz(sub_df, [c.G, c.I], c, meses)
+        paineis.append(Painel("Comparativo mês a mês por conta", f"{rotulo} — contas, mês a mês", tabela=mat,
+                              formatos={col: "moeda" for col in cats + ["Total"]},
+                              descricao=f"Só as contas dos blocos de {rotulo.lower()} ({len(blocos)} bloco(s)), "
+                                        "uma linha por conta, mês a mês — para olhar receitas e despesas em separado."))
     # sinal invertido: conta POSITIVA dentro de um bloco de despesa (bloco com total negativo) soma no resultado
     tot_g = df.groupby(c.G, observed=True)[c.V].sum()
     blocos_desp = [g for g, v in tot_g.items() if v < 0 and chave_texto(g) != chave_texto(n_rec or "")]
