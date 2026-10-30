@@ -95,6 +95,7 @@ class Carga(Base):
     criado_em: Mapped[dt.datetime] = mapped_column(DateTime, default=utcnow)
     publicado_em: Mapped[dt.datetime | None] = mapped_column(DateTime)
     correcoes: Mapped[str | None] = mapped_column(Text)   # JSON {coluna: papel} corrigido na prévia
+    lote: Mapped[str | None] = mapped_column(String(32), index=True)   # agrupa planilhas enviadas juntas (envio em lote)
 
 
 class AcessoTemporario(Base):

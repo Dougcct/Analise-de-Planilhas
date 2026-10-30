@@ -2,6 +2,19 @@
 
 Formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · [SemVer](https://semver.org/lang/pt-BR/)
 
+## [1.2.0] — 2026-10-30
+
+### Adicionado (envio de várias planilhas de uma vez)
+- **Envio em lote**: a tela «Enviar» aceita **vários arquivos de uma vez**. Depois do envio, as planilhas
+  entram numa **fila de prévias** — revise e publique (ou descarte) uma a uma; ao publicar, já pula para a
+  próxima. A prévia mostra um selo «Envio em lote — planilha X de N».
+- Em **Novo relatório**, ao escolher 2+ arquivos aparece a opção: **tudo em um relatório só** (o relatório
+  soma todas as planilhas, ex.: um arquivo por ano/mês) ou **cada planilha é um relatório separado** (cada
+  arquivo vira um relatório com o nome do próprio arquivo, com sufixo (2), (3)… se o nome repetir).
+- Em **Atualizar existente**, dá para mandar várias planilhas novas de uma vez para o mesmo relatório.
+- Arquivos inválidos no lote são **ignorados com aviso** (nome + motivo), sem travar os demais.
+- `Carga` ganhou a coluna `lote` (agrupa o envio); migração automática em `bd._migrar_colunas_leves`.
+
 ## [1.1.0] — 2026-10-29
 
 ### Adicionado (relatório estilo painel/Power BI + comparativo)

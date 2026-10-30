@@ -130,6 +130,10 @@ class RepoCargas:
         return list(self._s.scalars(self._base().where(Carga.relatorio_id == relatorio_id)
                                     .order_by(Carga.id.desc())))
 
+    def do_lote(self, lote: str) -> list[Carga]:
+        """Planilhas enviadas no mesmo lote, na ordem de envio (p/ a fila de prévias)."""
+        return list(self._s.scalars(self._base().where(Carga.lote == lote).order_by(Carga.id)))
+
     def publicada(self, relatorio_id: int) -> Carga | None:
         from .modelos_bd import PUBLICADA
         return self._s.scalar(self._base().where(Carga.relatorio_id == relatorio_id,

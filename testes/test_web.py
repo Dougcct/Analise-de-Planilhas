@@ -203,7 +203,7 @@ def _subir(c, **campos):
     n = campos.pop("n", 7)
     fname = campos.pop("fname", "planilha.xlsx")
     r = c.post("/web/enviar", data=campos,
-               files={"arquivo": (fname, _cesariana_xlsx(n), "x")}, follow_redirects=False)
+               files={"arquivos": (fname, _cesariana_xlsx(n), "x")}, follow_redirects=False)
     assert r.status_code == 303, r.text
     m = re.search(r"/previa/(\d+)", r.headers["location"])
     assert m, r.headers["location"]
@@ -252,6 +252,44 @@ def test_web_enviar_descartar(web):
     assert "Pra Descartar" not in c.get("/web").text        # relatório novo descartado não fica órfão
 
 
+def _subir_lote(c, nomes, **campos):
+    """Sobe VÁRIAS planilhas num envio só e devolve o id da primeira prévia (o começo da fila)."""
+    import re
+    files = [("arquivos", (nome, _cesariana_xlsx(7), "x")) for nome in nomes]
+    r = c.post("/web/enviar", data=campos, files=files, follow_redirects=False)
+    assert r.status_code == 303, r.text
+    return re.search(r"/previa/(\d+)", r.headers["location"]).group(1)
+
+
+def test_web_enviar_lote_relatorios_separados(web):
+    """Vários arquivos com `separar=1`: cada um vira um relatório, com nome do arquivo, numa fila de prévias."""
+    c = _cli("gestor.fat")
+    cid = _subir_lote(c, ["Janeiro.xlsx", "Fevereiro.xlsx"], modo="novo", separar="1", modelo="resumo_cesariana")
+    previa = c.get(f"/web/enviar/previa/{cid}").text
+    assert "Envio em lote" in previa and ">2</b>" in previa            # banner da fila (planilha 1 de 2)
+    rp = c.post(f"/web/enviar/previa/{cid}/publicar", follow_redirects=False)
+    assert rp.status_code == 303 and "/previa/" in rp.headers["location"]   # publica e salta p/ a próxima
+    import re
+    cid2 = re.search(r"/previa/(\d+)", rp.headers["location"]).group(1)
+    rp2 = c.post(f"/web/enviar/previa/{cid2}/publicar", follow_redirects=False)
+    assert rp2.status_code == 303 and "/web?" in rp2.headers["location"]    # última -> volta pro início
+    painel = c.get("/web").text
+    assert "Janeiro" in painel and "Fevereiro" in painel                   # dois relatórios distintos
+
+
+def test_web_enviar_lote_um_relatorio(web):
+    """Vários arquivos sem `separar`: entram todos no MESMO relatório novo e somam na base consolidada."""
+    c = _cli("gestor.fat")
+    cid = _subir_lote(c, ["ano2025.xlsx", "ano2026.xlsx"], modo="novo", nome="Lote Unico",
+                      modelo="resumo_cesariana")
+    assert "Envio em lote" in c.get(f"/web/enviar/previa/{cid}").text
+    rp = c.post(f"/web/enviar/previa/{cid}/publicar", follow_redirects=False)
+    cid2 = __import__("re").search(r"/previa/(\d+)", rp.headers["location"]).group(1)
+    c.post(f"/web/enviar/previa/{cid2}/publicar")
+    html = c.get("/web/r/lote-unico/conteudo").text
+    assert "14 registro" in html                                           # 7 + 7 somados num relatório só
+
+
 # ---------------- Cérebro na web: prévia explica, usuário corrige, sistema aprende ----------------
 def _atendimentos_xlsx():
     import datetime as dt
@@ -272,7 +310,7 @@ def _atendimentos_xlsx():
 
 def _subir_xlsx(c, conteudo, **campos):
     import re
-    r = c.post("/web/enviar", data=campos, files={"arquivo": ("atend.xlsx", conteudo, "x")}, follow_redirects=False)
+    r = c.post("/web/enviar", data=campos, files={"arquivos": ("atend.xlsx", conteudo, "x")}, follow_redirects=False)
     assert r.status_code == 303, r.text
     return re.search(r"/previa/(\d+)", r.headers["location"]).group(1)
 

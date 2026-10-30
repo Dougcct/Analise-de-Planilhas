@@ -842,78 +842,146 @@ def enviar(request: Request, setor: str = "", pasta: str = "", s: Session = Depe
                    pasta_pre=(p.id if p else "")))
 
 
+def _slug_unico(s: Session, srv, nome: str) -> tuple[str, str]:
+    """(nome, slug) únicos a partir de um texto livre (ex.: nome de arquivo). Sufixa (2), (3)… se colidir.
+    Enxerga rascunhos já criados no mesmo envio porque o chamador dá flush entre um relatório e outro."""
+    base = srv._slugificar(nome) or "relatorio"
+    slug, nome_fim, i = base, nome, 2
+    while s.scalar(select(Relatorio).where(Relatorio.slug == slug)) is not None:
+        slug, nome_fim, i = f"{base}-{i}", f"{nome} ({i})", i + 1
+    return nome_fim, slug
+
+
+def _fila_lote(s, escopo, carga) -> tuple[int, int, int | None]:
+    """Posição e tamanho do envio em lote e o id do PRÓXIMO rascunho a revisar (ou None).
+    Tudo zerado quando a carga não faz parte de um lote (envio de um arquivo só)."""
+    if not carga.lote:
+        return 0, 0, None
+    irmas = RepoCargas(s, escopo).do_lote(carga.lote)
+    total = len(irmas)
+    pos = next((i + 1 for i, c in enumerate(irmas) if c.id == carga.id), 0)
+    prox = next((c.id for c in irmas if c.status == RASCUNHO and c.id != carga.id), None)
+    return pos, total, prox
+
+
 @router.post("/enviar")
-async def enviar_carga(request: Request, modo: str = Form("novo"), arquivo: UploadFile = File(...),
+async def enviar_carga(request: Request, modo: str = Form("novo"),
+                       arquivos: list[UploadFile] = File(...),
                        slug: str = Form(""), nome: str = Form(""), modelo: str = Form(""),
-                       centro_custo_id: str = Form(""), pasta_id: str = Form(""),
+                       separar: str = Form(""), centro_custo_id: str = Form(""), pasta_id: str = Form(""),
                        s: Session = Depends(_sessao)):
-    """Recebe a planilha, cria o rascunho (e o relatório, se for novo, ainda inativo) e vai para a prévia."""
+    """Recebe UMA ou VÁRIAS planilhas (envio em lote) e monta a fila de prévias.
+    `modo=atualizar`: todas entram no relatório escolhido. `modo=novo`: ou tudo num relatório só,
+    ou (`separar`) cada planilha vira um relatório, com nome a partir do arquivo."""
     escopo, redir = _exige_login(request, s)
     if redir:
         return redir
     srv = _srv()
-    caminho = None
+    arquivos = [a for a in arquivos if a and (a.filename or "").strip()]
+    criados: list[Path] = []                             # arquivos já gravados — p/ limpar se der erro geral
     try:
         if not _pode(escopo, GESTOR, ADM):
             raise _Erro("Acesso restrito a gestores.")
-        conteudo = await arquivo.read(validacao.MAX_BYTES + 1)
-        if len(conteudo) > validacao.MAX_BYTES:
-            raise _Erro("Arquivo acima do limite (25 MB).")
-        try:
-            validacao.validar(arquivo.filename or "", conteudo)
-        except validacao.ErroArquivo as e:
-            raise _Erro(str(e)) from e
+        if not arquivos:
+            raise _Erro("Escolha ao menos uma planilha.")
+        por_arquivo = modo != "atualizar" and bool(separar)   # cada planilha = um relatório
 
+        rel_comum = cc_novo = alvo_pasta = None           # destino comum (atualizar, ou tudo num relatório)
         if modo == "atualizar":
-            rel = RepoRelatorios(s, escopo).obter_proprio(slug)
-            if rel is None:
+            rel_comum = RepoRelatorios(s, escopo).obter_proprio(slug)
+            if rel_comum is None:
                 raise _Erro("Escolha um relatório do seu setor para atualizar.")
-        else:                                            # novo relatório a partir da planilha
-            nm = nome.strip()
-            novo_slug = srv._slugificar(nm)
-            if not nm or not novo_slug:
-                raise _Erro("Dê um nome ao relatório.")
-            if escopo.eh_gestor:                         # Gestor cria só no próprio setor
-                cc = escopo.centro_custo_id
+        else:
+            if escopo.eh_gestor:                          # Gestor cria só no próprio setor
+                cc_novo = escopo.centro_custo_id
             else:                                        # ADM escolhe o setor
-                cc = int(centro_custo_id) if centro_custo_id else None
-                if cc is None:
+                cc_novo = int(centro_custo_id) if centro_custo_id else None
+                if cc_novo is None:
                     raise _Erro("Escolha o setor do relatório.")
-                if s.get(CentroCusto, cc) is None:
+                if s.get(CentroCusto, cc_novo) is None:
                     raise _Erro("Setor inexistente.")
-            if s.scalar(select(Relatorio).where(Relatorio.slug == novo_slug)) is not None:
-                raise _Erro("Já existe um relatório com esse nome.")
-            alvo = int(pasta_id) if pasta_id.isdigit() else None   # pasta de organização (opcional)
-            if alvo is not None and (s.get(Pasta, alvo) is None or s.get(Pasta, alvo).centro_custo_id != cc):
-                alvo = None
-            rel = Relatorio(slug=novo_slug, nome=nm, centro_custo_id=cc, pasta_id=alvo,
-                            modelo=(modelo or None), ativo=False)   # nasce oculto até publicar
-            s.add(rel)
-            s.flush()
-            _audit(s, escopo, "criar_relatorio", novo_slug)
+            alvo_pasta = int(pasta_id) if pasta_id.isdigit() else None   # pasta de organização (opcional)
+            if alvo_pasta is not None and (s.get(Pasta, alvo_pasta) is None
+                                           or s.get(Pasta, alvo_pasta).centro_custo_id != cc_novo):
+                alvo_pasta = None
+            if not por_arquivo:                          # um relatório só, com o nome que o gestor deu
+                nm = nome.strip()
+                if not nm or not srv._slugificar(nm):
+                    raise _Erro("Dê um nome ao relatório.")
+                nm, novo_slug = _slug_unico(s, srv, nm)
+                rel_comum = Relatorio(slug=novo_slug, nome=nm, centro_custo_id=cc_novo, pasta_id=alvo_pasta,
+                                      modelo=(modelo or None), ativo=False)   # nasce oculto até publicar
+                s.add(rel_comum)
+                s.flush()
+                _audit(s, escopo, "criar_relatorio", novo_slug)
 
-        nome_uuid = uuid.uuid4().hex + Path(arquivo.filename or "").suffix.lower()
-        srv.CARGAS_DIR.mkdir(parents=True, exist_ok=True)
-        caminho = srv.CARGAS_DIR / nome_uuid
-        caminho.write_bytes(conteudo)
-        carga = Carga(relatorio_id=rel.id, centro_custo_id=rel.centro_custo_id, enviado_por=escopo.usuario_id,
-                      nome_original=arquivo.filename or "sem-nome", hash_sha256=hashlib.sha256(conteudo).hexdigest(),
-                      arquivo_uuid=nome_uuid, tamanho=len(conteudo), status=RASCUNHO)
-        s.add(carga)
-        s.flush()
-        srv.esquecer_dataset(carga.id)                   # id reaproveitado (SQLite) não pode herdar cache
-        try:                                             # confirma que o motor LÊ antes da prévia
-            srv._dataset_da_carga(carga, srv._modelo_do(rel), s)
-        except Exception as e:  # noqa: BLE001
-            raise _Erro(f"Não foi possível ler a planilha: {type(e).__name__}") from e
-        _audit(s, escopo, "enviar_carga", f"{rel.slug}:{carga.id}", carga.hash_sha256)
-        cid = carga.id
+        lote = uuid.uuid4().hex                           # junta as planilhas deste envio na mesma fila
+        primeiro_cid, n = None, 0
+        falhas: list[str] = []
+        for arq in arquivos:
+            nome_arq = arq.filename or "sem-nome"
+            conteudo = await arq.read(validacao.MAX_BYTES + 1)
+            if len(conteudo) > validacao.MAX_BYTES:
+                falhas.append(f"{nome_arq} (acima de 25 MB)")
+                continue
+            try:
+                validacao.validar(nome_arq, conteudo)
+            except validacao.ErroArquivo as e:
+                falhas.append(f"{nome_arq} ({e})")
+                continue
+
+            if por_arquivo:                              # um relatório por planilha, nome vindo do arquivo
+                nm2, slug2 = _slug_unico(s, srv, Path(nome_arq).stem or "Relatório")
+                rel = Relatorio(slug=slug2, nome=nm2, centro_custo_id=cc_novo, pasta_id=alvo_pasta,
+                                modelo=(modelo or None), ativo=False)
+                s.add(rel)
+                s.flush()
+                _audit(s, escopo, "criar_relatorio", slug2)
+            else:
+                rel = rel_comum
+
+            nome_uuid = uuid.uuid4().hex + Path(nome_arq).suffix.lower()
+            srv.CARGAS_DIR.mkdir(parents=True, exist_ok=True)
+            caminho = srv.CARGAS_DIR / nome_uuid
+            caminho.write_bytes(conteudo)
+            criados.append(caminho)
+            carga = Carga(relatorio_id=rel.id, centro_custo_id=rel.centro_custo_id, enviado_por=escopo.usuario_id,
+                          nome_original=nome_arq, hash_sha256=hashlib.sha256(conteudo).hexdigest(),
+                          arquivo_uuid=nome_uuid, tamanho=len(conteudo), status=RASCUNHO, lote=lote)
+            s.add(carga)
+            s.flush()
+            srv.esquecer_dataset(carga.id)               # id reaproveitado (SQLite) não pode herdar cache
+            try:                                         # confirma que o motor LÊ antes da prévia
+                srv._dataset_da_carga(carga, srv._modelo_do(rel), s)
+            except Exception as e:  # noqa: BLE001
+                caminho.unlink(missing_ok=True)
+                criados.pop()
+                s.delete(carga)
+                if por_arquivo:                          # o relatório recém-criado não serve p/ nada
+                    s.delete(rel)
+                s.flush()
+                falhas.append(f"{nome_arq} (não deu p/ ler: {type(e).__name__})")
+                continue
+            _audit(s, escopo, "enviar_carga", f"{rel.slug}:{carga.id}", carga.hash_sha256)
+            if primeiro_cid is None:
+                primeiro_cid = carga.id
+            n += 1
+
+        if n == 0:
+            raise _Erro("Nenhuma planilha pôde ser lida. " + "; ".join(falhas[:3]))
         s.commit()
     except _Erro as e:
-        if caminho is not None:
-            caminho.unlink(missing_ok=True)              # não deixa arquivo órfão
+        for c in criados:
+            c.unlink(missing_ok=True)                    # não deixa arquivo órfão
+        s.rollback()
         return _redir("/web/enviar", erro=str(e))
-    return RedirectResponse(f"/web/enviar/previa/{cid}", status_code=303)
+    destino = f"/web/enviar/previa/{primeiro_cid}"
+    if n > 1 or falhas:
+        aviso = ""
+        if falhas:
+            aviso = f" {len(falhas)} ignorada(s): " + "; ".join(falhas[:3]) + ("…" if len(falhas) > 3 else "")
+        return _redir(destino, ok=f"{n} planilha(s) recebida(s) — revise e publique uma a uma.{aviso}")
+    return RedirectResponse(destino, status_code=303)
 
 
 def _carga_previa(s, escopo, carga_id):
@@ -959,9 +1027,11 @@ def enviar_previa(carga_id: int, request: Request, s: Session = Depends(_sessao)
         return _pagina("erro.html", request, _ctx(request, escopo, s, "enviar", mensagem=str(e)))
     qs = request.url.query
     novo = not rel.ativo and not s.scalar(select(Carga).where(Carga.relatorio_id == rel.id, Carga.status == PUBLICADA))
+    pos, total, prox = _fila_lote(s, escopo, carga)       # posição na fila do envio em lote
     return _pagina("previa.html", request, _ctx(request, escopo, s, "enviar",
                    carga_id=carga_id, titulo=rel.nome, arquivo=carga.nome_original,
                    registros=a.linhas, paineis=len(a.paineis), novo=novo,
+                   lote_pos=pos, lote_total=total, tem_proximo=(prox is not None),
                    entendimento=_entendimento_tela(ds.entendimento),
                    datas_filtro=_info_datas_tela(ds, f), query_conteudo=(f"?{qs}" if qs else "")))
 
@@ -1030,6 +1100,7 @@ def enviar_previa_publicar(carga_id: int, request: Request, s: Session = Depends
             raise _Erro("Acesso restrito a gestores.")
         carga, rel = _carga_previa(s, escopo, carga_id)
         srv = _srv()
+        _pos, _tot, prox = _fila_lote(s, escopo, carga)   # próxima da fila antes de mudar o status
         ent = srv._dataset_da_carga(carga, srv._modelo_do(rel), s).entendimento
         for ant in s.scalars(select(Carga).where(Carga.relatorio_id == rel.id, Carga.status == PUBLICADA,
                                                  Carga.nome_original == carga.nome_original)):
@@ -1047,6 +1118,9 @@ def enviar_previa_publicar(carga_id: int, request: Request, s: Session = Depends
     except _Erro as e:
         return _redir("/web/enviar", erro=str(e))
     extra = f" O sistema aprendeu {aprendeu} coluna(s) para as próximas planilhas." if aprendeu else ""
+    if prox is not None:                                   # ainda há planilhas do mesmo envio a revisar
+        return _redir(f"/web/enviar/previa/{prox}",
+                      ok=f"«{rel.nome}» publicado. Revise a próxima planilha do envio.{extra}")
     return _redir("/web", ok=f"Relatório «{rel.nome}» publicado — já está no ar.{extra}")
 
 
@@ -1060,6 +1134,7 @@ def enviar_previa_descartar(carga_id: int, request: Request, s: Session = Depend
         if not _pode(escopo, GESTOR, ADM):
             raise _Erro("Acesso restrito a gestores.")
         carga, rel = _carga_previa(s, escopo, carga_id)
+        _pos, _tot, prox = _fila_lote(s, escopo, carga)   # próxima da fila antes de apagar esta
         (srv.CARGAS_DIR / carga.arquivo_uuid).unlink(missing_ok=True)
         srv.esquecer_dataset(carga.id)
         s.delete(carga)
@@ -1071,6 +1146,8 @@ def enviar_previa_descartar(carga_id: int, request: Request, s: Session = Depend
         s.commit()
     except _Erro as e:
         return _redir("/web/enviar", erro=str(e))
+    if prox is not None:                                   # continua na fila do mesmo envio
+        return _redir(f"/web/enviar/previa/{prox}", ok="Planilha descartada — revise a próxima do envio.")
     return _redir("/web/enviar", ok="Envio descartado.")
 
 

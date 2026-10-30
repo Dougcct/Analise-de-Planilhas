@@ -19,10 +19,17 @@
   .barra{height:8px;border-radius:999px;background:var(--superficie-2);overflow:hidden;border:1px solid var(--borda)}
   .barra>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--marca),var(--marca-escura));transition:width .15s ease}
   .barra-rotulo{font-size:12px;color:var(--apoio);margin-top:6px}
+  .arqs-lista{font-size:12.5px;color:var(--apoio);margin-top:8px;display:none}
+  .arqs-lista.on{display:block} .arqs-lista b{color:var(--texto)}
+  .modo-varios{margin-top:14px;border:1px solid var(--borda);border-radius:var(--raio);background:var(--superficie);
+    padding:4px 2px;display:none} .modo-varios.on{display:block;animation:surge .2s ease both}
+  .modo-varios label{display:flex;gap:10px;align-items:flex-start;padding:9px 12px;cursor:pointer;margin:0;font-weight:600}
+  .modo-varios label:hover{background:var(--superficie-2)} .modo-varios input{margin-top:3px}
+  .modo-varios .dica{display:block;font-weight:400;color:var(--apoio);font-size:12.5px;margin-top:2px}
 </style>
 
 <h1>Enviar planilha</h1>
-<p class="apoio">Suba o Excel, veja a <b>prévia do relatório</b> e publique. Simples assim.</p>
+<p class="apoio">Suba o Excel (pode ser <b>mais de um de uma vez</b>), veja a <b>prévia</b> e publique. Simples assim.</p>
 
 {% if relatorios or eh_adm or papel_cod in ('GESTOR','ADM') %}
 <div class="abas">
@@ -51,10 +58,18 @@
       </div>
       {% endif %}
     </div>
-    <label style="margin-top:14px">Planilha <span class="obrig">*</span></label>
+    <label style="margin-top:14px">Planilha(s) <span class="obrig">*</span></label>
     <div class="dropzone">
       <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 16V4m0 0 4 4m-4-4-4 4M4 17v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-      <input type="file" name="arquivo" accept=".xlsx,.ods,.csv,.tsv,.txt" required>
+      <input type="file" name="arquivos" accept=".xlsx,.ods,.csv,.tsv,.txt" multiple required>
+    </div>
+    <p class="arqs-lista" data-conta></p>
+    <!-- aparece só quando o gestor escolhe vários arquivos -->
+    <div class="modo-varios" data-varios>
+      <label><input type="radio" name="separar" value="" checked>
+        <span>Tudo em <b>um relatório só</b><span class="dica">Ex.: um arquivo por ano/mês — o relatório soma todas as planilhas. Use o nome acima.</span></span></label>
+      <label><input type="radio" name="separar" value="1">
+        <span>Cada planilha é um <b>relatório separado</b><span class="dica">Cada arquivo vira um relatório com o nome do próprio arquivo (dá pra renomear depois).</span></span></label>
     </div>
     {% if not eh_adm %}<p class="apoio" style="font-size:12px;margin-top:6px">Será criado no seu setor.</p>{% endif %}
     <div class="barra-caixa"><div class="barra"><i></i></div><div class="barra-rotulo">Enviando…</div></div>
@@ -71,11 +86,13 @@
     <select name="slug" style="max-width:440px">
       {% for r in relatorios %}<option value="{{ r.slug }}">{{ r.nome }}</option>{% endfor %}
     </select>
-    <label style="margin-top:14px">Nova planilha <span class="obrig">*</span></label>
+    <label style="margin-top:14px">Nova(s) planilha(s) <span class="obrig">*</span></label>
     <div class="dropzone">
       <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 16V4m0 0 4 4m-4-4-4 4M4 17v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-      <input type="file" name="arquivo" accept=".xlsx,.ods,.csv,.tsv,.txt" required>
+      <input type="file" name="arquivos" accept=".xlsx,.ods,.csv,.tsv,.txt" multiple required>
     </div>
+    <p class="arqs-lista" data-conta></p>
+    <p class="apoio" style="font-size:12px;margin-top:6px">Pode enviar vários arquivos — todos entram neste mesmo relatório (ex.: um por ano).</p>
     <div class="barra-caixa"><div class="barra"><i></i></div><div class="barra-rotulo">Enviando…</div></div>
     <button type="submit"><span class="giro"></span><span class="rotulo">Analisar e pré-visualizar</span></button>
   </form>
@@ -92,6 +109,28 @@
     document.getElementById("aba-novo").classList.toggle("on", alvo === "novo");
     document.getElementById("aba-atualizar").classList.toggle("on", alvo === "atualizar");
   }
+  // Lista os arquivos escolhidos e, no "Novo relatório", mostra a escolha "um só × vários" quando há 2+.
+  document.querySelectorAll("form.form-up, form.linha").forEach(function(f){
+    var inp = f.querySelector('input[type=file]');
+    if (!inp) return;
+    var lista = f.querySelector('[data-conta]'), varios = f.querySelector('[data-varios]'),
+        nomeInp = f.querySelector('input[name=nome]');
+    function sep(){ var r = f.querySelector('input[name=separar]:checked'); return r && r.value; }
+    function atualizar(){
+      var fs = inp.files, n = fs.length;
+      if (lista){
+        if (n){ var ns = []; for (var i=0;i<n && i<6;i++) ns.push(fs[i].name);
+          lista.innerHTML = "<b>"+n+"</b> arquivo(s): "+ns.join(", ")+(n>6?" …":""); lista.classList.add("on"); }
+        else lista.classList.remove("on");
+      }
+      if (varios) varios.classList.toggle("on", n > 1);
+      if (nomeInp){ var porArquivo = n > 1 && sep();   // "um relatório por planilha" dispensa o nome
+        nomeInp.required = !porArquivo;
+        nomeInp.placeholder = porArquivo ? "(usa o nome de cada arquivo)" : "ex.: Garantia de Atendimento"; }
+    }
+    inp.addEventListener("change", atualizar);
+    f.querySelectorAll('input[name=separar]').forEach(function(r){ r.addEventListener("change", atualizar); });
+  });
   // Upload com barra de progresso real; ao terminar segue o redirect do servidor (vai pra prévia ou mostra erro).
   document.querySelectorAll("form.form-up").forEach(function(f){
     f.addEventListener("submit", function(ev){

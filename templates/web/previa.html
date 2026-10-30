@@ -32,6 +32,11 @@
   .certeza.baixa>i{background:var(--aviso)}
   tr.fora td{opacity:.65}
   td.por{font-size:12.5px;max-width:340px}
+  .fila{display:flex;align-items:center;gap:10px;margin-top:14px;padding:10px 14px;border-radius:var(--raio);
+    background:var(--marca-clara);color:var(--marca-mais-escura);font-size:13.5px;font-weight:600}
+  .fila .pontos{display:flex;gap:5px;margin-left:auto}
+  .fila .pontos i{width:9px;height:9px;border-radius:50%;background:var(--borda);display:block}
+  .fila .pontos i.feito{background:var(--marca)} .fila .pontos i.atual{background:var(--marca);box-shadow:0 0 0 3px var(--marca-clara)}
 </style>
 
 <div class="previa-topo">
@@ -50,6 +55,14 @@
   <span class="chip"><b>{{ paineis }}</b><span>painel(éis)</span></span>
   <span class="chip"><span>{{ 'Novo relatório' if novo else 'Atualização' }}</span></span>
 </div>
+
+{% if lote_total > 1 %}
+<div class="fila">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="3" y="4" width="18" height="4" rx="1"/><rect x="3" y="10" width="18" height="4" rx="1"/><rect x="3" y="16" width="18" height="4" rx="1"/></svg>
+  Envio em lote — planilha <b style="margin:0 2px">{{ lote_pos }}</b> de <b style="margin:0 2px">{{ lote_total }}</b>. Publique ou descarte para ir à próxima.
+  <span class="pontos">{% for i in range(1, lote_total + 1) %}<i class="{{ 'feito' if i < lote_pos }}{{ 'atual' if i == lote_pos }}"></i>{% endfor %}</span>
+</div>
+{% endif %}
 
 {% if entendimento %}
 <details class="entendeu" open>
@@ -96,7 +109,7 @@
 
 <div class="acoes-previa">
   <form method="post" action="/web/enviar/previa/{{ carga_id }}/publicar" class="inline">
-    <button type="submit"><span class="giro"></span><span class="rotulo">Publicar relatório</span></button>
+    <button type="submit"><span class="giro"></span><span class="rotulo">{{ 'Publicar e ir à próxima' if tem_proximo else 'Publicar relatório' }}</span></button>
   </form>
   <form method="post" action="/web/enviar/previa/{{ carga_id }}/descartar" class="inline"
         onsubmit="return confirm('Descartar este envio? A planilha não será publicada.')">
