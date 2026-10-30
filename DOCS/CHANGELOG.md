@@ -2,6 +2,24 @@
 
 Formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · [SemVer](https://semver.org/lang/pt-BR/)
 
+## [1.2.1] — 2026-10-30
+
+### Corrigido (DRE HUNF: grupo × conta não se misturam mais)
+- **Relatório «Dados Hunf — DRE HUNF»** passou a usar o **motor DRE dedicado** (`financeiro.py`, perfil
+  `dre`) em vez da dedução genérica do Cérebro. Antes, grupos e contas se misturavam: blocos viravam conta
+  (ex.: «RESULTADO OPERACIONAL ANTES FINANCEIRO» aparecia como conta), linhas de fórmula entravam como
+  conta («*(Item 8 + Item 9)*») e EPI/IMPOSTOS engoliam contas de outros blocos. Agora cada bloco (RECEITA,
+  DESPESAS COM PESSOAL, EPI, IMPOSTOS, RESULTADO…) fica com as suas contas, e o relatório ganha o
+  **Demonstrativo (DRE)** (DRE por ano, mês a mês, receita × custos × resultado, margem). O modelo
+  `gestaodecustos_dadoshunf_drehunf.toml` foi reescrito como modelo v1 de matriz com `[analise] perfil="dre"`.
+- **Leitor de matriz do Cérebro** (`cerebro/layout.py`), que atende os demais relatórios em matriz:
+  passou a **ignorar linhas de fórmula/observação** («*(…)*», «(Soma dos itens…)») e a reconhecer
+  **subtotais «RESULTADO…/LUCRO…/MARGEM…»** em CAIXA ALTA como subtotal (não como conta), mesmo quando
+  seguidos de outro bloco. Reduz a mistura grupo/conta em qualquer planilha-matriz.
+- Obs. de deploy: `config/modelos` é um volume semeado só na 1ª vez; em ambiente já existente, o modelo
+  atualizado precisa ser reenviado (admin → importar modelo) ou copiado para o volume. Deploys novos já
+  nascem com o modelo correto (semente embutida na imagem).
+
 ## [1.2.0] — 2026-10-30
 
 ### Adicionado (envio de várias planilhas de uma vez)

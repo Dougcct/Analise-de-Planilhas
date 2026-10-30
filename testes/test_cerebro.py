@@ -124,6 +124,32 @@ def test_matriz_mensal_e_despivotada_sem_somar_totais():
     assert {p.aba for p in a.paineis} >= {"Evolução", "Grupo", "Conta", "Conferência"}
 
 
+def _matriz_dre_formula():
+    """DRE com linhas de fórmula/observação e subtotais «RESULTADO…» cercados de blocos (como a DRE HUNF)."""
+    meses = ["jan/25", "fev/25", "mar/25", "abr/25", "mai/25", "jun/25", "jul/25"]
+    linhas = [["DRE 2025"], [], ["Conta"] + meses]
+    linhas.append(["RECEITA BRUTA"] + [1000.0] * 7)              # bloco
+    linhas.append(["Receita A"] + [600.0] * 7)
+    linhas.append(["Receita B"] + [400.0] * 7)
+    linhas.append(["DESPESAS OPERACIONAIS"] + [-500.0] * 7)      # bloco
+    linhas.append(["Despesa X"] + [-500.0] * 7)
+    linhas.append(["RESULTADO OPERACIONAL"] + [500.0] * 7)       # subtotal em caixa alta, seguido de fórmula/bloco
+    linhas.append(["*(Receita - Despesas)*"] + [500.0] * 7)      # fórmula: ignorar
+    linhas.append(["RESULTADO LÍQUIDO DO PERÍODO"] + [500.0] * 7)  # subtotal
+    linhas.append(["(Soma dos itens 1 a 3)"] + [500.0] * 7)      # observação: ignorar
+    return _xlsx({"DRE": linhas})
+
+
+def test_matriz_ignora_formula_e_reconhece_subtotal_resultado():
+    """Linhas «*(…)*»/«(Soma…)» não viram conta; «RESULTADO…» em caixa alta é subtotal, não conta."""
+    ds = servico.carregar(_matriz_dre_formula(), "dre.xlsx")
+    contas = set(ds.df["Conta"])
+    assert contas == {"Receita A", "Receita B", "Despesa X"}            # só as contas de verdade
+    assert not any(c.startswith("*") or c.lower().startswith("(soma") for c in contas)   # fórmula/nota fora
+    assert not any("RESULTADO" in c.upper() for c in contas)            # subtotais fora do detalhe
+    assert set(ds.df["Grupo"]) == {"Receita Bruta", "Despesas Operacionais"}
+
+
 def test_meses_sem_ano_e_tabela_com_datas_nao_vira_matriz():
     grade = pd.DataFrame([["Nome", "Abertura", "Envio", "Retorno", "Fechamento", "Auditoria", "Pagamento"]] +
                          [[f"X{i}"] + [dt.datetime(2026, 1 + (i * 7 + k * 3) % 12, 5) for k in range(6)]

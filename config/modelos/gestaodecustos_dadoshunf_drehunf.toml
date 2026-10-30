@@ -1,37 +1,67 @@
-# Gerado pelo Cérebro a partir de 1 planilha(s). Só estrutura — nenhum dado de célula.
-versao = 2
-nome = "Dados Hunf — DRE HUNF"
-setor = "Gestão de Custos"
+# =============================================================================
+# MODELO — Dados Hunf · DRE HUNF  (demonstrativo de resultado: conta × mês)
+# =============================================================================
+# A aba «DRE HUNF» é uma matriz: uma linha por conta, uma coluna por mês. A receita vem POSITIVA e os
+# custos/despesas NEGATIVOS. As linhas em CAIXA ALTA (RECEITA OPERACIONAL BRUTA, DESPESAS COM PESSOAL,
+# EPI, IMPOSTOS, RESULTADO LÍQUIDO…) são os BLOCOS da DRE: viram a coluna «Grupo» e o valor delas é o
+# subtotal da própria planilha (guardado para o demonstrativo e para a conferência — não entra na soma
+# das contas, para não contar em dobro). As linhas de fórmula/observação («*(Item …)*», «(Soma dos
+# itens …)») são ignoradas. A DRE vai da linha 2 (RECEITA…) até 117 (fecho do RESULTADO LÍQUIDO); as
+# mini-tabelas abaixo (oncologia etc.) ficam de fora.
+#
+# Este modelo é v1 de propósito: usa o leitor de matriz (matriz.py) + o motor DRE dedicado
+# (financeiro.py, perfil="dre"), que separa BLOCO × CONTA corretamente — ao contrário da dedução
+# genérica do Cérebro, que misturava grupos e contas nesta DRE. Ver DOCS/13_financeiro_hunf.md.
+# -----------------------------------------------------------------------------
+
+nome           = "Dados Hunf — DRE HUNF"
+setor          = "Gestão de Custos"
 tipo_documento = "Dados Hunf"
-aba = "DRE HUNF"
+aba            = "DRE HUNF"
 
 [leitura]
-layout = "matriz_mensal"
+formato        = "matriz_mensal"
+coluna_rotulo  = 0                # coluna A: nome da conta/bloco
+rotulo_conta   = "Conta"
+rotulo_grupo   = "Grupo"
+rotulo_valor   = "Valor"
+agrupamento    = "maiusculas"     # linha em CAIXA ALTA = bloco/subtotal (vira o grupo); caixa mista = conta
+pular_prefixos = ["*", "(Soma"]   # linhas de fórmula/observação («*(Item…)*», «(Soma dos itens…)») — não são dado
+a_partir_de    = "2024-01"
+linha_inicio   = 2
+linha_fim      = 117              # até o fecho de «RESULTADO LÍQUIDO DO PERÍODO» (abaixo são outras tabelas)
+
+[analise]
+tipo             = "serie"
+perfil           = "dre"
+sentido          = "maior"
+medida_principal = "Valor"
+dimensoes        = ["Grupo", "Conta"]
+top = 20
+# linhas-chave da DRE (nome do bloco, como aparece após normalizar caixa/acento) usadas nos indicadores
+receita               = "Receita operacional bruta"
+resultado_operacional = "Resultado operacional antes financeiro"
+resultado             = "Resultado líquido do período"
 
 [[coluna]]
-canonico  = "grupo"
-rotulo    = "Grupo"
-tipo      = "categorico"
-papel     = "dimensao"
-sinonimos = []
+canonico = "grupo"
+rotulo   = "Grupo"
+tipo     = "categorico"
+papel    = "dimensao"
 
 [[coluna]]
-canonico  = "conta"
-rotulo    = "Conta"
-tipo      = "categorico"
-papel     = "dimensao"
-sinonimos = []
+canonico = "conta"
+rotulo   = "Conta"
+tipo     = "categorico"
+papel    = "dimensao"
 
 [[coluna]]
-canonico  = "mes"
-rotulo    = "Mês"
-tipo      = "data"
-papel     = "data"
-sinonimos = []
+canonico = "mes"
+rotulo   = "Mês"
+tipo     = "data"
 
 [[coluna]]
-canonico  = "valor"
-rotulo    = "Valor"
-tipo      = "moeda"
-papel     = "valor"
-sinonimos = []
+canonico = "valor"
+rotulo   = "Valor"
+tipo     = "moeda"
+papel    = "medida"

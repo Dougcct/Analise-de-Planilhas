@@ -1,3 +1,3 @@
 """Análise Dinâmica de Planilhas — lógica independente de interface."""
 
-__version__ = "1.2.0"
+__version__ = "1.2.1"

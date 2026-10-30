@@ -35,6 +35,7 @@ _RE_NUM_ANO = re.compile(r"^(\d{1,2})[/\-](\d{4}|\d{2})$")
 _RE_ANO_NUM = re.compile(r"^(\d{4})[/\-](\d{1,2})$")
 _RE_ANO = re.compile(r"(?<!\d)(20\d{2})(?!\d)")
 _TOTAIS = ("total", "subtotal", "soma", "totalgeral")
+_RESULTADO_KW = ("resultado", "lucro", "prejuizo", "margem", "ebitda")   # subtotais da DRE, mesmo em caixa alta
 
 
 @dataclass
@@ -87,6 +88,18 @@ def mes(v) -> tuple[int | None, int] | None:
 
 def _eh_total(rotulo: str) -> bool:
     return chave_texto(rotulo).startswith(_TOTAIS)
+
+
+def _eh_nota_formula(rotulo: str) -> bool:
+    """Linha de fórmula/observação da planilha («*(Item 8 + Item 9)*», «(Soma dos itens 1 a 6)»):
+    não é conta nem subtotal — é anotação. Nunca entra como dado nem conta como vizinha."""
+    s = rotulo.strip().lower()
+    return s.startswith(("*", "(soma"))
+
+
+def _eh_subtotal_kw(rotulo: str) -> bool:
+    """Rótulo que, mesmo em CAIXA ALTA cercado de contas, é um subtotal (RESULTADO…, LUCRO…, MARGEM…)."""
+    return chave_texto(rotulo).startswith(_RESULTADO_KW)
 
 
 def _caixa_alta(rotulo: str) -> bool:
@@ -169,6 +182,8 @@ def ler_matriz(grade: pd.DataFrame, info: dict, nome_arquivo: str, aba: str | No
         if _vazio(rot):
             continue
         rot = re.sub(r"\s+", " ", str(rot)).strip()
+        if _eh_nota_formula(rot):                       # «*(Item…)*», «(Soma dos itens…)»: anotação, não é linha
+            continue
         valores = {c: _numero(grade.iat[i, c]) for c in datas}
         linhas.append((i, rot, None if all(v is None for v in valores.values()) else valores))
 
@@ -186,8 +201,10 @@ def ler_matriz(grade: pd.DataFrame, info: dict, nome_arquivo: str, aba: str | No
             referencias += _ref(rot, valores)
             continue
         prox = next((x for x in linhas[k + 1:] if x[2] is not None), None)
-        if mistas and _caixa_alta(rot) and prox is not None and not _caixa_alta(prox[1]):
-            grupo = rot.title()                         # CAIXA ALTA somando as de baixo: subtotal do grupo
+        # CAIXA ALTA cercada de contas = subtotal do grupo: quando a de baixo não é caixa alta (tem filhas)
+        # ou quando o próprio rótulo é um resultado/subtotal (RESULTADO…, mesmo seguido de outro bloco).
+        if mistas and _caixa_alta(rot) and ((prox is not None and not _caixa_alta(prox[1])) or _eh_subtotal_kw(rot)):
+            grupo = rot.title()
             referencias += _ref(rot, valores)
             continue
         dados += [{"_linha": i + 1, "Grupo": grupo, nome_conta: rot, "Mês": pd.Timestamp(datas[c]), "Valor": v}
