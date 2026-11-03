@@ -124,6 +124,13 @@ numerador = "valor_autorizado"        # ponderada: soma(autorizado) ÷ soma(soli
 denominador = "valor_solicitado"
 sentido = "maior"
 
+[[taxa]]
+canonico = "taxa_valor_negado"
+rotulo = "% do valor negado"
+numerador = "valor_negado"            # ponderada: soma(negado) ÷ soma(solicitado)
+denominador = "valor_solicitado"
+sentido = "menor"                     # menor é melhor
+
 [[tempo]]
 canonico = "abertura_finalizacao"
 rotulo = "Abertura → finalização"
