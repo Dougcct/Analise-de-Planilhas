@@ -49,7 +49,8 @@ def _migrar_colunas_leves() -> None:
     desejadas = {  # tabela -> {coluna: DDL do tipo}
         "usuarios": {"email": "VARCHAR(160)", "cor_avatar": "VARCHAR(9)"},
         "cargas": {"correcoes": "TEXT", "lote": "VARCHAR(32)"},
-        "relatorios": {"pasta_id": "INTEGER"},
+        "relatorios": {"pasta_id": "INTEGER", "config_exec": "TEXT", "versao_editada": "TEXT"},
+        "acessos_temporarios": {"usar_editada": "BOOLEAN DEFAULT FALSE"},
     }
     insp = inspect(engine)
     with engine.begin() as con:

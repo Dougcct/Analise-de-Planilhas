@@ -57,6 +57,20 @@ class SessaoUsuario(Base):
     versao_cliente: Mapped[str | None] = mapped_column(String(32))
 
 
+class PedidoSenha(Base):
+    """Pedido de redefinição de senha feito na tela de login («Esqueci a senha»). Vira uma notificação
+    para o ADM, que redefine a senha do usuário e marca o pedido como atendido."""
+    __tablename__ = "pedidos_senha"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    login: Mapped[str] = mapped_column(String(64), index=True)
+    usuario_id: Mapped[int | None] = mapped_column(ForeignKey("usuarios.id"))
+    centro_custo_id: Mapped[int | None] = mapped_column(Integer)          # setor do usuário (p/ o ADM ver de onde)
+    criado_em: Mapped[dt.datetime] = mapped_column(DateTime, default=utcnow)
+    atendido: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+    atendido_por: Mapped[int | None] = mapped_column(ForeignKey("usuarios.id"))
+    atendido_em: Mapped[dt.datetime | None] = mapped_column(DateTime)
+
+
 class Pasta(Base):
     """Pasta de organização (estilo coleção do Metabase). Pertence a um setor (herda a permissão) e pode
     aninhar em outra pasta do mesmo setor (`pai_id` nulo = topo do setor). Só o ADM cria/edita."""
@@ -76,6 +90,8 @@ class Relatorio(Base):
     centro_custo_id: Mapped[int] = mapped_column(ForeignKey("centros_custo.id"), index=True)
     pasta_id: Mapped[int | None] = mapped_column(ForeignKey("pastas.id"), index=True)  # nulo = raiz do setor
     modelo: Mapped[str | None] = mapped_column(String(64))   # slug do modelo (config/modelos/*.toml)
+    config_exec: Mapped[str | None] = mapped_column(Text)    # JSON: customização do Painel Executivo (Gestor/ADM)
+    versao_editada: Mapped[str | None] = mapped_column(Text) # JSON: 2ª versão (editável/curada p/ impressão e compartilhamento)
     ativo: Mapped[bool] = mapped_column(Boolean, default=True)
 
 
@@ -108,6 +124,7 @@ class AcessoTemporario(Base):
     autorizado_por: Mapped[int] = mapped_column(ForeignKey("usuarios.id"))
     expira_em: Mapped[dt.datetime] = mapped_column(DateTime)
     anonimizar: Mapped[bool] = mapped_column(Boolean, default=True)
+    usar_editada: Mapped[bool] = mapped_column(Boolean, default=False)   # restringe à versão editada/curada
     revogado: Mapped[bool] = mapped_column(Boolean, default=False)
     criado_em: Mapped[dt.datetime] = mapped_column(DateTime, default=utcnow)
 

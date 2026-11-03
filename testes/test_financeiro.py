@@ -238,7 +238,7 @@ def test_filtro_de_periodo_embutido_no_html(modelo_custos):
     assert html.count('class="vista"') >= 2                 # Todo o período + 2024
     assert "Todo o período" in html and ">2024<" in html
     assert 'data-sec=' in html and 'id="resumo-v0"' in html and 'id="resumo-v1"' in html
-    assert html.count('id="base"') == 1                     # base detalhada só uma vez
+    assert html.count('<section id="base"') == 1            # base detalhada só uma vez (seção única)
 
     # sem ds → relatório simples (sem seletor), como os demais relatórios
     assert '<select id="periodo">' not in relatorio_html.montar_html(a, "Custos")

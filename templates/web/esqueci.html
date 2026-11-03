@@ -1,0 +1,21 @@
+{% extends "web/base.html" %}
+{% block titulo %}Esqueci a senha — Análise de Planilhas{% endblock %}
+{% block conteudo %}
+<div class="centro">
+  <img class="logo-img" src="/assets/icon.ico" alt="Análise de Planilhas">
+  <h1>Esqueci a senha</h1>
+  <p class="apoio">Informe seu usuário. O administrador recebe um aviso e redefine sua senha.</p>
+  {% if erro %}<div class="erro">{{ erro }}</div>{% endif %}
+  {% if ok %}<div class="ok">{{ ok }}</div>{% endif %}
+  <form method="post" action="/web/esqueci">
+    <label for="login">Usuário</label>
+    <input id="login" name="login" autocomplete="username" autofocus value="{{ login or '' }}">
+    <button type="submit"><span class="giro"></span><span class="rotulo">Pedir redefinição</span></button>
+  </form>
+  <div class="links-login">
+    <a href="/web/login">Voltar ao login</a>
+    <a href="/web/trocar-senha">Alterar senha</a>
+  </div>
+  <p class="rodape" style="text-align:center">Versão {{ versao }}</p>
+</div>
+{% endblock %}

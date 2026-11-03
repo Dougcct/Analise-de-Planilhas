@@ -19,6 +19,7 @@ from pathlib import Path
 
 import pandas as pd
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+from markupsafe import Markup
 
 from . import __version__, config, graficos
 from .especificacao import ESTATISTICAS
@@ -103,13 +104,88 @@ def _delta(cur: float | None, prev: float | None, sentido: str) -> dict | None:
     return {"pct": fmt_pct(pct), "dir": direc, "classe": classe}
 
 
-def _destaques(secoes: list[dict]) -> list[dict]:
-    """Até MAX_DESTAQUES gráficos (o 1º de cada seção com figura) promovidos ao painel executivo."""
+def _sanitizar_figura_custom(html_fig: str) -> Markup:
+    """Permite embutir gráficos SVG/HTML gerados pelo construtor visual sem aceitar tags <script>."""
+    limpo = re.sub(r"(?is)<script.*?>.*?</script>", "", str(html_fig or ""))
+    limpo = re.sub(r'(?i)\son\w+\s*=\s*"[^"]*"', "", limpo)
+    limpo = re.sub(r"(?i)\son\w+\s*=\s*'[^']*'", "", limpo)
+    return Markup(limpo)
+
+
+def _catalogo_graficos(secoes: list[dict]) -> list[dict]:
+    """Todos os gráficos disponíveis nas seções do relatório (para escolha no Painel Executivo)."""
     out = []
     for s in secoes:
         for p in s.get("paineis", []):
             if p.get("figura"):
-                out.append({"titulo": p["titulo"], "figura": p["figura"]})
+                out.append({"id": p["id"], "secao": s["titulo"], "titulo": p["titulo"], "figura": p["figura"],
+                            "largura": p.get("largura", 6), "altura": p.get("altura", 0)})
+    return out
+
+
+def _destaques(secoes: list[dict], config_exec: dict | None = None) -> list[dict]:
+    """Até MAX_DESTAQUES gráficos promovidos ao painel executivo — ou a seleção/criação do Gestor/ADM."""
+    cat = _catalogo_graficos(secoes)
+    if isinstance(config_exec, dict) and isinstance(config_exec.get("graficos"), list):
+        por_id = {g["id"]: g for g in cat}
+        por_tit = {g["titulo"]: g for g in cat}
+        escolhidos = []
+        vistos: set[str] = set()
+        for item in config_exec["graficos"]:
+            if isinstance(item, dict):
+                gid = str(item.get("id") or f"custom-{len(escolhidos)}")
+                if gid in vistos:
+                    continue
+                base_g = por_id.get(gid) or por_tit.get(str(item.get("titulo") or ""))
+                fig_src = item.get("figura") or item.get("figura_html")
+                fig = (_sanitizar_figura_custom(fig_src) if fig_src
+                       else (base_g["figura"] if base_g else None))
+                if not fig:
+                    continue
+                vistos.add(gid)
+                escolhidos.append({
+                    "id": gid,
+                    "secao": str(item.get("secao") or (base_g["secao"] if base_g else "Personalizado")),
+                    "titulo": str(item.get("titulo") or (base_g["titulo"] if base_g else "Gráfico")),
+                    "figura": fig,
+                    "largura": int(item.get("largura") or 6),
+                    "altura": int(item.get("altura") or 0),
+                    "custom": bool(fig_src),
+                })
+            else:
+                sid = str(item)
+                if sid in vistos:
+                    continue
+                g = por_id.get(sid) or por_tit.get(sid)
+                t_map = (config_exec.get("graficos_layout") or {}).get(sid, {})
+                fig_custom = t_map.get("figura_html") or t_map.get("figura")
+                if g:                                  # gráfico de uma seção promovido ao executivo
+                    vistos.add(g["id"])
+                    escolhidos.append({
+                        "id": g["id"], "secao": g["secao"],
+                        "titulo": str(t_map.get("titulo") or g["titulo"]),
+                        "figura": g["figura"],
+                        "largura": int(t_map.get("largura") or 6),
+                        "altura": int(t_map.get("altura") or 0),
+                        "custom": False,
+                    })
+                elif fig_custom:                       # gráfico CUSTOM: figura definida no layout (figura_html)
+                    vistos.add(sid)
+                    escolhidos.append({
+                        "id": sid, "secao": str(t_map.get("secao") or "Personalizado"),
+                        "titulo": str(t_map.get("titulo") or "Gráfico"),
+                        "figura": _sanitizar_figura_custom(fig_custom),
+                        "largura": int(t_map.get("largura") or 6),
+                        "altura": int(t_map.get("altura") or 0),
+                        "custom": True,
+                    })
+        return escolhidos
+    out = []
+    for s in secoes:
+        for p in s.get("paineis", []):
+            if p.get("figura"):
+                out.append({"id": p["id"], "secao": s["titulo"], "titulo": p["titulo"],
+                            "figura": p["figura"], "largura": 6, "altura": 0, "custom": False})
                 break
         if len(out) >= MAX_DESTAQUES:
             break
@@ -118,39 +194,237 @@ def _destaques(secoes: list[dict]) -> list[dict]:
 
 def _secoes(analise: Analise) -> list[dict]:
     secoes: dict[str, dict] = {}
-    for p in analise.paineis:
+    usados: set[str] = set()
+    for idx_p, p in enumerate(analise.paineis):
         sec = secoes.setdefault(p.aba, {"id": _ancora(p.aba), "titulo": p.aba, "paineis": []})
         colunas, linhas = _bloco(p.tabela, p.formatos)
-        sec["paineis"].append({"titulo": p.titulo, "descricao": p.descricao, "figura": p.figura,
-                               "colunas": colunas, "linhas": linhas, "meia": p.meia, "aberta": p.aberta,
+        pid = f"{sec['id']}--{_ancora(p.titulo)}"
+        if pid in usados:
+            pid = f"{pid}-{idx_p}"
+        usados.add(pid)
+        larg = 6 if p.meia else 12
+        sec["paineis"].append({"id": pid, "titulo": p.titulo, "descricao": p.descricao, "figura": p.figura,
+                               "colunas": colunas, "linhas": linhas, "meia": p.meia, "largura": larg, "altura": 0,
+                               "aberta": p.aberta, "ocultar_figura": False, "ocultar_tabela": False, "oculto": False,
                                "kpis": [{"rotulo": k.rotulo, "valor": k.valor, "nota": k.detalhe} for k in p.kpis]})
     return list(secoes.values())
 
 
+def _aplicar_config_exec_kpis(todos_kpis: list[dict], config_exec: dict | None,
+                              modo_editavel: bool = False) -> list[dict]:
+    """Filtra, reordena, redimensiona e define o KPI destaque segundo `config_exec`."""
+    if not isinstance(config_exec, dict):
+        return [dict(k, destaque=(i == 0), span=(2 if i == 0 else 1), oculto=False) for i, k in enumerate(todos_kpis)]
+    destaque_alvo = config_exec.get("kpi_destaque")
+    ordem = config_exec.get("kpis")
+    larguras = config_exec.get("kpis_largura") or {}
+    rotulos_custom = config_exec.get("kpis_rotulos") or {}
+    if isinstance(ordem, list):
+        por_chave = {k["chave"]: k for k in todos_kpis}
+        por_rot = {k["rotulo"]: k for k in todos_kpis}
+        visiveis = []
+        vistos: set[str] = set()
+        for item in ordem:
+            k = por_chave.get(item) or por_rot.get(item)
+            if k and k["chave"] not in vistos:
+                vistos.add(k["chave"])
+                kc = dict(k, oculto=False)
+                if kc["chave"] in rotulos_custom and str(rotulos_custom[kc["chave"]]).strip():
+                    kc["rotulo"] = str(rotulos_custom[kc["chave"]]).strip()
+                visiveis.append(kc)
+        if modo_editavel:
+            for k in todos_kpis:
+                if k["chave"] not in vistos:
+                    visiveis.append(dict(k, oculto=True))
+    else:
+        visiveis = [dict(k, oculto=False) for k in todos_kpis]
+    ativos = [k for k in visiveis if not k.get("oculto")]
+    for idx_a, k in enumerate(ativos):
+        if destaque_alvo is not None:
+            k["destaque"] = (k["chave"] == destaque_alvo or k["rotulo"] == destaque_alvo)
+        else:
+            k["destaque"] = (idx_a == 0)
+        sp = larguras.get(k["chave"])
+        k["span"] = int(sp) if sp in (1, 2, 3, 4) else (2 if k["destaque"] else 1)
+    for k in visiveis:
+        if k.get("oculto"):
+            k["destaque"] = False
+            k["span"] = 1
+    return visiveis
+
+
+def _aplicar_edicao_secoes(secoes: list[dict], edicao: dict | None, modo_editavel: bool = False) -> list[dict]:
+    """Aplica reordenação, ocultação, títulos, descrições, tamanho (largura/altura) e gráficos/blocos extras."""
+    if not isinstance(edicao, dict):
+        return secoes
+    sec_ocultas = set(edicao.get("secoes_ocultas") or [])
+    pain_ocultos = set(edicao.get("paineis_ocultos") or [])
+    tit_secoes = edicao.get("titulos_secoes") or {}
+    ordem_sec = edicao.get("ordem_secoes") or []
+    ordem_pain = edicao.get("ordem_paineis") or {}
+    layout_pain = edicao.get("layout_paineis") or {}
+    extras = edicao.get("blocos_extras") or []
+    graficos_custom = edicao.get("graficos_custom") or []
+
+    todas = [dict(s, paineis=list(s.get("paineis", []))) for s in secoes]
+    mapa_sec = {s["id"]: s for s in todas}
+
+    for i_gc, gc in enumerate(graficos_custom):
+        fig_gc = (gc.get("figura") or gc.get("figura_html")) if isinstance(gc, dict) else None
+        if not fig_gc:
+            continue
+        sid_alvo = str(gc.get("secao_id") or "")
+        pid_gc = str(gc.get("id") or f"painel-custom-{i_gc}")
+        larg_gc = int(gc.get("largura") or 6)
+        alt_gc = int(gc.get("altura") or 0)
+        novo_p = {
+            "id": pid_gc,
+            "titulo": str(gc.get("titulo") or "Gráfico personalizado"),
+            "descricao": str(gc.get("descricao") or ""),
+            "figura": _sanitizar_figura_custom(fig_gc),
+            "colunas": [], "linhas": [],
+            "meia": larg_gc <= 6, "largura": larg_gc, "altura": alt_gc,
+            "aberta": False, "ocultar_figura": False, "ocultar_tabela": True, "oculto": False,
+            "kpis": [], "custom": True,
+        }
+        if sid_alvo in mapa_sec:
+            mapa_sec[sid_alvo]["paineis"].append(novo_p)
+        elif todas:
+            todas[0]["paineis"].append(novo_p)
+
+    for i_ex, ex in enumerate(extras):
+        if not isinstance(ex, dict):
+            continue
+        eid = str(ex.get("id") or f"s-extra-{i_ex}")
+        t_ex = str(ex.get("titulo") or "Nota complementar")
+        txt_ex = str(ex.get("texto") or "")
+        fig_ex_src = ex.get("figura") or ex.get("figura_html")
+        fig_ex = _sanitizar_figura_custom(fig_ex_src) if fig_ex_src else None
+        larg_ex = int(ex.get("largura") or (6 if ex.get("meia") else 12))
+        todas.append({
+            "id": eid, "titulo": t_ex, "extra": True, "texto_extra": txt_ex,
+            "paineis": [{
+                "id": f"{eid}--p0", "titulo": t_ex, "descricao": txt_ex, "figura": fig_ex,
+                "colunas": [], "linhas": [], "meia": larg_ex <= 6, "largura": larg_ex,
+                "altura": int(ex.get("altura") or 0), "aberta": True,
+                "ocultar_figura": False, "ocultar_tabela": False, "oculto": False, "kpis": [],
+            }],
+        })
+
+    if ordem_sec:
+        pos = {sid: i for i, sid in enumerate(ordem_sec)}
+        todas.sort(key=lambda s: pos.get(s["id"], 9999))
+
+    saida = []
+    for s in todas:
+        sid = s["id"]
+        s_oculto = sid in sec_ocultas
+        if s_oculto and not modo_editavel:
+            continue
+        s_novo = dict(s, oculto=s_oculto)
+        if sid in tit_secoes and str(tit_secoes[sid]).strip():
+            s_novo["titulo"] = str(tit_secoes[sid]).strip()
+        paineis = list(s.get("paineis", []))
+        if sid in ordem_pain and isinstance(ordem_pain[sid], list):
+            pos_p = {pid: i for i, pid in enumerate(ordem_pain[sid])}
+            paineis.sort(key=lambda p: pos_p.get(p["id"], 9999))
+        p_novos = []
+        for p in paineis:
+            pid = p["id"]
+            p_oculto = pid in pain_ocultos
+            if p_oculto and not modo_editavel:
+                continue
+            cfg_p = layout_pain.get(pid) if isinstance(layout_pain.get(pid), dict) else {}
+            p_copia = dict(p, oculto=p_oculto)
+            if "largura" in cfg_p and cfg_p["largura"]:
+                p_copia["largura"] = int(cfg_p["largura"])
+                p_copia["meia"] = p_copia["largura"] <= 6
+            elif "meia" in cfg_p:
+                p_copia["meia"] = bool(cfg_p["meia"])
+                p_copia["largura"] = 6 if p_copia["meia"] else 12
+            if "altura" in cfg_p and cfg_p["altura"] is not None:
+                p_copia["altura"] = int(cfg_p["altura"] or 0)
+            if "aberta" in cfg_p:
+                p_copia["aberta"] = bool(cfg_p["aberta"])
+            if "ocultar_figura" in cfg_p:
+                p_copia["ocultar_figura"] = bool(cfg_p["ocultar_figura"])
+            if "ocultar_tabela" in cfg_p:
+                p_copia["ocultar_tabela"] = bool(cfg_p["ocultar_tabela"])
+            if cfg_p.get("titulo"):
+                p_copia["titulo"] = str(cfg_p["titulo"]).strip()
+            if "descricao" in cfg_p and cfg_p["descricao"] is not None:
+                p_copia["descricao"] = str(cfg_p["descricao"]).strip()
+            p_novos.append(p_copia)
+        s_novo["paineis"] = p_novos
+        if p_novos or s_novo.get("extra") or modo_editavel:
+            saida.append(s_novo)
+    return saida
+
+
 def _vista(analise: Analise, idx: int, rotulo: str = "",
-           anterior: dict[str, float] | None = None, rotulo_ant: str = "") -> dict:
+           anterior: dict[str, float] | None = None, rotulo_ant: str = "",
+           config_exec: dict | None = None, edicao: dict | None = None,
+           modo_editavel: bool = False) -> dict:
     """Parte do relatório que muda com o período (filtros, resumo, KPIs, achados, seções).
 
     `anterior` = chave→valor do período imediatamente anterior (mesma duração): com ele, cada KPI
     ganha o delta ▲▼ vs. esse período (usado no painel executivo e no modo Comparar)."""
     ant = anterior or {}
-    kpis = []
+    cfg_exec = (edicao.get("config_exec") if isinstance(edicao, dict) and isinstance(edicao.get("config_exec"), dict)
+                else config_exec)
+    todos_kpis = []
     for i, k in enumerate(analise.kpis):
         chave = _chave_kpi(k.rotulo)
         num = getattr(k, "valor_num", None)
-        kpis.append({
-            "rotulo": k.rotulo, "valor": k.valor, "nota": k.detalhe, "destaque": i == 0,
+        todos_kpis.append({
+            "rotulo": k.rotulo, "valor": k.valor, "nota": k.detalhe, "destaque": i == 0, "span": 2 if i == 0 else 1,
             "chave": chave, "num": num, "fmt": getattr(k, "fmt", ""), "sentido": getattr(k, "sentido", ""),
             "delta": _delta(num, ant.get(chave), getattr(k, "sentido", "")) if num is not None else None,
         })
-    secoes = _secoes(analise)
+    secoes_brutas = _secoes(analise)
+    cat_graficos = _catalogo_graficos(secoes_brutas)
+    destaques = _destaques(secoes_brutas, cfg_exec)
+    kpis = _aplicar_config_exec_kpis(todos_kpis, cfg_exec, modo_editavel=modo_editavel)
+    secoes = _aplicar_edicao_secoes(secoes_brutas, edicao, modo_editavel=modo_editavel)
+
+    resumo = analise.resumo
+    observacoes = analise.observacoes
+    achados = list(analise.achados)
+    if isinstance(edicao, dict) and idx == 0:
+        if edicao.get("resumo") is not None and str(edicao.get("resumo")).strip():
+            resumo = str(edicao["resumo"]).strip()
+        if edicao.get("observacoes") is not None:
+            observacoes = str(edicao["observacoes"]).strip()
+        if isinstance(edicao.get("achados"), list):
+            achados = [str(x).strip() for x in edicao["achados"] if str(x).strip()]
+
+    mostrar_metas_exec = True
+    titulo_exec = "Painel executivo"
+    tam_exec = "padrao"
+    altura_exec = 0
+    if isinstance(cfg_exec, dict):
+        if "mostrar_metas" in cfg_exec:
+            mostrar_metas_exec = bool(cfg_exec["mostrar_metas"])
+        if cfg_exec.get("titulo"):
+            titulo_exec = str(cfg_exec["titulo"]).strip()
+        if cfg_exec.get("tamanho") in ("compacto", "padrao", "expandido"):
+            tam_exec = cfg_exec["tamanho"]
+        if cfg_exec.get("altura"):
+            try:
+                altura_exec = max(0, int(cfg_exec["altura"]))
+            except (ValueError, TypeError):
+                altura_exec = 0
+
     return {
         "i": idx, "rotulo": rotulo, "total": analise.linhas, "rotulo_ant": rotulo_ant,
         "filtros": analise.filtros_desc, "arquivos": analise.arquivos,
         "avisos": [a.texto for a in analise.alertas if a.nivel in ("aviso", "erro")],
-        "resumo": analise.resumo, "estatistica": ESTATISTICAS.get(analise.estatistica_tempo, "Mediana"),
-        "kpis": kpis, "metas": analise.metas, "observacoes": analise.observacoes, "achados": analise.achados,
-        "secoes": secoes, "destaques": _destaques(secoes),
+        "resumo": resumo, "estatistica": ESTATISTICAS.get(analise.estatistica_tempo, "Mediana"),
+        "kpis": kpis, "catalogo_kpis": todos_kpis, "catalogo_graficos": cat_graficos,
+        "metas": analise.metas, "mostrar_metas_exec": mostrar_metas_exec, "titulo_exec": titulo_exec,
+        "tam_exec": tam_exec, "altura_exec": altura_exec,
+        "observacoes": observacoes, "achados": achados,
+        "secoes": secoes, "destaques": destaques,
     }
 
 
@@ -243,27 +517,68 @@ def _filtros_info(ds, filtros: Filtros | None) -> list[dict]:
 def _contexto(vistas: list[tuple[str, Analise]], titulo: str, subtitulo: str,
               base: pd.DataFrame | None, formatos_base: dict | None,
               datas_info: dict | None = None, filtros_info: list[dict] | None = None,
-              anteriores: list[tuple[dict, str]] | None = None) -> dict:
+              anteriores: list[tuple[dict, str]] | None = None, *,
+              config_exec: dict | None = None, edicao: dict | None = None,
+              pode_editar: bool = False, modo_editavel: bool = False,
+              slug: str = "", versao_ativa: str = "original",
+              tem_versao_editada: bool = False, somente_editada: bool = False) -> dict:
     """Contexto do template: uma ou mais VISTAS (por período) + o que é comum (leitura, base, metodologia).
 
     `anteriores[i]` = (mapa do período anterior, rótulo) da vista i → alimenta o delta ▲▼ e o modo Comparar."""
     ant = anteriores or [({}, "")] * len(vistas)
     a0 = vistas[0][1]
-    vistas_ctx = [_vista(a, i, rot, ant[i][0], ant[i][1]) for i, (rot, a) in enumerate(vistas)]
+    largura_pagina = "padrao"
+    if isinstance(edicao, dict):
+        if edicao.get("titulo") and str(edicao["titulo"]).strip():
+            titulo = str(edicao["titulo"]).strip()
+        if edicao.get("sub") is not None and str(edicao["sub"]).strip():
+            subtitulo = str(edicao["sub"]).strip()
+        if edicao.get("largura_pagina") in ("padrao", "largo", "fluido"):
+            largura_pagina = edicao["largura_pagina"]
+    elif isinstance(config_exec, dict) and config_exec.get("largura_pagina") in ("padrao", "largo", "fluido"):
+        largura_pagina = config_exec["largura_pagina"]
+    sec_ocultas = set(edicao.get("secoes_ocultas") or []) if isinstance(edicao, dict) else set()
+    vistas_ctx = [_vista(a, i, rot, ant[i][0], ant[i][1], config_exec=config_exec,
+                         edicao=edicao, modo_editavel=modo_editavel)
+                  for i, (rot, a) in enumerate(vistas)]
     comparar = [{"i": v["i"], "rotulo": v["rotulo"] or "Período",
                  "kpis": [{"chave": k["chave"], "rotulo": k["rotulo"], "valor": k["valor"],
-                           "num": k["num"], "fmt": k["fmt"], "sentido": k["sentido"]} for k in v["kpis"]]}
+                           "num": k["num"], "fmt": k["fmt"], "sentido": k["sentido"]} for k in v["catalogo_kpis"]]}
                 for v in vistas_ctx]
+    cfg_exec_efetivo = (edicao.get("config_exec") if isinstance(edicao, dict) and isinstance(edicao.get("config_exec"), dict)
+                        else config_exec) or {}
+    # Quando uma seção global está oculta na versão editada e NÃO estamos no modo de edição,
+    # omitimos os dados sensíveis (ex.: base detalhada e alertas de leitura) direto no servidor.
+    base_render = None if ("base" in sec_ocultas and not modo_editavel) else _base_ctx(base, formatos_base)
+    alertas_render = ([] if ("leitura" in sec_ocultas and not modo_editavel)
+                      else [{"nivel": a.nivel, "texto": a.texto} for a in a0.alertas])
     return {
         "titulo": titulo, "sub": subtitulo, "versao": __version__,
         "gerado_em": _dt.datetime.now().strftime("%d/%m/%Y %H:%M"), "arquivos": a0.arquivos,
         "vistas": vistas_ctx,
         "multi": len(vistas) > 1, "comparar": comparar,
         "periodo": (next((v for r, v in a0.filtros_desc if r == "Período"), "") if len(vistas) == 1 else ""),
-        "alertas": [{"nivel": a.nivel, "texto": a.texto} for a in a0.alertas],
-        "base": _base_ctx(base, formatos_base), "metodologia": a0.metodologia,
+        "alertas": alertas_render,
+        "base": base_render, "metodologia": a0.metodologia,
         "estatistica": ESTATISTICAS.get(a0.estatistica_tempo, "Mediana"),   # usado na metodologia genérica
-        "datas_info": datas_info, "filtros_info": filtros_info or [],
+        "datas_info": None if (somente_editada and "filtros" in sec_ocultas) else datas_info,
+        "filtros_info": [] if (somente_editada and "filtros" in sec_ocultas) else (filtros_info or []),
+        "ocultar_filtros": "filtros" in sec_ocultas,
+        "ocultar_exec": "exec" in sec_ocultas,
+        "ocultar_resumo": "resumo" in sec_ocultas,
+        "ocultar_comparar": "comparar" in sec_ocultas,
+        "ocultar_leitura": "leitura" in sec_ocultas,
+        "ocultar_base": "base" in sec_ocultas,
+        "ocultar_metodologia": "metodologia" in sec_ocultas,
+        "largura_pagina": largura_pagina,
+        "config_exec": cfg_exec_efetivo,
+        "edicao": edicao if isinstance(edicao, dict) else {},
+        "pode_editar": bool(pode_editar),
+        "modo_editavel": bool(modo_editavel),
+        "slug": slug or "",
+        "versao_ativa": versao_ativa,
+        "tem_versao_editada": bool(tem_versao_editada),
+        "somente_editada": bool(somente_editada),
     }
 
 
@@ -402,21 +717,32 @@ def _vistas_por_periodo(analise: Analise, ds, filtros: Filtros | None):
 
 # ---- API ---------------------------------------------------------------------------------------
 def montar_html(analise: Analise, titulo: str, subtitulo: str = "", base: pd.DataFrame | None = None,
-                formatos_base: dict | None = None, ds=None, filtros: Filtros | None = None) -> str:
+                formatos_base: dict | None = None, ds=None, filtros: Filtros | None = None, *,
+                config_exec: dict | None = None, edicao: dict | None = None,
+                pode_editar: bool = False, modo_editavel: bool = False,
+                slug: str = "", versao_ativa: str = "original",
+                tem_versao_editada: bool = False, somente_editada: bool = False) -> str:
     d_info = _datas_info(ds, filtros)
     f_info = _filtros_info(ds, filtros)
-    if ds is not None:                                 # tenta as vistas prontas (por data ou por dimensão)
+    kw = dict(config_exec=config_exec, edicao=edicao, pode_editar=pode_editar,
+              modo_editavel=modo_editavel, slug=slug, versao_ativa=versao_ativa,
+              tem_versao_editada=tem_versao_editada, somente_editada=somente_editada)
+    if ds is not None and not modo_editavel and not somente_editada:
         vistas, base_periodo, anteriores = _vistas_por_periodo(analise, ds, filtros)
         if vistas:
-            ctx = _contexto(vistas, titulo, subtitulo, base_periodo, formatos_base, d_info, f_info, anteriores)
+            ctx = _contexto(vistas, titulo, subtitulo, base_periodo, formatos_base, d_info, f_info, anteriores, **kw)
             return _ambiente().get_template("relatorio.html.j2").render(a=ctx)
-    ctx = _contexto([("", analise)], titulo, subtitulo, base, formatos_base, d_info, f_info)
+    if ds is not None and base is None:
+        from . import servico
+        base = servico.visiveis(servico.aplicar_filtros(ds, filtros)).reset_index(drop=True)
+    ctx = _contexto([("", analise)], titulo, subtitulo, base, formatos_base, d_info, f_info, **kw)
     return _ambiente().get_template("relatorio.html.j2").render(a=ctx)
 
 
 def gerar(analise: Analise, titulo: str, subtitulo: str = "", destino: Path | None = None,
           base: pd.DataFrame | None = None, formatos_base: dict | None = None,
-          prefixo: str = "relatorio", ds=None, filtros: Filtros | None = None) -> Path:
+          prefixo: str = "relatorio", ds=None, filtros: Filtros | None = None, *,
+          config_exec: dict | None = None, edicao: dict | None = None) -> Path:
     """Grava em saida/<prefixo>_AAAAMMDD_HHMMSS.html (ou em `destino`) e devolve o caminho.
 
     Com `ds` (e `filtros` atuais), embute os «períodos prontos» (seletor de período no HTML)."""
@@ -425,5 +751,6 @@ def gerar(analise: Analise, titulo: str, subtitulo: str = "", destino: Path | No
         destino = config.PASTA_SAIDA / f"{prefixo}_{_dt.datetime.now():%Y%m%d_%H%M%S}.html"
     destino = Path(destino)
     destino.parent.mkdir(parents=True, exist_ok=True)
-    destino.write_text(montar_html(analise, titulo, subtitulo, base, formatos_base, ds, filtros), encoding="utf-8")
+    destino.write_text(montar_html(analise, titulo, subtitulo, base, formatos_base, ds, filtros,
+                                   config_exec=config_exec, edicao=edicao), encoding="utf-8")
     return destino

@@ -11,19 +11,34 @@
   .rel-caixa .sair-cheia{display:none}
   .rel-caixa:fullscreen .sair-cheia{display:inline-flex;position:fixed;top:12px;right:14px;z-index:10}
   .btn-cheia{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+  .btn-destaque-ed{display:inline-flex;align-items:center;gap:6px;cursor:pointer;background:rgba(0,153,93,0.12);border:1px solid var(--marca);color:var(--marca);font-weight:600;border-radius:8px;padding:8px 14px;text-decoration:none;font-size:13.5px}
+  .btn-destaque-ed:hover{background:var(--marca);color:#fff}
+  .btn-destaque-ed.ativo{background:var(--marca);color:#fff}
+  .pilula-versao{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:4px 10px;border-radius:999px;background:rgba(0,153,93,0.12);color:var(--marca);font-weight:600;margin-left:8px;vertical-align:middle}
 </style>
 <a class="voltar" href="/web">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
   Relatórios</a>
 <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
-  <h1>{{ titulo }}</h1>
-  <div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap">
+  <h1>{{ titulo }}{% if versao_ativa == 'editada' %}<span class="pilula-versao">✦ Versão editada</span>{% endif %}</h1>
+  <div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;align-items:center">
+    {% if not somente_editada %}
+      {% if tem_versao_editada %}
+      <a class="btn-sec" id="link-ver-original" href="/web/r/{{ slug }}" style="padding:8px 12px;{{ 'font-weight:700;border-color:var(--marca)' if versao_ativa != 'editada' and not modo_editavel }}">Relatório completo</a>
+      <a class="btn-sec" id="link-ver-editada" href="/web/r/{{ slug }}?versao=editada" style="padding:8px 12px;{{ 'font-weight:700;border-color:var(--marca)' if versao_ativa == 'editada' and not modo_editavel }}">✦ Ver versão editada</a>
+      {% endif %}
+      <button type="button" id="btn-topo-editavel" class="btn-destaque-ed {{ 'ativo' if modo_editavel }}" onclick="abrirVersaoEditavel()">
+        ✦ {{ 'Editando versão' if modo_editavel else ('Editar versão curada' if tem_versao_editada else 'Gerar versão editável') }}
+      </button>
+    {% endif %}
+    <button type="button" class="btn-sec btn-cheia" onclick="imprimirRelatorio()" style="padding:8px 14px" title="Imprimir ou salvar como PDF">
+      🖨 Imprimir</button>
     <button type="button" class="btn-sec btn-cheia" onclick="telaCheiaRelatorio()" style="padding:8px 14px">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="15" height="15"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3" stroke-linecap="round" stroke-linejoin="round"/></svg>
       Tela cheia</button>
     {% if pode_compartilhar %}
     <a class="btn-sec" href="/web/gestao/relatorio/{{ slug }}" style="padding:8px 14px">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="15" height="15"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 13a7.9 7.9 0 0 0 0-2l1.5-1.2-1.5-2.6-1.8.6a7.6 7.6 0 0 0-1.7-1l-.3-1.9h-3l-.3 1.9a7.6 7.6 0 0 0-1.7 1l-1.8-.6-1.5 2.6L6.6 11a7.9 7.9 0 0 0 0 2l-1.5 1.2 1.5 2.6 1.8-.6a7.6 7.6 0 0 0 1.7 1l.3 1.9h3l.3-1.9a7.6 7.6 0 0 0 1.7-1l1.8.6 1.5-2.6L19.4 13z" stroke-linejoin="round"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="15" height="15"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 13a7.9 7.9 0 0 0 0-2l1.5-1.2-1.5-2.6-1.8.6a7.6 7.6 0 0 0-1.7-1l-.3-1.9h-3l-.3 1.9a7.6 7.6 0 0 0-1.7 1l-1.8-.6-1.5 2.6L6.6 11a7.9 7.9 0 0 0 0 2l-1.5 1.2 1.5 2.6 1.8-.6a7.6 7.6 0 0 0-1.7 1l.3 1.9h3l.3-1.9a7.6 7.6 0 0 0 1.7-1l1.8.6 1.5-2.6L19.4 13z" stroke-linejoin="round"/></svg>
       Gerenciar</a>
     {% endif %}
   </div>
@@ -37,18 +52,34 @@
     <div class="campos">
       <div><label>Login do destinatário</label><input name="login_destino" required></div>
       <div><label>Prazo (dias)</label><input name="dias" type="number" value="7" min="1" max="90"></div>
+      <div>
+        <label>Versão a compartilhar</label>
+        <select name="versao_compartilhar" id="sel-versao-compart">
+          <option value="editada" {{ 'selected' if tem_versao_editada }}>Versão editada / enxuta (recomendado)</option>
+          <option value="completa" {{ 'selected' if not tem_versao_editada }}>Relatório completo (todas as informações)</option>
+        </select>
+      </div>
       <div><label style="margin-top:26px"><input type="checkbox" name="anonimizar" checked> Anonimizar nomes</label></div>
     </div>
     <button type="submit"><span class="giro"></span><span class="rotulo">Compartilhar</span></button>
   </form>
+  <p id="aviso-versao-compart" class="ajuda" style="margin:6px 0 0;font-size:12.5px;color:var(--texto-2)">
+    {% if tem_versao_editada %}
+    ✔ Este relatório possui uma <b>Versão editada</b> salva. Compartilhando a versão editada, o outro setor verá apenas os painéis e informações que você manteve.
+    {% else %}
+    💡 Dica: clique em <b>«✦ Gerar versão editável»</b> acima, remova o que o outro setor não precisa ver (ex.: Base detalhada, Qualidade) e clique em <b>«Salvar versão p/ compartilhar»</b>.
+    {% endif %}
+  </p>
 </details>
 {% endif %}
 {% set url_conteudo = "/web/r/" ~ slug ~ "/conteudo" %}
+{% if not somente_editada %}
 {% include "web/_filtro_datas.html" %}
+{% endif %}
 <div class="rel-caixa" id="rel-caixa">
   <button type="button" class="btn-sec sair-cheia" onclick="telaCheiaRelatorio()">Sair da tela cheia</button>
   <div class="rel-carregando" id="rel-load"><span class="giro2"></span><span>Carregando relatório…</span></div>
-  <iframe class="relatorio" src="{{ url_conteudo }}{{ query_conteudo or '' }}" title="{{ titulo }}"
+  <iframe class="relatorio" id="iframe-relatorio" src="{{ url_conteudo }}{{ query_conteudo or '' }}" title="{{ titulo }}"
           onload="var l=document.getElementById('rel-load'); if(l){l.style.opacity=0; setTimeout(function(){l.remove()},300);}"></iframe>
 </div>
 <script>
@@ -60,5 +91,28 @@
       (document.exitFullscreen ? document.exitFullscreen() : document.webkitExitFullscreen && document.webkitExitFullscreen());
     }
   }
+  function imprimirRelatorio(){
+    var ifr = document.getElementById('iframe-relatorio');
+    if(ifr && ifr.contentWindow){ ifr.contentWindow.focus(); ifr.contentWindow.print(); }
+    else { window.print(); }
+  }
+  function abrirVersaoEditavel(){
+    var ifr = document.getElementById('iframe-relatorio');
+    if(ifr && ifr.contentWindow && ifr.contentWindow.edAtivarModo){
+      ifr.contentWindow.edAtivarModo();
+      var b = document.getElementById('btn-topo-editavel');
+      if(b){ b.classList.add('ativo'); b.textContent = '✦ Editando versão'; }
+      return;
+    }
+    var u = new URL(window.location.href);
+    u.searchParams.set('modo', 'editar');
+    window.location.href = u.toString();
+  }
+  window.notificarVersaoEditadaSalva = function(){
+    var sel = document.getElementById('sel-versao-compart');
+    if(sel) sel.value = 'editada';
+    var av = document.getElementById('aviso-versao-compart');
+    if(av) av.innerHTML = '✔ <b>Versão editada salva!</b> Agora você pode compartilhá-la com outro setor ou imprimi-la.';
+  };
 </script>
 {% endblock %}

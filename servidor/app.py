@@ -150,9 +150,11 @@ def _dataset_do_relatorio(s: Session, rel: Relatorio):
 
 
 def acesso_vigente(s: Session, usuario_id: int, relatorio_id: int) -> AcessoTemporario | None:
+    # se houver mais de um acesso vigente para o mesmo par, vale o MAIS RECENTE (último compartilhamento)
     return s.scalar(select(AcessoTemporario).where(
         AcessoTemporario.usuario_destino == usuario_id, AcessoTemporario.relatorio_id == relatorio_id,
-        AcessoTemporario.revogado.is_(False), AcessoTemporario.expira_em > utcnow()))
+        AcessoTemporario.revogado.is_(False), AcessoTemporario.expira_em > utcnow())
+        .order_by(AcessoTemporario.id.desc()))
 
 
 def _slugificar(texto: str) -> str:

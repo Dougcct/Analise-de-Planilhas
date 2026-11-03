@@ -2,9 +2,10 @@
 {% block titulo %}Entrar — Análise de Planilhas{% endblock %}
 {% block conteudo %}
 <div class="centro">
-  <div class="logo-g">AP</div>
+  <img class="logo-img" src="/assets/icon.ico" alt="Análise de Planilhas">
   <h1>Análise de Planilhas</h1>
-  <p class="apoio">Entre com seu usuário do setor para ver os relatórios.</p>
+  <p class="apoio">Da planilha ao relatório, automaticamente.</p>
+  {% if ok %}<div class="ok">{{ ok }}</div>{% endif %}
   {% if erro %}<div class="erro">{{ erro }}</div>{% endif %}
   <form method="post" action="/web/login">
     <label for="login">Usuário</label>
@@ -13,6 +14,10 @@
     <input id="senha" name="senha" type="password" autocomplete="current-password">
     <button type="submit"><span class="giro"></span><span class="rotulo">Entrar</span></button>
   </form>
+  <div class="links-login">
+    <a href="/web/trocar-senha">Alterar senha</a>
+    <a href="/web/esqueci">Esqueci a senha</a>
+  </div>
   <p class="rodape" style="text-align:center">Versão {{ versao }}</p>
 </div>
 {% endblock %}

@@ -43,13 +43,15 @@ body { margin: 0; background: var(--page); color: var(--ink);
 h1 { font-size: 22px; margin: 0; line-height: 1.25; }
 .sub { color: var(--ink-2); margin: 2px 0 0; }
 .meta { color: var(--muted); font-size: 12px; text-align: right; }
-nav.indice { position: sticky; top: 0; z-index: 5; background: var(--surface); border-bottom: 1px solid var(--grid); }
-nav.indice div { max-width: 1180px; margin: 0 auto; padding: 6px 16px; display: flex; gap: 4px 14px; flex-wrap: wrap; font-size: 13px; }
+nav.indice { position: sticky; top: 0; z-index: 15; background: var(--surface); border-bottom: 1px solid var(--grid); }
+nav.indice div { max-width: 1180px; margin: 0 auto; padding: 6px 16px; display: flex; gap: 4px 14px; flex-wrap: wrap; font-size: 13px; align-items: center; }
 nav.indice a { color: var(--ink-2); text-decoration: none; }
 nav.indice a:hover { color: var(--ink); text-decoration: underline; }
 #periodo-l { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; color: var(--ink-2); }
 #periodo { background: var(--surface); border: 1px solid var(--border); color: var(--ink); border-radius: 6px; padding: 1px 6px; font: inherit; cursor: pointer; }
-#tema { margin-left: 10px; background: none; border: 1px solid var(--border); color: var(--ink-2); border-radius: 6px; padding: 1px 8px; cursor: pointer; font: inherit; }
+#tema, .nav-btn { background: none; border: 1px solid var(--border); color: var(--ink-2); border-radius: 6px; padding: 2px 9px; cursor: pointer; font: inherit; font-size: 12.5px; }
+.nav-btn.prim { background: rgba(0,153,93,0.12); border-color: var(--marca); color: var(--marca); font-weight: 600; }
+.nav-btn:hover, #tema:hover { border-color: var(--marca); color: var(--ink); }
 .f-bar { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--grid); }
 .f-row { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: flex-end; }
 .f-grp { display: flex; flex-direction: column; gap: 2px; font-size: 12px; color: var(--ink-2); }
@@ -67,7 +69,7 @@ nav.indice a:hover { color: var(--ink); text-decoration: underline; }
 .f-dim .f-chips { margin-top: 8px; max-height: 190px; overflow: auto; }
 .f-badge { color: var(--marca); font-size: 10px; vertical-align: 1px; }
 .vista[hidden] { display: none; }
-section { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; margin: 16px 0; scroll-margin-top: 44px; }
+section { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; margin: 16px 0; scroll-margin-top: 44px; }
 h2 { font-size: 17px; margin: 0 0 2px; }
 h3 { font-size: 14px; margin: 18px 0 6px; color: var(--ink-2); }
 .desc { color: var(--ink-2); margin: 0 0 14px; font-size: 13px; }
@@ -80,7 +82,7 @@ h3 { font-size: 14px; margin: 18px 0 6px; color: var(--ink-2); }
 .kpi .val { font-size: 22px; font-weight: 600; line-height: 1.25; }
 .kpi .val.marca { color: var(--marca); }
 .kpi .nota { color: var(--muted); font-size: 11.5px; }
-ul.achados { margin: 0; padding-left: 18px; } ul.achados li { margin: 4px 0; }
+ul.achados { margin: 0; padding-left: 18px; } ul.achados li { margin: 4px 0; position: relative; }
 table.metas { width: auto; margin: 4px 0 12px; } table.metas td { border: none; padding: 3px 14px 3px 0; font-size: 13.5px; }
 .metas .ok { color: var(--ok); font-weight: 600; } .metas .nok { color: var(--alerta); font-weight: 600; } .metas .nd { color: var(--muted); }
 .obs { background: var(--surface-2); border-left: 3px solid var(--marca); padding: 8px 12px; border-radius: 0 6px 6px 0; margin: 4px 0 14px; white-space: pre-wrap; }
@@ -114,11 +116,14 @@ ul.achados.cartoes li { margin: 0; background: var(--surface-2); border-left: 3p
 /* ============ Painel executivo (diretoria) — estilo dashboard/Power BI ============ */
 section.exec { border: 1.5px solid var(--marca); border-radius: 14px; padding: 0; overflow: hidden;
   box-shadow: 0 0 0 3px rgba(0,153,93,0.06), 0 6px 22px rgba(0,0,0,.06); background: var(--surface); }
-.exec-cab { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px;
+.exec-cab { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 16px;
   padding: 14px 20px; background: linear-gradient(100deg, var(--marca), var(--ok)); color: #fff; }
 .exec-cab h2 { font-size: 16px; margin: 0; color: #fff; letter-spacing: .3px; display: flex; align-items: center; gap: 8px; }
 .exec-cab h2::before { content: "▦"; opacity: .85; }
 .exec-per { font-size: 13px; color: rgba(255,255,255,0.92); font-weight: 600; }
+.exec-edit-btn { background: rgba(255,255,255,0.18); color: #fff; border: 1px solid rgba(255,255,255,0.45);
+  border-radius: 7px; padding: 4px 10px; font: 600 12px/1.3 inherit; cursor: pointer; }
+.exec-edit-btn:hover { background: rgba(255,255,255,0.28); }
 .exec-corpo { padding: 16px 20px 20px; }
 .kpis-exec { display: grid; grid-template-columns: repeat(auto-fit, minmax(176px, 1fr)); gap: 12px; }
 .kpi-exec { position: relative; background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px;
@@ -140,6 +145,18 @@ section.exec { border: 1.5px solid var(--marca); border-radius: 14px; padding: 0
 .kpi-exec.destaque .val { font-size: 36px; color: var(--marca); }
 .kpi-exec .nota { color: var(--muted); font-size: 11.5px; margin-top: 3px; }
 @media (max-width: 560px) { .kpi-exec.destaque { grid-column: 1 / -1; } }
+/* Editor do Painel Executivo */
+.exec-cfg { background: var(--surface-2); border: 1.5px dashed var(--marca); border-radius: 10px; padding: 14px 16px; margin-bottom: 16px; }
+.exec-cfg h4 { margin: 0 0 8px; font-size: 13.5px; color: var(--marca); }
+.exec-cfg-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+.exec-cfg-lista { display: flex; flex-direction: column; gap: 5px; max-height: 240px; overflow: auto; padding-right: 4px; }
+.exec-cfg-item { display: flex; align-items: center; gap: 6px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 7px; padding: 5px 8px; font-size: 12.5px; }
+.exec-cfg-item label { flex: 1; display: flex; align-items: center; gap: 6px; cursor: pointer; min-width: 0; }
+.exec-cfg-item label span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.exec-cfg-mini { background: var(--surface-2); border: 1px solid var(--border); color: var(--ink-2); border-radius: 5px;
+  padding: 1px 6px; font-size: 11px; cursor: pointer; }
+.exec-cfg-mini.ativo { background: var(--marca); color: #fff; border-color: var(--marca); }
 /* badge de variação vs período anterior */
 .delta { display: inline-flex; align-items: center; gap: 3px; font-size: 12px; font-weight: 700; margin-top: 7px;
   padding: 2px 8px; border-radius: 999px; font-variant-numeric: tabular-nums; width: fit-content; }
@@ -148,9 +165,33 @@ section.exec { border: 1.5px solid var(--marca); border-radius: 14px; padding: 0
 .delta.ruim { color: var(--alerta); background: rgba(180,82,31,0.14); }
 .delta.neutro { color: var(--ink-2); background: var(--surface); border: 1px solid var(--border); }
 .delta-vs { color: var(--muted); font-size: 10.5px; font-weight: 500; margin-left: 6px; }
-.exec-graficos { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; margin-top: 18px; }
-.exec-fig { min-width: 0; background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+.exec-graficos { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 16px; margin-top: 18px; }
+.exec-fig { position: relative; grid-column: span 6; min-width: 0; background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+.exec-fig[data-larg="3"] { grid-column: span 3; }
+.exec-fig[data-larg="4"] { grid-column: span 4; }
+.exec-fig[data-larg="6"] { grid-column: span 6; }
+.exec-fig[data-larg="8"] { grid-column: span 8; }
+.exec-fig[data-larg="12"] { grid-column: 1 / -1; }
 .exec-fig h3 { margin: 0 0 12px; color: var(--ink); font-size: 13.5px; }
+/* Tamanho do Painel Executivo e Largura da Página */
+body[data-largura="largo"] .topo-in, body[data-largura="largo"] main, body[data-largura="largo"] nav.indice div, body[data-largura="largo"] .ed-topo { max-width: 1480px; }
+body[data-largura="fluido"] .topo-in, body[data-largura="fluido"] main, body[data-largura="fluido"] nav.indice div, body[data-largura="fluido"] .ed-topo { max-width: 98vw; }
+section.exec[data-tam="compacto"] .exec-cab { padding: 9px 16px; }
+section.exec[data-tam="compacto"] .exec-corpo { padding: 12px 14px 14px; }
+section.exec[data-tam="compacto"] .kpi-exec { padding: 9px 12px; }
+section.exec[data-tam="compacto"] .kpi-exec .val { font-size: 21px; }
+section.exec[data-tam="compacto"] .kpi-exec.destaque .val { font-size: 26px; }
+section.exec[data-tam="expandido"] .exec-cab { padding: 18px 24px; }
+section.exec[data-tam="expandido"] .exec-cab h2 { font-size: 19px; }
+section.exec[data-tam="expandido"] .exec-corpo { padding: 22px 24px 26px; }
+section.exec[data-tam="expandido"] .kpi-exec { padding: 18px 20px; }
+section.exec[data-tam="expandido"] .kpi-exec .val { font-size: 34px; }
+section.exec[data-tam="expandido"] .kpi-exec.destaque .val { font-size: 44px; }
+.kpi-exec[data-span="1"] { grid-column: span 1; }
+.kpi-exec[data-span="2"] { grid-column: span 2; }
+.kpi-exec[data-span="3"] { grid-column: span 3; }
+.kpi-exec .ed-kpi-bar { display: none; gap: 3px; margin-bottom: 6px; }
+body.modo-editavel .kpi-exec .ed-kpi-bar { display: flex; }
 /* ============ Comparativo entre períodos ============ */
 section.comparar .cmp-sel { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: flex-end; margin: 4px 0 14px; }
 .cmp-grp { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--ink-2); }
@@ -195,9 +236,22 @@ td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; white-space:
 tbody tr:hover { background: var(--surface-2); }
 details { margin-top: 10px; } summary { cursor: pointer; color: var(--ink-2); font-size: 13px; }
 details .tabela-wrap { max-height: 480px; overflow: auto; margin-top: 8px; }
-.grade-paineis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 28px; }
-.painel { grid-column: 1 / -1; min-width: 0; }
-.painel.meia { grid-column: auto; }
+.grade-paineis { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 10px 24px; }
+.painel { position: relative; grid-column: 1 / -1; min-width: 0; }
+.painel.meia, .painel[data-larg="6"] { grid-column: span 6; }
+.painel[data-larg="3"] { grid-column: span 3; }
+.painel[data-larg="4"] { grid-column: span 4; }
+.painel[data-larg="8"] { grid-column: span 8; }
+.painel[data-larg="12"] { grid-column: 1 / -1; }
+.painel-fig-wrap svg.grafico, .exec-fig svg.grafico { transition: height .15s; }
+/* Modal Construtor de Novo Gráfico */
+#modal-novo-grafico { position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,0.52); display: none; align-items: center; justify-content: center; padding: 16px; }
+#modal-novo-grafico.aberto { display: flex; }
+.mng-caixa { background: var(--surface); border: 1.5px solid var(--marca); border-radius: 14px; width: min(680px, 96vw); max-height: 92vh; overflow: auto; padding: 18px 22px; box-shadow: 0 16px 40px rgba(0,0,0,0.28); }
+.mng-caixa h3 { margin: 0 0 10px; color: var(--marca); font-size: 16px; }
+.mng-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 12px; }
+.mng-campo { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--ink-2); }
+.mng-campo input, .mng-campo select, .mng-campo textarea { background: var(--surface-2); border: 1px solid var(--border); color: var(--ink); border-radius: 7px; padding: 6px 9px; font: inherit; }
 .kpis.mini { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin: 4px 0 10px; }
 .kpis.mini .kpi { padding: 8px 10px; } .kpis.mini .val { font-size: 18px; }
 .painel .aberta { max-height: 520px; overflow: auto; }
@@ -208,19 +262,56 @@ ul.alertas { margin: 0; padding-left: 18px; font-size: 13px; } ul.alertas li { m
 #tip { position: fixed; pointer-events: none; z-index: 20; background: var(--ink); color: var(--surface); font-size: 12px;
   padding: 5px 8px; border-radius: 6px; max-width: 320px; opacity: 0; transition: opacity .08s; }
 footer { color: var(--muted); font-size: 12px; text-align: center; padding: 12px 16px 32px; }
+
+/* ============ MODO VERSÃO EDITÁVEL (2ª versão p/ edição, impressão e compartilhamento) ============ */
+[data-oculto="1"] { display: none !important; }
+#barra-editavel { display: none; position: sticky; top: 37px; z-index: 14; background: var(--surface);
+  border-bottom: 2px solid var(--marca); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+body.modo-editavel #barra-editavel { display: block; }
+.ed-topo { max-width: 1180px; margin: 0 auto; padding: 8px 16px; display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; }
+.ed-status { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ink-2); }
+.ed-pilula { background: var(--marca); color: #fff; font-weight: 700; font-size: 11.5px; padding: 2px 9px; border-radius: 999px; }
+.ed-acoes { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.ed-ctl { display: none; }
+body.modo-editavel .ed-ctl { display: inline-flex; }
+.ed-sec-bar { display: none; position: absolute; top: 10px; right: 14px; z-index: 4; gap: 4px; align-items: center;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 3px 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
+section.exec .ed-sec-bar { top: 10px; right: 16px; background: rgba(0,0,0,0.28); border-color: rgba(255,255,255,0.35); }
+section.exec .ed-sec-bar button { color: #fff; border-color: rgba(255,255,255,0.3); background: transparent; }
+body.modo-editavel .ed-sec-bar { display: inline-flex; }
+.ed-painel-bar { display: none; gap: 4px; flex-wrap: wrap; align-items: center; margin: 6px 0 6px;
+  padding: 4px 8px; background: var(--surface-2); border: 1px dashed var(--border); border-radius: 7px; font-size: 11.5px; }
+body.modo-editavel .ed-painel-bar { display: flex; }
+.ed-mini-btn { background: var(--surface); border: 1px solid var(--border); color: var(--ink-2); border-radius: 5px;
+  padding: 2px 7px; font: 500 11.5px/1.3 inherit; cursor: pointer; }
+.ed-mini-btn:hover { border-color: var(--marca); color: var(--ink); }
+.ed-mini-btn.perigo:hover { border-color: var(--alerta); color: var(--alerta); }
+body.modo-editavel [data-editavel="1"] { outline: 1px dashed transparent; border-radius: 4px; transition: outline-color .12s, background .12s; cursor: text; }
+body.modo-editavel [data-editavel="1"]:hover, body.modo-editavel [data-editavel="1"]:focus {
+  outline-color: var(--marca); background: rgba(0,153,93,0.05); }
+.ed-achado-del { display: none; float: right; margin-left: 8px; background: none; border: none; color: var(--muted); cursor: pointer; font-size: 13px; line-height: 1; }
+.ed-achado-del:hover { color: var(--alerta); }
+body.modo-editavel .ed-achado-del { display: inline; }
+.ed-gaveta { display: none; max-width: 1180px; margin: 0 auto; padding: 8px 16px 12px; border-top: 1px solid var(--grid); background: var(--surface-2); font-size: 12.5px; }
+.ed-gaveta.aberta { display: block; }
+.ed-msg { font-size: 12px; font-weight: 600; color: var(--marca); }
+
 @media (max-width: 600px) {
   .meta { text-align: left; }
   .barra-linha { grid-template-columns: minmax(74px, 38%) 1fr auto; gap: 8px; }
   section { padding: 14px 14px; }
 }
 @media print {
-  nav.indice, #tip, #tema { display: none; }
-  body { background: #fff; } section { break-inside: avoid; border-color: #ddd; }
+  nav.indice, #barra-editavel, .ed-sec-bar, .ed-painel-bar, .ed-ctl, .ed-achado-del, .exec-edit-btn, .exec-cfg, .no-print, #tip, #tema { display: none !important; }
+  [data-oculto="1"] { display: none !important; }
+  body { background: #fff; color: #000; }
+  section { break-inside: avoid; border-color: #ddd; box-shadow: none !important; }
+  .painel .aberta, details .tabela-wrap { max-height: none !important; overflow: visible !important; }
   details { display: block; } details > * { display: block; }
 }
 </style>
 </head>
-<body>
+<body class="{{ 'modo-editavel' if a.modo_editavel }}" data-largura="{{ a.largura_pagina or 'padrao' }}">
 {%- macro tabela(colunas, linhas) -%}
 <div class="tabela-wrap"><table>
   <thead><tr>{% for titulo, chave, num in colunas %}<th class="{{ 'n' if num }}">{{ titulo }}</th>{% endfor %}</tr></thead>
@@ -228,28 +319,89 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 12px
 </table></div>
 {%- endmacro %}
 <header class="topo"><div class="topo-in">
-  <div><h1>{{ a.titulo }}</h1><p class="sub">Relatório analítico{% if a.periodo %} · {{ a.periodo }}{% endif %}{% if a.sub %} · {{ a.sub }}{% endif %}</p></div>
+  <div>
+    <h1 id="rel-titulo-h1" data-editavel="1">{{ a.titulo }}</h1>
+    <p class="sub" id="rel-sub-p" data-editavel="1">{% if a.sub %}{{ a.sub }}{% else %}Relatório analítico{% if a.periodo %} · {{ a.periodo }}{% endif %}{% endif %}</p>
+  </div>
   <div class="meta">Gerado em {{ a.gerado_em }} · v{{ a.versao }}<br>{{ a.arquivos|length }} arquivo(s)</div>
 </div></header>
-<nav class="indice"><div>
+
+<nav class="indice no-print"><div>
   <a data-sec="filtros" href="#filtros-v0">Filtros</a><a data-sec="exec" href="#exec-v0">Painel</a><a data-sec="resumo" href="#resumo-v0">Resumo e achados</a>
   {% for s in a.vistas[0].secoes %}<a data-sec="{{ s.id }}" href="#{{ s.id }}-v0">{{ s.titulo }}</a>{% endfor %}
-  {% if a.multi %}<a href="#comparar">Comparar</a>{% endif %}
-  <a href="#leitura">Leitura e qualidade</a>{% if a.base %}<a href="#base">Base detalhada</a>{% endif %}<a href="#metodologia">Metodologia</a>
+  {% if a.multi and not a.ocultar_comparar %}<a href="#comparar">Comparar</a>{% endif %}
+  {% if not a.ocultar_leitura %}<a href="#leitura">Leitura e qualidade</a>{% endif %}
+  {% if a.base and not a.ocultar_base %}<a href="#base">Base detalhada</a>{% endif %}
+  {% if not a.ocultar_metodologia %}<a href="#metodologia">Metodologia</a>{% endif %}
   {% if a.multi %}<label id="periodo-l" title="Troca a vista do relatório (recalculada no Python, embutida)">{{ 'Período' if a.datas_info else 'Ver' }}
     <select id="periodo">{% for v in a.vistas %}<option value="{{ loop.index0 }}">{{ v.rotulo }}</option>{% endfor %}</select></label>{% endif %}
+  {% if not a.somente_editada %}
+  <button id="btn-gerar-editavel" class="nav-btn prim" type="button" onclick="edAtivarModo()" title="Cria uma versão editável deste relatório para customizar, imprimir ou compartilhar">{{ '✎ Editar versão' if a.modo_editavel else '✦ Gerar versão editável' }}</button>
+  {% endif %}
+  <button class="nav-btn" type="button" onclick="window.print()" title="Imprimir ou salvar como PDF">🖨 Imprimir</button>
   <button id="tema" type="button" aria-label="Alternar tema">◐ tema</button>
 </div></nav>
-<main>
+
+<div id="barra-editavel" class="no-print">
+  <div class="ed-topo">
+    <div class="ed-status">
+      <span class="ed-pilula">✦ Versão Editável</span>
+      <span>Clique em qualquer título ou texto para editar · Reordene, ajuste largura (50%/100%) ou oculte o que não precisa antes de imprimir ou compartilhar.</span>
+      <span id="ed-feedback" class="ed-msg"></span>
+    </div>
+    <div class="ed-acoes">
+      <button type="button" class="f-btn sec" onclick="edAbrirModalGrafico('exec')">📊 + Novo gráfico</button>
+      <button type="button" class="f-btn sec" onclick="edAdicionarBlocoTexto()">+ Bloco de texto</button>
+      <button type="button" class="f-btn sec" onclick="edAdicionarAchado()">+ Achado / nota</button>
+      <label class="ed-mini-btn" style="display:inline-flex;align-items:center;gap:4px">Executivo:
+        <select id="ed-sel-tam-exec" onchange="edMudarTamExec(this.value)" style="border:none;background:transparent;color:inherit;font:inherit;cursor:pointer">
+          <option value="compacto" {{ 'selected' if a.vistas[0].tam_exec == 'compacto' }}>Compacto</option>
+          <option value="padrao" {{ 'selected' if (a.vistas[0].tam_exec or 'padrao') == 'padrao' }}>Padrão</option>
+          <option value="expandido" {{ 'selected' if a.vistas[0].tam_exec == 'expandido' }}>Expandido</option>
+        </select>
+      </label>
+      <label class="ed-mini-btn" style="display:inline-flex;align-items:center;gap:4px">Página:
+        <select id="ed-sel-larg-pag" onchange="edMudarLarguraPagina(this.value)" style="border:none;background:transparent;color:inherit;font:inherit;cursor:pointer">
+          <option value="padrao" {{ 'selected' if (a.largura_pagina or 'padrao') == 'padrao' }}>Normal</option>
+          <option value="largo" {{ 'selected' if a.largura_pagina == 'largo' }}>Largo (1480px)</option>
+          <option value="fluido" {{ 'selected' if a.largura_pagina == 'fluido' }}>Tela toda</option>
+        </select>
+      </label>
+      <button type="button" class="f-btn sec" onclick="edToggleGavetaOcultos()">👁 Ocultos (<span id="ed-n-ocultos">0</span>)</button>
+      <button type="button" class="f-btn sec" onclick="window.print()">🖨 Imprimir / PDF</button>
+      <button type="button" class="f-btn sec" onclick="edBaixarHtml()">⬇ Baixar HTML editado</button>
+      {% if a.pode_editar and a.slug %}
+      <button type="button" class="f-btn" onclick="edSalvarNoServidor()">💾 Salvar versão p/ compartilhar</button>
+      {% endif %}
+      <button type="button" class="f-btn sec" onclick="edSairModo()">Concluir edição</button>
+    </div>
+  </div>
+  <div id="ed-gaveta-ocultos" class="ed-gaveta">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <b>Itens removidos desta versão (clique para restaurar):</b>
+      <button type="button" class="ed-mini-btn" onclick="edRestaurarTudo()">Restaurar tudo</button>
+    </div>
+    <div id="ed-lista-ocultos" class="f-chips"></div>
+  </div>
+</div>
+
+<main id="rel-main">
 {% for v in a.vistas %}
 <div class="vista" data-i="{{ v.i }}"{{ ' hidden' if not loop.first }}>
-<section id="filtros-v{{ v.i }}">
-  <h2>Filtros aplicados</h2>
+
+{% if not a.ocultar_filtros or a.modo_editavel %}
+<section id="filtros-v{{ v.i }}" data-sec-id="filtros" data-sec-nome="Filtros aplicados" data-oculto="{{ '1' if a.ocultar_filtros else '0' }}">
+  <div class="ed-sec-bar no-print">
+    <button type="button" class="ed-mini-btn" onclick="edMoverSecao(this, -1)" title="Mover seção para cima">↑</button>
+    <button type="button" class="ed-mini-btn" onclick="edMoverSecao(this, 1)" title="Mover seção para baixo">↓</button>
+    <button type="button" class="ed-mini-btn perigo" onclick="edOcultarSecao('filtros', 'Filtros aplicados')">✕ Ocultar seção</button>
+  </div>
+  <h2 data-editavel="1">Filtros aplicados</h2>
   <dl class="filtros">{% for rot, val in v.filtros %}<dt>{{ rot }}</dt><dd>{{ val }}</dd>{% endfor %}
     <dt>Fonte</dt><dd>{{ v.arquivos|join(', ') if v.arquivos else '—' }}</dd></dl>
   {% if v.avisos %}<div class="avisos">{% for av in v.avisos %}<div>{{ av }}</div>{% endfor %}</div>{% endif %}
   {% if loop.first and a.datas_info %}
-  <div class="f-bar" id="rel-filtro-datas" data-col="{{ a.datas_info.coluna }}" data-min="{{ a.datas_info.min_data }}" data-max="{{ a.datas_info.max_data }}">
+  <div class="f-bar no-print" id="rel-filtro-datas" data-col="{{ a.datas_info.coluna }}" data-min="{{ a.datas_info.min_data }}" data-max="{{ a.datas_info.max_data }}">
     <div class="f-row">
       <div class="f-grp"><label>De</label><input type="date" id="rel-de" value="{{ a.datas_info.de }}" min="{{ a.datas_info.min_data }}" max="{{ a.datas_info.max_data }}"></div>
       <div class="f-grp"><label>Até</label><input type="date" id="rel-ate" value="{{ a.datas_info.ate }}" min="{{ a.datas_info.min_data }}" max="{{ a.datas_info.max_data }}"></div>
@@ -288,7 +440,7 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 12px
   </div>
   {% endif %}
   {% if loop.first and a.filtros_info %}
-  <div class="f-bar" id="rel-filtro-dims">
+  <div class="f-bar no-print" id="rel-filtro-dims">
     <div class="f-dims">
     {% for d in a.filtros_info %}
       <details class="f-dim"{{ ' open' if d.ativo or d.arquivo }}>
@@ -310,45 +462,179 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 12px
   </div>
   {% endif %}
 </section>
+{% endif %}
 
 {% if v.total == 0 %}
 <section><h2>Sem dados</h2><p class="vazio">Nenhum registro neste período.</p></section>
 {% else %}
-<section id="exec-v{{ v.i }}" class="exec">
+
+{% if not a.ocultar_exec or a.modo_editavel %}
+<section id="exec-v{{ v.i }}" class="exec" data-sec-id="exec" data-sec-nome="Painel executivo" data-tam="{{ v.tam_exec or 'padrao' }}" data-altura="{{ v.altura_exec or 0 }}" {% if v.altura_exec %}style="min-height:{{ v.altura_exec }}px"{% endif %} data-oculto="{{ '1' if a.ocultar_exec else '0' }}">
+  <div class="ed-sec-bar no-print">
+    <button type="button" class="ed-mini-btn" onclick="edAbrirModalGrafico('exec')" title="Criar novo gráfico no Painel Executivo">+ Gráfico</button>
+    <button type="button" class="ed-mini-btn" onclick="edCiclarTamExec()" title="Alternar tamanho do Painel Executivo (Compacto / Padrão / Expandido)">⇕ Tamanho</button>
+    <button type="button" class="ed-mini-btn" onclick="edAjustarAlturaExec(-40)" title="Diminuir altura mínima do Painel Executivo">Alt −</button>
+    <button type="button" class="ed-mini-btn" onclick="edAjustarAlturaExec(40)" title="Aumentar altura mínima do Painel Executivo">Alt +</button>
+    <button type="button" class="ed-mini-btn" onclick="edMoverSecao(this, -1)" title="Mover para cima">↑</button>
+    <button type="button" class="ed-mini-btn" onclick="edMoverSecao(this, 1)" title="Mover para baixo">↓</button>
+    <button type="button" class="ed-mini-btn perigo" onclick="edOcultarSecao('exec', 'Painel executivo')">✕ Ocultar painel</button>
+  </div>
   <div class="exec-cab">
-    <h2>Painel executivo</h2>
-    <span class="exec-per">{{ v.rotulo or a.periodo or 'Todo o período' }} · {{ v.total }} registro(s){% if v.rotulo_ant %} · comparado a {{ v.rotulo_ant }}{% endif %}</span>
+    <h2 id="exec-titulo-v{{ v.i }}" data-editavel="1">{{ v.titulo_exec or 'Painel executivo' }}</h2>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span class="exec-per">{{ v.rotulo or a.periodo or 'Todo o período' }} · {{ v.total }} registro(s){% if v.rotulo_ant %} · comparado a {{ v.rotulo_ant }}{% endif %}</span>
+      {% if (a.pode_editar or a.modo_editavel) and not a.somente_editada and loop.first %}
+      <button type="button" class="exec-edit-btn no-print" onclick="edAbrirModalGrafico('exec')">+ Novo gráfico</button>
+      <button type="button" class="exec-edit-btn no-print" onclick="execToggleCfg()">⚙ Personalizar Painel Executivo</button>
+      {% endif %}
+    </div>
   </div>
   <div class="exec-corpo">
-    <div class="kpis-exec">
+    {% if loop.first %}
+    <div id="exec-cfg-box" class="exec-cfg no-print" hidden>
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+        <div>
+          <h4>Personalizar Painel Executivo (Gestor / ADM)</h4>
+          <p class="desc" style="margin:0">Escolha KPIs, gráficos, tamanho do painel e larguras. Os dados continuam vindo automaticamente da planilha.</p>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+          <label class="ed-mini-btn">Densidade:
+            <select id="exec-cfg-tam" onchange="edMudarTamExec(this.value)" style="border:none;background:transparent;color:inherit;font:inherit">
+              <option value="compacto" {{ 'selected' if v.tam_exec == 'compacto' }}>Compacto</option>
+              <option value="padrao" {{ 'selected' if (v.tam_exec or 'padrao') == 'padrao' }}>Padrão</option>
+              <option value="expandido" {{ 'selected' if v.tam_exec == 'expandido' }}>Expandido</option>
+            </select>
+          </label>
+          <button type="button" class="f-btn sec" onclick="edAbrirModalGrafico('exec')">📊 + Criar gráfico</button>
+          {% if a.pode_editar and a.slug %}
+          <button type="button" class="f-btn" onclick="execSalvarServidor()">Salvar como padrão do relatório</button>
+          {% endif %}
+          <button type="button" class="f-btn sec" onclick="execRestaurarPadrao()">Padrão automático</button>
+          <button type="button" class="f-btn sec" onclick="execToggleCfg()">Fechar</button>
+        </div>
+      </div>
+      <div class="exec-cfg-grid">
+        <div>
+          <b style="font-size:12.5px;display:block;margin-bottom:6px">1. Indicadores (KPIs) visíveis e Destaque (★):</b>
+          <div id="exec-cfg-kpis" class="exec-cfg-lista">
+            {% for ck in v.catalogo_kpis %}
+            {% set vis = ck.chave in (v.kpis|rejectattr('oculto')|map(attribute='chave')|list) %}
+            {% set eh_dest = ck.chave in (v.kpis|selectattr('destaque')|map(attribute='chave')|list) %}
+            <div class="exec-cfg-item" data-chave="{{ ck.chave }}">
+              <label><input type="checkbox" class="exec-ck-kpi" value="{{ ck.chave }}" {{ 'checked' if vis }} onchange="execAplicarLocal()">
+                <span>{{ ck.rotulo }} <small style="color:var(--muted)">({{ ck.valor }})</small></span></label>
+              <button type="button" class="exec-cfg-mini {{ 'ativo' if eh_dest }}" onclick="execMarcarDestaque('{{ ck.chave }}')" title="Destacar como KPI principal (Hero)">★</button>
+              <button type="button" class="exec-cfg-mini" onclick="execMoverItem(this, -1)" title="Subir">↑</button>
+              <button type="button" class="exec-cfg-mini" onclick="execMoverItem(this, 1)" title="Descer">↓</button>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        <div>
+          <b style="font-size:12.5px;display:block;margin-bottom:6px">2. Gráficos promovidos ao Painel Executivo:</b>
+          <div id="exec-cfg-graficos" class="exec-cfg-lista">
+            {% set ids_dest = v.destaques|map(attribute='id')|list %}
+            {% for cg in v.catalogo_graficos %}
+            <div class="exec-cfg-item" data-gid="{{ cg.id }}">
+              <label><input type="checkbox" class="exec-ck-graf" value="{{ cg.id }}" {{ 'checked' if cg.id in ids_dest }} onchange="execAplicarLocal()">
+                <span><b>{{ cg.secao }}:</b> {{ cg.titulo }}</span></label>
+              <button type="button" class="exec-cfg-mini" onclick="execMoverItem(this, -1)" title="Subir">↑</button>
+              <button type="button" class="exec-cfg-mini" onclick="execMoverItem(this, 1)" title="Descer">↓</button>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      <span id="exec-cfg-msg" class="ed-msg" style="display:block;margin-top:8px"></span>
+    </div>
+    {% endif %}
+
+    <div class="kpis-exec" id="kpis-exec-v{{ v.i }}">
       {% for k in v.kpis %}
-      <div class="kpi-exec{{ ' destaque' if k.destaque }}">
-        <div class="rot">{{ k.rotulo }}</div>
+      <div class="kpi-exec{{ ' destaque' if k.destaque }}" data-chave="{{ k.chave }}" data-span="{{ k.largura or (2 if k.destaque else 1) }}" data-oculto="{{ '1' if k.oculto else '0' }}">
+        <div class="ed-kpi-bar no-print">
+          <button type="button" class="ed-mini-btn" onclick="edMoverKpiExec(this, -1)" title="Mover KPI para esquerda">←</button>
+          <button type="button" class="ed-mini-btn" onclick="edMoverKpiExec(this, 1)" title="Mover KPI para direita">→</button>
+          <button type="button" class="ed-mini-btn" onclick="edCiclarSpanKpi(this)" title="Alternar tamanho do cartão KPI (1x / 2x ★ / 3x)">◫ 1x/2x/3x</button>
+          <button type="button" class="ed-mini-btn perigo" style="margin-left:auto" onclick="edOcultarKpiExec(this)" title="Ocultar este KPI">✕</button>
+        </div>
+        <div class="rot" data-editavel="1">{{ k.rotulo }}</div>
         <div class="val">{{ k.valor }}</div>
         {% if k.delta %}<div><span class="delta {{ k.delta.classe }}"><span class="seta">{{ '▲' if k.delta.dir == 'up' else ('▼' if k.delta.dir == 'down' else '▬') }}</span>{{ k.delta.pct }}</span>{% if v.rotulo_ant %}<span class="delta-vs">vs {{ v.rotulo_ant }}</span>{% endif %}</div>{% endif %}
         {% if k.nota %}<div class="nota">{{ k.nota }}</div>{% endif %}
       </div>
       {% endfor %}
     </div>
-    {% if v.metas %}
+    {% if v.metas and v.mostrar_metas_exec %}
     {% set med = g.medidor(v.metas) %}
-    {% if med %}<h3>Metas do gestor</h3>{{ med }}{% endif %}
+    {% if med %}<div id="exec-metas-v{{ v.i }}"><h3>Metas do gestor</h3>{{ med }}</div>{% endif %}
     {% endif %}
-    {% if v.destaques %}
-    <div class="exec-graficos">
-      {% for d in v.destaques %}<div class="exec-fig"><h3>{{ d.titulo }}</h3>{{ d.figura }}</div>{% endfor %}
+    <div class="exec-graficos" id="exec-graficos-v{{ v.i }}" {{ 'hidden' if not v.destaques }}>
+      {% for d in v.destaques %}
+      <div class="exec-fig" data-gid="{{ d.id }}" data-larg="{{ d.largura or 6 }}" data-altura="{{ d.altura or 0 }}" data-custom="{{ '1' if d.custom else '0' }}">
+        <div class="ed-painel-bar no-print">
+          <button type="button" class="ed-mini-btn" onclick="edMoverGrafExec(this, -1)" title="Mover gráfico para trás">←</button>
+          <button type="button" class="ed-mini-btn" onclick="edMoverGrafExec(this, 1)" title="Mover gráfico para frente">→</button>
+          <select class="ed-mini-btn ed-sel-larg" onchange="edDefinirLarguraCard(this, this.value)" title="Largura do gráfico">
+            <option value="3" {{ 'selected' if d.largura == 3 }}>25%</option>
+            <option value="4" {{ 'selected' if d.largura == 4 }}>33%</option>
+            <option value="6" {{ 'selected' if (d.largura or 6) == 6 }}>50%</option>
+            <option value="8" {{ 'selected' if d.largura == 8 }}>66%</option>
+            <option value="12" {{ 'selected' if d.largura == 12 }}>100%</option>
+          </select>
+          <button type="button" class="ed-mini-btn" onclick="edAjustarAlturaGrafico(this, -35)" title="Diminuir altura do gráfico">Alt −</button>
+          <button type="button" class="ed-mini-btn" onclick="edAjustarAlturaGrafico(this, 35)" title="Aumentar altura do gráfico">Alt +</button>
+          <button type="button" class="ed-mini-btn perigo" style="margin-left:auto" onclick="edRemoverGrafExec(this)" title="Remover do Painel Executivo">✕</button>
+        </div>
+        <h3 data-editavel="1">{{ d.titulo }}</h3>
+        <div class="exec-fig-corpo" {% if d.altura %}style="min-height:{{ d.altura }}px"{% endif %}>{{ d.figura }}</div>
+      </div>
+      {% endfor %}
     </div>
+    {% if loop.first %}
+    <template id="exec-catalogo-graficos-tpl">
+      {% for cg in v.catalogo_graficos %}
+      <div class="exec-fig" data-gid="{{ cg.id }}" data-titulo="{{ cg.titulo }}" data-larg="6" data-altura="0" data-custom="0">
+        <div class="ed-painel-bar no-print">
+          <button type="button" class="ed-mini-btn" onclick="edMoverGrafExec(this, -1)" title="Mover gráfico para trás">←</button>
+          <button type="button" class="ed-mini-btn" onclick="edMoverGrafExec(this, 1)" title="Mover gráfico para frente">→</button>
+          <select class="ed-mini-btn ed-sel-larg" onchange="edDefinirLarguraCard(this, this.value)" title="Largura do gráfico">
+            <option value="3">25%</option>
+            <option value="4">33%</option>
+            <option value="6" selected>50%</option>
+            <option value="8">66%</option>
+            <option value="12">100%</option>
+          </select>
+          <button type="button" class="ed-mini-btn" onclick="edAjustarAlturaGrafico(this, -35)" title="Diminuir altura do gráfico">Alt −</button>
+          <button type="button" class="ed-mini-btn" onclick="edAjustarAlturaGrafico(this, 35)" title="Aumentar altura do gráfico">Alt +</button>
+          <button type="button" class="ed-mini-btn perigo" style="margin-left:auto" onclick="edRemoverGrafExec(this)" title="Remover do Painel Executivo">✕</button>
+        </div>
+        <h3 data-editavel="1">{{ cg.titulo }}</h3>
+        <div class="exec-fig-corpo">{{ cg.figura }}</div>
+      </div>
+      {% endfor %}
+    </template>
     {% endif %}
   </div>
 </section>
+{% endif %}
 
-<section id="resumo-v{{ v.i }}" class="resumo">
-  <h2>Resumo e achados</h2>
-  <p class="desc lead">{% if v.resumo %}{{ v.resumo }}{% else %}{{ v.total }} registro(s) no recorte · tempos pela {{ v.estatistica|lower }}.{% endif %}</p>
-  <h3>Principais achados</h3>
-  {% if v.achados %}<ul class="achados cartoes">{% for t in v.achados %}<li>{{ t }}</li>{% endfor %}</ul>
-  {% else %}<p class="vazio">Sem achados no recorte.</p>{% endif %}
-  {% if v.observacoes %}<h3>Observações do gestor</h3><div class="obs">{{ v.observacoes }}</div>{% endif %}
+{% if not a.ocultar_resumo or a.modo_editavel %}
+<section id="resumo-v{{ v.i }}" class="resumo" data-sec-id="resumo" data-sec-nome="Resumo e achados" data-oculto="{{ '1' if a.ocultar_resumo else '0' }}">
+  <div class="ed-sec-bar no-print">
+    <button type="button" class="ed-mini-btn" onclick="edMoverSecao(this, -1)" title="Mover para cima">↑</button>
+    <button type="button" class="ed-mini-btn" onclick="edMoverSecao(this, 1)" title="Mover para baixo">↓</button>
+    <button type="button" class="ed-mini-btn perigo" onclick="edOcultarSecao('resumo', 'Resumo e achados')">✕ Ocultar seção</button>
+  </div>
+  <h2 data-editavel="1">Resumo e achados</h2>
+  <p class="desc lead" id="resumo-lead-v{{ v.i }}" data-editavel="1">{% if v.resumo %}{{ v.resumo }}{% else %}{{ v.total }} registro(s) no recorte · tempos pela {{ v.estatistica|lower }}.{% endif %}</p>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+    <h3 data-editavel="1">Principais achados</h3>
+    <button type="button" class="ed-mini-btn ed-ctl no-print" onclick="edAdicionarAchado()">+ Adicionar achado</button>
+  </div>
+  {% if v.achados %}<ul class="achados cartoes" id="lista-achados-v{{ v.i }}">{% for t in v.achados %}<li><button type="button" class="ed-achado-del no-print" onclick="this.parentElement.remove()" title="Remover achado">✕</button><span data-editavel="1">{{ t }}</span></li>{% endfor %}</ul>
+  {% else %}<ul class="achados cartoes" id="lista-achados-v{{ v.i }}"></ul><p class="vazio">Sem achados no recorte.</p>{% endif %}
+  {% if v.observacoes %}<h3 data-editavel="1">Observações do gestor</h3><div class="obs" id="obs-gestor-v{{ v.i }}" data-editavel="1">{{ v.observacoes }}</div>{% endif %}
   {% if v.metas %}
   <details><summary>Ver metas do gestor em tabela</summary>
   <table class="metas">{% for m in v.metas %}
@@ -359,25 +645,58 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 12px
   </details>
   {% endif %}
 </section>
+{% endif %}
 
 {% for s in v.secoes %}
-<section id="{{ s.id }}-v{{ v.i }}">
-  <h2>{{ s.titulo }}</h2>
+<section id="{{ s.id }}-v{{ v.i }}" data-sec-id="{{ s.id }}" data-sec-nome="{{ s.titulo }}" data-extra="{{ '1' if s.extra else '0' }}" data-oculto="{{ '1' if s.oculto else '0' }}">
+  <div class="ed-sec-bar no-print">
+    <button type="button" class="ed-mini-btn" onclick="edAbrirModalGrafico('{{ s.id }}')" title="Criar novo gráfico nesta seção">+ Gráfico</button>
+    <button type="button" class="ed-mini-btn" onclick="edMoverSecao(this, -1)" title="Mover seção para cima">↑</button>
+    <button type="button" class="ed-mini-btn" onclick="edMoverSecao(this, 1)" title="Mover seção para baixo">↓</button>
+    <button type="button" class="ed-mini-btn perigo" onclick="edOcultarSecao('{{ s.id }}', '{{ s.titulo|e }}')">✕ Ocultar seção</button>
+  </div>
+  <h2 data-editavel="1">{{ s.titulo }}</h2>
   <div class="grade-paineis">
   {% for p in s.paineis %}
-  <div class="painel{{ ' meia' if p.meia }}">
-    {% if s.paineis|length > 1 or p.titulo != s.titulo %}<h3>{{ p.titulo }}</h3>{% endif %}
-    {% if p.descricao %}<p class="desc">{{ p.descricao }}</p>{% endif %}
-    {% if p.kpis %}<div class="kpis mini">{% for k in p.kpis %}<div class="kpi"><div class="rot">{{ k.rotulo }}</div>
+  {% set plarg = p.largura or (6 if p.meia else 12) %}
+  <div class="painel{{ ' meia' if plarg == 6 }}" data-painel-id="{{ p.id }}" data-painel-nome="{{ p.titulo }}" data-larg="{{ plarg }}" data-altura="{{ p.altura or 0 }}" data-custom-graf="{{ '1' if p.custom_graf else '0' }}" data-oculto="{{ '1' if p.oculto else '0' }}" data-ocultar-fig="{{ '1' if p.ocultar_figura else '0' }}" data-ocultar-tab="{{ '1' if p.ocultar_tabela else '0' }}" data-aberta="{{ '1' if p.aberta else '0' }}">
+    <div class="ed-painel-bar no-print">
+      <button type="button" class="ed-mini-btn" onclick="edMoverPainel(this, -1)" title="Mover painel para trás">←</button>
+      <button type="button" class="ed-mini-btn" onclick="edMoverPainel(this, 1)" title="Mover painel para frente">→</button>
+      <select class="ed-mini-btn ed-sel-larg" onchange="edDefinirLarguraCard(this, this.value)" title="Largura deste painel/gráfico">
+        <option value="3" {{ 'selected' if plarg == 3 }}>25%</option>
+        <option value="4" {{ 'selected' if plarg == 4 }}>33%</option>
+        <option value="6" {{ 'selected' if plarg == 6 }}>50%</option>
+        <option value="8" {{ 'selected' if plarg == 8 }}>66%</option>
+        <option value="12" {{ 'selected' if plarg == 12 }}>100%</option>
+      </select>
+      {% if p.figura %}
+      <button type="button" class="ed-mini-btn" onclick="edAjustarAlturaGrafico(this, -35)" title="Diminuir altura do gráfico">Alt −</button>
+      <button type="button" class="ed-mini-btn" onclick="edAjustarAlturaGrafico(this, 35)" title="Aumentar altura do gráfico">Alt +</button>
+      <button type="button" class="ed-mini-btn" onclick="edPromoverParaExec(this)" title="Enviar/Destacar este gráfico no Painel Executivo">⬆ No Executivo</button>
+      <button type="button" class="ed-mini-btn" onclick="edAlternarFigura(this)" title="Mostrar ou ocultar gráfico deste painel">📊 Gráfico</button>
+      {% endif %}
+      {% if p.linhas %}<button type="button" class="ed-mini-btn" onclick="edAlternarTabela(this)" title="Alternar tabela: recolhida, aberta ou oculta">📋 Tabela</button>{% endif %}
+      <button type="button" class="ed-mini-btn perigo" style="margin-left:auto" onclick="edOcultarPainel('{{ p.id }}', '{{ p.titulo|e }}')">✕ Remover</button>
+    </div>
+    {% if s.paineis|length > 1 or p.titulo != s.titulo %}<h3 data-editavel="1">{{ p.titulo }}</h3>{% endif %}
+    {% if p.descricao %}<p class="desc" data-editavel="1">{{ p.descricao }}</p>{% endif %}
+    {% if p.kpis %}<div class="kpis mini">{% for k in p.kpis %}<div class="kpi"><div class="rot" data-editavel="1">{{ k.rotulo }}</div>
       <div class="val">{{ k.valor }}</div><div class="nota">{{ k.nota }}</div></div>{% endfor %}</div>{% endif %}
     {% if p.figura %}
-      {{ p.figura }}
-      {% if p.linhas %}{% if p.aberta %}<div class="aberta">{{ tabela(p.colunas, p.linhas) }}</div>
-      {% else %}<details><summary>Ver tabela</summary>{{ tabela(p.colunas, p.linhas) }}</details>{% endif %}{% endif %}
+      <div class="painel-fig-wrap" {% if p.altura %}style="min-height:{{ p.altura }}px"{% endif %} {{ 'hidden' if p.ocultar_figura }}>{{ p.figura }}</div>
+      {% if p.linhas %}
+      <div class="painel-tab-wrap" {{ 'hidden' if p.ocultar_tabela }}>
+        {% if p.aberta %}<div class="aberta">{{ tabela(p.colunas, p.linhas) }}</div>
+        {% else %}<details><summary>Ver tabela</summary>{{ tabela(p.colunas, p.linhas) }}</details>{% endif %}
+      </div>
+      {% endif %}
     {% elif p.linhas %}
-      {% if p.aberta %}<div class="aberta">{{ tabela(p.colunas, p.linhas) }}</div>
-      {% else %}<details><summary>Ver tabela</summary>{{ tabela(p.colunas, p.linhas) }}</details>{% endif %}
-    {% elif not p.kpis %}<p class="vazio">Sem dados no recorte.</p>{% endif %}
+      <div class="painel-tab-wrap" {{ 'hidden' if p.ocultar_tabela }}>
+        {% if p.aberta %}<div class="aberta">{{ tabela(p.colunas, p.linhas) }}</div>
+        {% else %}<details><summary>Ver tabela</summary>{{ tabela(p.colunas, p.linhas) }}</details>{% endif %}
+      </div>
+    {% elif not p.kpis and not s.extra %}<p class="vazio">Sem dados no recorte.</p>{% endif %}
   </div>
   {% endfor %}
   </div>
@@ -387,12 +706,17 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 12px
 </div>
 {% endfor %}
 
-{% if a.multi %}
-<section id="comparar" class="comparar">
-  <h2>Comparativo entre períodos</h2>
-  <p class="desc">Escolha dois períodos e compare os indicadores lado a lado, com a variação (Δ) entre eles.
+{% if a.multi and (not a.ocultar_comparar or a.modo_editavel) %}
+<section id="comparar" class="comparar" data-sec-id="comparar" data-sec-nome="Comparativo entre períodos" data-oculto="{{ '1' if a.ocultar_comparar else '0' }}">
+  <div class="ed-sec-bar no-print">
+    <button type="button" class="ed-mini-btn" onclick="edMoverSecao(this, -1)" title="Mover para cima">↑</button>
+    <button type="button" class="ed-mini-btn" onclick="edMoverSecao(this, 1)" title="Mover para baixo">↓</button>
+    <button type="button" class="ed-mini-btn perigo" onclick="edOcultarSecao('comparar', 'Comparativo entre períodos')">✕ Ocultar seção</button>
+  </div>
+  <h2 data-editavel="1">Comparativo entre períodos</h2>
+  <p class="desc" data-editavel="1">Escolha dois períodos e compare os indicadores lado a lado, com a variação (Δ) entre eles.
   Os números são os mesmos dos painéis de cada período — nada é recalculado aqui.</p>
-  <div class="cmp-sel">
+  <div class="cmp-sel no-print">
     <div class="cmp-grp"><label>Período A</label><select id="cmp-a"></select></div>
     <button type="button" class="cmp-swap" onclick="cmpTrocar()" title="Inverter A e B" aria-label="Inverter">⇄</button>
     <div class="cmp-grp"><label>Período B</label><select id="cmp-b"></select></div>
@@ -405,34 +729,126 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 12px
 </section>
 {% endif %}
 
-<section id="leitura">
-  <h2>Leitura e qualidade</h2>
-  <p class="desc">O que a leitura fez com as planilhas e o que conferir — nada é descartado em silêncio.</p>
+{% if not a.ocultar_leitura or a.modo_editavel %}
+<section id="leitura" data-sec-id="leitura" data-sec-nome="Leitura e qualidade" data-oculto="{{ '1' if a.ocultar_leitura else '0' }}">
+  <div class="ed-sec-bar no-print">
+    <button type="button" class="ed-mini-btn" onclick="edMoverSecao(this, -1)" title="Mover para cima">↑</button>
+    <button type="button" class="ed-mini-btn" onclick="edMoverSecao(this, 1)" title="Mover para baixo">↓</button>
+    <button type="button" class="ed-mini-btn perigo" onclick="edOcultarSecao('leitura', 'Leitura e qualidade')">✕ Ocultar seção</button>
+  </div>
+  <h2 data-editavel="1">Leitura e qualidade</h2>
+  <p class="desc" data-editavel="1">O que a leitura fez com as planilhas e o que conferir — nada é descartado em silêncio.</p>
   {% if a.alertas %}<ul class="alertas">{% for al in a.alertas %}<li class="al-{{ al.nivel }}">{{ al.texto }}</li>{% endfor %}</ul>
   {% else %}<p class="vazio">Nenhum problema de leitura ou qualidade detectado.</p>{% endif %}
 </section>
+{% endif %}
 
-{% if a.base %}
-<section id="base">
-  <h2>Base detalhada</h2>
+{% if a.base and (not a.ocultar_base or a.modo_editavel) %}
+<section id="base" data-sec-id="base" data-sec-nome="Base detalhada" data-oculto="{{ '1' if a.ocultar_base else '0' }}">
+  <div class="ed-sec-bar no-print">
+    <button type="button" class="ed-mini-btn" onclick="edMoverSecao(this, -1)" title="Mover para cima">↑</button>
+    <button type="button" class="ed-mini-btn" onclick="edMoverSecao(this, 1)" title="Mover para baixo">↓</button>
+    <button type="button" class="ed-mini-btn perigo" onclick="edOcultarSecao('base', 'Base detalhada')">✕ Ocultar seção</button>
+  </div>
+  <h2 data-editavel="1">Base detalhada</h2>
   <p class="desc">{{ a.base.total }} linha(s) do recorte{% if a.base.cortado %} — exibidas as primeiras {{ a.base.linhas|length }}{% endif %}.</p>
   <details><summary>Abrir base</summary>{{ tabela(a.base.colunas, a.base.linhas) }}</details>
 </section>
 {% endif %}
 
-<section id="metodologia">
-  <h2>Metodologia</h2>
-  {% if a.metodologia %}<p class="desc">{{ a.metodologia }}</p>{% else %}
-  <p class="desc">Indicadores calculados sobre o recorte filtrado. Taxas «ponderadas por valor» = soma do numerador ÷
+{% if not a.ocultar_metodologia or a.modo_editavel %}
+<section id="metodologia" data-sec-id="metodologia" data-sec-nome="Metodologia" data-oculto="{{ '1' if a.ocultar_metodologia else '0' }}">
+  <div class="ed-sec-bar no-print">
+    <button type="button" class="ed-mini-btn" onclick="edMoverSecao(this, -1)" title="Mover para cima">↑</button>
+    <button type="button" class="ed-mini-btn" onclick="edMoverSecao(this, 1)" title="Mover para baixo">↓</button>
+    <button type="button" class="ed-mini-btn perigo" onclick="edOcultarSecao('metodologia', 'Metodologia')">✕ Ocultar seção</button>
+  </div>
+  <h2 data-editavel="1">Metodologia</h2>
+  {% if a.metodologia %}<p class="desc" data-editavel="1">{{ a.metodologia }}</p>{% else %}
+  <p class="desc" data-editavel="1">Indicadores calculados sobre o recorte filtrado. Taxas «ponderadas por valor» = soma do numerador ÷
   soma do denominador. Tempos em dias corridos, pela {{ a.estatistica|lower }} (escolhida em ⚙ Editar metas); P90 = 90% dos
   casos em até X dias. Grafias equivalentes (acentos, caixa, pontuação) são unificadas. Cada ocorrência de qualidade aponta
   arquivo, aba e linha para correção na planilha de origem.</p>{% endif %}
 </section>
+{% endif %}
 </main>
+
+<div id="modal-novo-grafico" class="no-print" aria-hidden="true">
+  <div class="mng-caixa">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <h3>📊 Adicionar Novo Gráfico Personalizado</h3>
+      <button type="button" class="ed-mini-btn" onclick="edFecharModalGrafico()">✕ Fechar</button>
+    </div>
+    <p class="desc" style="margin:0 0 12px">Crie um gráfico a partir de qualquer tabela do relatório ou digitando os valores manualmente, e escolha onde posicioná-lo.</p>
+    <div class="mng-grid">
+      <div class="mng-campo">
+        <label>Título do gráfico</label>
+        <input type="text" id="mng-titulo" placeholder="Ex.: Evolução por convênio">
+      </div>
+      <div class="mng-campo">
+        <label>Tipo de gráfico</label>
+        <select id="mng-tipo">
+          <option value="barras">Barras horizontais (ranking)</option>
+          <option value="colunas">Colunas verticais</option>
+          <option value="linha">Linha de tendência (SVG)</option>
+          <option value="rosca">Rosca / Proporção (Donut)</option>
+        </select>
+      </div>
+      <div class="mng-campo">
+        <label>Onde inserir</label>
+        <select id="mng-destino">
+          <option value="exec">Painel Executivo (topo)</option>
+          {% for s in a.vistas[0].secoes %}
+          <option value="{{ s.id }}">Seção: {{ s.titulo }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="mng-campo">
+        <label>Largura inicial</label>
+        <select id="mng-largura">
+          <option value="4">33% (1/3 da linha)</option>
+          <option value="6" selected>50% (Meia largura)</option>
+          <option value="8">66% (2/3 da linha)</option>
+          <option value="12">100% (Largura inteira)</option>
+        </select>
+      </div>
+    </div>
+    <div class="mng-grid">
+      <div class="mng-campo">
+        <label>Fonte dos dados</label>
+        <select id="mng-fonte" onchange="edMudarFonteGrafico()">
+          <option value="tabela">Extrair de uma tabela do relatório</option>
+          <option value="manual">Digitar rótulos e valores manualmente</option>
+        </select>
+      </div>
+      <div class="mng-campo" id="mng-box-tab">
+        <label>Tabela de origem</label>
+        <select id="mng-tabela" onchange="edPopularColunasFonte()"></select>
+      </div>
+      <div class="mng-campo" id="mng-box-col-rot">
+        <label>Coluna de Rótulo (Categoria / Eixo X)</label>
+        <select id="mng-col-rot"></select>
+      </div>
+      <div class="mng-campo" id="mng-box-col-val">
+        <label>Coluna de Valor (Métrica / Eixo Y)</label>
+        <select id="mng-col-val"></select>
+      </div>
+    </div>
+    <div id="mng-box-manual" class="mng-campo" style="margin-bottom:12px" hidden>
+      <label>Dados manuais (um por linha no formato <code>Rótulo; Valor</code>)</label>
+      <textarea id="mng-manual" rows="5" placeholder="Unimed; 14500&#10;Bradesco; 9800&#10;SulAmérica; 6400&#10;Particular; 4200"></textarea>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:10px">
+      <button type="button" class="f-btn sec" onclick="edFecharModalGrafico()">Cancelar</button>
+      <button type="button" class="f-btn" onclick="edCriarNovoGrafico()">✦ Inserir gráfico</button>
+    </div>
+  </div>
+</div>
 <div id="tip" role="tooltip"></div>
 <footer>{{ a.titulo }} · relatório gerado automaticamente · v{{ a.versao }} · contém dados pessoais — uso interno (LGPD)</footer>
 <script>
 (function () {
+  var SLUG = {{ (a.slug or '')|tojson }};
   var tip = document.getElementById('tip');
   document.addEventListener('mousemove', function (e) {
     var el = e.target.closest ? e.target.closest('[data-tip]') : null;
@@ -523,6 +939,903 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 12px
     cmpRender();
   }
 
+  // ---- Personalização do Painel Executivo (Gestor / ADM) ----
+  window.execToggleCfg = function () {
+    var box = document.getElementById('exec-cfg-box');
+    if (box) box.hidden = !box.hidden;
+  };
+  window.execMoverItem = function (btn, dir) {
+    var item = btn.closest('.exec-cfg-item');
+    if (!item || !item.parentElement) return;
+    var pai = item.parentElement;
+    if (dir < 0 && item.previousElementSibling) pai.insertBefore(item, item.previousElementSibling);
+    else if (dir > 0 && item.nextElementSibling) pai.insertBefore(item.nextElementSibling, item);
+    window.execAplicarLocal();
+  };
+  window.execMarcarDestaque = function (chave) {
+    var itens = document.querySelectorAll('#exec-cfg-kpis .exec-cfg-item');
+    for (var i = 0; i < itens.length; i++) {
+      var b = itens[i].querySelector('.exec-cfg-mini');
+      if (!b) continue;
+      if (itens[i].getAttribute('data-chave') === chave) b.classList.toggle('ativo');
+      else b.classList.remove('ativo');
+    }
+    window.execAplicarLocal();
+  };
+  window.execColetarCfg = function () {
+    var kpis = [], destaque = '', kpisLargura = {}, kpisRotulos = {};
+    var contKpi = document.getElementById('kpis-exec-v0');
+    var ik = document.querySelectorAll('#exec-cfg-kpis .exec-cfg-item');
+    for (var i = 0; i < ik.length; i++) {
+      var ck = ik[i].querySelector('.exec-ck-kpi');
+      var st = ik[i].querySelector('.exec-cfg-mini');
+      var ch = ik[i].getAttribute('data-chave') || '';
+      if (ck && ck.checked) kpis.push(ck.value);
+      if (st && st.classList.contains('ativo')) destaque = ch;
+    }
+    if (contKpi) {
+      var cards = contKpi.querySelectorAll('.kpi-exec');
+      var kpisDom = [];
+      for (var c = 0; c < cards.length; c++) {
+        var chK = cards[c].getAttribute('data-chave');
+        var spK = parseInt(cards[c].getAttribute('data-span') || '1', 10);
+        kpisLargura[chK] = spK;
+        var rotEl = cards[c].querySelector('.rot');
+        if (rotEl) kpisRotulos[chK] = rotEl.textContent.trim();
+        if (cards[c].getAttribute('data-oculto') !== '1') kpisDom.push(chK);
+        if (cards[c].classList.contains('destaque')) destaque = chK;
+      }
+      if (kpisDom.length) kpis = kpisDom;
+    }
+    var graficos = [], graficosLayout = {};
+    var contGraf = document.getElementById('exec-graficos-v0');
+    if (contGraf) {
+      var figs = contGraf.querySelectorAll('.exec-fig');
+      for (var f = 0; f < figs.length; f++) {
+        var gid = figs[f].getAttribute('data-gid');
+        if (!gid) continue;
+        graficos.push(gid);
+        var h3 = figs[f].querySelector('h3');
+        var corpo = figs[f].querySelector('.exec-fig-corpo');
+        var ehCustom = figs[f].getAttribute('data-custom') === '1';
+        graficosLayout[gid] = {
+          largura: parseInt(figs[f].getAttribute('data-larg') || '6', 10),
+          altura: parseInt(figs[f].getAttribute('data-altura') || '0', 10),
+          titulo: h3 ? h3.textContent.trim() : '',
+          custom: ehCustom,
+          figura_html: ehCustom && corpo ? corpo.innerHTML : undefined
+        };
+      }
+    }
+    var secExec = document.getElementById('exec-v0');
+    var titEl = document.getElementById('exec-titulo-v0');
+    return {
+      kpis: kpis,
+      kpi_destaque: destaque,
+      kpis_largura: kpisLargura,
+      kpis_rotulos: kpisRotulos,
+      graficos: graficos,
+      graficos_layout: graficosLayout,
+      tamanho: secExec ? (secExec.getAttribute('data-tam') || 'padrao') : 'padrao',
+      altura: secExec ? parseInt(secExec.getAttribute('data-altura') || '0', 10) : 0,
+      largura_pagina: document.body.getAttribute('data-largura') || 'padrao',
+      titulo: titEl ? titEl.textContent.trim() : 'Painel executivo'
+    };
+  };
+  window.execAplicarLocal = function () {
+    var kpis = [], destaque = '';
+    var ik = document.querySelectorAll('#exec-cfg-kpis .exec-cfg-item');
+    for (var i = 0; i < ik.length; i++) {
+      var ck = ik[i].querySelector('.exec-ck-kpi');
+      var st = ik[i].querySelector('.exec-cfg-mini');
+      if (ck && ck.checked) kpis.push(ck.value);
+      if (st && st.classList.contains('ativo')) destaque = ik[i].getAttribute('data-chave') || '';
+    }
+    var contKpi = document.getElementById('kpis-exec-v0');
+    if (contKpi) {
+      var mapaK = {};
+      var cards = contKpi.querySelectorAll('.kpi-exec');
+      for (var c = 0; c < cards.length; c++) {
+        var ch = cards[c].getAttribute('data-chave');
+        mapaK[ch] = cards[c];
+        cards[c].setAttribute('data-oculto', '1');
+        cards[c].classList.remove('destaque');
+      }
+      for (var m = 0; m < ik.length; m++) {
+        var ch2 = ik[m].getAttribute('data-chave');
+        if (mapaK[ch2]) contKpi.appendChild(mapaK[ch2]);
+      }
+      for (var k = 0; k < kpis.length; k++) {
+        var card = mapaK[kpis[k]];
+        if (card) {
+          card.setAttribute('data-oculto', '0');
+          if (destaque && kpis[k] === destaque) {
+            card.classList.add('destaque');
+            card.setAttribute('data-span', '2');
+          }
+        }
+      }
+    }
+    var grafIds = [];
+    var ig = document.querySelectorAll('#exec-cfg-graficos .exec-cfg-item');
+    for (var j = 0; j < ig.length; j++) {
+      var cg = ig[j].querySelector('.exec-ck-graf');
+      if (cg && cg.checked) grafIds.push(cg.value);
+    }
+    var contGraf = document.getElementById('exec-graficos-v0');
+    var tpl = document.getElementById('exec-catalogo-graficos-tpl');
+    if (contGraf && tpl) {
+      var existentes = {};
+      var atuais = contGraf.querySelectorAll('.exec-fig');
+      for (var a = 0; a < atuais.length; a++) {
+        existentes[atuais[a].getAttribute('data-gid')] = atuais[a];
+      }
+      contGraf.innerHTML = '';
+      for (var g = 0; g < grafIds.length; g++) {
+        var gid = grafIds[g];
+        if (existentes[gid]) {
+          contGraf.appendChild(existentes[gid]);
+        } else {
+          var orig = tpl.content.querySelector('[data-gid="' + gid + '"]');
+          if (orig) contGraf.appendChild(orig.cloneNode(true));
+        }
+      }
+      for (var idEx in existentes) {
+        if (existentes[idEx].getAttribute('data-custom') === '1' && grafIds.indexOf(idEx) === -1) {
+          contGraf.appendChild(existentes[idEx]);
+        }
+      }
+      contGraf.hidden = (contGraf.children.length === 0);
+    }
+  };
+  window.execSalvarServidor = function () {
+    if (!SLUG) return;
+    var msg = document.getElementById('exec-cfg-msg');
+    if (msg) msg.textContent = 'Salvando…';
+    fetch('/web/r/' + encodeURIComponent(SLUG) + '/painel-executivo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(window.execColetarCfg())
+    }).then(function (r) { return r.json(); }).then(function (d) {
+      if (msg) msg.textContent = d.ok ? '✔ Painel Executivo salvo para este relatório!' : ('Erro: ' + (d.erro || 'falha'));
+    }).catch(function () {
+      if (msg) msg.textContent = 'Erro ao salvar no servidor.';
+    });
+  };
+  window.execRestaurarPadrao = function () {
+    var cks = document.querySelectorAll('#exec-cfg-kpis .exec-ck-kpi');
+    for (var i = 0; i < cks.length; i++) cks[i].checked = true;
+    var sts = document.querySelectorAll('#exec-cfg-kpis .exec-cfg-mini');
+    for (var s = 0; s < sts.length; s++) sts[s].classList.remove('ativo');
+    var firstSt = document.querySelector('#exec-cfg-kpis .exec-cfg-item .exec-cfg-mini');
+    if (firstSt) firstSt.classList.add('ativo');
+    var gks = document.querySelectorAll('#exec-cfg-graficos .exec-ck-graf');
+    for (var g = 0; g < gks.length; g++) gks[g].checked = (g < 2);
+    window.execAplicarLocal();
+    if (SLUG) {
+      fetch('/web/r/' + encodeURIComponent(SLUG) + '/painel-executivo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reset: true })
+      }).then(function () {
+        var msg = document.getElementById('exec-cfg-msg');
+        if (msg) msg.textContent = '✔ Restaurado ao padrão automático.';
+      });
+    }
+  };
+
+  // ---- MODO VERSÃO EDITÁVEL (2ª versão do relatório) ----
+  function edAtualizarEditaveis(ativo) {
+    var els = document.querySelectorAll('[data-editavel="1"]');
+    for (var i = 0; i < els.length; i++) {
+      if (ativo) els[i].setAttribute('contenteditable', 'true');
+      else els[i].removeAttribute('contenteditable');
+    }
+  }
+  function edAtualizarListaOcultos() {
+    var lista = document.getElementById('ed-lista-ocultos');
+    var cont = document.getElementById('ed-n-ocultos');
+    if (!lista || !cont) return;
+    lista.innerHTML = '';
+    var n = 0;
+    var secs = document.querySelectorAll('section[data-sec-id][data-oculto="1"]');
+    for (var i = 0; i < secs.length; i++) {
+      if (secs[i].closest('.vista') && secs[i].closest('.vista').hidden) continue;
+      n++;
+      (function (el) {
+        var sid = el.getAttribute('data-sec-id');
+        var nome = el.getAttribute('data-sec-nome') || sid;
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'f-chip';
+        b.textContent = '+ Seção: ' + nome;
+        b.onclick = function () { el.setAttribute('data-oculto', '0'); edAtualizarListaOcultos(); };
+        lista.appendChild(b);
+      })(secs[i]);
+    }
+    var pns = document.querySelectorAll('.vista:not([hidden]) .painel[data-painel-id][data-oculto="1"]');
+    for (var j = 0; j < pns.length; j++) {
+      n++;
+      (function (el) {
+        var nome = el.getAttribute('data-painel-nome') || 'Painel';
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'f-chip';
+        b.textContent = '+ Painel: ' + nome;
+        b.onclick = function () { el.setAttribute('data-oculto', '0'); edAtualizarListaOcultos(); };
+        lista.appendChild(b);
+      })(pns[j]);
+    }
+    cont.textContent = String(n);
+  }
+  window.edAtivarModo = function () {
+    document.body.classList.add('modo-editavel');
+    edAtualizarEditaveis(true);
+    edAtualizarListaOcultos();
+    var btn = document.getElementById('btn-gerar-editavel');
+    if (btn) btn.textContent = '✎ Editando versão';
+  };
+  window.edSairModo = function () {
+    document.body.classList.remove('modo-editavel');
+    edAtualizarEditaveis(false);
+    var btn = document.getElementById('btn-gerar-editavel');
+    if (btn) btn.textContent = '✎ Editar versão';
+  };
+  window.edToggleGavetaOcultos = function () {
+    var g = document.getElementById('ed-gaveta-ocultos');
+    if (g) g.classList.toggle('aberta');
+  };
+  window.edOcultarSecao = function (secId) {
+    var secs = document.querySelectorAll('section[data-sec-id="' + secId + '"]');
+    for (var i = 0; i < secs.length; i++) secs[i].setAttribute('data-oculto', '1');
+    edAtualizarListaOcultos();
+  };
+  window.edOcultarPainel = function (pid) {
+    var pns = document.querySelectorAll('.painel[data-painel-id="' + pid + '"]');
+    for (var i = 0; i < pns.length; i++) pns[i].setAttribute('data-oculto', '1');
+    edAtualizarListaOcultos();
+  };
+  window.edRestaurarTudo = function () {
+    var ocultos = document.querySelectorAll('section[data-oculto="1"], .painel[data-oculto="1"]');
+    for (var i = 0; i < ocultos.length; i++) ocultos[i].setAttribute('data-oculto', '0');
+    edAtualizarListaOcultos();
+  };
+  window.edMoverSecao = function (btn, dir) {
+    var sec = btn.closest('section');
+    if (!sec || !sec.parentElement) return;
+    var pai = sec.parentElement;
+    var irmao = dir < 0 ? sec.previousElementSibling : sec.nextElementSibling;
+    while (irmao && (irmao.tagName !== 'SECTION' || irmao.getAttribute('data-oculto') === '1')) {
+      irmao = dir < 0 ? irmao.previousElementSibling : irmao.nextElementSibling;
+    }
+    if (!irmao) return;
+    if (dir < 0) pai.insertBefore(sec, irmao);
+    else pai.insertBefore(irmao, sec);
+  };
+  window.edMoverPainel = function (btn, dir) {
+    var pn = btn.closest('.painel');
+    if (!pn || !pn.parentElement) return;
+    var pai = pn.parentElement;
+    var irmao = dir < 0 ? pn.previousElementSibling : pn.nextElementSibling;
+    while (irmao && (!irmao.classList.contains('painel') || irmao.getAttribute('data-oculto') === '1')) {
+      irmao = dir < 0 ? irmao.previousElementSibling : irmao.nextElementSibling;
+    }
+    if (!irmao) return;
+    if (dir < 0) pai.insertBefore(pn, irmao);
+    else pai.insertBefore(irmao, pn);
+  };
+  window.edAlternarLargura = function (btn) {
+    var pn = btn.closest('.painel, .exec-fig');
+    if (!pn) return;
+    var atual = parseInt(pn.getAttribute('data-larg') || (pn.classList.contains('meia') ? '6' : '12'), 10);
+    var novo = atual === 6 ? 12 : 6;
+    window.edDefinirLarguraCard(btn, novo);
+  };
+  window.edDefinirLarguraCard = function (el, valor) {
+    var card = el.closest('.painel, .exec-fig');
+    if (!card) return;
+    var n = parseInt(valor || '6', 10);
+    card.setAttribute('data-larg', String(n));
+    if (card.classList.contains('painel')) {
+      if (n === 6) card.classList.add('meia');
+      else card.classList.remove('meia');
+    }
+    var sel = card.querySelector('.ed-sel-larg');
+    if (sel && sel.value !== String(n)) sel.value = String(n);
+  };
+  window.edAjustarAlturaGrafico = function (btn, delta) {
+    var card = btn.closest('.painel, .exec-fig');
+    if (!card) return;
+    var wrap = card.querySelector('.painel-fig-wrap, .exec-fig-corpo');
+    var svg = card.querySelector('svg.grafico');
+    var atual = parseInt(card.getAttribute('data-altura') || '0', 10);
+    if (!atual) {
+      if (svg && svg.getBoundingClientRect().height > 40) atual = Math.round(svg.getBoundingClientRect().height);
+      else if (wrap && wrap.getBoundingClientRect().height > 40) atual = Math.round(wrap.getBoundingClientRect().height);
+      else atual = 220;
+    }
+    var nova = Math.max(110, Math.min(760, atual + delta));
+    card.setAttribute('data-altura', String(nova));
+    if (wrap) wrap.style.minHeight = nova + 'px';
+    if (svg) svg.style.height = nova + 'px';
+  };
+  window.edMudarTamExec = function (tam) {
+    var secs = document.querySelectorAll('section.exec');
+    for (var i = 0; i < secs.length; i++) secs[i].setAttribute('data-tam', tam);
+    var s1 = document.getElementById('ed-sel-tam-exec');
+    if (s1 && s1.value !== tam) s1.value = tam;
+    var s2 = document.getElementById('exec-cfg-tam');
+    if (s2 && s2.value !== tam) s2.value = tam;
+  };
+  window.edCiclarTamExec = function () {
+    var sec = document.getElementById('exec-v0');
+    var ord = ['compacto', 'padrao', 'expandido'];
+    var at = sec ? (sec.getAttribute('data-tam') || 'padrao') : 'padrao';
+    var prox = ord[(ord.indexOf(at) + 1) % ord.length];
+    window.edMudarTamExec(prox);
+  };
+  window.edAjustarAlturaExec = function (delta) {
+    var sec = document.getElementById('exec-v0');
+    if (!sec) return;
+    var at = parseInt(sec.getAttribute('data-altura') || '0', 10);
+    if (!at) at = Math.round(sec.getBoundingClientRect().height || 260);
+    var nova = Math.max(140, Math.min(1200, at + delta));
+    sec.setAttribute('data-altura', String(nova));
+    sec.style.minHeight = nova + 'px';
+  };
+  window.edMudarLarguraPagina = function (larg) {
+    document.body.setAttribute('data-largura', larg || 'padrao');
+    var sel = document.getElementById('ed-sel-larg-pag');
+    if (sel && sel.value !== larg) sel.value = larg;
+  };
+  window.edMoverKpiExec = function (btn, dir) {
+    var kpi = btn.closest('.kpi-exec');
+    if (!kpi || !kpi.parentElement) return;
+    var pai = kpi.parentElement;
+    var irmao = dir < 0 ? kpi.previousElementSibling : kpi.nextElementSibling;
+    while (irmao && irmao.getAttribute('data-oculto') === '1') {
+      irmao = dir < 0 ? irmao.previousElementSibling : irmao.nextElementSibling;
+    }
+    if (!irmao) return;
+    if (dir < 0) pai.insertBefore(kpi, irmao);
+    else pai.insertBefore(irmao, kpi);
+  };
+  window.edCiclarSpanKpi = function (btn) {
+    var kpi = btn.closest('.kpi-exec');
+    if (!kpi) return;
+    var sp = parseInt(kpi.getAttribute('data-span') || '1', 10);
+    var novo = sp >= 3 ? 1 : (sp + 1);
+    kpi.setAttribute('data-span', String(novo));
+    if (novo >= 2) kpi.classList.add('destaque');
+    else kpi.classList.remove('destaque');
+  };
+  window.edOcultarKpiExec = function (btn) {
+    var kpi = btn.closest('.kpi-exec');
+    if (!kpi) return;
+    kpi.setAttribute('data-oculto', '1');
+    var ch = kpi.getAttribute('data-chave');
+    var ck = document.querySelector('#exec-cfg-kpis .exec-ck-kpi[value="' + ch + '"]');
+    if (ck) ck.checked = false;
+  };
+  window.edMoverGrafExec = function (btn, dir) {
+    var fig = btn.closest('.exec-fig');
+    if (!fig || !fig.parentElement) return;
+    var pai = fig.parentElement;
+    if (dir < 0 && fig.previousElementSibling) pai.insertBefore(fig, fig.previousElementSibling);
+    else if (dir > 0 && fig.nextElementSibling) pai.insertBefore(fig.nextElementSibling, fig);
+  };
+  window.edRemoverGrafExec = function (btn) {
+    var fig = btn.closest('.exec-fig');
+    if (!fig) return;
+    var gid = fig.getAttribute('data-gid');
+    var pai = fig.parentElement;
+    fig.remove();
+    var ck = document.querySelector('#exec-cfg-graficos .exec-ck-graf[value="' + gid + '"]');
+    if (ck) ck.checked = false;
+    if (pai && pai.children.length === 0) pai.hidden = true;
+  };
+  window.edPromoverParaExec = function (btn) {
+    var pn = btn.closest('.painel');
+    if (!pn) return;
+    var pid = pn.getAttribute('data-painel-id');
+    var h3 = pn.querySelector('h3');
+    var tit = h3 ? h3.textContent.trim() : (pn.getAttribute('data-painel-nome') || 'Gráfico');
+    var fw = pn.querySelector('.painel-fig-wrap');
+    if (!fw) return;
+    var contGraf = document.getElementById('exec-graficos-v0');
+    if (!contGraf) return;
+    var ja = contGraf.querySelector('[data-gid="' + pid + '"]');
+    if (ja) {
+      ja.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    var ehCustom = pn.getAttribute('data-custom-graf') === '1';
+    var card = criarCardGraficoExec(pid, tit, fw.innerHTML, 6, ehCustom);
+    contGraf.appendChild(card);
+    contGraf.hidden = false;
+    var ck = document.querySelector('#exec-cfg-graficos .exec-ck-graf[value="' + pid + '"]');
+    if (ck) ck.checked = true;
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+  function criarCardGraficoExec(gid, titulo, figuraHtml, largura, ehCustom) {
+    var div = document.createElement('div');
+    div.className = 'exec-fig';
+    div.setAttribute('data-gid', gid);
+    div.setAttribute('data-larg', String(largura || 6));
+    div.setAttribute('data-altura', '0');
+    div.setAttribute('data-custom', ehCustom ? '1' : '0');
+    var editavelAttr = document.body.classList.contains('modo-editavel') ? ' contenteditable="true"' : '';
+    div.innerHTML = '<div class="ed-painel-bar no-print">' +
+      '<button type="button" class="ed-mini-btn" onclick="edMoverGrafExec(this, -1)" title="Mover gráfico para trás">←</button>' +
+      '<button type="button" class="ed-mini-btn" onclick="edMoverGrafExec(this, 1)" title="Mover gráfico para frente">→</button>' +
+      '<select class="ed-mini-btn ed-sel-larg" onchange="edDefinirLarguraCard(this, this.value)" title="Largura do gráfico">' +
+      '<option value="3"' + (largura == 3 ? ' selected' : '') + '>25%</option>' +
+      '<option value="4"' + (largura == 4 ? ' selected' : '') + '>33%</option>' +
+      '<option value="6"' + ((!largura || largura == 6) ? ' selected' : '') + '>50%</option>' +
+      '<option value="8"' + (largura == 8 ? ' selected' : '') + '>66%</option>' +
+      '<option value="12"' + (largura == 12 ? ' selected' : '') + '>100%</option></select>' +
+      '<button type="button" class="ed-mini-btn" onclick="edAjustarAlturaGrafico(this, -35)" title="Diminuir altura">Alt −</button>' +
+      '<button type="button" class="ed-mini-btn" onclick="edAjustarAlturaGrafico(this, 35)" title="Aumentar altura">Alt +</button>' +
+      '<button type="button" class="ed-mini-btn perigo" style="margin-left:auto" onclick="edRemoverGrafExec(this)" title="Remover do Painel Executivo">✕</button>' +
+      '</div><h3 data-editavel="1"' + editavelAttr + '>' + escHtml(titulo) + '</h3>' +
+      '<div class="exec-fig-corpo">' + figuraHtml + '</div>';
+    return div;
+  }
+  function escHtml(s) {
+    return String(s || '').replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+  function parseNumeroPt(txt) {
+    var limpo = String(txt || '').replace(/R\$\s*/gi, '').replace(/%/g, '').replace(/\s*dias?/gi, '').trim();
+    if (!limpo || limpo === '—' || limpo === '-') return NaN;
+    if (limpo.indexOf(',') !== -1) limpo = limpo.replace(/\./g, '').replace(',', '.');
+    var n = parseFloat(limpo);
+    return isNaN(n) ? NaN : n;
+  }
+  var tabelasCatalogadas = [];
+  window.edAbrirModalGrafico = function (destinoPadrao) {
+    var modal = document.getElementById('modal-novo-grafico');
+    if (!modal) return;
+    if (!document.body.classList.contains('modo-editavel')) {
+      window.edAtivarModo();
+    }
+    var selDest = document.getElementById('mng-destino');
+    if (selDest && destinoPadrao) selDest.value = destinoPadrao;
+    var selTab = document.getElementById('mng-tabela');
+    tabelasCatalogadas = [];
+    if (selTab) {
+      selTab.innerHTML = '';
+      var v0 = document.querySelector('.vista[data-i="0"]') || document;
+      var pns = v0.querySelectorAll('.painel[data-painel-id]');
+      for (var i = 0; i < pns.length; i++) {
+        var tb = pns[i].querySelector('table');
+        if (!tb) continue;
+        var h3 = pns[i].querySelector('h3');
+        var sec = pns[i].closest('section');
+        var h2 = sec ? sec.querySelector('h2') : null;
+        var nome = (h2 ? h2.textContent.trim() + ' — ' : '') + (h3 ? h3.textContent.trim() : (pns[i].getAttribute('data-painel-nome') || 'Tabela'));
+        tabelasCatalogadas.push({ nome: nome, tabela: tb });
+        var opt = document.createElement('option');
+        opt.value = String(tabelasCatalogadas.length - 1);
+        opt.textContent = nome;
+        selTab.appendChild(opt);
+      }
+      var tbBase = document.querySelector('#base table');
+      if (tbBase) {
+        tabelasCatalogadas.push({ nome: 'Base detalhada', tabela: tbBase });
+        var optB = document.createElement('option');
+        optB.value = String(tabelasCatalogadas.length - 1);
+        optB.textContent = 'Base detalhada';
+        selTab.appendChild(optB);
+      }
+    }
+    var selFonte = document.getElementById('mng-fonte');
+    if (tabelasCatalogadas.length === 0 && selFonte) selFonte.value = 'manual';
+    window.edMudarFonteGrafico();
+    window.edPopularColunasFonte();
+    modal.classList.add('aberto');
+  };
+  window.edFecharModalGrafico = function () {
+    var modal = document.getElementById('modal-novo-grafico');
+    if (modal) modal.classList.remove('aberto');
+  };
+  window.edMudarFonteGrafico = function () {
+    var fonte = document.getElementById('mng-fonte').value;
+    var manual = (fonte === 'manual');
+    document.getElementById('mng-box-tab').hidden = manual;
+    document.getElementById('mng-box-col-rot').hidden = manual;
+    document.getElementById('mng-box-col-val').hidden = manual;
+    document.getElementById('mng-box-manual').hidden = !manual;
+  };
+  window.edPopularColunasFonte = function () {
+    var idx = parseInt(document.getElementById('mng-tabela').value || '0', 10);
+    var item = tabelasCatalogadas[idx];
+    var selRot = document.getElementById('mng-col-rot');
+    var selVal = document.getElementById('mng-col-val');
+    if (!item || !selRot || !selVal) return;
+    selRot.innerHTML = '';
+    selVal.innerHTML = '';
+    var ths = item.tabela.querySelectorAll('thead th');
+    var primNum = -1;
+    for (var c = 0; c < ths.length; c++) {
+      var t = ths[c].textContent.trim() || ('Coluna ' + (c + 1));
+      var o1 = document.createElement('option'); o1.value = String(c); o1.textContent = t; selRot.appendChild(o1);
+      var o2 = document.createElement('option'); o2.value = String(c); o2.textContent = t; selVal.appendChild(o2);
+      if (primNum === -1 && (ths[c].classList.contains('n') || c > 0)) primNum = c;
+    }
+    selRot.value = '0';
+    if (primNum !== -1) selVal.value = String(primNum);
+  };
+  function construirHtmlFiguraCustom(tipo, pares) {
+    var cores = ['var(--s1)', 'var(--s2)', 'var(--s3)', 'var(--s4)', 'var(--s5)', 'var(--s6)'];
+    var maxV = 0, somaV = 0;
+    for (var i = 0; i < pares.length; i++) {
+      if (pares[i].val > maxV) maxV = pares[i].val;
+      if (pares[i].val > 0) somaV += pares[i].val;
+    }
+    if (maxV <= 0) maxV = 1;
+    if (tipo === 'barras') {
+      var htmlB = '<div class="barras">';
+      for (var b = 0; b < pares.length; b++) {
+        var pct = Math.max(2, Math.round((pares[b].val / maxV) * 100));
+        var cor = cores[b % cores.length];
+        htmlB += '<div class="barra-linha"><span class="barra-rot" title="' + escHtml(pares[b].rot) + '">' + escHtml(pares[b].rot) + '</span>' +
+          '<div class="barra-trilho"><span class="barra" style="width:' + pct + '%;--cor:' + cor + '"></span></div>' +
+          '<span class="barra-val">' + escHtml(pares[b].fmt) + '</span></div>';
+      }
+      return htmlB + '</div>';
+    }
+    if (tipo === 'rosca') {
+      var r = 52, C = 2 * Math.PI * r, acum = 0;
+      var svgC = '<div class="rosca-wrap"><svg class="rosca-svg" viewBox="0 0 140 140">';
+      var leg = '<ul class="rosca-leg">';
+      var baseSoma = somaV > 0 ? somaV : 1;
+      for (var d = 0; d < pares.length; d++) {
+        var frac = Math.max(0, pares[d].val) / baseSoma;
+        var comp = (frac * C).toFixed(2);
+        var off = (-acum * C).toFixed(2);
+        acum += frac;
+        var corD = cores[d % cores.length];
+        svgC += '<circle cx="70" cy="70" r="' + r + '" fill="none" stroke="' + corD + '" stroke-width="20" stroke-dasharray="' + comp + ' ' + C.toFixed(2) + '" stroke-dashoffset="' + off + '" transform="rotate(-90 70 70)" data-tip="' + escHtml(pares[d].rot + ': ' + pares[d].fmt) + '"></circle>';
+        leg += '<li><i style="background:' + corD + '"></i><span class="rz-nome">' + escHtml(pares[d].rot) + '</span><b>' + escHtml(pares[d].fmt) + '</b><span class="rz-pct">' + (frac * 100).toFixed(1).replace('.', ',') + '%</span></li>';
+      }
+      svgC += '<text x="70" y="74" text-anchor="middle" class="rz-num">' + pares.length + '</text><text x="70" y="88" text-anchor="middle" class="rz-rot">itens</text></svg>';
+      return svgC + leg + '</ul></div>';
+    }
+    // Colunas ou Linha em SVG
+    var W = 560, H = 220, padL = 44, padR = 18, padT = 24, padB = 42;
+    var plotW = W - padL - padR, plotH = H - padT - padB;
+    var n = pares.length;
+    var svg = '<svg class="grafico" viewBox="0 0 ' + W + ' ' + H + '">';
+    svg += '<line class="grade" x1="' + padL + '" y1="' + padT + '" x2="' + (W - padR) + '" y2="' + padT + '"></line>';
+    svg += '<line class="grade" x1="' + padL + '" y1="' + Math.round(padT + plotH / 2) + '" x2="' + (W - padR) + '" y2="' + Math.round(padT + plotH / 2) + '"></line>';
+    svg += '<line class="base" x1="' + padL + '" y1="' + (padT + plotH) + '" x2="' + (W - padR) + '" y2="' + (padT + plotH) + '"></line>';
+    if (tipo === 'colunas') {
+      var step = plotW / Math.max(1, n);
+      var bw = Math.max(12, Math.min(48, Math.round(step * 0.62)));
+      for (var k = 0; k < n; k++) {
+        var hBar = Math.max(3, Math.round((Math.max(0, pares[k].val) / maxV) * plotH));
+        var x = Math.round(padL + k * step + (step - bw) / 2);
+        var y = padT + plotH - hBar;
+        var cx = Math.round(x + bw / 2);
+        var rotCurto = pares[k].rot.length > 12 ? pares[k].rot.slice(0, 11) + '…' : pares[k].rot;
+        svg += '<rect x="' + x + '" y="' + y + '" width="' + bw + '" height="' + hBar + '" rx="4" fill="' + cores[k % cores.length] + '" data-tip="' + escHtml(pares[k].rot + ': ' + pares[k].fmt) + '"></rect>';
+        svg += '<text class="valor" x="' + cx + '" y="' + (y - 5) + '" text-anchor="middle">' + escHtml(pares[k].fmt) + '</text>';
+        svg += '<text class="eixo" x="' + cx + '" y="' + (padT + plotH + 16) + '" text-anchor="middle">' + escHtml(rotCurto) + '</text>';
+      }
+    } else {
+      var pts = [];
+      for (var l = 0; l < n; l++) {
+        var px = n === 1 ? Math.round(padL + plotW / 2) : Math.round(padL + (l / (n - 1)) * plotW);
+        var py = Math.round(padT + plotH - (Math.max(0, pares[l].val) / maxV) * plotH);
+        pts.push({ x: px, y: py, p: pares[l] });
+      }
+      var poly = pts.map(function (pt) { return pt.x + ',' + pt.y; }).join(' ');
+      svg += '<polyline fill="none" stroke="var(--s1)" stroke-width="2.5" points="' + poly + '"></polyline>';
+      for (var pIdx = 0; pIdx < pts.length; pIdx++) {
+        var pt = pts[pIdx];
+        var rCurto = pt.p.rot.length > 10 ? pt.p.rot.slice(0, 9) + '…' : pt.p.rot;
+        svg += '<circle cx="' + pt.x + '" cy="' + pt.y + '" r="4.5" fill="var(--s1)" data-tip="' + escHtml(pt.p.rot + ': ' + pt.p.fmt) + '"></circle>';
+        svg += '<text class="valor" x="' + pt.x + '" y="' + (pt.y - 8) + '" text-anchor="middle">' + escHtml(pt.p.fmt) + '</text>';
+        svg += '<text class="eixo" x="' + pt.x + '" y="' + (padT + plotH + 16) + '" text-anchor="middle">' + escHtml(rCurto) + '</text>';
+      }
+    }
+    return svg + '</svg>';
+  }
+  var seqGrafCustom = 1;
+  window.edCriarNovoGrafico = function () {
+    var tipo = document.getElementById('mng-tipo').value;
+    var dest = document.getElementById('mng-destino').value;
+    var larg = parseInt(document.getElementById('mng-largura').value || '6', 10);
+    var fonte = document.getElementById('mng-fonte').value;
+    var titInput = document.getElementById('mng-titulo').value.trim();
+    var pares = [];
+    if (fonte === 'manual') {
+      var linhasTxt = (document.getElementById('mng-manual').value || '').split(/\r?\n/);
+      for (var i = 0; i < linhasTxt.length; i++) {
+        var ln = linhasTxt[i].trim();
+        if (!ln) continue;
+        var partes = ln.indexOf(';') !== -1 ? ln.split(';') : ln.split(',');
+        if (partes.length < 2) continue;
+        var r = partes[0].trim();
+        var vBruto = partes.slice(1).join(',').trim();
+        var num = parseNumeroPt(vBruto);
+        if (!isNaN(num)) pares.push({ rot: r, val: num, fmt: vBruto });
+      }
+    } else {
+      var idx = parseInt(document.getElementById('mng-tabela').value || '0', 10);
+      var item = tabelasCatalogadas[idx];
+      var cRot = parseInt(document.getElementById('mng-col-rot').value || '0', 10);
+      var cVal = parseInt(document.getElementById('mng-col-val').value || '1', 10);
+      if (item && item.tabela) {
+        var trs = item.tabela.querySelectorAll('tbody tr');
+        for (var rIdx = 0; rIdx < trs.length && pares.length < 18; rIdx++) {
+          var tds = trs[rIdx].querySelectorAll('td');
+          if (!tds[cRot] || !tds[cVal]) continue;
+          var rotTxt = tds[cRot].textContent.trim();
+          var valTxt = tds[cVal].textContent.trim();
+          if (!rotTxt || /^total$/i.test(rotTxt)) continue;
+          var nVal = parseNumeroPt(valTxt);
+          if (!isNaN(nVal)) pares.push({ rot: rotTxt, val: nVal, fmt: valTxt });
+        }
+        if (!titInput) {
+          var thVal = item.tabela.querySelectorAll('thead th')[cVal];
+          var thRot = item.tabela.querySelectorAll('thead th')[cRot];
+          titInput = (thVal ? thVal.textContent.trim() : 'Valor') + ' por ' + (thRot ? thRot.textContent.trim() : 'Categoria');
+        }
+      }
+    }
+    if (!pares.length) {
+      alert('Não foi possível encontrar valores numéricos na coluna/dados selecionados.');
+      return;
+    }
+    var tituloFinal = titInput || 'Gráfico personalizado';
+    var figHtml = construirHtmlFiguraCustom(tipo, pares);
+    var gid = 'g-custom-' + Date.now() + '-' + (seqGrafCustom++);
+    if (dest === 'exec') {
+      var contGraf = document.getElementById('exec-graficos-v0');
+      if (contGraf) {
+        var card = criarCardGraficoExec(gid, tituloFinal, figHtml, larg, true);
+        contGraf.appendChild(card);
+        contGraf.hidden = false;
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    } else {
+      var sec = document.querySelector('.vista[data-i="0"] section[data-sec-id="' + dest + '"]');
+      var grade = sec ? sec.querySelector('.grade-paineis') : null;
+      if (grade) {
+        var pid = dest + '--' + gid;
+        var pn = document.createElement('div');
+        pn.className = 'painel' + (larg === 6 ? ' meia' : '');
+        pn.setAttribute('data-painel-id', pid);
+        pn.setAttribute('data-painel-nome', tituloFinal);
+        pn.setAttribute('data-larg', String(larg));
+        pn.setAttribute('data-altura', '0');
+        pn.setAttribute('data-custom-graf', '1');
+        pn.setAttribute('data-oculto', '0');
+        pn.setAttribute('data-ocultar-fig', '0');
+        pn.setAttribute('data-ocultar-tab', '0');
+        pn.innerHTML = '<div class="ed-painel-bar no-print">' +
+          '<button type="button" class="ed-mini-btn" onclick="edMoverPainel(this, -1)" title="Mover painel para trás">←</button>' +
+          '<button type="button" class="ed-mini-btn" onclick="edMoverPainel(this, 1)" title="Mover painel para frente">→</button>' +
+          '<select class="ed-mini-btn ed-sel-larg" onchange="edDefinirLarguraCard(this, this.value)" title="Largura deste gráfico">' +
+          '<option value="3"' + (larg == 3 ? ' selected' : '') + '>25%</option>' +
+          '<option value="4"' + (larg == 4 ? ' selected' : '') + '>33%</option>' +
+          '<option value="6"' + (larg == 6 ? ' selected' : '') + '>50%</option>' +
+          '<option value="8"' + (larg == 8 ? ' selected' : '') + '>66%</option>' +
+          '<option value="12"' + (larg == 12 ? ' selected' : '') + '>100%</option></select>' +
+          '<button type="button" class="ed-mini-btn" onclick="edAjustarAlturaGrafico(this, -35)" title="Diminuir altura">Alt −</button>' +
+          '<button type="button" class="ed-mini-btn" onclick="edAjustarAlturaGrafico(this, 35)" title="Aumentar altura">Alt +</button>' +
+          '<button type="button" class="ed-mini-btn" onclick="edPromoverParaExec(this)" title="Enviar este gráfico ao Painel Executivo">⬆ No Executivo</button>' +
+          '<button type="button" class="ed-mini-btn perigo" style="margin-left:auto" onclick="this.closest(\'.painel\').remove()">✕ Remover</button>' +
+          '</div><h3 data-editavel="1" contenteditable="true">' + escHtml(tituloFinal) + '</h3>' +
+          '<div class="painel-fig-wrap">' + figHtml + '</div>';
+        grade.appendChild(pn);
+        pn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+    window.edFecharModalGrafico();
+  };
+  window.edAlternarFigura = function (btn) {
+    var pn = btn.closest('.painel');
+    if (!pn) return;
+    var fw = pn.querySelector('.painel-fig-wrap');
+    if (!fw) return;
+    fw.hidden = !fw.hidden;
+    pn.setAttribute('data-ocultar-fig', fw.hidden ? '1' : '0');
+  };
+  window.edAlternarTabela = function (btn) {
+    var pn = btn.closest('.painel');
+    if (!pn) return;
+    var tw = pn.querySelector('.painel-tab-wrap');
+    if (!tw) return;
+    var det = tw.querySelector('details');
+    var ab = tw.querySelector('.aberta');
+    if (!tw.hidden && det && !det.open) {
+      det.open = true;
+      pn.setAttribute('data-aberta', '1');
+    } else if (!tw.hidden) {
+      tw.hidden = true;
+      pn.setAttribute('data-ocultar-tab', '1');
+    } else {
+      tw.hidden = false;
+      pn.setAttribute('data-ocultar-tab', '0');
+      if (det) det.open = false;
+      if (ab) pn.setAttribute('data-aberta', '1');
+    }
+  };
+  window.edAdicionarAchado = function () {
+    var ul = document.getElementById('lista-achados-v0');
+    if (!ul) return;
+    var li = document.createElement('li');
+    li.innerHTML = '<button type="button" class="ed-achado-del no-print" onclick="this.parentElement.remove()" title="Remover achado">✕</button>' +
+      '<span data-editavel="1" contenteditable="true">Novo comentário ou destaque analítico…</span>';
+    ul.appendChild(li);
+    var sp = li.querySelector('span');
+    if (sp) sp.focus();
+  };
+  var seqExtra = 1;
+  window.edAdicionarBlocoTexto = function () {
+    var v0 = document.querySelector('.vista[data-i="0"]') || document.getElementById('rel-main');
+    if (!v0) return;
+    var eid = 's-extra-' + Date.now() + '-' + (seqExtra++);
+    var sec = document.createElement('section');
+    sec.setAttribute('data-sec-id', eid);
+    sec.setAttribute('data-sec-nome', 'Nota complementar');
+    sec.setAttribute('data-extra', '1');
+    sec.setAttribute('data-oculto', '0');
+    sec.innerHTML = '<div class="ed-sec-bar no-print">' +
+      '<button type="button" class="ed-mini-btn" onclick="edMoverSecao(this, -1)" title="Mover para cima">↑</button>' +
+      '<button type="button" class="ed-mini-btn" onclick="edMoverSecao(this, 1)" title="Mover para baixo">↓</button>' +
+      '<button type="button" class="ed-mini-btn perigo" onclick="this.closest(\'section\').remove()">✕ Excluir bloco</button></div>' +
+      '<h2 data-editavel="1" contenteditable="true">Nota complementar</h2>' +
+      '<div class="grade-paineis"><div class="painel" data-painel-id="' + eid + '--p0" data-painel-nome="Nota" data-larg="12">' +
+      '<p class="desc" data-editavel="1" contenteditable="true">Digite aqui observações, contexto para outros setores ou conclusões para impressão…</p>' +
+      '</div></div>';
+    v0.appendChild(sec);
+    sec.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
+  window.edColetarEstado = function () {
+    var secOcultas = [];
+    var todasSecs = document.querySelectorAll('section[data-sec-id]');
+    for (var i = 0; i < todasSecs.length; i++) {
+      if (todasSecs[i].getAttribute('data-oculto') === '1') {
+        var sid = todasSecs[i].getAttribute('data-sec-id');
+        if (secOcultas.indexOf(sid) === -1) secOcultas.push(sid);
+      }
+    }
+    var v0 = document.querySelector('.vista[data-i="0"]');
+    var ordemSecoes = [], titulosSecoes = {}, blocosExtras = [], paineisOcultos = [], ordemPaineis = {}, layoutPaineis = {}, graficosCustom = [];
+    if (v0) {
+      var secsV0 = v0.querySelectorAll('section[data-sec-id]');
+      for (var s = 0; s < secsV0.length; s++) {
+        var sec = secsV0[s];
+        var idSec = sec.getAttribute('data-sec-id');
+        if (idSec !== 'filtros' && idSec !== 'exec' && idSec !== 'resumo') {
+          ordemSecoes.push(idSec);
+        }
+        var h2 = sec.querySelector('h2');
+        if (h2) titulosSecoes[idSec] = h2.textContent.trim();
+        if (sec.getAttribute('data-extra') === '1' && sec.getAttribute('data-oculto') !== '1') {
+          var pDesc = sec.querySelector('.desc');
+          var pnEx = sec.querySelector('.painel');
+          blocosExtras.push({
+            id: idSec,
+            titulo: h2 ? h2.textContent.trim() : 'Nota complementar',
+            texto: pDesc ? pDesc.textContent.trim() : '',
+            meia: pnEx ? pnEx.classList.contains('meia') : false
+          });
+        }
+        var pns = sec.querySelectorAll('.painel[data-painel-id]');
+        ordemPaineis[idSec] = [];
+        for (var p = 0; p < pns.length; p++) {
+          var pn = pns[p];
+          var pid = pn.getAttribute('data-painel-id');
+          ordemPaineis[idSec].push(pid);
+          if (pn.getAttribute('data-oculto') === '1') paineisOcultos.push(pid);
+          var h3 = pn.querySelector('h3');
+          var dEl = pn.querySelector('p.desc');
+          var det = pn.querySelector('.painel-tab-wrap details');
+          var plarg = parseInt(pn.getAttribute('data-larg') || (pn.classList.contains('meia') ? '6' : '12'), 10);
+          var palt = parseInt(pn.getAttribute('data-altura') || '0', 10);
+          layoutPaineis[pid] = {
+            meia: plarg === 6,
+            largura: plarg,
+            altura: palt,
+            aberta: det ? det.open : (pn.getAttribute('data-aberta') === '1'),
+            ocultar_figura: pn.getAttribute('data-ocultar-fig') === '1',
+            ocultar_tabela: pn.getAttribute('data-ocultar-tab') === '1',
+            titulo: h3 ? h3.textContent.trim() : pn.getAttribute('data-painel-nome'),
+            descricao: dEl ? dEl.textContent.trim() : null
+          };
+          if (pn.getAttribute('data-custom-graf') === '1' && pn.getAttribute('data-oculto') !== '1') {
+            var fw = pn.querySelector('.painel-fig-wrap');
+            graficosCustom.push({
+              id: pid,
+              secao_id: idSec,
+              titulo: h3 ? h3.textContent.trim() : 'Gráfico personalizado',
+              descricao: dEl ? dEl.textContent.trim() : '',
+              largura: plarg,
+              altura: palt,
+              figura_html: fw ? fw.innerHTML : ''
+            });
+          }
+        }
+      }
+    }
+    var achados = [];
+    var lis = document.querySelectorAll('#lista-achados-v0 li span[data-editavel="1"]');
+    for (var a = 0; a < lis.length; a++) {
+      var txt = lis[a].textContent.trim();
+      if (txt) achados.push(txt);
+    }
+    var h1 = document.getElementById('rel-titulo-h1');
+    var sub = document.getElementById('rel-sub-p');
+    var resLead = document.getElementById('resumo-lead-v0');
+    var obs = document.getElementById('obs-gestor-v0');
+    return {
+      titulo: h1 ? h1.textContent.trim() : '',
+      sub: sub ? sub.textContent.trim() : '',
+      resumo: resLead ? resLead.textContent.trim() : '',
+      observacoes: obs ? obs.textContent.trim() : null,
+      achados: achados,
+      config_exec: window.execColetarCfg(),
+      secoes_ocultas: secOcultas,
+      ordem_secoes: ordemSecoes,
+      titulos_secoes: titulosSecoes,
+      paineis_ocultos: paineisOcultos,
+      ordem_paineis: ordemPaineis,
+      layout_paineis: layoutPaineis,
+      blocos_extras: blocosExtras,
+      graficos_custom: graficosCustom
+    };
+  };
+
+  window.edSalvarNoServidor = function () {
+    if (!SLUG) return;
+    var fb = document.getElementById('ed-feedback');
+    if (fb) fb.textContent = 'Salvando versão editada…';
+    fetch('/web/r/' + encodeURIComponent(SLUG) + '/versao-editada', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(window.edColetarEstado())
+    }).then(function (r) { return r.json(); }).then(function (d) {
+      if (fb) fb.textContent = d.ok ? '✔ Versão editada salva! pronta p/ compartilhar ou imprimir.' : ('Erro: ' + (d.erro || 'falha'));
+      try {
+        if (window.parent && window.parent !== window && window.parent.notificarVersaoEditadaSalva) {
+          window.parent.notificarVersaoEditadaSalva();
+        }
+      } catch (e) {}
+    }).catch(function () {
+      if (fb) fb.textContent = 'Erro ao salvar versão editada.';
+    });
+  };
+
+  window.edBaixarHtml = function () {
+    var clone = document.documentElement.cloneNode(true);
+    var bodyClone = clone.querySelector('body');
+    if (bodyClone) bodyClone.classList.remove('modo-editavel');
+    var rem = clone.querySelectorAll('[data-oculto="1"], #barra-editavel, #modal-novo-grafico, .ed-sec-bar, .ed-painel-bar, .ed-kpi-bar, .ed-achado-del, .exec-cfg, .exec-edit-btn, #btn-gerar-editavel');
+    for (var i = 0; i < rem.length; i++) rem[i].remove();
+    var eds = clone.querySelectorAll('[contenteditable]');
+    for (var j = 0; j < eds.length; j++) eds[j].removeAttribute('contenteditable');
+    var htmlTxt = '<!doctype html>\n' + clone.outerHTML;
+    var blob = new Blob([htmlTxt], { type: 'text/html;charset=utf-8' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = (SLUG || 'relatorio') + '-versao-editada.html';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () { a.remove(); }, 200);
+  };
+
+  if (document.body.classList.contains('modo-editavel')) {
+    edAtualizarEditaveis(true);
+    edAtualizarListaOcultos();
+  }
+
   // ---- filtros de dimensão (Convênio, Ano, Arquivo de origem, …) — valem no servidor web ----
   function relNavegarDims(params) {
     if (window.location.protocol.indexOf('http') === 0 && window.location.pathname.indexOf('/web/') === 0) {
@@ -534,17 +1847,17 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 12px
     }
     return false;
   }
-  function relSemDimensoes() {            // os parâmetros atuais da URL, sem nenhum sel:
+  function relSemDimensoes() {
     var p; try { p = new URLSearchParams(window.location.search); } catch (e) { p = new URLSearchParams(); }
     var fora = []; p.forEach(function (v, k) { if (k.indexOf('sel:') === 0) fora.push(k); });
     for (var i = 0; i < fora.length; i++) p.delete(fora[i]);
     return p;
   }
-  function relPreservarDimensoes(params) {  // leva os sel: da URL atual junto ao mexer no período
+  function relPreservarDimensoes(params) {
     var temSel = false; params.forEach(function (v, k) { if (k.indexOf('sel:') === 0) temSel = true; });
     if (temSel) return;
     try { new URLSearchParams(window.location.search).forEach(function (v, k) {
-      if (k.indexOf('sel:') === 0) params.append(k, v); }); } catch (e) {}
+      if (k.indexOf('sel:') === 0 || k === 'modo' || k === 'versao') params.append(k, v); }); } catch (e) {}
   }
   window.relAplicarFiltros = function () {
     var p = relSemDimensoes();
@@ -561,7 +1874,7 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 12px
     var maxD = fb.getAttribute('data-max') || '';
     function navegarServidor(params) {
       if (col) params.set('coluna_data', col);
-      relPreservarDimensoes(params);        // mantém os filtros de dimensão ao mexer no período
+      relPreservarDimensoes(params);
       var qs = params.toString();
       if (window.location.protocol.indexOf('http') === 0 && window.location.pathname.indexOf('/web/') === 0) {
         try {

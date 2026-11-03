@@ -32,8 +32,8 @@ from . import aprendizado, bd, modelos_fs, validacao
 from .autenticacao import escopo_por_token
 from .modelos_bd import (
     ADM, GESTOR, PAPEIS, PUBLICADA, RASCUNHO, SUBSTITUIDA, USUARIO,
-    AcessoTemporario, Auditoria, Carga, CentroCusto, ConhecimentoColuna, Pasta, Relatorio, SessaoUsuario,
-    Usuario, utcnow,
+    AcessoTemporario, Auditoria, Carga, CentroCusto, ConhecimentoColuna, Pasta, PedidoSenha, Relatorio,
+    SessaoUsuario, Usuario, utcnow,
 )
 from .repositorio import RepoCargas, RepoRelatorios, RepoUsuarios
 from .seguranca import DURACAO_SESSAO, MAX_TENTATIVAS, Escopo, conferir_senha, gerar_token, hash_senha, hash_token
@@ -47,7 +47,7 @@ router = APIRouter(prefix="/web", tags=["web"])
 
 # Paleta fixa de cores de avatar (hex). Guardar só o que está aqui evita injeção via style.
 PALETA_AVATAR = ["#00995D", "#2D6CDF", "#7C3AED", "#DB2777", "#DC2626",
-                 "#EA580C", "#D97706", "#0D9488", "#475569"]
+                 "#EA580C", "#D97706", "#0D9488", "#475569","#E102F5"]
 COR_AVATAR_PADRAO = PALETA_AVATAR[0]
 
 
@@ -58,6 +58,11 @@ def _cor_valida(cor: str) -> str:
 class _Erro(Exception):
     """Regra de negócio violada — vira uma faixa de erro na tela."""
 
+def obter_classe_cor(usuario_tipo: str, cor: str) -> str:
+    if usuario_tipo == "ADM":
+        return "adm-rgb"
+
+    return cor if cor in PALETA_AVATAR else COR_AVATAR_PADRAO
 
 def _srv():
     from . import app          # import tardio: evita ciclo (app importa web no fim)
@@ -117,7 +122,8 @@ def _exige_login(request: Request, s: Session):
 def login_form(request: Request, s: Session = Depends(_sessao)):
     if _escopo(request, s) is not None:
         return RedirectResponse("/web", status_code=303)
-    return _pagina("login.html", request, {"versao": __version__, "erro": None})
+    return _pagina("login.html", request, {"versao": __version__, "erro": request.query_params.get("erro"),
+                                           "ok": request.query_params.get("ok")})
 
 
 @router.post("/login")
@@ -189,6 +195,80 @@ def senha_enviar(request: Request, atual: str = Form(...), nova: str = Form(...)
     return RedirectResponse("/web", status_code=303)
 
 
+# ---- autoatendimento a partir da tela de login (sem sessão) ----------------------------------
+@router.get("/trocar-senha", response_class=HTMLResponse)
+def trocar_senha_form(request: Request, s: Session = Depends(_sessao)):
+    return _pagina("trocar_senha.html", request, {"versao": __version__, "erro": None, "ok": None, "login": ""})
+
+
+@router.post("/trocar-senha")
+def trocar_senha_enviar(request: Request, login: str = Form(...), atual: str = Form(...),
+                        nova: str = Form(...), confirma: str = Form(...), s: Session = Depends(_sessao)):
+    """Troca de senha a partir do login (sem sessão): exige usuário + senha atual."""
+    ip = request.client.host if request.client else None
+    login = login.strip()
+    u = s.scalar(select(Usuario).where(Usuario.login == login))
+    base = {"versao": __version__, "ok": None, "login": login}
+    if u is None or not u.ativo or not conferir_senha(u.senha_hash, atual):
+        s.add(Auditoria(usuario_id=u.id if u else None, centro_custo_id=u.centro_custo_id if u else None,
+                        acao="trocar_senha_falha", alvo=login, ip=ip))
+        s.commit()
+        return _pagina("trocar_senha.html", request, {**base, "erro": "Usuário ou senha atual incorretos."})
+    if len(nova) < 6:
+        return _pagina("trocar_senha.html", request, {**base, "erro": "A nova senha precisa de ao menos 6 caracteres."})
+    if nova != confirma:
+        return _pagina("trocar_senha.html", request, {**base, "erro": "As senhas não conferem."})
+    u.senha_hash = hash_senha(nova)
+    u.precisa_trocar_senha = False
+    u.tentativas_falhas = 0
+    for p in s.scalars(select(PedidoSenha).where(PedidoSenha.usuario_id == u.id, PedidoSenha.atendido.is_(False))):
+        p.atendido, p.atendido_em = True, utcnow()         # a própria troca encerra o pedido pendente
+    s.add(Auditoria(usuario_id=u.id, centro_custo_id=u.centro_custo_id, acao="trocar_senha", ip=ip))
+    s.commit()
+    return RedirectResponse("/web/login?" + urlencode({"ok": "Senha alterada. Entre com a nova senha."}),
+                            status_code=303)
+
+
+@router.get("/esqueci", response_class=HTMLResponse)
+def esqueci_form(request: Request, s: Session = Depends(_sessao)):
+    return _pagina("esqueci.html", request, {"versao": __version__, "erro": None, "ok": None, "login": ""})
+
+
+@router.post("/esqueci")
+def esqueci_enviar(request: Request, login: str = Form(...), s: Session = Depends(_sessao)):
+    """«Esqueci a senha»: registra um pedido que vira notificação para o ADM redefinir a senha.
+    Mensagem genérica sempre (não revela se o usuário existe)."""
+    ip = request.client.host if request.client else None
+    login = login.strip()
+    u = s.scalar(select(Usuario).where(Usuario.login == login))
+    if u is not None and u.ativo:
+        pendente = s.scalar(select(PedidoSenha).where(PedidoSenha.usuario_id == u.id,
+                                                      PedidoSenha.atendido.is_(False)))
+        if pendente is None:                               # não duplica pedidos do mesmo usuário
+            s.add(PedidoSenha(login=login, usuario_id=u.id, centro_custo_id=u.centro_custo_id))
+        s.add(Auditoria(usuario_id=u.id, centro_custo_id=u.centro_custo_id,
+                        acao="pedir_redefinicao_senha", alvo=login, ip=ip))
+        s.commit()
+    return RedirectResponse("/web/login?" + urlencode(
+        {"ok": "Pedido registrado. O administrador vai redefinir sua senha."}), status_code=303)
+
+
+@router.post("/pedido-senha/{pedido_id}/resolver")
+def pedido_senha_resolver(pedido_id: int, request: Request, s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    if not escopo.eh_adm:
+        return _pagina("erro.html", request, _ctx(request, escopo, s, "relatorios",
+                                                   mensagem="Acesso restrito ao administrador."))
+    p = s.get(PedidoSenha, pedido_id)
+    if p is not None and not p.atendido:
+        p.atendido, p.atendido_por, p.atendido_em = True, escopo.usuario_id, utcnow()
+        _audit(s, escopo, "resolver_pedido_senha", p.login)
+        s.commit()
+    return _redir("/web", ok="Pedido de senha marcado como resolvido.")
+
+
 # ============================================================== relatórios (ver)
 def _resumo_home(s: Session, escopo: Escopo, rels: list) -> dict:
     """Números do painel inicial, sempre dentro do escopo (Gestor só o próprio setor)."""
@@ -218,7 +298,18 @@ def _resumo_home(s: Session, escopo: Escopo, rels: list) -> dict:
     if gestor:
         metricas.append({"rotulo": "Rascunhos p/ publicar", "valor": rascunhos, "ic": "rascunho",
                          "alerta": rascunhos > 0, "url": "/web/rascunhos"})
-    return {"metricas": metricas, "ultimas": ultimas, "gestor": gestor}
+    # notificação do ADM: pedidos de redefinição de senha ainda não atendidos
+    pedidos = []
+    if escopo.eh_adm:
+        for p in s.scalars(select(PedidoSenha).where(PedidoSenha.atendido.is_(False))
+                           .order_by(PedidoSenha.criado_em.desc())):
+            u = s.get(Usuario, p.usuario_id) if p.usuario_id else None
+            pedidos.append({"id": p.id, "login": p.login, "nome": u.nome if u else "(usuário removido)",
+                            "quando": p.criado_em.strftime("%d/%m/%Y %H:%M") if p.criado_em else "—"})
+        if pedidos:
+            metricas.append({"rotulo": "Pedidos de senha", "valor": len(pedidos), "ic": "rascunho",
+                             "alerta": True, "url": "/web#pedidos-senha"})
+    return {"metricas": metricas, "ultimas": ultimas, "gestor": gestor, "pedidos": pedidos}
 
 
 # ---- navegação em pastas (estilo coleções do Metabase) -----------------------------------------
@@ -573,6 +664,16 @@ def _info_datas_tela(ds, f: Filtros) -> dict | None:
     }
 
 
+def _ler_json_dict(texto: str | None) -> dict | None:
+    if not texto:
+        return None
+    try:
+        obj = json.loads(texto)
+    except Exception:
+        return None
+    return obj if isinstance(obj, dict) else None
+
+
 @router.get("/r/{slug}", response_class=HTMLResponse)
 def ver_relatorio(slug: str, request: Request, s: Session = Depends(_sessao)):
     escopo, redir = _exige_login(request, s)
@@ -594,6 +695,10 @@ def ver_relatorio(slug: str, request: Request, s: Session = Depends(_sessao)):
     dono = escopo.eh_adm or rel.centro_custo_id == escopo.centro_custo_id
     return _pagina("relatorio.html", request, _ctx(request, escopo, s, "relatorios",
                    slug=slug, titulo=rel.nome, pode_compartilhar=(dono and _pode(escopo, GESTOR, ADM)),
+                   tem_versao_editada=bool(rel.versao_editada),
+                   versao_ativa=("editada" if ((not dono and (ac := srv.acesso_vigente(s, escopo.usuario_id, rel.id)) and getattr(ac, "usar_editada", False)) or request.query_params.get("versao") == "editada") and rel.versao_editada else "original"),
+                   modo_editavel=(request.query_params.get("modo") == "editar"),
+                   somente_editada=bool(not dono and (ac2 := srv.acesso_vigente(s, escopo.usuario_id, rel.id)) and getattr(ac2, "usar_editada", False) and rel.versao_editada),
                    datas_filtro=datas_filtro, query_conteudo=(f"?{qs}" if qs else "")))
 
 
@@ -614,8 +719,83 @@ def conteudo_relatorio(slug: str, request: Request, s: Session = Depends(_sessao
             f.anonimizar = True                      # forçado no servidor
     _audit(s, escopo, "abrir_relatorio", f"web:{slug}")
     s.commit()
-    html = relatorio_html.montar_html(servico.analisar(ds, f), rel.nome, ds=ds, filtros=f)
+    dono = escopo.eh_adm or rel.centro_custo_id == escopo.centro_custo_id
+    pode_editar = dono and _pode(escopo, GESTOR, ADM)
+    ac = None if dono else srv.acesso_vigente(s, escopo.usuario_id, rel.id)
+    somente_editada = bool(ac is not None and getattr(ac, "usar_editada", False) and rel.versao_editada)
+    modo_editavel = (request.query_params.get("modo") == "editar") and not somente_editada
+    versao_ativa = ("editada" if (somente_editada or request.query_params.get("versao") == "editada" or modo_editavel)
+                    and rel.versao_editada else "original")
+    cfg_exec = _ler_json_dict(rel.config_exec)
+    edicao = _ler_json_dict(rel.versao_editada) if versao_ativa == "editada" else None
+    html = relatorio_html.montar_html(servico.analisar(ds, f), rel.nome, ds=ds, filtros=f,
+                                      config_exec=cfg_exec, edicao=edicao, pode_editar=pode_editar,
+                                      modo_editavel=modo_editavel, slug=rel.slug, versao_ativa=versao_ativa,
+                                      tem_versao_editada=bool(rel.versao_editada), somente_editada=somente_editada)
     return HTMLResponse(html)
+
+
+@router.post("/r/{slug}/painel-executivo")
+async def salvar_painel_executivo(slug: str, request: Request, s: Session = Depends(_sessao)):
+    from fastapi.responses import JSONResponse
+    escopo = _escopo(request, s)
+    if escopo is None or escopo.precisa_trocar_senha or not _pode(escopo, GESTOR, ADM):
+        return JSONResponse({"ok": False, "erro": "Acesso restrito a gestores."}, status_code=403)
+    rel = RepoRelatorios(s, escopo).obter_proprio(slug)
+    if rel is None:
+        return JSONResponse({"ok": False, "erro": "Relatório não encontrado."}, status_code=404)
+    try:
+        dados = await request.json()
+    except Exception:
+        return JSONResponse({"ok": False, "erro": "JSON inválido."}, status_code=400)
+    if not isinstance(dados, dict):
+        return JSONResponse({"ok": False, "erro": "Formato inválido."}, status_code=400)
+    if dados.get("reset"):
+        rel.config_exec = None
+        _audit(s, escopo, "resetar_painel_executivo", slug)
+    else:
+        cfg = {
+            "kpis": [str(x) for x in (dados.get("kpis") or []) if x],
+            "kpi_destaque": str(dados.get("kpi_destaque") or ""),
+            "graficos": [x if isinstance(x, dict) else str(x) for x in (dados.get("graficos") or []) if x],
+            "titulo": str(dados.get("titulo") or "Painel executivo")[:120],
+            "tamanho": str(dados.get("tamanho") or "padrao"),
+            "altura": int(dados.get("altura") or 0),
+            "largura_pagina": str(dados.get("largura_pagina") or "padrao"),
+            "graficos_layout": dados.get("graficos_layout") if isinstance(dados.get("graficos_layout"), dict) else {},
+            "kpis_largura": dados.get("kpis_largura") if isinstance(dados.get("kpis_largura"), dict) else {},
+            "kpis_rotulos": dados.get("kpis_rotulos") if isinstance(dados.get("kpis_rotulos"), dict) else {},
+            "mostrar_metas": bool(dados.get("mostrar_metas", True)),
+        }
+        rel.config_exec = json.dumps(cfg, ensure_ascii=False)
+        _audit(s, escopo, "editar_painel_executivo", slug)
+    s.commit()
+    return JSONResponse({"ok": True})
+
+
+@router.post("/r/{slug}/versao-editada")
+async def salvar_versao_editada(slug: str, request: Request, s: Session = Depends(_sessao)):
+    from fastapi.responses import JSONResponse
+    escopo = _escopo(request, s)
+    if escopo is None or escopo.precisa_trocar_senha or not _pode(escopo, GESTOR, ADM):
+        return JSONResponse({"ok": False, "erro": "Acesso restrito a gestores."}, status_code=403)
+    rel = RepoRelatorios(s, escopo).obter_proprio(slug)
+    if rel is None:
+        return JSONResponse({"ok": False, "erro": "Relatório não encontrado."}, status_code=404)
+    try:
+        dados = await request.json()
+    except Exception:
+        return JSONResponse({"ok": False, "erro": "JSON inválido."}, status_code=400)
+    if not isinstance(dados, dict):
+        return JSONResponse({"ok": False, "erro": "Formato inválido."}, status_code=400)
+    if dados.get("reset"):
+        rel.versao_editada = None
+        _audit(s, escopo, "remover_versao_editada", slug)
+    else:
+        rel.versao_editada = json.dumps(dados, ensure_ascii=False)
+        _audit(s, escopo, "salvar_versao_editada", slug)
+    s.commit()
+    return JSONResponse({"ok": True})
 
 
 # ============================================================== usuários (Gestor/ADM)
@@ -792,6 +972,9 @@ def usuarios_resetar_senha(usuario_id: int, request: Request, nova: str = Form(.
         RepoUsuarios(s, escopo).resetar_senha(alvo, hash_senha(nova))
         for sess in s.scalars(select(SessaoUsuario).where(SessaoUsuario.usuario_id == alvo.id, ~SessaoUsuario.revogada)):
             sess.revogada = True                         # derruba sessões com a senha antiga
+        for pd in s.scalars(select(PedidoSenha).where(PedidoSenha.usuario_id == alvo.id,
+                                                      PedidoSenha.atendido.is_(False))):
+            pd.atendido, pd.atendido_por, pd.atendido_em = True, escopo.usuario_id, utcnow()  # encerra o pedido
         _audit(s, escopo, "resetar_senha", alvo.login)
         s.commit()
     except _Erro as e:
@@ -1116,7 +1299,19 @@ def enviar_previa_conteudo(carga_id: int, request: Request, s: Session = Depends
         return HTMLResponse("<p>Prévia não encontrada.</p>", status_code=404)
     ds = srv._dataset_da_carga(carga, srv._modelo_do(rel), s)
     f = _ler_filtros_query(request, ds)
-    html = relatorio_html.montar_html(servico.analisar(ds, f), rel.nome, ds=ds, filtros=f)
+    dono = escopo.eh_adm or rel.centro_custo_id == escopo.centro_custo_id
+    pode_editar = dono and _pode(escopo, GESTOR, ADM)
+    ac = None if dono else srv.acesso_vigente(s, escopo.usuario_id, rel.id)
+    somente_editada = bool(ac is not None and getattr(ac, "usar_editada", False) and rel.versao_editada)
+    modo_editavel = (request.query_params.get("modo") == "editar") and not somente_editada
+    versao_ativa = ("editada" if (somente_editada or request.query_params.get("versao") == "editada" or modo_editavel)
+                    and rel.versao_editada else "original")
+    cfg_exec = _ler_json_dict(rel.config_exec)
+    edicao = _ler_json_dict(rel.versao_editada) if versao_ativa == "editada" else None
+    html = relatorio_html.montar_html(servico.analisar(ds, f), rel.nome, ds=ds, filtros=f,
+                                      config_exec=cfg_exec, edicao=edicao, pode_editar=pode_editar,
+                                      modo_editavel=modo_editavel, slug=rel.slug, versao_ativa=versao_ativa,
+                                      tem_versao_editada=bool(rel.versao_editada), somente_editada=somente_editada)
     return HTMLResponse(html)
 
 
@@ -1188,7 +1383,8 @@ def enviar_previa_descartar(carga_id: int, request: Request, voltar: str = Form(
 # ============================================================== compartilhar (Gestor/ADM)
 @router.post("/r/{slug}/compartilhar")
 def compartilhar(slug: str, request: Request, login_destino: str = Form(...), dias: int = Form(7),
-                 anonimizar: str = Form(""), s: Session = Depends(_sessao)):
+                 anonimizar: str = Form(""), versao_compartilhar: str = Form("completa"),
+                 s: Session = Depends(_sessao)):
     escopo, redir = _exige_login(request, s)
     if redir:
         return redir
@@ -1206,8 +1402,13 @@ def compartilhar(slug: str, request: Request, login_destino: str = Form(...), di
         if destino.centro_custo_id == rel.centro_custo_id:
             raise _Erro("O destinatário já é do setor deste relatório.")
         anon = anonimizar in ("on", "true", "1", "sim")
+        for ant in s.scalars(select(AcessoTemporario).where(
+                AcessoTemporario.relatorio_id == rel.id, AcessoTemporario.usuario_destino == destino.id,
+                AcessoTemporario.revogado.is_(False))):
+            ant.revogado = True            # recompartilhar substitui o acesso anterior (não empilha)
         s.add(AcessoTemporario(relatorio_id=rel.id, usuario_destino=destino.id, autorizado_por=escopo.usuario_id,
-                               expira_em=utcnow() + dt.timedelta(days=dias), anonimizar=anon))
+                               expira_em=utcnow() + dt.timedelta(days=dias), anonimizar=anon,
+                               usar_editada=(versao_compartilhar == "editada" and bool(rel.versao_editada))))
         _audit(s, escopo, "compartilhar", f"{slug}->{destino.login}", f"dias={dias} anon={anon}")
         s.commit()
     except _Erro as e:

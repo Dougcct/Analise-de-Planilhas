@@ -127,6 +127,52 @@ def test_web_resetar_senha(web):
                                     follow_redirects=False).headers["location"]
 
 
+def test_web_login_tela_icone_subtitulo_e_links(web):
+    html = TestClient(app).get("/web/login").text                 # cliente novo (sem sessão) cai no login
+    assert "/assets/icon.ico" in html and ">AP<" not in html      # logo virou o ícone do assets
+    assert "Da planilha ao relatório" in html                     # novo subtítulo
+    assert "/web/trocar-senha" in html and "/web/esqueci" in html # links de autoatendimento
+
+
+def test_web_trocar_senha_pela_tela_de_login(web):
+    adm = _cli("admin", "admin123")
+    adm.post("/web/usuarios", data={"login": "pw.troca", "nome": "PW Troca", "senha": "senha123",
+                                    "papel": "USUARIO", "centro_custo_id": 1})
+    c = TestClient(app)
+    assert "incorret" in c.post("/web/trocar-senha", data={                       # senha atual errada
+        "login": "pw.troca", "atual": "errada", "nova": "nova12345", "confirma": "nova12345"}).text.lower()
+    assert "não conferem" in c.post("/web/trocar-senha", data={                   # confirmação divergente
+        "login": "pw.troca", "atual": "senha123", "nova": "nova12345", "confirma": "zzz99999"}).text
+    r = c.post("/web/trocar-senha", data={"login": "pw.troca", "atual": "senha123",
+               "nova": "nova12345", "confirma": "nova12345"}, follow_redirects=False)
+    assert r.status_code == 303 and "/web/login?" in r.headers["location"] and "ok=" in r.headers["location"]
+    novo = TestClient(app).post("/web/login", data={"login": "pw.troca", "senha": "nova12345"},
+                                follow_redirects=False)
+    assert novo.status_code == 303 and novo.cookies.get("sessao")  # nova senha entra direto (sem forçar troca)
+
+
+def test_web_esqueci_senha_notifica_adm(web):
+    import re
+    adm = _cli("admin", "admin123")
+    adm.post("/web/usuarios", data={"login": "pw.forgot", "nome": "PW Forgot", "senha": "senha123",
+                                    "papel": "USUARIO", "centro_custo_id": 1})
+    anon = TestClient(app)
+    r = anon.post("/web/esqueci", data={"login": "pw.forgot"}, follow_redirects=False)
+    assert r.status_code == 303 and "/web/login?" in r.headers["location"] and "ok=" in r.headers["location"]
+    # login inexistente responde igual (não revela se existe) e não quebra
+    assert anon.post("/web/esqueci", data={"login": "nao.existe"}, follow_redirects=False).status_code == 303
+    # ADM vê a notificação no painel inicial
+    home = adm.get("/web").text
+    assert "Pedidos de redefinição de senha" in home and "pw.forgot" in home and 'id="pedidos-senha"' in home
+    pid = re.search(r"/web/pedido-senha/(\d+)/resolver", home).group(1)
+    # usuário não-ADM não resolve
+    assert "restrito" in _cli("gestor.fin").post(f"/web/pedido-senha/{pid}/resolver").text.lower()
+    # ADM resolve e a notificação some
+    rr = adm.post(f"/web/pedido-senha/{pid}/resolver", follow_redirects=False)
+    assert rr.status_code == 303 and "ok=" in rr.headers["location"]
+    assert "pw.forgot" not in adm.get("/web").text
+
+
 def test_web_bloquear_e_desbloquear(web):
     c = _cli("admin", "admin123")
     c.post("/web/usuarios", data={"login": "caio.bd", "nome": "Caio", "senha": "senha123",
@@ -637,4 +683,88 @@ def test_web_relatorio_filtro_datas_e_comparacao_meses(web):
     assert conteudo.status_code == 200
     assert '<select id="periodo">' in conteudo.text
     assert "jan/25, mar/25" in conteudo.text
+
+
+def test_web_painel_executivo_e_versao_editavel_compartilhada(web):
+    c_fin = _cli("gestor.fin")
+    # 1. Gestor personaliza o Painel Executivo (título, tamanho, KPIs, gráficos customizados e tamanhos)
+    r_exec = c_fin.post("/web/r/faturamento-hunf/painel-executivo", json={
+        "kpis": ["média mensal"],
+        "kpi_destaque": "média mensal",
+        "kpis_largura": {"média mensal": 3},
+        "tamanho": "expandido",
+        "altura": 420,
+        "largura_pagina": "largo",
+        "graficos": ["g-custom-exec-1"],
+        "graficos_layout": {
+            "g-custom-exec-1": {
+                "largura": 8,
+                "altura": 310,
+                "titulo": "Gráfico Custom no Executivo",
+                "custom": True,
+                "figura_html": '<div class="barras"><div class="barra-linha"><span class="barra-rot">Item A</span><div class="barra-trilho"><span class="barra" style="width:100%"></span></div><span class="barra-val">100</span></div></div>',
+            }
+        },
+        "titulo": "Painel Diretoria HUNF",
+    })
+    assert r_exec.status_code == 200 and r_exec.json()["ok"] is True
+    html_exec = c_fin.get("/web/r/faturamento-hunf/conteudo").text
+    assert "Painel Diretoria HUNF" in html_exec
+    assert 'data-tam="expandido"' in html_exec
+    assert 'data-largura="largo"' in html_exec
+    assert "Gráfico Custom no Executivo" in html_exec
+    assert 'data-larg="8"' in html_exec
+
+    # 2. Gestor gera a Versão Editável (oculta Base detalhada e Leitura, adiciona bloco extra, gráfico custom e achado)
+    r_ed = c_fin.post("/web/r/faturamento-hunf/versao-editada", json={
+        "titulo": "Faturamento HUNF — Visão Executiva",
+        "sub": "Versão enxuta para apresentação",
+        "resumo": "Resumo revisado pela gestão.",
+        "achados": ["Achado curado 1: crescimento consistente."],
+        "secoes_ocultas": ["base", "leitura", "metodologia"],
+        "blocos_extras": [{"id": "s-extra-1", "titulo": "Nota da Diretoria", "texto": "Aprovado em reunião."}],
+        "graficos_custom": [{
+            "id": "s0--g-custom-1",
+            "secao_id": "s0",
+            "titulo": "Evolução Customizada por Setor",
+            "largura": 4,
+            "altura": 280,
+            "figura_html": '<svg class="grafico" viewBox="0 0 100 50"><rect x="10" y="10" width="20" height="30"></rect></svg>',
+        }],
+    })
+    assert r_ed.status_code == 200 and r_ed.json()["ok"] is True
+
+    # Na versão original a Base detalhada continua existindo
+    html_orig = c_fin.get("/web/r/faturamento-hunf/conteudo").text
+    assert 'id="base"' in html_orig
+
+    # Na versão editada a Base detalhada e Leitura são omitidas no servidor e a nota + gráfico custom aparecem
+    html_editada = c_fin.get("/web/r/faturamento-hunf/conteudo?versao=editada").text
+    assert "Faturamento HUNF — Visão Executiva" in html_editada
+    assert "Nota da Diretoria" in html_editada
+    assert "Aprovado em reunião." in html_editada
+    assert "Evolução Customizada por Setor" in html_editada
+    assert 'data-larg="4"' in html_editada
+    assert "Achado curado 1: crescimento consistente." in html_editada
+    assert 'id="base"' not in html_editada
+    assert 'id="leitura"' not in html_editada
+
+    # 3. Compartilha apenas a Versão Editada com outro setor (gestor.fat)
+    r_comp = c_fin.post("/web/r/faturamento-hunf/compartilhar", data={
+        "login_destino": "gestor.fat",
+        "dias": 7,
+        "anonimizar": "on",
+        "versao_compartilhar": "editada",
+    }, follow_redirects=False)
+    assert r_comp.status_code == 303 and "ok=" in r_comp.headers["location"]
+
+    # O convidado de outro setor recebe APENAS a versão editada (mesmo sem passar ?versao=editada na URL)
+    c_fat = _cli("gestor.fat")
+    html_convidado = c_fat.get("/web/r/faturamento-hunf/conteudo").text
+    assert "Faturamento HUNF — Visão Executiva" in html_convidado
+    assert "Nota da Diretoria" in html_convidado
+    assert "Evolução Customizada por Setor" in html_convidado
+    assert 'id="base"' not in html_convidado
+    assert 'id="leitura"' not in html_convidado
+    assert 'id="btn-gerar-editavel"' not in html_convidado
 

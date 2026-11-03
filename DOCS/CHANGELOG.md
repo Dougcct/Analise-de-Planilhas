@@ -2,6 +2,32 @@
 
 Formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · [SemVer](https://semver.org/lang/pt-BR/)
 
+## [1.4.0] — 2026-11-03
+
+### Adicionado (tela de login + autoatendimento de senha)
+- **Login renovado**: o antigo bloco «AP» deu lugar ao **ícone do produto** (`assets/icon.ico`) e o subtítulo
+  passou a ser **«Da planilha ao relatório, automaticamente.»**.
+- **Alterar senha** (`/web/trocar-senha`): a própria pessoa troca a senha a partir do login, informando
+  **usuário, senha atual, nova senha e repetir** (valida senha atual, mínimo de 6 caracteres e confirmação).
+- **Esqueci a senha** (`/web/esqueci`): registra um pedido de redefinição que vira **notificação para o ADM**
+  no painel inicial («Pedidos de redefinição de senha», com **Redefinir** e **Resolver**). Redefinir a senha
+  pelo ADM encerra o pedido automaticamente; a mensagem ao usuário é genérica (não revela se o login existe).
+  Nova tabela `pedidos_senha`.
+
+### Adicionado (Painel Executivo editável + versão editável compartilhada)
+- **Painel Executivo personalizável** pelo Gestor/ADM: escolher KPIs e destaque, título, tamanho/altura,
+  largura da página e **gráficos personalizados** (inclusive promover gráficos das seções ao topo), salvos
+  por relatório (`config_exec`). Rota `POST /web/r/{slug}/painel-executivo`.
+- **Versão editável/curada** do relatório (`versao_editada`): reordenar/ocultar seções e painéis, títulos e
+  descrições, blocos extras (nota), gráficos personalizados por seção, achados curados — para impressão e
+  apresentação. Rota `POST /web/r/{slug}/versao-editada`.
+- **Compartilhar a versão editada** com outro setor: ao recompartilhar com a mesma pessoa, o acesso anterior
+  é **substituído** (não empilha), e quando há mais de um acesso vigente vale o **mais recente**.
+
+### Corrigido
+- Gráficos personalizados do Painel Executivo e da versão editável enviados com a chave `figura_html`
+  (além de `figura`) agora são renderizados corretamente.
+
 ## [1.3.0] — 2026-10-30
 
 ### Adicionado (dashboard navegável + tela de rascunhos)
