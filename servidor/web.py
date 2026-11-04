@@ -20,7 +20,7 @@ from urllib.parse import urlencode
 from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
 from analise_planilha import __version__, config as _cfg, relatorio_html, servico
@@ -33,7 +33,7 @@ from .autenticacao import escopo_por_token
 from .modelos_bd import (
     ADM, GESTOR, PAPEIS, PUBLICADA, RASCUNHO, SUBSTITUIDA, USUARIO,
     AcessoTemporario, Auditoria, Carga, CentroCusto, ConhecimentoColuna, Pasta, PedidoSenha, Relatorio,
-    SessaoUsuario, Usuario, utcnow,
+    SessaoUsuario, Sugestao, SugestaoMensagem, Usuario, utcnow,
 )
 from .repositorio import RepoCargas, RepoRelatorios, RepoUsuarios
 from .seguranca import DURACAO_SESSAO, MAX_TENTATIVAS, Escopo, conferir_senha, gerar_token, hash_senha, hash_token
@@ -91,10 +91,30 @@ def _audit(s, escopo, acao, alvo=None, det=None):
                     acao=acao, alvo=alvo, ip=escopo.ip, detalhes=det))
 
 
+def _chamados_para_adm(s: Session) -> int:
+    """Chamados com mensagem do colaborador ainda não lida pelo ADM (selo no menu Administração)."""
+    pend = select(SugestaoMensagem.id).where(
+        SugestaoMensagem.sugestao_id == Sugestao.id, SugestaoMensagem.de_adm.is_(False),
+        or_(Sugestao.visto_adm_em.is_(None), SugestaoMensagem.criado_em > Sugestao.visto_adm_em)).exists()
+    return s.scalar(select(func.count()).select_from(Sugestao).where(pend)) or 0
+
+
+def _respostas_para_autor(s: Session, usuario_id: int) -> int:
+    """Chamados do próprio usuário com resposta do ADM ainda não lida (selo no botão/menu)."""
+    pend = select(SugestaoMensagem.id).where(
+        SugestaoMensagem.sugestao_id == Sugestao.id, SugestaoMensagem.de_adm.is_(True),
+        or_(Sugestao.visto_autor_em.is_(None), SugestaoMensagem.criado_em > Sugestao.visto_autor_em)).exists()
+    return s.scalar(select(func.count()).select_from(Sugestao).where(
+        Sugestao.usuario_id == usuario_id, pend)) or 0
+
+
 def _ctx(request: Request, escopo: Escopo, s: Session, secao: str, **extra) -> dict:
     u = s.get(Usuario, escopo.usuario_id)
+    novas = _chamados_para_adm(s) if escopo.papel == ADM else 0
+    minhas_resp = _respostas_para_autor(s, escopo.usuario_id)
     return {"versao": __version__, "nome": u.nome if u else "", "papel": _papel_rotulo(escopo.papel),
             "papel_cod": escopo.papel, "secao": secao, "cor": (u.cor_avatar if u else None) or COR_AVATAR_PADRAO,
+            "sugestoes_novas": novas, "minhas_respostas": minhas_resp,
             "ok": request.query_params.get("ok"), "erro": request.query_params.get("erro"), **extra}
 
 
@@ -167,9 +187,11 @@ def logout(request: Request, s: Session = Depends(_sessao)):
 
 @router.get("/senha", response_class=HTMLResponse)
 def senha_form(request: Request, s: Session = Depends(_sessao)):
-    if _escopo(request, s) is None:
+    escopo = _escopo(request, s)
+    if escopo is None:
         return RedirectResponse("/web/login", status_code=303)
-    return _pagina("senha.html", request, {"versao": __version__, "erro": None})
+    voluntario = not escopo.precisa_trocar_senha          # trocar por vontade própria (não é troca obrigatória)
+    return _pagina("senha.html", request, {"versao": __version__, "erro": None, "voluntario": voluntario})
 
 
 @router.post("/senha")
@@ -187,12 +209,13 @@ def senha_enviar(request: Request, atual: str = Form(...), nova: str = Form(...)
     elif nova != confirma:
         erro = "As senhas não conferem."
     if erro:
-        return _pagina("senha.html", request, {"versao": __version__, "erro": erro})
+        return _pagina("senha.html", request, {"versao": __version__, "erro": erro,
+                                               "voluntario": not escopo.precisa_trocar_senha})
     u.senha_hash = hash_senha(nova)
     u.precisa_trocar_senha = False
     _audit(s, escopo, "trocar_senha")
     s.commit()
-    return RedirectResponse("/web", status_code=303)
+    return _redir("/web", ok="Senha alterada.")
 
 
 # ---- autoatendimento a partir da tela de login (sem sessão) ----------------------------------
@@ -269,6 +292,252 @@ def pedido_senha_resolver(pedido_id: int, request: Request, s: Session = Depends
     return _redir("/web", ok="Pedido de senha marcado como resolvido.")
 
 
+# ============================================================== chamados: sugestões / bugs (homologação)
+# Um chamado (Sugestao) é uma CONVERSA: o colaborador abre, o ADM responde, e vai e volta até resolver.
+# Tipos de imagem aceitos no print opcional (anexado ou colado com Ctrl+V). Pequeno e seguro.
+_IMG_EXT = {"image/png": ".png", "image/jpeg": ".jpg", "image/webp": ".webp", "image/gif": ".gif"}
+_IMG_MAX = 8 * 1024 * 1024          # 8 MB por print
+
+
+def _sugestoes_dir() -> Path:
+    """Prints dos chamados: subpasta do mesmo volume das cargas (não versionado — LGPD)."""
+    d = _srv().CARGAS_DIR / "sugestoes"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+async def _ler_imagem(imagem: UploadFile | None) -> tuple[str | None, str | None]:
+    """Valida e salva um print opcional. Retorna (uuid_no_volume, erro). (None, None) = sem imagem."""
+    if imagem is None or not imagem.filename:
+        return None, None
+    conteudo = await imagem.read(_IMG_MAX + 1)
+    if len(conteudo) > _IMG_MAX:
+        return None, "A imagem passa de 8 MB."
+    ext = _IMG_EXT.get((imagem.content_type or "").lower())
+    if not ext:
+        return None, "Formato de imagem não aceito (use PNG, JPG, WEBP ou GIF)."
+    nome = uuid.uuid4().hex + ext
+    (_sugestoes_dir() / nome).write_bytes(conteudo)
+    return nome, None
+
+
+def _voltar_seguro(voltar: str, padrao: str) -> str:
+    return voltar if voltar.startswith("/web") else padrao
+
+
+def _thread(s: Session, sug_id: int) -> list[dict]:
+    """Mensagens do chamado, em ordem cronológica, prontas para o template."""
+    msgs = []
+    for m in s.scalars(select(SugestaoMensagem).where(SugestaoMensagem.sugestao_id == sug_id)
+                       .order_by(SugestaoMensagem.criado_em)):
+        a = s.get(Usuario, m.autor_id) if m.autor_id else None
+        msgs.append({"id": m.id, "de_adm": m.de_adm,
+                     "autor": a.nome if a else ("Administração" if m.de_adm else "(removido)"),
+                     "texto": m.texto, "tem_img": bool(m.imagem_uuid),
+                     "quando": m.criado_em.strftime("%d/%m/%Y %H:%M") if m.criado_em else "—"})
+    return msgs
+
+
+def _tem_nao_lida(s: Session, sug_id: int, de_adm: bool, visto) -> bool:
+    """Existe mensagem do outro lado (de_adm) mais recente que o último 'visto' daquele lado?"""
+    q = select(func.count()).select_from(SugestaoMensagem).where(
+        SugestaoMensagem.sugestao_id == sug_id, SugestaoMensagem.de_adm.is_(de_adm))
+    if visto is not None:
+        q = q.where(SugestaoMensagem.criado_em > visto)
+    return (s.scalar(q) or 0) > 0
+
+
+def _chamado_para(s: Session, escopo: Escopo, sug_id: int):
+    """(Sugestao, None) se o usuário pode ver/agir (ADM ou autor); (None, codigo_http) caso contrário."""
+    g = s.get(Sugestao, sug_id)
+    if g is None:
+        return None, 404
+    if not _pode(escopo, ADM) and g.usuario_id != escopo.usuario_id:
+        return None, 403
+    return g, None
+
+
+@router.post("/sugestao")
+async def sugestao_enviar(request: Request, tipo: str = Form("sugestao"), texto: str = Form(...),
+                          url: str = Form(""), imagem: UploadFile | None = File(None),
+                          s: Session = Depends(_sessao)):
+    """Qualquer usuário logado ABRE um chamado (sugestão ou bug). A 1ª mensagem é a abertura."""
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    destino = _voltar_seguro(url, "/web")
+    texto = (texto or "").strip()
+    if not texto:
+        return _redir(destino, erro="Escreva sua sugestão antes de enviar.")
+    tipo = tipo if tipo in ("sugestao", "bug") else "sugestao"
+    img_uuid, erro = await _ler_imagem(imagem)
+    if erro:
+        return _redir(destino, erro=erro)
+    agora = utcnow()
+    g = Sugestao(tipo=tipo, usuario_id=escopo.usuario_id, centro_custo_id=escopo.centro_custo_id,
+                 url=destino[:300], user_agent=(request.headers.get("user-agent") or "")[:300],
+                 status="aberto", criado_em=agora, visto_autor_em=agora)   # o autor já "viu" a própria abertura
+    s.add(g)
+    s.flush()
+    s.add(SugestaoMensagem(sugestao_id=g.id, autor_id=escopo.usuario_id, de_adm=False,
+                           texto=texto[:4000], imagem_uuid=img_uuid, criado_em=agora))
+    _audit(s, escopo, "abrir_chamado", tipo)
+    s.commit()
+    return _redir(destino, ok="Obrigado! Seu chamado foi aberto. Acompanhe em «Minhas sugestões».")
+
+
+@router.post("/sugestoes/{sug_id}/mensagem")
+async def sugestao_mensagem(sug_id: int, request: Request, texto: str = Form(...), voltar: str = Form(""),
+                            resolver: str = Form(""), imagem: UploadFile | None = File(None),
+                            s: Session = Depends(_sessao)):
+    """Responde no chamado. Vale para o ADM e para o autor (no próprio chamado)."""
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    g, cod = _chamado_para(s, escopo, sug_id)
+    eh_adm = _pode(escopo, ADM)
+    destino = _voltar_seguro(voltar, "/web/admin/sugestoes" if eh_adm else "/web/minhas-sugestoes")
+    if g is None:
+        return _redir(destino, erro="Chamado não encontrado." if cod == 404 else "Sem acesso a este chamado.")
+    texto = (texto or "").strip()
+    if not texto:
+        return _redir(destino, erro="Escreva a mensagem antes de enviar.")
+    img_uuid, erro = await _ler_imagem(imagem)
+    if erro:
+        return _redir(destino, erro=erro)
+    agora = utcnow()
+    s.add(SugestaoMensagem(sugestao_id=g.id, autor_id=escopo.usuario_id, de_adm=eh_adm,
+                           texto=texto[:4000], imagem_uuid=img_uuid, criado_em=agora))
+    if eh_adm:                         # quem escreve já "viu" tudo até aqui; responder reabre se estava resolvido
+        g.visto_adm_em = agora
+        if g.status == "resolvido" and resolver != "1":
+            g.status, g.resolvido_por, g.resolvido_em = "aberto", None, None
+    else:
+        g.visto_autor_em = agora
+    if resolver == "1":                # pode responder e já resolver no mesmo gesto
+        g.status, g.resolvido_por, g.resolvido_em = "resolvido", escopo.usuario_id, agora
+    _audit(s, escopo, "mensagem_chamado", str(sug_id))
+    s.commit()
+    return _redir(destino, ok="Mensagem enviada." if resolver != "1" else "Mensagem enviada e chamado resolvido.")
+
+
+@router.post("/sugestoes/{sug_id}/resolver")
+def sugestao_resolver(sug_id: int, request: Request, acao: str = Form("resolver"), voltar: str = Form(""),
+                      s: Session = Depends(_sessao)):
+    """Marca o chamado como resolvido ou reabre. ADM em qualquer; autor no próprio."""
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    g, cod = _chamado_para(s, escopo, sug_id)
+    destino = _voltar_seguro(voltar, "/web/admin/sugestoes" if _pode(escopo, ADM) else "/web/minhas-sugestoes")
+    if g is None:
+        return _redir(destino, erro="Chamado não encontrado." if cod == 404 else "Sem acesso a este chamado.")
+    if acao == "reabrir":
+        g.status, g.resolvido_por, g.resolvido_em = "aberto", None, None
+        _audit(s, escopo, "reabrir_chamado", str(sug_id))
+        msg = "Chamado reaberto."
+    else:
+        g.status, g.resolvido_por, g.resolvido_em = "resolvido", escopo.usuario_id, utcnow()
+        _audit(s, escopo, "resolver_chamado", str(sug_id))
+        msg = "Chamado marcado como resolvido."
+    s.commit()
+    return _redir(destino, ok=msg)
+
+
+@router.post("/sugestoes/{sug_id}/excluir")
+def sugestao_excluir(sug_id: int, request: Request, s: Session = Depends(_sessao)):
+    """Exclui o chamado por completo (mensagens + prints do volume). Só o ADM."""
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    if not _pode(escopo, ADM):
+        return _pagina("erro.html", request, _ctx(request, escopo, s, "sugestoes",
+                                                   mensagem="Acesso restrito ao administrador."))
+    g = s.get(Sugestao, sug_id)
+    if g is None:
+        return _redir("/web/admin/sugestoes", erro="Chamado não encontrado.")
+    msgs = list(s.scalars(select(SugestaoMensagem).where(SugestaoMensagem.sugestao_id == sug_id)))
+    for m in msgs:                                  # apaga os prints do volume antes de remover os registros
+        if m.imagem_uuid:
+            (_sugestoes_dir() / m.imagem_uuid).unlink(missing_ok=True)
+        s.delete(m)
+    s.flush()                                       # garante o DELETE das mensagens antes do chamado (FK)
+    s.delete(g)
+    _audit(s, escopo, "excluir_chamado", str(sug_id))
+    s.commit()
+    return _redir("/web/admin/sugestoes", ok="Chamado excluído.")
+
+
+@router.get("/sugestao-imagem/{msg_id}")
+def sugestao_imagem(msg_id: int, request: Request, s: Session = Depends(_sessao)):
+    """Serve o print de uma mensagem. Visível ao ADM e ao autor do chamado."""
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    m = s.get(SugestaoMensagem, msg_id)
+    if m is None or not m.imagem_uuid:
+        return Response(status_code=404)
+    g = s.get(Sugestao, m.sugestao_id)
+    if g is None or (not _pode(escopo, ADM) and g.usuario_id != escopo.usuario_id):
+        return Response(status_code=403)
+    caminho = _sugestoes_dir() / m.imagem_uuid
+    if not caminho.is_file():
+        return Response(status_code=404)
+    return FileResponse(str(caminho))
+
+
+@router.get("/minhas-sugestoes", response_class=HTMLResponse)
+def minhas_sugestoes(request: Request, s: Session = Depends(_sessao)):
+    """O colaborador vê os chamados que ABRIU, a conversa e pode responder ou resolver."""
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    linhas = list(s.scalars(select(Sugestao).where(Sugestao.usuario_id == escopo.usuario_id)
+                            .order_by(Sugestao.criado_em.desc())))
+    itens = [{"id": g.id, "tipo": g.tipo, "status": g.status,
+              "nova": _tem_nao_lida(s, g.id, True, g.visto_autor_em),   # resposta do ADM ainda não lida
+              "mensagens": _thread(s, g.id),
+              "quando": g.criado_em.strftime("%d/%m/%Y %H:%M") if g.criado_em else "—"} for g in linhas]
+    if linhas:                                   # ao abrir, marca tudo como lido (zera o selo)
+        agora = utcnow()
+        for g in linhas:
+            g.visto_autor_em = agora
+        s.commit()
+    return _pagina("minhas_sugestoes.html", request, _ctx(request, escopo, s, "minhas-sugestoes", itens=itens))
+
+
+@router.get("/admin/sugestoes", response_class=HTMLResponse)
+def admin_sugestoes(request: Request, status: str = "aberto", s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    if not _pode(escopo, ADM):
+        return _pagina("erro.html", request, _ctx(request, escopo, s, "sugestoes",
+                                                   mensagem="Acesso restrito ao administrador."))
+    status = status if status in ("aberto", "resolvido", "todos") else "aberto"
+    q = select(Sugestao).order_by(Sugestao.criado_em.desc())
+    if status != "todos":
+        q = q.where(Sugestao.status == status)
+    linhas = list(s.scalars(q))
+    nomes_cc = {c.id: c.codigo for c in s.scalars(select(CentroCusto))}
+    itens = []
+    for g in linhas:
+        u = s.get(Usuario, g.usuario_id) if g.usuario_id else None
+        itens.append({"id": g.id, "tipo": g.tipo, "status": g.status,
+                      "quem": u.nome if u else "(removido)", "setor": nomes_cc.get(g.centro_custo_id, "—"),
+                      "url": g.url or "—", "nova": _tem_nao_lida(s, g.id, False, g.visto_adm_em),
+                      "mensagens": _thread(s, g.id),
+                      "quando": g.criado_em.strftime("%d/%m/%Y %H:%M") if g.criado_em else "—"})
+    n_novas = _chamados_para_adm(s)
+    if linhas:                                   # ao abrir a lista, o ADM "leu" os chamados exibidos
+        agora = utcnow()
+        for g in linhas:
+            g.visto_adm_em = agora
+        s.commit()
+    return _pagina("sugestoes.html", request, _ctx(request, escopo, s, "sugestoes",
+                   itens=itens, filtro=status, n_novas=n_novas))
+
+
 # ============================================================== relatórios (ver)
 def _resumo_home(s: Session, escopo: Escopo, rels: list) -> dict:
     """Números do painel inicial, sempre dentro do escopo (Gestor só o próprio setor)."""
@@ -288,7 +557,7 @@ def _resumo_home(s: Session, escopo: Escopo, rels: list) -> dict:
     metricas = [{"rotulo": "Relatórios", "valor": len(rels), "ic": "rel"}]
     if escopo.eh_adm:
         metricas.append({"rotulo": "Setores", "valor": s.scalar(select(func.count()).select_from(CentroCusto)) or 0,
-                         "ic": "setor", "url": "/web/admin"})
+                         "ic": "setor", "url": "/web/admin/setores"})
         metricas.append({"rotulo": "Usuários", "valor": s.scalar(select(func.count()).select_from(Usuario)) or 0,
                          "ic": "user", "url": "/web/usuarios"})
     elif gestor:
@@ -819,7 +1088,9 @@ def usuarios(request: Request, busca: str = "", papel: str = "", setor: str = ""
     lista = [{"id": u.id, "login": u.login, "nome": u.nome, "email": u.email or "", "papel": u.papel,
               "centro_custo_id": u.centro_custo_id, "cor": u.cor_avatar or COR_AVATAR_PADRAO,
               "setor": nomes.get(u.centro_custo_id, "—" if u.papel == ADM else "?"),
-              "ativo": u.ativo, "eu": u.id == escopo.usuario_id}
+              "ativo": u.ativo, "eu": u.id == escopo.usuario_id,
+              # o Gestor só gerencia usuários comuns; o ADM gerencia todos (o backend também barra)
+              "gerenciavel": escopo.eh_adm or u.papel == USUARIO}
              for u in itens]
     pag = {"atual": min(max(1, pagina), paginas), "total": total, "paginas": paginas,
            "ini": 0 if total == 0 else (min(max(1, pagina), paginas) - 1) * 8 + 1,
@@ -993,8 +1264,8 @@ def usuarios_editar(usuario_id: int, request: Request, nome: str = Form(...), em
         if not _pode(escopo, GESTOR, ADM):
             raise _Erro("Acesso restrito a gestores.")
         alvo = _alvo_gerenciavel(escopo, s, usuario_id)
-        if escopo.eh_gestor and alvo.papel != USUARIO:
-            raise _Erro("Gestor só edita usuários comuns.")
+        if escopo.eh_gestor and alvo.papel != USUARIO and alvo.id != escopo.usuario_id:
+            raise _Erro("Gestor só edita usuários comuns.")   # mas o próprio perfil (nome/cor) é sempre editável
         if not nome.strip():
             raise _Erro("O nome não pode ficar vazio.")
         novo_papel = None
@@ -1494,23 +1765,42 @@ def compartilhar(slug: str, request: Request, login_destino: str = Form(...), di
 
 
 # ============================================================== administração (ADM)
-@router.get("/admin", response_class=HTMLResponse)
+@router.get("/admin")
 def admin(request: Request, s: Session = Depends(_sessao)):
+    """A antiga tela única virou menu: Administração agora tem páginas separadas. Cai em Setores."""
+    return RedirectResponse("/web/admin/setores", status_code=307)
+
+
+@router.get("/admin/setores", response_class=HTMLResponse)
+def admin_setores(request: Request, s: Session = Depends(_sessao)):
     escopo, redir = _exige_login(request, s)
     if redir:
         return redir
     if not _pode(escopo, ADM):
-        return _pagina("erro.html", request, _ctx(request, escopo, s, "admin",
+        return _pagina("erro.html", request, _ctx(request, escopo, s, "admin-setores",
                                                    mensagem="Acesso restrito ao administrador."))
     cc_rows = list(s.scalars(select(CentroCusto).order_by(CentroCusto.ativo.desc(), CentroCusto.nome)))
-    ativos = [c for c in cc_rows if c.ativo]
-    centros = [{"id": c.id, "codigo": c.codigo, "nome": c.nome} for c in ativos]   # p/ os <select>
     n_usr = dict(s.execute(select(Usuario.centro_custo_id, func.count()).group_by(Usuario.centro_custo_id)).all())
     n_rel = dict(s.execute(select(Relatorio.centro_custo_id, func.count())
                            .group_by(Relatorio.centro_custo_id)).all())
     centros_info = [{"id": c.id, "codigo": c.codigo, "nome": c.nome, "ativo": c.ativo,
                      "usuarios": n_usr.get(c.id, 0), "relatorios": n_rel.get(c.id, 0),
                      "vazio": n_usr.get(c.id, 0) == 0 and n_rel.get(c.id, 0) == 0} for c in cc_rows]
+    tipos_lidos = _manifesto_setores()
+    return _pagina("admin_setores.html", request, _ctx(request, escopo, s, "admin-setores",
+                   centros_info=centros_info, tipos_lidos=len(tipos_lidos) if tipos_lidos else 0))
+
+
+@router.get("/admin/relatorios", response_class=HTMLResponse)
+def admin_relatorios(request: Request, s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    if not _pode(escopo, ADM):
+        return _pagina("erro.html", request, _ctx(request, escopo, s, "admin-relatorios",
+                                                   mensagem="Acesso restrito ao administrador."))
+    cc_rows = list(s.scalars(select(CentroCusto).order_by(CentroCusto.ativo.desc(), CentroCusto.nome)))
+    centros = [{"id": c.id, "codigo": c.codigo, "nome": c.nome} for c in cc_rows if c.ativo]  # p/ o <select>
     nomes_cc = {c.id: c.codigo for c in cc_rows}
     publicados = {rid for (rid,) in s.execute(select(Carga.relatorio_id).where(Carga.status == PUBLICADA)).all()}
     n_ver = dict(s.execute(select(Carga.relatorio_id, func.count()).group_by(Carga.relatorio_id)).all())
@@ -1518,13 +1808,8 @@ def admin(request: Request, s: Session = Depends(_sessao)):
     relatorios_info = [{"nome": r.nome, "slug": r.slug, "ativo": r.ativo,
                         "setor": nomes_cc.get(r.centro_custo_id, "?"), "modelo": r.modelo or "auto",
                         "publicado": r.id in publicados, "versoes": n_ver.get(r.id, 0)} for r in rel_rows]
-    modelos = _modelos_disponiveis()
-    n_modelos = len(modelos_fs.listar_info())
-    n_conhecimento = s.scalar(select(func.count()).select_from(ConhecimentoColuna)) or 0
-    tipos_lidos = _manifesto_setores()
-    return _pagina("admin.html", request, _ctx(request, escopo, s, "admin", centros=centros, modelos=modelos,
-                   centros_info=centros_info, relatorios_info=relatorios_info, n_conhecimento=n_conhecimento,
-                   n_modelos=n_modelos, tipos_lidos=len(tipos_lidos) if tipos_lidos else 0))
+    return _pagina("admin_relatorios.html", request, _ctx(request, escopo, s, "admin-relatorios",
+                   centros=centros, modelos=_modelos_disponiveis(), relatorios_info=relatorios_info))
 
 
 # ----- setores (ADM): editar, desativar/reativar, excluir ---------------------------------------
@@ -1554,8 +1839,8 @@ def admin_centro_editar(cc_id: int, request: Request, codigo: str = Form(...), n
         _audit(s, escopo, "editar_centro", cod)
         s.commit()
     except _Erro as e:
-        return _redir("/web/admin", erro=str(e))
-    return _redir("/web/admin", ok="Setor atualizado.")
+        return _redir("/web/admin/setores", erro=str(e))
+    return _redir("/web/admin/setores", ok="Setor atualizado.")
 
 
 @router.post("/admin/centro/{cc_id}/ativo")
@@ -1572,8 +1857,8 @@ def admin_centro_ativo(cc_id: int, request: Request, ativo: str = Form(...), s: 
         _audit(s, escopo, "ativar_centro" if cc.ativo else "desativar_centro", cc.codigo)
         s.commit()
     except _Erro as e:
-        return _redir("/web/admin", erro=str(e))
-    return _redir("/web/admin", ok="Setor reativado." if cc.ativo else "Setor desativado.")
+        return _redir("/web/admin/setores", erro=str(e))
+    return _redir("/web/admin/setores", ok="Setor reativado." if cc.ativo else "Setor desativado.")
 
 
 @router.post("/admin/centro/{cc_id}/excluir")
@@ -1604,9 +1889,9 @@ def admin_centro_excluir(cc_id: int, request: Request, s: Session = Depends(_ses
         _audit(s, escopo, "excluir_centro", cod, f"usuarios_soltos={n_usr}")
         s.commit()
     except _Erro as e:
-        return _redir("/web/admin", erro=str(e))
+        return _redir("/web/admin/setores", erro=str(e))
     extra = f" {n_usr} usuário(s) ficaram sem setor." if n_usr else ""
-    return _redir("/web/admin", ok=f"Setor excluído com tudo dentro.{extra}")
+    return _redir("/web/admin/setores", ok=f"Setor excluído com tudo dentro.{extra}")
 
 
 # ====================================================== modelos de análise (ADM) ================
@@ -1630,7 +1915,7 @@ def admin_modelos(request: Request, s: Session = Depends(_sessao)):
                                                    mensagem="Acesso restrito ao administrador."))
     uso = _uso_dos_modelos(s)
     modelos = [{**i, "uso": uso.get(i["slug"], 0)} for i in modelos_fs.listar_info()]
-    return _pagina("modelos.html", request, _ctx(request, escopo, s, "admin", modelos=modelos))
+    return _pagina("modelos.html", request, _ctx(request, escopo, s, "admin-modelos", modelos=modelos))
 
 
 @router.get("/admin/modelo/novo", response_class=HTMLResponse)
@@ -1917,8 +2202,8 @@ def admin_importar_setores(request: Request, s: Session = Depends(_sessao)):
                f"setores={n_cc} relatorios={n_rel} atualizados={n_upd} regras={n_regras}")
         s.commit()
     except _Erro as e:
-        return _redir("/web/admin", erro=str(e))
-    return _redir("/web/admin", ok=f"Setores importados: {n_cc} setor(es) e {n_rel} relatório(s) novo(s), "
+        return _redir("/web/admin/setores", erro=str(e))
+    return _redir("/web/admin/setores", ok=f"Setores importados: {n_cc} setor(es) e {n_rel} relatório(s) novo(s), "
                                    f"{n_upd} relatório(s) no modelo novo, {n_regras} regra(s) de conhecimento.")
 
 
@@ -1967,7 +2252,7 @@ def admin_conhecimento(request: Request, busca: str = "", contexto: str = "", s:
     contextos = [c for (c,) in s.execute(select(ConhecimentoColuna.contexto).distinct()
                                          .order_by(ConhecimentoColuna.contexto)).all()]
     total = s.scalar(select(func.count()).select_from(ConhecimentoColuna)) or 0
-    return _pagina("conhecimento.html", request, _ctx(request, escopo, s, "admin", regras=regras, total=total,
+    return _pagina("conhecimento.html", request, _ctx(request, escopo, s, "admin-conhecimento", regras=regras, total=total,
                    contextos=contextos, contexto_sel=contexto, busca=busca,
                    papeis=[(p, _cp.ROTULOS[p]) for p in _cp.PAPEIS]))
 
@@ -2029,8 +2314,8 @@ def admin_centro(request: Request, codigo: str = Form(...), nome: str = Form(...
         _audit(s, escopo, "criar_centro", cod)
         s.commit()
     except _Erro as e:
-        return _redir("/web/admin", erro=str(e))
-    return _redir("/web/admin", ok=f"Setor «{codigo.strip().upper()}» criado. Agora cadastre o gestor em «Usuários».")
+        return _redir("/web/admin/setores", erro=str(e))
+    return _redir("/web/admin/setores", ok=f"Setor «{codigo.strip().upper()}» criado. Agora cadastre o gestor em «Usuários».")
 
 
 @router.post("/admin/relatorio")
@@ -2055,8 +2340,8 @@ def admin_relatorio(request: Request, nome: str = Form(...), centro_custo_id: in
         _audit(s, escopo, "criar_relatorio", slug)
         s.commit()
     except _Erro as e:
-        return _redir("/web/admin", erro=str(e))
-    return _redir("/web/admin", ok=f"Relatório «{nome.strip()}» criado.")
+        return _redir("/web/admin/relatorios", erro=str(e))
+    return _redir("/web/admin/relatorios", ok=f"Relatório «{nome.strip()}» criado.")
 
 
 # ============================================================== gestão de relatório + planilhas (versões)

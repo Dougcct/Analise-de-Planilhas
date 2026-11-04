@@ -1,0 +1,141 @@
+{% extends "web/base.html" %}
+{% block titulo %}Minhas sugestões — Análise de Planilhas{% endblock %}
+{% block conteudo %}
+<style>
+  .ch-lista{display:flex;flex-direction:column;gap:14px;margin-top:18px}
+  .ch{background:var(--superficie);border:1px solid var(--borda);border-radius:var(--raio);
+    box-shadow:var(--especular-card),var(--sombra);padding:16px 18px}
+  .ch.feito{opacity:.72}
+  .ch .topo{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .tag-tipo{display:inline-flex;align-items:center;gap:5px;font-weight:800;font-size:12px;padding:3px 10px;border-radius:999px}
+  .tag-tipo.sugestao{background:var(--marca-clara);color:var(--acento-texto)}
+  .tag-tipo.bug{background:var(--perigo-claro);color:var(--perigo-texto)}
+  .selo-nova{background:var(--marca);color:#fff;font-size:10.5px;font-weight:800;padding:1px 8px;border-radius:999px}
+  .ch .quando{color:var(--fraco);font-size:12.5px;margin-left:auto}
+
+  .thread{display:flex;flex-direction:column;gap:10px}
+  .msg{border:1px solid var(--borda);border-left:3px solid var(--borda-forte);border-radius:var(--raio-s);
+    padding:10px 13px;background:var(--superficie-2)}
+  .msg.adm{border-left-color:var(--marca);background:var(--marca-clara)}
+  .msg-cab{display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:12px}
+  .msg-cab b{font-size:12.5px}
+  .msg-cab .papel{font-weight:800;font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--acento-texto)}
+  .msg-cab .qd{color:var(--fraco);margin-left:auto}
+  .msg-txt{white-space:pre-wrap;font-size:14px;line-height:1.55}
+  .msg-img{display:block;margin-top:8px;border:1px solid var(--borda);border-radius:var(--raio-s);overflow:hidden;max-width:320px}
+  .msg-img img{display:block;width:100%;max-height:240px;object-fit:contain;background:var(--superficie)}
+
+  details.responder{margin-top:12px}
+  details.responder>summary{display:inline-flex;align-items:center;gap:7px;cursor:pointer;list-style:none;
+    background:var(--superficie);color:var(--acento-texto);border:1px solid var(--borda);box-shadow:var(--especular-card);
+    border-radius:var(--raio-s);padding:8px 14px;font-weight:700;font-size:13px}
+  details.responder>summary::-webkit-details-marker{display:none}
+  details.responder>summary:hover{background:var(--marca-clara);border-color:var(--marca)}
+  .rf{margin-top:10px}
+  .rf textarea{width:100%;min-height:72px;resize:vertical;padding:10px 11px;border:1px solid var(--borda);
+    border-radius:var(--raio-s);font:inherit;font-size:14px;background:var(--superficie-2);color:var(--texto)}
+  .rf textarea:focus{outline:none;border-color:var(--marca);box-shadow:0 0 0 3px var(--marca-clara)}
+  .rf-anexo{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px}
+  .rf-anexo .btn-sec{margin:0}
+  .rf-anexo .dica{font-size:12px;color:var(--fraco)}
+  .rf-anexo kbd{font:inherit;font-size:11px;background:var(--superficie-2);border:1px solid var(--borda);border-radius:5px;padding:1px 5px}
+  .rf-previa{position:relative;width:100%;margin-top:4px;border:1px solid var(--borda);border-radius:var(--raio-s);overflow:hidden;background:var(--superficie-2)}
+  .rf-previa img{display:block;width:100%;max-height:180px;object-fit:contain}
+  .rf-previa .btn-perigo{position:absolute;top:6px;right:6px;margin:0;padding:4px 10px;font-size:12px}
+  .acoes{display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap}
+  .acoes form{margin:0}
+  .acoes button{margin:0;padding:8px 14px;font-size:13px}
+</style>
+
+<h1>Minhas sugestões</h1>
+<p class="apoio">Seus chamados, a conversa com a equipe e o que você pode responder ou resolver.</p>
+
+{% if itens %}
+<div class="ch-lista">
+  {% for g in itens %}
+  <div class="ch {{ 'feito' if g.status == 'resolvido' }}">
+    <div class="topo">
+      <span class="tag-tipo {{ g.tipo }}">{{ '🐛 Bug' if g.tipo == 'bug' else '💡 Sugestão' }}</span>
+      {% if g.status == 'resolvido' %}<span class="selo selo-ok">Resolvido</span>
+      {% else %}<span class="selo selo-neutro">Em análise</span>{% endif %}
+      {% if g.nova %}<span class="selo-nova">resposta nova</span>{% endif %}
+      <span class="quando">Aberto em {{ g.quando }}</span>
+    </div>
+
+    <div class="thread">
+      {% for m in g.mensagens %}
+      <div class="msg {{ 'adm' if m.de_adm }}">
+        <div class="msg-cab">{% if m.de_adm %}<span class="papel">Equipe</span>{% endif %}<b>{{ m.autor }}</b><span class="qd">{{ m.quando }}</span></div>
+        <div class="msg-txt">{{ m.texto }}</div>
+        {% if m.tem_img %}<a class="msg-img" href="/web/sugestao-imagem/{{ m.id }}" target="_blank" rel="noopener"><img src="/web/sugestao-imagem/{{ m.id }}" alt="Imagem da mensagem"></a>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+
+    {% if g.status != 'resolvido' %}
+    <details class="responder">
+      <summary>✍️ Responder</summary>
+      <form method="post" action="/web/sugestoes/{{ g.id }}/mensagem" class="rf" enctype="multipart/form-data">
+        <input type="hidden" name="voltar" value="/web/minhas-sugestoes">
+        <textarea name="texto" required maxlength="4000" placeholder="Escreva sua resposta para a equipe."></textarea>
+        <div class="rf-anexo">
+          <button type="button" class="btn-sec" data-pick>📎 Anexar imagem</button>
+          <input type="file" name="imagem" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
+          <span class="dica">ou cole um print com <kbd>Ctrl</kbd>+<kbd>V</kbd></span>
+          <div class="rf-previa" hidden><button type="button" class="btn-perigo" data-clear>Remover</button><img alt="Prévia"></div>
+        </div>
+        <div class="acoes"><button type="submit">Enviar resposta</button></div>
+      </form>
+    </details>
+    {% endif %}
+
+    <div class="acoes">
+      {% if g.status != 'resolvido' %}
+      <form method="post" action="/web/sugestoes/{{ g.id }}/resolver">
+        <input type="hidden" name="acao" value="resolver"><input type="hidden" name="voltar" value="/web/minhas-sugestoes">
+        <button type="submit" class="btn-sec">Marcar como resolvido</button>
+      </form>
+      {% else %}
+      <form method="post" action="/web/sugestoes/{{ g.id }}/resolver">
+        <input type="hidden" name="acao" value="reabrir"><input type="hidden" name="voltar" value="/web/minhas-sugestoes">
+        <button type="submit" class="btn-sec">Reabrir</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="vazio">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 10h8M8 14h5M21 11.5a8.4 8.4 0 0 1-9 8.4L3 21l1.1-3.3A8.4 8.4 0 1 1 21 11.5z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  <p>Você ainda não abriu nenhum chamado. Use o botão <b>Sugestões</b> no canto da tela.</p>
+</div>
+{% endif %}
+
+<script>
+  // Cada formulário aceita anexar imagem OU colar (Ctrl+V) um print.
+  document.querySelectorAll("form.rf").forEach(function(form){
+    var inp = form.querySelector('input[type=file]'), pick = form.querySelector('[data-pick]'),
+        clear = form.querySelector('[data-clear]'), prev = form.querySelector('.rf-previa'),
+        img = prev.querySelector('img');
+    function mostrar(file){
+      if(!file){ prev.hidden = true; img.removeAttribute("src"); return; }
+      var r = new FileReader(); r.onload = function(ev){ img.src = ev.target.result; prev.hidden = false; };
+      r.readAsDataURL(file);
+    }
+    pick.addEventListener("click", function(){ inp.click(); });
+    inp.addEventListener("change", function(){ mostrar(inp.files[0]); });
+    clear.addEventListener("click", function(){ try{ inp.value=""; }catch(e){} mostrar(null); });
+    form.addEventListener("paste", function(ev){
+      var items = (ev.clipboardData||{}).items || [];
+      for(var i=0;i<items.length;i++){
+        if(items[i].type && items[i].type.indexOf("image")===0){
+          var blob = items[i].getAsFile();
+          if(blob){ try{ var dt = new DataTransfer(); dt.items.add(blob); inp.files = dt.files; }catch(e){}
+            mostrar(blob); ev.preventDefault(); break; }
+        }
+      }
+    });
+  });
+</script>
+{% endblock %}

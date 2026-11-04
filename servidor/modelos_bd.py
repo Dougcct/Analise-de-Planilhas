@@ -71,6 +71,40 @@ class PedidoSenha(Base):
     atendido_em: Mapped[dt.datetime | None] = mapped_column(DateTime)
 
 
+class Sugestao(Base):
+    """Chamado aberto por um colaborador: uma sugestão de melhoria ou um relato de bug. É o cabeçalho de
+    uma CONVERSA (ida e volta) — as mensagens ficam em SugestaoMensagem. Fluxo: o colaborador abre, o ADM
+    é notificado e responde; o colaborador pode responder de novo ou marcar como resolvido. O ADM faz tudo;
+    o colaborador age apenas no PRÓPRIO chamado. LGPD: imagens são escolhidas pela pessoa e ficam no volume.
+    `visto_*_em` controlam o «lido» de cada lado (acendem/apagam o selo de novidade)."""
+    __tablename__ = "sugestoes"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    tipo: Mapped[str] = mapped_column(String(16), default="sugestao", index=True)   # sugestao | bug
+    usuario_id: Mapped[int | None] = mapped_column(ForeignKey("usuarios.id"), index=True)  # quem abriu
+    centro_custo_id: Mapped[int | None] = mapped_column(Integer)          # setor de quem abriu
+    url: Mapped[str | None] = mapped_column(String(300))                  # página onde estava ao abrir
+    user_agent: Mapped[str | None] = mapped_column(String(300))          # navegador (ajuda a reproduzir)
+    status: Mapped[str] = mapped_column(String(16), default="aberto", index=True)    # aberto | resolvido
+    criado_em: Mapped[dt.datetime] = mapped_column(DateTime, default=utcnow)
+    resolvido_por: Mapped[int | None] = mapped_column(ForeignKey("usuarios.id"))
+    resolvido_em: Mapped[dt.datetime | None] = mapped_column(DateTime)
+    visto_adm_em: Mapped[dt.datetime | None] = mapped_column(DateTime)    # até quando o ADM já leu
+    visto_autor_em: Mapped[dt.datetime | None] = mapped_column(DateTime)  # até quando o autor já leu
+
+
+class SugestaoMensagem(Base):
+    """Uma mensagem da conversa de um chamado (inclui a mensagem de abertura). `de_adm` distingue quem
+    falou; `imagem_uuid` é um print opcional (anexo ou colado com Ctrl+V), guardado no volume (UUID)."""
+    __tablename__ = "sugestao_mensagens"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    sugestao_id: Mapped[int] = mapped_column(ForeignKey("sugestoes.id"), index=True)
+    autor_id: Mapped[int | None] = mapped_column(ForeignKey("usuarios.id"))
+    de_adm: Mapped[bool] = mapped_column(Boolean, default=False)          # mensagem escrita pelo ADM?
+    texto: Mapped[str] = mapped_column(Text)
+    imagem_uuid: Mapped[str | None] = mapped_column(String(72))           # print opcional (nulo = sem imagem)
+    criado_em: Mapped[dt.datetime] = mapped_column(DateTime, default=utcnow, index=True)
+
+
 class Pasta(Base):
     """Pasta de organização (estilo coleção do Metabase). Pertence a um setor (herda a permissão) e pode
     aninhar em outra pasta do mesmo setor (`pai_id` nulo = topo do setor). Só o ADM cria/edita."""

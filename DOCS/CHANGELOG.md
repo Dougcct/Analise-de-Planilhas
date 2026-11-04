@@ -2,6 +2,37 @@
 
 Formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · [SemVer](https://semver.org/lang/pt-BR/)
 
+## [1.6.0] — 2026-11-04
+
+### Alterado (menu lateral reorganizado + Administração em telas separadas)
+- **Menu lateral agrupado** em três seções com cabeçalho, que aparecem conforme o papel:
+  **Dashboard** (Relatórios · Enviar planilha · Rascunhos), **Solicitações** (Abrir novo chamado ·
+  Chamados [ADM] · Minhas sugestões) e **Administração** (Usuários · Gerenciar Setores · Gerenciar Modelos ·
+  Gerenciar Relatórios · Base de conhecimento). **«Abrir novo chamado»** abre o mesmo modal do botão do canto.
+- **Administração deixou de ser uma tela única.** `/web/admin` agora redireciona e cada função tem a sua
+  página: **Setores** (`/web/admin/setores`, com o «Importar setores» dentro), **Relatórios**
+  (`/web/admin/relatorios`), **Modelos** (`/web/admin/modelos`) e **Base de conhecimento**
+  (`/web/admin/conhecimento`). **Usuários** fica em Administração e continua visível ao gestor.
+
+### Adicionado (chamados: sugestões e bugs — apoio à homologação)
+- **Botão «Sugestões»** no canto superior direito, em todas as telas, para **qualquer usuário logado** abrir
+  um **chamado** — uma **sugestão de melhoria** ou um **relato de bug**. Modal com tipo (💡 Sugestão /
+  🐛 Bug), texto e **print opcional** (anexar imagem **ou** colar com `Ctrl`+`V`). A página de origem e o
+  navegador são registrados automaticamente (ajudam a reproduzir o problema).
+- **Conversa de ida e volta (ticket).** Cada chamado é uma **thread**: o colaborador abre, o ADM responde,
+  e os dois trocam mensagens até resolver. **Toda mensagem** aceita print opcional (anexo ou `Ctrl`+`V`).
+  Fluxo de permissões: o **ADM** age em qualquer chamado (responder, resolver, reabrir); o **colaborador**
+  age no **próprio** chamado e tem o direito de **responder** ou **marcar como resolvido**.
+- **ADM — «Chamados»** (`/web/admin/sugestoes`): lista com a conversa completa, quem abriu, setor, página e
+  filtros **Em aberto / Resolvidos / Todos**; selo com a contagem de chamados aguardando o ADM.
+- **Colaborador — «Minhas sugestões»** (novo item no menu, para todos): os chamados que abriu, a conversa e
+  os botões de responder/resolver. Quando há **mensagem nova** do outro lado, acende um **selo** no
+  botão/menu, que zera ao abrir a respectiva lista (controle de «lido» por lado).
+- **Modelo de dados:** `sugestoes` (cabeçalho do chamado) + nova tabela **`sugestao_mensagens`** (a conversa,
+  com `de_adm` e print por mensagem). Prints ficam no volume (nome UUID), **nunca no banco**, e são servidos
+  só ao ADM e ao autor do chamado. **LGPD:** o anexo é escolhido pela pessoa e o modal avisa para não incluir
+  dados pessoais; só imagens (PNG/JPG/WEBP/GIF) até 8 MB.
+
 ## [1.4.0] — 2026-11-03
 
 ### Adicionado (tela de login + autoatendimento de senha)

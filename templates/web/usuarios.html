@@ -106,11 +106,17 @@
     <td>{% if u.ativo %}<span class="selo selo-ok">Ativo</span>{% else %}<span class="selo selo-off">Bloqueado</span>{% endif %}</td>
     <td>
       <div class="acoes">
-        <button type="button" class="ic-btn" title="Editar"
+        {% if u.gerenciavel or u.eu %}
+        <button type="button" class="ic-btn" title="{{ 'Editar meu perfil (nome e cor)' if u.eu else 'Editar' }}"
           onclick='abrirEditar({{ u.id }}, {{ u.nome|tojson }}, {{ u.email|tojson }}, {{ u.papel|tojson }}, {{ (u.centro_custo_id or "")|tojson }}, {{ u.login|tojson }}, {{ u.cor|tojson }})'>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3z" stroke-linejoin="round"/><path d="M13.5 6.5l3 3" stroke-linecap="round"/></svg>
         </button>
-        {% if not u.eu %}
+        {% if u.eu %}
+        <a class="ic-btn" href="/web/senha" title="Trocar minha senha">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="15" r="4"/><path d="M10.8 12.2 20 3m-3 0 3 3-3 3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        {% endif %}
+        {% if u.gerenciavel and not u.eu %}
         <button type="button" class="ic-btn" title="Resetar senha"
           onclick='abrirReset({{ u.id }}, {{ u.login|tojson }})'>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="15" r="4"/><path d="M10.8 12.2 20 3m-3 0 3 3-3 3" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -135,6 +141,7 @@
           </button></form>
         {% endif %}
         {% endif %}
+        {% else %}<span class="apoio" style="font-size:12.5px">—</span>{% endif %}
       </div>
     </td>
   </tr>

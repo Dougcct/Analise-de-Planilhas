@@ -1,0 +1,59 @@
+{% extends "web/base.html" %}
+{% block titulo %}Gerenciar Relatórios — Análise de Planilhas{% endblock %}
+{% block conteudo %}
+<style>
+  .lista{background:var(--superficie);border:1px solid var(--borda);border-radius:var(--raio);
+    box-shadow:var(--sombra);overflow:hidden;margin-bottom:8px}
+  .item{display:flex;align-items:center;gap:12px;padding:12px 15px;border-bottom:1px solid var(--borda)}
+  .item:last-child{border-bottom:0}
+  .item.off{opacity:.6}
+  .item .meio{flex:1;min-width:0} .item .meio b{font-size:14px}
+  .item .meio small{display:block;color:var(--fraco);font-size:12px}
+  .gerir{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--marca-escura);
+    text-decoration:none;white-space:nowrap}
+  .gerir:hover{text-decoration:underline}
+  .form-cartao{background:var(--superficie);border:1px solid var(--borda);border-radius:var(--raio);
+    box-shadow:var(--sombra);padding:18px;margin-top:10px}
+  .form-cartao .campos{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+</style>
+
+<h1>Gerenciar Relatórios</h1>
+<p class="apoio">{{ relatorios_info|length }} relatório(s). Clique em «Gerenciar» para versões, edição e mais.</p>
+
+<div class="lista" style="margin-top:16px">
+  {% for r in relatorios_info %}
+  <div class="item {{ '' if r.ativo else 'off' }}">
+    <span class="meio"><b>{{ r.nome }}</b>
+      <small>setor {{ r.setor }} · modelo {{ r.modelo }} · {{ r.versoes }} versão(ões){{ ' · inativo' if not r.ativo }}</small></span>
+    {% if r.publicado %}<span class="selo selo-ok">Publicado</span>
+    {% else %}<span class="selo selo-neutro">Amostra</span>{% endif %}
+    <a class="gerir" href="/web/gestao/relatorio/{{ r.slug }}">Gerenciar
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+  </div>
+  {% else %}
+  <div class="item apoio">Nenhum relatório ainda.</div>
+  {% endfor %}
+</div>
+
+<div class="form-cartao">
+  <p class="apoio" style="font-size:12.5px;margin:0 0 10px">Dica: o jeito rápido de criar um relatório já com dados é por «Enviar planilha». Aqui cria-se um vazio (mostra amostra até publicar).</p>
+  <form method="post" action="/web/admin/relatorio" class="validar">
+    <div class="campos">
+      <div><label>Nome do relatório <span class="obrig">*</span></label>
+        <input name="nome" placeholder="ex.: Garantia de Atendimento" required></div>
+      <div><label>Setor</label>
+        <select name="centro_custo_id">
+          {% for c in centros %}<option value="{{ c.id }}">{{ c.codigo }} — {{ c.nome }}</option>{% endfor %}
+        </select>
+      </div>
+      <div><label>Modelo de análise</label>
+        <select name="modelo">
+          <option value="">(sem modelo — detecta pela planilha)</option>
+          {% for m in modelos %}<option value="{{ m.slug }}">{{ m.nome }}</option>{% endfor %}
+        </select>
+      </div>
+    </div>
+    <button type="submit"><span class="giro"></span><span class="rotulo">Criar relatório vazio</span></button>
+  </form>
+</div>
+{% endblock %}

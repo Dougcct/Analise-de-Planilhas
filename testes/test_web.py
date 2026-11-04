@@ -78,6 +78,56 @@ def _cli(login, senha="senha123"):
     return c
 
 
+def test_web_gestor_nao_gerencia_outro_gestor(web):
+    import re
+    adm = _cli("admin", "admin123")
+    # setor de user.fin (FIN), para criar um 2º gestor no MESMO setor
+    pg = adm.get("/web/usuarios?busca=user.fin").text
+    fin = re.search(r'abrirEditar\(\d+,\s*"[^"]*",\s*"[^"]*",\s*"USUARIO",\s*"?(\d+)"?[^)]*"user.fin"', pg).group(1)
+    adm.post("/web/usuarios", data={"login": "gestor2.fin", "nome": "Gestor Dois", "senha": "senha123",
+                                    "papel": "GESTOR", "centro_custo_id": fin})
+    g = _cli("gestor.fin")
+    tela = g.get("/web/usuarios?busca=fin").text
+    # vê o usuário comum e PODE resetar a senha dele
+    assert re.search(r'abrirReset\(\d+,\s*"user.fin"', tela)
+    # vê o outro gestor na lista, mas SEM botão de reset/editar/bloquear
+    assert "gestor2.fin" in tela
+    assert not re.search(r'abrirReset\(\d+,\s*"gestor2.fin"', tela)
+    assert not re.search(r'abrirEditar\(\d+,[^)]*"gestor2.fin"', tela)
+    # e o backend também barra caso force a rota
+    uid = re.search(r'abrirEditar\((\d+),[^)]*"gestor2.fin"', adm.get("/web/usuarios?busca=gestor2").text).group(1)
+    rr = g.post(f"/web/usuarios/{uid}/resetar-senha", data={"nova": "novasenha1"}, follow_redirects=False)
+    assert rr.status_code == 303 and "erro=" in rr.headers["location"]
+
+
+def test_web_gestor_edita_proprio_perfil(web):
+    import re
+    g = _cli("gestor.fin")
+    tela = g.get("/web/usuarios?busca=gestor.fin").text
+    # a própria linha tem Editar (perfil) e o atalho de trocar senha
+    meu = re.search(r'abrirEditar\((\d+),[^)]*"gestor.fin"', tela).group(1)
+    assert '/web/senha" title="Trocar minha senha"' in tela
+    # edita a própria cor — permitido mesmo sendo gestor (sem mexer em papel/setor/senha)
+    r = g.post(f"/web/usuarios/{meu}/editar",
+               data={"nome": "Gestor Financeiro", "cor": "#2D6CDF"}, follow_redirects=False)
+    assert r.status_code == 303 and "ok=" in r.headers["location"]
+
+
+def test_web_autoatendimento_troca_propria_senha(web):
+    # usuário descartável (não quebra os logins dos usuários do seed)
+    adm = _cli("admin", "admin123")
+    adm.post("/web/usuarios", data={"login": "pw.self", "nome": "PW Self", "senha": "senha123",
+                                    "papel": "USUARIO", "centro_custo_id": "1"})
+    c = _cli("pw.self")
+    assert c.get("/web/senha").status_code == 200                  # a tela abre
+    ok = c.post("/web/senha", data={"atual": "senha123", "nova": "novasenha1", "confirma": "novasenha1"},
+                follow_redirects=False)
+    assert ok.status_code == 303 and "ok=" in ok.headers["location"]
+    # a senha antiga não vale mais; a nova entra
+    assert _cli("pw.self", "senha123").get("/web", follow_redirects=False).headers.get("location") != "/web"
+    assert _cli("pw.self", "novasenha1").get("/web").status_code == 200
+
+
 def test_web_gestao_de_usuarios(web):
     c = _cli("gestor.fin")
     r = c.post("/web/usuarios", data={"login": "novo.web", "nome": "Novo Web", "senha": "senha123"},
@@ -482,8 +532,9 @@ def test_importar_setores_cria_setor_relatorio_e_conhecimento(web, tmp_path, mon
     assert "2 tipo(s) de documento" in adm.get("/web/admin").text
     r = adm.post("/web/admin/importar-setores", follow_redirects=False)
     assert "ok=" in r.headers["location"], r.headers["location"]
-    tela = adm.get("/web/admin").text
-    assert "Financeiro" in tela and "Glosa" in tela and "DRE" in tela
+    assert "Financeiro" in adm.get("/web/admin/setores").text          # setor criado
+    rel = adm.get("/web/admin/relatorios").text
+    assert "Glosa" in rel and "DRE" in rel                             # relatórios criados
     assert "Nome do Paciente" in adm.get("/web/admin/conhecimento?busca=paciente").text
     # importar de novo não duplica nada
     from urllib.parse import unquote_plus
@@ -657,7 +708,7 @@ def test_modelo_renomear_repoint(web, tmp_path, monkeypatch):
                follow_redirects=False)
     assert "ok=" in r.headers["location"]
     assert (d / "exemplo-novo.toml").exists() and not (d / "exemplo.toml").exists()
-    assert "exemplo-novo" in c.get("/web/admin").text        # relatório foi repontado para o novo slug
+    assert "exemplo-novo" in c.get("/web/admin/relatorios").text   # relatório foi repontado para o novo slug
 
 
 def test_admin_modelo_detalhe(web):
@@ -809,4 +860,118 @@ def test_web_painel_executivo_e_versao_editavel_compartilhada(web):
     assert 'id="base"' not in html_convidado
     assert 'id="leitura"' not in html_convidado
     assert 'id="btn-gerar-editavel"' not in html_convidado
+
+
+def _id_chamado(texto_pagina):
+    import re
+    return re.search(r"/web/sugestoes/(\d+)/mensagem", texto_pagina).group(1)
+
+
+def test_web_chamado_conversa_ida_e_volta(web):
+    # colaborador ABRE o chamado (a página de origem volta no redirect)
+    c = _cli("user.fin")
+    abertura = "Seria bom um botao de exportar PDF 12345"
+    r = c.post("/web/sugestao", data={"tipo": "sugestao", "texto": abertura, "url": "/web/r/faturamento-hunf"},
+               follow_redirects=False)
+    assert r.status_code == 303 and r.headers["location"].startswith("/web/r/faturamento-hunf")
+
+    # usuário comum NÃO acessa a lista do ADM
+    assert "restrito" in c.get("/web/admin/sugestoes").text.lower()
+
+    # ADM vê em aberto, com a abertura, quem enviou e a página
+    adm = _cli("admin", "admin123")
+    aberto = adm.get("/web/admin/sugestoes").text
+    assert abertura in aberto and "/web/r/faturamento-hunf" in aberto
+    sid = _id_chamado(aberto)
+
+    # ADM responde (vira mensagem da equipe)
+    resposta = "Use o modo Comparar no topo. resposta-54321"
+    rr = adm.post(f"/web/sugestoes/{sid}/mensagem", data={"texto": resposta, "voltar": "/web/admin/sugestoes"},
+                  follow_redirects=False)
+    assert rr.status_code == 303 and "ok=" in rr.headers["location"]
+
+    # o autor recebe o selo de novidade e vê a resposta; o selo zera ao abrir a lista
+    assert 'class="fab-selo"' in c.get("/web").text
+    pagina = c.get("/web/minhas-sugestoes").text
+    assert resposta in pagina and "Equipe" in pagina
+    assert 'class="fab-selo"' not in c.get("/web").text
+
+    # o autor RESPONDE de volta → acende o selo para o ADM
+    treplica = "Obrigado! funcionou. replica-222"
+    c.post(f"/web/sugestoes/{sid}/mensagem", data={"texto": treplica, "voltar": "/web/minhas-sugestoes"})
+    assert 'class="selo-menu"' in adm.get("/web").text        # novidade para o ADM no menu
+    assert treplica in adm.get("/web/admin/sugestoes").text
+
+    # o AUTOR marca como resolvido (direito dele no próprio chamado)
+    rr = c.post(f"/web/sugestoes/{sid}/resolver", data={"acao": "resolver", "voltar": "/web/minhas-sugestoes"},
+                follow_redirects=False)
+    assert rr.status_code == 303
+    assert abertura not in adm.get("/web/admin/sugestoes?status=aberto").text
+    assert abertura in adm.get("/web/admin/sugestoes?status=resolvido").text
+
+
+def test_web_chamado_print_na_abertura_so_adm_e_autor(web):
+    import re
+    c = _cli("gestor.fin")
+    png = b"\x89PNG\r\n\x1a\n" + b"conteudo-falso-de-teste"
+    r = c.post("/web/sugestao",
+               data={"tipo": "bug", "texto": "Tela trava ao enviar planilha grande", "url": "/web"},
+               files={"imagem": ("print.png", png, "image/png")}, follow_redirects=False)
+    assert r.status_code == 303 and "ok=" in r.headers["location"]
+
+    adm = _cli("admin", "admin123")
+    mid = re.search(r"/web/sugestao-imagem/(\d+)", adm.get("/web/admin/sugestoes").text).group(1)
+    assert adm.get(f"/web/sugestao-imagem/{mid}").content == png            # ADM vê
+    assert c.get(f"/web/sugestao-imagem/{mid}").status_code == 200          # o autor vê o próprio print
+    assert _cli("user.fin").get(f"/web/sugestao-imagem/{mid}").status_code == 403   # terceiro não
+
+
+def test_web_chamado_rejeita_formato_invalido(web):
+    c = _cli("user.fin")
+    r = c.post("/web/sugestao", data={"tipo": "sugestao", "texto": "teste", "url": "/web"},
+               files={"imagem": ("doc.pdf", b"%PDF-1.4", "application/pdf")}, follow_redirects=False)
+    assert r.status_code == 303 and "erro=" in r.headers["location"]
+
+
+def test_web_chamado_resposta_do_adm_com_imagem(web):
+    import re
+    c = _cli("user.fin")
+    c.post("/web/sugestao", data={"tipo": "bug", "texto": "erro-com-resposta-img-7777", "url": "/web"})
+    adm = _cli("admin", "admin123")
+    sid = _id_chamado(adm.get("/web/admin/sugestoes").text)
+    png = b"\x89PNG\r\n\x1a\n" + b"print-da-resposta"
+    rr = adm.post(f"/web/sugestoes/{sid}/mensagem",
+                  data={"texto": "Veja o passo na imagem.", "voltar": "/web/admin/sugestoes"},
+                  files={"imagem": ("resp.png", png, "image/png")}, follow_redirects=False)
+    assert rr.status_code == 303 and "ok=" in rr.headers["location"]
+    # a imagem da resposta aparece para o autor; ele baixa
+    pagina = c.get("/web/minhas-sugestoes").text
+    mid = re.search(r"/web/sugestao-imagem/(\d+)", pagina).group(1)
+    assert c.get(f"/web/sugestao-imagem/{mid}").content == png
+    assert _cli("gestor.fat").get(f"/web/sugestao-imagem/{mid}").status_code == 403   # terceiro não
+
+
+def test_web_chamado_excluir_so_adm(web):
+    c = _cli("user.fin")
+    marca = "chamado-para-excluir-33333"
+    c.post("/web/sugestao", data={"tipo": "bug", "texto": marca, "url": "/web"})
+    adm = _cli("admin", "admin123")
+    sid = _id_chamado(adm.get("/web/admin/sugestoes").text)
+    # usuário comum não exclui (é ação só do ADM)
+    assert "restrito" in c.post(f"/web/sugestoes/{sid}/excluir").text.lower()
+    # ADM exclui e o chamado some da lista
+    rr = adm.post(f"/web/sugestoes/{sid}/excluir", follow_redirects=False)
+    assert rr.status_code == 303 and "ok=" in rr.headers["location"]
+    assert marca not in adm.get("/web/admin/sugestoes?status=todos").text
+
+
+def test_web_chamado_acao_de_terceiro_bloqueada(web):
+    # terceiro (não autor, não ADM) não responde nem resolve chamado alheio
+    c = _cli("user.fin")
+    c.post("/web/sugestao", data={"tipo": "bug", "texto": "bug-do-usuario-fin-11111", "url": "/web"})
+    sid = _id_chamado(_cli("admin", "admin123").get("/web/admin/sugestoes").text)
+    outro = _cli("gestor.fat")
+    assert "bug-do-usuario-fin-11111" not in outro.get("/web/minhas-sugestoes").text   # isolamento na lista
+    rr = outro.post(f"/web/sugestoes/{sid}/mensagem", data={"texto": "intruso"}, follow_redirects=False)
+    assert rr.status_code == 303 and "erro=" in rr.headers["location"]
 

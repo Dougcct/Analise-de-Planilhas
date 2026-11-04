@@ -4,7 +4,7 @@
 <div class="centro">
   <div class="logo-g">AP</div>
   <h1>Trocar senha</h1>
-  <p class="apoio">Defina uma nova senha para continuar.</p>
+  <p class="apoio">{{ 'Defina uma nova senha para a sua conta.' if voluntario else 'Defina uma nova senha para continuar.' }}</p>
   {% if erro %}<div class="erro">{{ erro }}</div>{% endif %}
   <form method="post" action="/web/senha">
     <label for="atual">Senha atual</label>
@@ -13,7 +13,8 @@
     <input id="nova" name="nova" type="password" autocomplete="new-password" placeholder="ao menos 6 caracteres">
     <label for="confirma">Confirmar nova senha</label>
     <input id="confirma" name="confirma" type="password" autocomplete="new-password">
-    <button type="submit"><span class="giro"></span><span class="rotulo">Salvar e entrar</span></button>
+    <button type="submit"><span class="giro"></span><span class="rotulo">{{ 'Salvar' if voluntario else 'Salvar e entrar' }}</span></button>
   </form>
+  {% if voluntario %}<div class="links-login"><a href="/web">Voltar</a></div>{% endif %}
 </div>
 {% endblock %}
