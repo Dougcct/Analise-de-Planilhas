@@ -363,6 +363,48 @@ def test_web_enviar_lote_um_relatorio(web):
     assert "14 registro" in html                                           # 7 + 7 somados num relatório só
 
 
+def test_sugerir_modelo_por_cabecalho():
+    """Tema 1 (unidade): os cabeçalhos da cesariana apontam o modelo resumo_cesariana; lixo não casa nada."""
+    from servidor import modelos_fs
+    sug = modelos_fs.sugerir(["Paciente", "Faturamento (R$)", "Custo (R$)", "Resultado (R$)"])
+    assert sug and sug[0]["slug"] == "resumo_cesariana" and sug[0]["obrig_ok"]
+    assert sug[0]["score"] >= 0.6
+    assert modelos_fs.sugerir(["foo", "bar", "baz"]) == []            # nada parecido -> sem sugestão
+
+
+def test_web_auto_vincula_modelo_no_envio(web):
+    """Tema 1: enviar SEM escolher modelo vincula sozinho o que mais combina com os cabeçalhos."""
+    c = _cli("gestor.fat")
+    cid = _subir(c, modo="novo", nome="Auto Modelo", n=5)             # sem modelo= de propósito
+    previa = c.get(f"/web/enviar/previa/{cid}").text
+    assert 'value="resumo_cesariana"' in previa and "selected" in previa   # modelo detectado e aplicado
+    assert "Resumo Cesariana" in previa
+    assert "5 registro" in c.get(f"/web/enviar/previa/{cid}/conteudo").text
+
+
+def test_web_trocar_modelo_na_previa(web):
+    """Tema 1: dá para corrigir o modelo pela prévia (aplicar outro ou tirar)."""
+    c = _cli("gestor.fat")
+    cid = _subir(c, modo="novo", nome="Troca Modelo", n=4)
+    r = c.post(f"/web/enviar/previa/{cid}/modelo", data={"modelo": ""}, follow_redirects=False)  # tira o modelo
+    assert r.status_code == 303 and "ok=" in r.headers["location"]
+    assert "detecção automática" in c.get(f"/web/enviar/previa/{cid}").text
+    r2 = c.post(f"/web/enviar/previa/{cid}/modelo", data={"modelo": "resumo_cesariana"}, follow_redirects=False)
+    assert r2.status_code == 303 and "ok=" in r2.headers["location"]
+    assert 'value="resumo_cesariana"' in c.get(f"/web/enviar/previa/{cid}").text
+
+
+def test_web_previa_selo_situacao(web):
+    """Tema 2: a prévia (leitura do Cérebro) mostra a legenda e os selos de situação por coluna."""
+    c = _cli("gestor.fat")
+    cid = _subir_xlsx(c, _atendimentos_xlsx(), modo="novo", nome="Selos Atend")   # sem modelo -> Cérebro
+    previa = c.get(f"/web/enviar/previa/{cid}").text
+    assert "Como entendi sua planilha" in previa
+    assert "leg-situacao" in previa                                   # a legenda das situações
+    assert "reconhecida" in previa and "adivinhada" in previa
+    c.post(f"/web/enviar/previa/{cid}/descartar")
+
+
 # ---------------- Cérebro na web: prévia explica, usuário corrige, sistema aprende ----------------
 def _atendimentos_xlsx():
     import datetime as dt

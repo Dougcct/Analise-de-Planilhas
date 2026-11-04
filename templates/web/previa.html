@@ -9,6 +9,11 @@
   .chip{display:flex;align-items:center;gap:8px;background:var(--superficie);border:1px solid var(--borda);
     border-radius:var(--raio-s);padding:8px 13px;font-size:13px;box-shadow:var(--sombra)}
   .chip b{font-size:16px} .chip span{color:var(--apoio)}
+  .modelo-previa{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;padding:10px 14px;
+    background:var(--superficie);border:1px solid var(--borda);border-radius:var(--raio);box-shadow:var(--sombra)}
+  .modelo-previa .rot-modelo{display:inline-flex;align-items:center;gap:7px;font-weight:700;color:var(--marca-escura);font-size:13px}
+  .leg-situacao{display:flex;gap:14px;flex-wrap:wrap;margin:8px 0 2px;font-size:12px;color:var(--apoio)}
+  .leg-situacao .selo{margin-right:4px}
   .acoes-previa{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}
   .rel-caixa{position:relative;margin-top:4px}
   iframe.relatorio{width:100%;height:calc(100vh - 320px);min-height:420px;border:1px solid var(--borda);
@@ -56,6 +61,20 @@
   <span class="chip"><span>{{ 'Novo relatório' if novo else 'Atualização' }}</span></span>
 </div>
 
+<form method="post" action="/web/enviar/previa/{{ carga_id }}/modelo" class="modelo-previa">
+  <span class="rot-modelo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="15" height="15"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+    Inteligência aplicada
+  </span>
+  <select name="modelo" class="papel-sel" aria-label="Modelo de análise">
+    <option value="" {{ 'selected' if not modelo_atual }}>Sem modelo (detecção automática)</option>
+    {% for m in modelos %}<option value="{{ m.slug }}" {{ 'selected' if m.slug == modelo_atual }}>{{ m.nome }}</option>{% endfor %}
+  </select>
+  <button type="submit" class="btn-sec" style="margin:0;padding:8px 14px"><span class="giro"></span><span class="rotulo">Aplicar modelo</span></button>
+  {% if modelo_atual %}<span class="apoio" style="font-size:12.5px">Atual: <b>{{ modelo_nome or modelo_atual }}</b></span>
+  {% else %}<span class="apoio" style="font-size:12.5px">Nenhum modelo combinou — usando dedução automática.</span>{% endif %}
+</form>
+
 {% if lote_total > 1 %}
 <div class="fila">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="3" y="4" width="18" height="4" rx="1"/><rect x="3" y="10" width="18" height="4" rx="1"/><rect x="3" y="16" width="18" height="4" rx="1"/></svg>
@@ -73,14 +92,23 @@
     <span class="apoio">{{ entendimento.layout }}</span>
   </summary>
   {% if entendimento.grao %}<p class="grao-nota">{{ entendimento.grao }}</p>{% endif %}
+  <div class="leg-situacao">
+    <span><span class="selo selo-ok">✓ reconhecida</span>certeza alta ou já aprendida</span>
+    <span><span class="selo selo-aviso">⚠ adivinhada</span>deduzida — confira</span>
+    <span><span class="selo selo-neutro">❓ ignorada</span>fora da visão consolidada</span>
+  </div>
   <form method="post" action="/web/enviar/previa/{{ carga_id }}/reanalisar">
     <div class="tabela-caixa" style="margin-top:10px">
     <table>
       <thead><tr><th>Coluna</th><th>Entendi como</th><th>O que faço com ela</th><th>Certeza</th><th>Por quê</th></tr></thead>
       <tbody>
       {% for c in entendimento.colunas %}
+      {% set situ = 'ignorada' if c.fora else ('reconhecida' if (c.confianca >= 85 or c.aprendido or c.corrigido) else 'adivinhada') %}
       <tr class="{{ 'fora' if c.fora }}">
         <td><b>{{ c.nome }}</b>
+          {% if situ == 'reconhecida' %}<span class="selo selo-ok" title="Certeza alta ou já aprendida">✓ reconhecida</span>
+          {% elif situ == 'adivinhada' %}<span class="selo selo-aviso" title="Papel deduzido — confira">⚠ adivinhada</span>
+          {% else %}<span class="selo selo-neutro" title="Fora da visão consolidada">❓ ignorada</span>{% endif %}
           {% if c.lgpd %}<span class="selo selo-aviso" title="Dado pessoal — anonimizável">LGPD</span>{% endif %}
           {% if c.corrigido %}<span class="selo selo-ok">corrigido</span>
           {% elif c.aprendido %}<span class="selo selo-neutro">aprendido</span>{% endif %}</td>

@@ -1077,6 +1077,36 @@ def _fila_lote(s, escopo, carga) -> tuple[int, int, int | None]:
     return pos, total, prox
 
 
+def _auto_modelo(srv, s, rel, carga) -> dict | None:
+    """Tema 1 — auto-vínculo de modelo: se o relatório está SEM modelo, compara os cabeçalhos da
+    planilha (já lida sem modelo) com os modelos disponíveis e, havendo um candidato forte (todas as
+    obrigatórias presentes), aplica-o ao relatório. Devolve a sugestão aplicada ou None.
+
+    Confirma relendo COM o modelo; se a leitura falhar, desfaz (volta a «Sem modelo»). Só estrutura
+    (nomes de coluna) entra na comparação — nenhum valor de célula (LGPD)."""
+    if rel.modelo:
+        return None
+    try:
+        ds0 = srv._dataset_da_carga(carga, None, s)             # leitura sem modelo (já em cache)
+        colunas = [p.nome for p in (ds0.entendimento.todas if ds0.entendimento else [])]
+    except Exception:  # noqa: BLE001
+        return None
+    sugestoes = modelos_fs.sugerir(colunas)
+    melhor = next((x for x in sugestoes if x["obrig_ok"]), None)
+    if melhor is None:
+        return None
+    rel.modelo = melhor["slug"]
+    srv.esquecer_dataset(carga.id)                              # reler com o modelo aplicado
+    try:
+        srv._dataset_da_carga(carga, srv._modelo_do(rel), s)
+    except Exception:  # noqa: BLE001 - modelo não casou de fato: melhor ficar sem modelo
+        rel.modelo = None
+        srv.esquecer_dataset(carga.id)
+        srv._dataset_da_carga(carga, None, s)
+        return None
+    return melhor
+
+
 @router.post("/enviar")
 async def enviar_carga(request: Request, modo: str = Form("novo"),
                        arquivos: list[UploadFile] = File(...),
@@ -1131,6 +1161,7 @@ async def enviar_carga(request: Request, modo: str = Form("novo"),
         lote = uuid.uuid4().hex                           # junta as planilhas deste envio na mesma fila
         primeiro_cid, n = None, 0
         falhas: list[str] = []
+        autodetec: list[tuple[str, str]] = []             # (relatório, modelo) vinculados automaticamente
         for arq in arquivos:
             nome_arq = arq.filename or "sem-nome"
             conteudo = await arq.read(validacao.MAX_BYTES + 1)
@@ -1175,6 +1206,10 @@ async def enviar_carga(request: Request, modo: str = Form("novo"),
                 s.flush()
                 falhas.append(f"{nome_arq} (não deu p/ ler: {type(e).__name__})")
                 continue
+            sug = _auto_modelo(srv, s, rel, carga)        # tema 1: vincula o modelo que mais combina
+            if sug:
+                autodetec.append((rel.nome, sug["nome"]))
+                _audit(s, escopo, "auto_modelo", f"{rel.slug}:{sug['slug']}", f"{round(sug['score'] * 100)}%")
             _audit(s, escopo, "enviar_carga", f"{rel.slug}:{carga.id}", carga.hash_sha256)
             if primeiro_cid is None:
                 primeiro_cid = carga.id
@@ -1189,11 +1224,17 @@ async def enviar_carga(request: Request, modo: str = Form("novo"),
         s.rollback()
         return _redir("/web/enviar", erro=str(e))
     destino = f"/web/enviar/previa/{primeiro_cid}"
+    auto = ""
+    if autodetec:                                         # tema 1: avisa qual modelo foi aplicado sozinho
+        quais = "; ".join(f"{r} → {m}" for r, m in autodetec[:3]) + ("…" if len(autodetec) > 3 else "")
+        auto = f" Modelo detectado automaticamente: {quais}."
     if n > 1 or falhas:
         aviso = ""
         if falhas:
             aviso = f" {len(falhas)} ignorada(s): " + "; ".join(falhas[:3]) + ("…" if len(falhas) > 3 else "")
-        return _redir(destino, ok=f"{n} planilha(s) recebida(s) — revise e publique uma a uma.{aviso}")
+        return _redir(destino, ok=f"{n} planilha(s) recebida(s) — revise e publique uma a uma.{aviso}{auto}")
+    if auto:
+        return _redir(destino, ok=f"Planilha recebida.{auto}")
     return RedirectResponse(destino, status_code=303)
 
 
@@ -1233,7 +1274,8 @@ def enviar_previa(carga_id: int, request: Request, s: Session = Depends(_sessao)
         if not _pode(escopo, GESTOR, ADM):
             raise _Erro("Acesso restrito a gestores.")
         carga, rel = _carga_previa(s, escopo, carga_id)
-        ds = srv._dataset_da_carga(carga, srv._modelo_do(rel), s)
+        mod = srv._modelo_do(rel)
+        ds = srv._dataset_da_carga(carga, mod, s)
         f = _ler_filtros_query(request, ds)
         a = servico.analisar(ds, f)
     except _Erro as e:
@@ -1245,8 +1287,43 @@ def enviar_previa(carga_id: int, request: Request, s: Session = Depends(_sessao)
                    carga_id=carga_id, titulo=rel.nome, arquivo=carga.nome_original,
                    registros=a.linhas, paineis=len(a.paineis), novo=novo,
                    lote_pos=pos, lote_total=total, tem_proximo=(prox is not None),
+                   modelo_atual=(rel.modelo or ""), modelo_nome=(mod.nome if mod else ""),
+                   modelos=modelos_fs.disponiveis(),
                    entendimento=_entendimento_tela(ds.entendimento),
                    datas_filtro=_info_datas_tela(ds, f), query_conteudo=(f"?{qs}" if qs else "")))
+
+
+@router.post("/enviar/previa/{carga_id}/modelo")
+async def enviar_previa_modelo(carga_id: int, request: Request, modelo: str = Form(""),
+                               s: Session = Depends(_sessao)):
+    """Tema 1 — troca o modelo do relatório pela prévia (confirma a leitura antes de gravar)."""
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    srv = _srv()
+    try:
+        if not _pode(escopo, GESTOR, ADM):
+            raise _Erro("Acesso restrito a gestores.")
+        carga, rel = _carga_previa(s, escopo, carga_id)
+        novo_modelo = modelo.strip() or None
+        if novo_modelo and not modelos_fs.existe(novo_modelo):
+            raise _Erro("Modelo não encontrado.")
+        anterior = rel.modelo
+        rel.modelo = novo_modelo
+        srv.esquecer_dataset(carga.id)
+        try:                                               # a planilha precisa ler com o novo modelo
+            srv._dataset_da_carga(carga, srv._modelo_do(rel), s)
+        except Exception as e:  # noqa: BLE001
+            rel.modelo = anterior
+            srv.esquecer_dataset(carga.id)
+            raise _Erro(f"A planilha não pôde ser lida com esse modelo ({type(e).__name__}).") from e
+        _audit(s, escopo, "trocar_modelo", f"{rel.slug}:{novo_modelo or 'sem modelo'}")
+        s.commit()
+    except _Erro as e:
+        return _redir(f"/web/enviar/previa/{carga_id}", erro=str(e))
+    nome = modelos_fs.existe(novo_modelo) and next(
+        (m["nome"] for m in modelos_fs.disponiveis() if m["slug"] == novo_modelo), novo_modelo) or "Sem modelo"
+    return _redir(f"/web/enviar/previa/{carga_id}", ok=f"Modelo alterado para «{nome}».")
 
 
 @router.post("/enviar/previa/{carga_id}/reanalisar")

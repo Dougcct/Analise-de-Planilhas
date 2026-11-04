@@ -89,6 +89,50 @@ def ler_toml(slug: str) -> str:
     return _caminho(slug).read_text(encoding="utf-8")
 
 
+# ---- sugestão automática de modelo (tema 1) ----------------------------------------------------
+LIMIAR_SUGESTAO = 0.60        # aderência mínima p/ considerar um modelo candidato
+LIMIAR_SEMELHANCA = 0.85      # cabeçalho "parecido" conta como a mesma coluna
+
+
+def sugerir(colunas: list[str], limiar: float = LIMIAR_SUGESTAO) -> list[dict]:
+    """Ranqueia os modelos disponíveis pela aderência dos cabeçalhos de uma planilha.
+
+    `colunas` = cabeçalhos lidos da planilha (só nomes — nenhum valor de célula, LGPD).
+    Para cada modelo: conta quantas das suas colunas aparecem na planilha (chave igual ou
+    semelhança ≥ 0,85) e se TODAS as colunas obrigatórias estão presentes. Devolve
+    [{slug, nome, score 0–1, obrig_ok, casadas, total}] ordenado por aderência, só acima do limiar.
+    """
+    from analise_planilha.modelo import _semelhanca
+    from analise_planilha.normalizacao import chave_texto
+
+    chaves_arq = {chave_texto(c) for c in colunas if str(c).strip()}
+    if not chaves_arq:
+        return []
+    ranque: list[dict] = []
+    for info in disponiveis():
+        try:
+            m = carregar_modelo(info["slug"])
+        except Exception:  # noqa: BLE001, S112 - modelo quebrado não entra na sugestão
+            continue
+        casadas = obrig_faltando = 0
+        for cm in m.colunas:
+            ck = cm.chaves()
+            bate = bool(ck & chaves_arq) or any(_semelhanca(k, a) >= LIMIAR_SEMELHANCA
+                                                for k in ck for a in chaves_arq)
+            if bate:
+                casadas += 1
+            elif cm.obrigatoria:
+                obrig_faltando += 1
+        total = len(m.colunas) or 1
+        score = casadas / total
+        if obrig_faltando:                          # cada obrigatória ausente derruba a aderência
+            score *= 0.5 ** obrig_faltando
+        ranque.append({"slug": info["slug"], "nome": info["nome"], "score": round(score, 3),
+                       "obrig_ok": obrig_faltando == 0, "casadas": casadas, "total": total})
+    ranque.sort(key=lambda x: (x["obrig_ok"], x["score"]), reverse=True)
+    return [r for r in ranque if r["score"] >= limiar]
+
+
 # ---- gravação (sempre validando) ---------------------------------------------------------------
 def _validar(texto: str):
     """Grava num arquivo temporário e carrega — levanta ErroModelo com a mensagem do motor se falhar."""
