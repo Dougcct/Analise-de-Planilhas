@@ -230,6 +230,12 @@
     input:focus,select:focus{outline:none;border-color:var(--marca);box-shadow:0 0 0 3px var(--marca-clara)}
     input[type=file]{padding:8px;cursor:pointer}
     input[type=checkbox]{width:auto;margin-right:6px;accent-color:var(--marca);vertical-align:middle}
+    /* lista nativa do <select>: no escuro o popup saía branco — forçamos fundo/cor sólidos */
+    select,input,textarea{color-scheme:inherit}
+    select option,select optgroup{background-color:#ffffff;color:#17222e}
+    @media (prefers-color-scheme:dark){:root:not([data-tema="light"]) select option,
+      :root:not([data-tema="light"]) select optgroup{background-color:#1b2026;color:#e9edf1}}
+    :root[data-tema="dark"] select option,:root[data-tema="dark"] select optgroup{background-color:#1b2026;color:#e9edf1}
 
     /* ---------- Botões ---------- */
     button,.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:auto;
