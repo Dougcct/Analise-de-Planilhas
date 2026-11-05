@@ -12,3 +12,4 @@ services:
       - ./servidor:/app/servidor:ro
       - ./templates:/app/templates:ro
       - ./assets:/app/assets:ro
+      - ./automacao:/app/automacao:ro

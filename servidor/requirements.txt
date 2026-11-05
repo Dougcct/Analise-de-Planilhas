@@ -8,6 +8,7 @@ openpyxl>=3.1          # .xlsx / .xlsm
 odfpy>=1.4            # .ods
 xlrd>=2.0             # .xls (legado)
 charset-normalizer>=3.0
+pdfplumber>=0.11      # extração de tabelas de PDF (automação Conversor SQL → Excel)
 jinja2>=3.1
 markupsafe>=2.1
 

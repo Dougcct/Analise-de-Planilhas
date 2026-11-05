@@ -1,0 +1,114 @@
+{% extends "web/base.html" %}
+{% block titulo %}Prévia — Conversor SQL → Excel{% endblock %}
+{% block conteudo %}
+<style>
+  .grade-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0}
+  .kpi{background:var(--superficie);border:1px solid var(--borda);border-radius:12px;padding:12px 14px}
+  .kpi b{display:block;font-size:18px} .kpi small{color:var(--fraco);font-size:12px}
+  .bloco{background:var(--superficie);border:1px solid var(--borda);border-radius:var(--raio);
+    box-shadow:var(--sombra);padding:16px 18px;margin-top:16px}
+  .bloco h2{font-size:14px;margin:0 0 10px;display:flex;align-items:center;gap:8px}
+  table.tab{width:100%;border-collapse:collapse;font-size:12.5px}
+  table.tab th,table.tab td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--borda);vertical-align:top}
+  table.tab th{color:var(--fraco);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.03em}
+  .tipo{display:inline-block;background:var(--marca-fraca,rgba(0,153,93,.1));color:var(--marca-escura);
+    border-radius:6px;padding:1px 7px;font-size:11px;font-weight:600}
+  .sug{display:flex;gap:9px;align-items:flex-start;padding:8px 0;border-bottom:1px dashed var(--borda)}
+  .sug:last-child{border-bottom:0}
+  .sug .et{flex:none;background:#2D6CDF18;color:#2D6CDF;border-radius:6px;padding:1px 7px;font-size:11px;font-weight:700}
+  .alerta{padding:7px 10px;border-radius:8px;font-size:12.5px;margin-bottom:6px}
+  .alerta.aviso{background:#f5b54418;border:1px solid #f5b54455}
+  .alerta.info{background:var(--marca-fraca,rgba(0,153,93,.06));border:1px solid var(--borda);color:var(--fraco)}
+  .campos{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+  .acoes{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:16px}
+  .btn-sec{display:inline-flex;align-items:center;gap:6px;padding:9px 14px;border-radius:10px;
+    border:1px solid var(--borda);background:var(--superficie);color:var(--texto);text-decoration:none;font-weight:600;font-size:13px}
+</style>
+
+<h1>Prévia da análise</h1>
+<p class="apoio">Arquivo: <b>{{ nome_orig }}</b>. Confira o que eu entendi, aprove as transformações e gere o Excel.</p>
+
+{% for n in diag.notas %}<div class="alerta info">{{ n }}</div>{% endfor %}
+
+<div class="grade-kpis">
+  <div class="kpi"><b>{{ diag.linhas }}</b><small>linhas de dados</small></div>
+  <div class="kpi"><b>{{ diag.colunas }}</b><small>colunas</small></div>
+  {% if diag.periodo %}<div class="kpi"><b>{{ diag.periodo.ini_br }} → {{ diag.periodo.fim_br }}</b>
+    <small>período (por «{{ diag.periodo.coluna }}»)</small></div>{% endif %}
+  {% for k in diag.kpis[:3] %}<div class="kpi"><b>{{ k.valor }}</b><small>{{ k.rotulo }}</small></div>{% endfor %}
+</div>
+
+<div class="bloco">
+  <h2>Colunas detectadas</h2>
+  <table class="tab">
+    <thead><tr><th>Coluna</th><th>Tipo</th><th>Preench.</th><th>Únicos</th><th>Resumo</th></tr></thead>
+    <tbody>
+      {% for c in diag.tabela %}
+      <tr><td><b>{{ c.coluna }}</b></td><td><span class="tipo">{{ c.tipo }}</span></td>
+        <td>{{ c.preenchidos }}{% if c.nulos %} <small class="apoio">({{ c.nulos }} vazios)</small>{% endif %}</td>
+        <td>{{ c.unicos }}</td><td class="apoio">{{ c.resumo }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if diag.alertas %}
+<div class="bloco">
+  <h2>Qualidade dos dados</h2>
+  {% for a in diag.alertas %}<div class="alerta {{ a.nivel }}">{{ a.texto }}</div>{% endfor %}
+</div>
+{% endif %}
+
+{% if diag.graficos %}
+<div class="bloco">
+  <h2>Gráficos que fariam sentido <small class="apoio" style="font-weight:400">(sugestão — o dashboard é montado no analisador)</small></h2>
+  {% for g in diag.graficos %}
+  <div class="sug"><span class="et">{{ g.tipo }}</span><span>{{ g.desc }}</span></div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<form method="post" action="/web/admin/conversor/gerar" class="validar">
+  <input type="hidden" name="token" value="{{ token }}">
+
+  <div class="bloco">
+    <h2>Gerar o Excel</h2>
+    <div class="campos">
+      <div><label>Título do relatório <span class="obrig">*</span></label>
+        <input name="titulo" value="{{ titulo_sug }}" maxlength="80" required></div>
+      <div><label>Setor de destino</label>
+        <select name="centro_id">
+          <option value="" {{ 'selected' if not centro_id }}>Geral</option>
+          {% for c in centros %}<option value="{{ c.id }}" {{ 'selected' if centro_id == c.id|string }}>{{ c.codigo }} — {{ c.nome }}</option>{% endfor %}
+        </select>
+      </div>
+      {% if diag.periodo %}
+      <div><label>Nome do arquivo</label>
+        <input value="{{ titulo_sug }} {{ diag.periodo.ini }} a {{ diag.periodo.fim }}.xlsx" disabled>
+        <small class="apoio" style="display:block;margin-top:4px">Título + período dos dados (ajusta com o título).</small></div>
+      {% endif %}
+    </div>
+
+    {% if diag.agregacoes %}
+    <div style="margin-top:14px">
+      <label>Somar itens repetidos? <small class="apoio" style="font-weight:400">(opcional — na dúvida, deixe sem agrupar)</small></label>
+      <select name="agrupar">
+        <option value="">Não agrupar — manter cada linha separada</option>
+        {% for a in diag.agregacoes %}<option value="{{ a.chave }}">Agrupar por «{{ a.chave }}» somando os valores ({{ a.unicos }} itens)</option>{% endfor %}
+      </select>
+    </div>
+    {% endif %}
+
+    <details style="margin-top:14px">
+      <summary style="cursor:pointer;font-size:13px;color:var(--marca-escura);font-weight:600">Renomear colunas (opcional)</summary>
+      <p class="apoio" style="font-size:12px;margin:8px 0 6px">Uma por linha, no formato <code>nome_tecnico = Nome de negócio</code>. Ex.: <code>vl_tot_liq = Valor líquido</code></p>
+      <textarea name="renomear" rows="3" placeholder="vl_tot_liq = Valor líquido&#10;dt_emis = Data de emissão" style="width:100%;font-family:monospace;font-size:12.5px"></textarea>
+    </details>
+
+    <div class="acoes">
+      <button type="submit"><span class="giro"></span><span class="rotulo">Gerar Excel</span></button>
+      <a class="btn-sec" href="/web/admin/conversor">Cancelar / enviar outro</a>
+    </div>
+  </div>
+</form>
+{% endblock %}

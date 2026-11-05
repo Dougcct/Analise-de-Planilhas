@@ -13,9 +13,10 @@ from __future__ import annotations
 import datetime as dt
 import hashlib
 import json
+import re
 import uuid
 from pathlib import Path
-from urllib.parse import urlencode
+from urllib.parse import quote, urlencode
 
 from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, Response
@@ -2024,6 +2025,152 @@ async def admin_modelo_importar(request: Request, arquivo: UploadFile = File(...
     except (modelos_fs.ErroModelo, _Erro) as e:
         return _redir("/web/admin/modelos", erro=str(e))
     return _redir(f"/web/admin/modelo/{slug}", ok="Modelo importado.")
+
+
+# ===================================================== Conversor SQL → Excel (automação)
+# Motor em automacao/conversor.py (pasta separada, reutilizável). Esta tela só ORQUESTRA:
+# importar o export → analisar → você aprova → gera .xlsx versionado (download). Só ADM.
+_CONV_MAX = 60 * 1024 * 1024        # 60 MB por export
+_CONV_SLUG = re.compile(r"[^0-9A-Za-zÀ-ÿ _-]")
+
+
+def _conversor():
+    """Importa o motor da pasta automacao/ (fora de servidor/) de forma tardia."""
+    import sys
+    cam = str(RAIZ / "automacao")
+    if cam not in sys.path:
+        sys.path.insert(0, cam)
+    import conversor
+    return conversor
+
+
+def _conv_tmp_dir() -> Path:
+    d = _srv().CARGAS_DIR / "conversor_tmp"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def _conv_slug_setor(nome: str) -> str:
+    s = _CONV_SLUG.sub("", (nome or "Geral").strip()).strip() or "Geral"
+    return s[:80]
+
+
+def _conv_saida_dir(setor_nome: str) -> Path:
+    d = _srv().CARGAS_DIR / "conversor" / _conv_slug_setor(setor_nome)
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def _conv_nome_centro(s: Session, centro_id: str) -> str:
+    if centro_id and str(centro_id).isdigit():
+        c = s.get(CentroCusto, int(centro_id))
+        if c is not None:
+            return c.nome
+    return "Geral"
+
+
+def _conv_parse_renomear(texto: str) -> dict[str, str]:
+    """Texto 'nome_antigo = Nome Novo' (uma por linha) → mapa."""
+    mapa: dict[str, str] = {}
+    for linha in (texto or "").splitlines():
+        if "=" in linha:
+            velho, novo = linha.split("=", 1)
+            velho, novo = velho.strip(), novo.strip()
+            if velho and novo:
+                mapa[velho] = novo
+    return mapa
+
+
+def _conv_centros(s: Session) -> list[dict]:
+    centros = s.scalars(select(CentroCusto).order_by(CentroCusto.nome))
+    return [{"id": c.id, "codigo": c.codigo, "nome": c.nome} for c in centros]
+
+
+@router.get("/admin/conversor", response_class=HTMLResponse)
+def conversor_form(request: Request, s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    if not _pode(escopo, ADM):
+        return _pagina("erro.html", request, _ctx(request, escopo, s, "admin-conversor",
+                                                   mensagem="Acesso restrito ao administrador."))
+    return _pagina("conversor.html", request, _ctx(request, escopo, s, "admin-conversor",
+                   centros=_conv_centros(s)))
+
+
+@router.post("/admin/conversor/analisar", response_class=HTMLResponse)
+async def conversor_analisar(request: Request, arquivo: UploadFile = File(...), titulo: str = Form(""),
+                             centro_id: str = Form(""), s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    if not _pode(escopo, ADM):
+        return _pagina("erro.html", request, _ctx(request, escopo, s, "admin-conversor",
+                                                   mensagem="Acesso restrito ao administrador."))
+    conv = _conversor()
+    nome_orig = arquivo.filename or ""
+    ext = Path(nome_orig).suffix.lower()
+    if ext not in conv.FORMATOS:
+        return _redir("/web/admin/conversor",
+                      erro="Formato não suportado. Use CSV, TXT, TSV, Excel, ODS, JSON ou PDF.")
+    dados = await arquivo.read()
+    if len(dados) > _CONV_MAX:
+        return _redir("/web/admin/conversor", erro="O arquivo passa de 60 MB.")
+    try:
+        ds, notas = conv.ler(dados, nome_orig)
+        diag = conv.diagnostico(ds, notas)
+    except Exception as e:  # noqa: BLE001 - erro de leitura vira aviso amigável na tela
+        return _redir("/web/admin/conversor", erro=f"Não consegui ler o arquivo: {e}")
+    token = uuid.uuid4().hex + ext
+    (_conv_tmp_dir() / token).write_bytes(dados)
+    return _pagina("conversor_previa.html", request, _ctx(request, escopo, s, "admin-conversor",
+                   diag=diag, token=token, nome_orig=nome_orig, centro_id=centro_id,
+                   titulo_sug=(titulo.strip() or Path(nome_orig).stem), centros=_conv_centros(s)))
+
+
+@router.post("/admin/conversor/gerar", response_class=HTMLResponse)
+def conversor_gerar(request: Request, token: str = Form(...), titulo: str = Form(...),
+                    centro_id: str = Form(""), agrupar: str = Form(""), renomear: str = Form(""),
+                    s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    if not _pode(escopo, ADM):
+        return _pagina("erro.html", request, _ctx(request, escopo, s, "admin-conversor",
+                                                   mensagem="Acesso restrito ao administrador."))
+    conv = _conversor()
+    tmp = _conv_tmp_dir() / Path(token).name
+    if not tmp.is_file():
+        return _redir("/web/admin/conversor", erro="A sessão do arquivo expirou. Reenvie o export.")
+    try:
+        ds, _notas = conv.ler(tmp.read_bytes(), "entrada" + tmp.suffix)
+        df = conv.aplicar(ds, agrupar.strip() or None, _conv_parse_renomear(renomear))
+        setor = _conv_nome_centro(s, centro_id)
+        res = conv.salvar_xlsx(df, _conv_saida_dir(setor), titulo, conv.periodo(ds))
+    except Exception as e:  # noqa: BLE001
+        return _redir("/web/admin/conversor", erro=f"Falha ao gerar o Excel: {e}")
+    tmp.unlink(missing_ok=True)
+    _audit(s, escopo, "conversor_gerar", res["nome"])
+    s.commit()
+    baixar = f"/web/admin/conversor/baixar?setor={quote(setor)}&arq={quote(res['nome'])}"
+    return _pagina("conversor_resultado.html", request, _ctx(request, escopo, s, "admin-conversor",
+                   nome=res["nome"], linhas=len(df), colunas=len(df.columns), setor=setor,
+                   agrupado=bool(agrupar.strip()), arquivado=bool(res["arquivado"]), baixar=baixar))
+
+
+@router.get("/admin/conversor/baixar")
+def conversor_baixar(request: Request, setor: str = "", arq: str = "", s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    if not _pode(escopo, ADM):
+        return Response(status_code=403)
+    nome = Path(arq).name
+    caminho = _conv_saida_dir(setor) / nome
+    if nome.lower()[-5:] != ".xlsx" or not caminho.is_file():
+        return Response(status_code=404)
+    return FileResponse(str(caminho), filename=nome,
+                        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 
 @router.post("/admin/modelo/{slug}/duplicar")

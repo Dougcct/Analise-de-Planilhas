@@ -19,6 +19,7 @@ COPY src/ src/
 COPY servidor/ servidor/
 COPY templates/ templates/
 COPY assets/ assets/
+COPY automacao/ automacao/
 COPY config/modelos/ config/modelos/
 # cópia-semente FORA do volume: config/modelos vira um volume (editável em runtime) e começa vazio,
 # então o start semeia a partir daqui na 1ª vez (ver servidor.app._semear_modelos).

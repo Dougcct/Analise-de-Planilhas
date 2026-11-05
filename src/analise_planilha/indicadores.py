@@ -187,7 +187,7 @@ def _recorrencia(df: pd.DataFrame, spec: Especificacao) -> pd.DataFrame:
         return pd.DataFrame()
     g = df.dropna(subset=[spec.entidade]).groupby(spec.entidade)
     tab = pd.DataFrame({"Registros": g.size()})
-    for dim in spec.dimensoes[:2]:
+    for dim in [d for d in spec.dimensoes[:2] if d in df.columns]:
         tab[dim] = g[dim].agg(lambda s: ", ".join(sorted(set(map(str, s.dropna()))))[:80])
     return tab[tab["Registros"] >= 2].sort_values("Registros", ascending=False).reset_index()
 
@@ -259,6 +259,8 @@ def achados(df: pd.DataFrame, spec: Especificacao, tipo_medida, problemas: pd.Da
     if not total:
         return ["Nenhum registro no recorte selecionado."]
     out = []
+    # dimensões do modelo que existem nesta planilha (uma coluna do modelo pode faltar no arquivo enviado)
+    dims = [d for d in spec.dimensoes if d in df.columns]
     frase = f"{fmt_int(total)} {spec.rotulo_registros.lower()}"
     if spec.entidade:
         frase += f" de {fmt_int(df[spec.entidade].nunique())} {spec.plural_entidade} distintos"
@@ -295,7 +297,7 @@ def achados(df: pd.DataFrame, spec: Especificacao, tipo_medida, problemas: pd.Da
                 txt += f"; {fmt_int(n)} em aberto"
             out.append(txt + ".")
 
-    for dim in spec.dimensoes[:3]:
+    for dim in dims[:3]:
         vc = df[dim].value_counts()
         if len(vc) <= 1:
             continue
@@ -312,7 +314,7 @@ def achados(df: pd.DataFrame, spec: Especificacao, tipo_medida, problemas: pd.Da
         geral = valor_taxa(df, t)
         if geral is None:
             continue
-        for dim in spec.dimensoes:
+        for dim in dims:
             if dim in _origens_da_taxa(t, spec):
                 continue
             for nome, g in df.groupby(dim, observed=True):
@@ -341,7 +343,7 @@ def achados(df: pd.DataFrame, spec: Especificacao, tipo_medida, problemas: pd.Da
         geral = estatistica(df[t.col_dias], "mediana")
         if not geral:
             continue
-        for dim in spec.dimensoes:
+        for dim in dims:
             for nome, g in df.groupby(dim, observed=True):
                 m = estatistica(g[t.col_dias], "mediana")
                 if g[t.col_dias].notna().sum() >= config.MIN_CASOS_ACHADO and m and m >= 1.5 * geral and m - geral >= 2:
@@ -501,8 +503,9 @@ def gerar_paineis(df: pd.DataFrame, spec: Especificacao, esquema: Esquema, probl
                "Mediana (dias úteis)": "dias", "% dentro da meta": "pct", "Em aberto": "int", "Registros": "int"}
         paineis.append(Painel("Tempos", "Resumo dos tempos (dias corridos)", tabela=_tabela_tempos(df, spec), formatos=f_t))
         principal = spec.tempos[-1] if len(spec.tempos) >= 3 else spec.tempos[0]
-        dim_t = principal.meta_por or (spec.dimensoes[0] if spec.dimensoes else None)
-        if dim_t:
+        dims_pres = [d for d in spec.dimensoes if d in df.columns]
+        dim_t = principal.meta_por or (dims_pres[0] if dims_pres else None)
+        if dim_t and dim_t in df.columns:
             paineis.append(Painel("Tempos", f"{principal.rotulo} por {dim_t}",
                                   tabela=_tempo_por(df, principal, dim_t, spec), formatos=f_t))
         paineis.append(Painel("Tempos", f"{principal.rotulo}: distribuição em faixas",

@@ -1,0 +1,78 @@
+# =============================================================================
+# MODELO — Médicos HUNF (pagamentos mensais de serviços médicos, uma linha por pagamento)
+# =============================================================================
+# Planilha feita à mão: um arquivo .ods com uma ABA por mês. Cada aba tem um preâmbulo
+# (título/data/competência), o cabeçalho real e a lista de pagamentos, organizada em
+# SEÇÕES (PJ FIXOS, PRODUÇÃO COOPERADA, AUDITORIA, CHEFIA, SERVIÇOS MÉDICOS, SCIH,
+# SOBREAVISO, PJ EXTRAS, RPA…). `abas = "todas"` consolida os meses numa base só.
+#
+# ATENÇÃO (ver análise): para importar LIMPO, a planilha precisa estar SEM as linhas em
+# branco de espaçamento e SEM o preâmbulo acima do cabeçalho — senão a leitura automática
+# corta a maioria dos meses. O valor do pagamento está partido em DUAS colunas
+# (VALOR x VALOR2, quase sempre só uma preenchida): o ideal é unificar numa só na origem.
+# -----------------------------------------------------------------------------
+
+nome = "Médicos HUNF"
+abas = "todas"                 # consolida as 11 abas mensais (Dezembro_2025, Janeiro 2026, …)
+
+[analise]
+entidade         = "fornecedor"       # quem recebe: distintos, recorrência, anonimização
+medida_principal = "valor2"           # coluna mais preenchida; ver nota sobre VALOR x VALOR2
+medidas_quebra   = ["valor", "valor2"]
+dimensoes        = ["vencimento"]     # o mês vem automaticamente de «Aba de origem»
+
+# ---- colunas da planilha ------------------------------------------------------
+[[coluna]]
+canonico = "fornecedor"
+rotulo = "Fornecedor"
+tipo = "texto_livre"
+papel = "entidade"
+sinonimos = ["nome / nº fornecedor", "nome / no fornecedor", "nome fornecedor", "nome"]
+obrigatoria = true
+
+[[coluna]]
+canonico = "num_fornecedor"
+rotulo = "Nº fornecedor"
+tipo = "identificador"
+sinonimos = ["nº", "no", "n"]
+
+[[coluna]]
+canonico = "centro_custo"
+rotulo = "Centro de custo"
+tipo = "categorico"
+sinonimos = ["c. custo", "c custo", "centro de custo", "cc"]
+
+[[coluna]]
+canonico = "vencimento"
+rotulo = "Vencimento"
+tipo = "categorico"               # dia/forma de pagamento: "6º", "Dia 10", "30"…
+sinonimos = ["venc"]
+
+[[coluna]]
+canonico = "valor"
+rotulo = "Valor (coluna A)"
+tipo = "moeda"
+papel = "medida"
+sinonimos = ["valor"]
+opcional = true
+
+[[coluna]]
+canonico = "valor2"
+rotulo = "Valor (coluna B)"
+tipo = "moeda"
+papel = "medida"
+sinonimos = ["valor2", "valor 2"]
+opcional = true
+
+[[coluna]]
+canonico = "observacoes"
+rotulo = "Observações"
+tipo = "texto_livre"
+papel = "texto"
+sinonimos = ["observações", "observacoes", "obs"]
+
+[[coluna]]
+canonico = "inicio"
+rotulo = "Início"
+tipo = "data"
+sinonimos = ["inicio", "início", "data inicio", "data de início"]

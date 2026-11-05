@@ -975,3 +975,53 @@ def test_web_chamado_acao_de_terceiro_bloqueada(web):
     rr = outro.post(f"/web/sugestoes/{sid}/mensagem", data={"texto": "intruso"}, follow_redirects=False)
     assert rr.status_code == 303 and "erro=" in rr.headers["location"]
 
+
+# ===================================================== Conversor SQL → Excel
+_CSV_CONV = ("Cliente;Valor;Data\n"
+             "ACME;100,50;2026-01-10\n"
+             "ACME;200,00;2026-02-15\n"
+             "Beta;50,00;2026-03-05\n")
+
+
+def test_web_conversor_restrito_ao_adm(web):
+    # gestor/usuário não enxergam nem acessam a tela
+    g = _cli("gestor.fin")
+    assert "restrito" in g.get("/web/admin/conversor").text.lower()
+    assert "Conversor SQL" not in g.get("/web").text
+    # admin vê o item no menu e abre a tela
+    adm = _cli("admin", "admin123")
+    assert "Conversor SQL" in adm.get("/web").text
+    assert adm.get("/web/admin/conversor").status_code == 200
+
+
+def test_web_conversor_fluxo_completo(web):
+    import re
+    adm = _cli("admin", "admin123")
+    # 1) analisar o export → prévia com período, tipos e sugestão de agrupar
+    previa = adm.post("/web/admin/conversor/analisar",
+                      files={"arquivo": ("export.csv", _CSV_CONV, "text/csv")},
+                      data={"titulo": "Faturamento", "centro_id": ""})
+    assert previa.status_code == 200
+    assert "10/01/2026" in previa.text and "05/03/2026" in previa.text
+    assert "Agrupar por «Cliente»" in previa.text
+    token = re.search(r'name="token" value="([a-f0-9]+\.csv)"', previa.text).group(1)
+    # 2) gerar o Excel agrupando por Cliente
+    res = adm.post("/web/admin/conversor/gerar",
+                   data={"token": token, "titulo": "Faturamento", "centro_id": "", "agrupar": "Cliente"})
+    assert res.status_code == 200 and "Excel gerado" in res.text
+    baixar = re.search(r'href="(/web/admin/conversor/baixar[^"]+)"', res.text).group(1).replace("&amp;", "&")
+    # 3) baixar o arquivo gerado (nome = título + período)
+    dl = adm.get(baixar)
+    assert dl.status_code == 200
+    # o nome vem URL-encoded no header (espaços → %20), conforme RFC 5987
+    assert "Faturamento%202026-01-10%20a%202026-03-05.xlsx" in dl.headers.get("content-disposition", "")
+    assert dl.content[:2] == b"PK"            # .xlsx é um zip
+
+
+def test_web_conversor_formato_invalido(web):
+    adm = _cli("admin", "admin123")
+    r = adm.post("/web/admin/conversor/analisar",
+                 files={"arquivo": ("consulta.docx", b"lixo", "application/octet-stream")},
+                 data={"titulo": "x"}, follow_redirects=False)
+    assert r.status_code == 303 and "erro=" in r.headers["location"]
+

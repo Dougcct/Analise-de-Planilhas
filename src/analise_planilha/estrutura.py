@@ -459,8 +459,14 @@ def _outro_bloco(G: _Grade, r, dados: list, reimpresso: pd.Series) -> bool:
     if reimpresso[r]:
         return False  # mesma tabela continua (cabeçalho reimpresso)
     dados = dados[-1000:]  # chamada a cada linha em branco: olha só os dados mais recentes
-    cols_dados = G.preench.loc[dados].mean()
-    cols_dados = set(cols_dados.index[cols_dados >= 0.5])
+    freq = G.preench.loc[dados].mean()
+    # colunas que a tabela USA de algum modo (mesmo alternando: ex. seções com VALOR ou VALOR2);
+    # só colunas praticamente nunca usadas (<10%) contam como "outras colunas"/tabela à parte
+    cols_tabela = set(freq.index[freq >= 0.1])
+    # colunas que os dados recentes usam como medida/data (predominam números ou datas)
+    tdados = G.tipos.loc[dados]
+    cols_medida = {c for c in G.g.columns
+                   if (p := tdados[c][tdados[c] != VAZIO]).size and p.isin((NUM, DATA)).mean() >= 0.6}
     bloco = [r]
     for x in G.abaixo(r, 10):
         if x != bloco[-1] + 1:
@@ -468,8 +474,8 @@ def _outro_bloco(G: _Grade, r, dados: list, reimpresso: pd.Series) -> bool:
         bloco.append(x)
     usadas = G.preench.loc[bloco].sum()
     usadas = usadas[usadas > 0]
-    if cols_dados and len(usadas) >= 2:
-        dentro = usadas[usadas.index.isin(cols_dados)].sum() / usadas.sum()
+    if cols_tabela and len(usadas) >= 2:
+        dentro = usadas[usadas.index.isin(cols_tabela)].sum() / usadas.sum()
         if dentro < 0.5:
             return True  # ocupa outras colunas
     # linha de rótulos que não são valores da tabela principal → novo cabeçalho (pode vir após um título)
@@ -477,6 +483,10 @@ def _outro_bloco(G: _Grade, r, dados: list, reimpresso: pd.Series) -> bool:
         if reimpresso.get(x, False):
             return False
         if G.n[x] >= 2 and G.linha_de_rotulos(x):
+            # registro esparso (nº/medidas em branco) que mesmo assim traz um número/data numa
+            # coluna de medida é DADO da mesma tabela, não um novo cabeçalho de texto
+            if cols_medida and G.tipos.loc[x, list(cols_medida)].isin((NUM, DATA)).any():
+                break
             cols = G.cols(x)
             ja_vistos = G.texto.loc[dados, cols].eq(G.texto.loc[x, cols], axis=1).any(axis=0).mean()
             return ja_vistos < 0.3

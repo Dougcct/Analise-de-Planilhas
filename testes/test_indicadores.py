@@ -214,3 +214,16 @@ def test_modelo_garantia_de_referencia_carrega():
     m = carregar_modelo(RAIZ / "config" / "modelos" / "garantia_atendimento.toml.sample")
     assert m.abas == "todas"
     assert {"analise", "classificacao", "taxa", "tempo", "cruzamento", "qualidade", "meta"} <= set(m.regras)
+
+
+def test_achados_ignora_dimensao_do_modelo_ausente_na_planilha():
+    """Regressão: o modelo declara uma dimensão que a planilha enviada não tem (ex.: «Tipo de
+    atendimento» faltando num export). `achados` não pode dar KeyError (era 500 na prévia)."""
+    from analise_planilha import indicadores
+    from analise_planilha.especificacao import Especificacao
+    df = pd.DataFrame({"Convênio": ["A", "B", "A", "B"], "Valor": [10, 20, 30, 40]})
+    spec = Especificacao(origem="modelo", dimensoes=["Convênio", "Tipo de atendimento"],  # a 2ª não existe
+                         medida_principal="Valor", rotulo_registros="atendimentos")
+    out = indicadores.achados(df, spec, "moeda", pd.DataFrame(), pd.DataFrame())
+    assert isinstance(out, list) and out                          # gerou achados, sem explodir
+    assert not any("Tipo de atendimento" in frase for frase in out)

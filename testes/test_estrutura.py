@@ -146,6 +146,39 @@ def test_linha_em_branco_no_meio_nao_corta_a_tabela():
     assert len(ds.df) == 10
 
 
+def test_planilha_feita_a_mao_espacadores_e_colunas_alternadas():
+    """Relatório manual (estilo HUNF): uma linha em branco ENTRE cada registro, registros esparsos
+    (nº/centro vazios) que ainda trazem o valor numa coluna de medida, seções que alternam a coluna
+    de valor (Valor × Valor2) — nada disso pode cortar a tabela. Só o bloco final (outro cabeçalho
+    de texto, "Cooperado … Pagamento") é que deve ser ignorado."""
+    cab = ["Nome", "Nº", "C. Custo", "Venc", "Valor", "Valor2", "Obs"]
+    linhas = [
+        ["PAGAMENTOS MENSAIS"], [dt.datetime(2026, 2, 1)], [],       # preâmbulo
+        cab,
+        ["Azevedo Odonto", 70626, "HUNF", "6º", None, 9735, "Odonto"], [],
+        ["Monnerat Serv", 70626, "HUNF", "6º", None, 8745, "Odonto"], [],
+        ["CIDI Serv Med", 48281, "HUNF", "5º", None, 25920, "Total CIDI"],
+        [None, None, None, None, 12000, None, "Sobreaviso"],          # esparso, usa VALOR (col 4)
+        [None, None, None, None, 13560, None, "Ultrassom"],           # esparso, usa VALOR
+        [],
+        ["Horwacz Clinica", None, None, "Dia 13", None, 24000, "Oncologia"],  # esparso c/ valor em VALOR2
+        [], [],                                                        # branco DUPLO
+        ["SERVIÇOS MÉDICOS"],                                         # título de seção (só col 0)
+        ["André da Costa", None, "HUNF", "30", None, 9830.16, "Clínica"], [],
+        ["Clara Cristina", None, "HUNF", "30", None, 8191.80, "Cardio"], [],
+        [], [],
+        ["Cooperado", "Projeto", None, None, None, "Valor", "Pagamento dia"],  # OUTRA tabela (cabeçalho de texto)
+        ["André Assis", None, None, None, None, 1566, None],
+        ["Paula Lira", None, None, None, None, 2954, None],
+    ]
+    ds = servico.carregar(_xlsx({"Fevereiro": linhas}), "manual.xlsx")
+    df = ds.df
+    assert len(df) == 8                                   # os 8 registros reais, nenhum perdido
+    assert "Horwacz Clinica" in set(df["Nome"])           # registro esparso não virou "novo cabeçalho"
+    assert 1566 not in set(df.get("Valor2", []))          # o bloco "Cooperado" ficou de fora
+    assert "outro bloco" in _diag(ds)
+
+
 def test_total_sem_rotulo_na_ultima_linha():
     linhas = [["Cidade", "Qtd", "Valor"]] + [[c, q, v] for c, q, v in
                                               [("Rio", 2, 10.0), ("Niterói", 3, 20.0), ("Magé", 1, 5.0), ("Maricá", 4, 15.0)]]

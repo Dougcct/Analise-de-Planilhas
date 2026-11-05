@@ -1,0 +1,54 @@
+{% extends "web/base.html" %}
+{% block titulo %}Conversor SQL → Excel — Análise de Planilhas{% endblock %}
+{% block conteudo %}
+<style>
+  .form-cartao{background:var(--superficie);border:1px solid var(--borda);border-radius:var(--raio);
+    box-shadow:var(--sombra);padding:18px;margin-top:16px}
+  .form-cartao .campos{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+  .nota-lgpd{display:flex;gap:8px;align-items:flex-start;background:var(--marca-fraca,rgba(0,153,93,.08));
+    border:1px solid var(--borda);border-radius:12px;padding:10px 13px;margin-top:14px;font-size:12.5px;color:var(--fraco)}
+  .nota-lgpd svg{flex:none;margin-top:1px}
+  .passos{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 2px;font-size:12.5px;color:var(--fraco)}
+  .passos b{color:var(--marca-escura)}
+</style>
+
+<h1>Conversor SQL → Excel</h1>
+<p class="apoio">Você exporta o <b>resultado</b> da sua consulta (do seu cliente SQL) e eu transformo num
+Excel limpo, tipado e pronto pro analisador. Não acesso o banco — só leio o arquivo que você exportou.</p>
+
+<div class="passos">
+  <span><b>1.</b> Importar export</span> › <span><b>2.</b> Conferir a análise</span> ›
+  <span><b>3.</b> Aprovar</span> › <span><b>4.</b> Gerar o Excel</span>
+</div>
+
+<div class="form-cartao">
+  <form method="post" action="/web/admin/conversor/analisar" enctype="multipart/form-data" class="validar">
+    <div class="campos">
+      <div>
+        <label>Arquivo exportado <span class="obrig">*</span></label>
+        <input type="file" name="arquivo" accept=".csv,.tsv,.txt,.xlsx,.xlsm,.xls,.ods,.json,.pdf" required>
+        <small class="apoio" style="display:block;margin-top:4px">CSV, TXT, TSV, Excel, ODS, JSON ou PDF (com tabela de texto).</small>
+      </div>
+      <div>
+        <label>Título do relatório</label>
+        <input name="titulo" placeholder="ex.: Faturamento" maxlength="80">
+        <small class="apoio" style="display:block;margin-top:4px">Vira o nome do arquivo + o período dos dados.</small>
+      </div>
+      <div>
+        <label>Setor de destino</label>
+        <select name="centro_id">
+          <option value="">Geral</option>
+          {% for c in centros %}<option value="{{ c.id }}">{{ c.codigo }} — {{ c.nome }}</option>{% endfor %}
+        </select>
+      </div>
+    </div>
+    <button type="submit"><span class="giro"></span><span class="rotulo">Analisar arquivo</span></button>
+  </form>
+
+  <div class="nota-lgpd">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><path d="M12 3l8 3v6c0 4.5-3.2 7.5-8 9-4.8-1.5-8-4.5-8-9V6l8-3z" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span><b>LGPD:</b> o arquivo pode conter dados reais. Tudo é processado localmente no servidor,
+      a saída fica numa pasta não versionada e nada é enviado para fora. Tela restrita ao administrador.</span>
+  </div>
+</div>
+{% endblock %}
