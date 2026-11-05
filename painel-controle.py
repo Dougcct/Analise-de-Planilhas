@@ -43,9 +43,13 @@ except ImportError:  # pragma: no cover - ajuda quem nao instalou a dependencia
 # Configuracao do projeto
 # ----------------------------------------------------------------------------
 RAIZ = Path(__file__).resolve().parent
-URL_SITE = "http://localhost:8000/web/login"
+URL_SITE = os.environ.get("PAINEL_URL_SITE", "http://localhost:8000/web/login")
 REMOTOS = [("origin", "privado"), ("publico", "publico")]
 VERSAO_ARQ = RAIZ / "src" / "analise_planilha" / "__init__.py"
+
+# LGPD: pastas que NUNCA podem ir pro Git (podem conter dado real). Se algo delas estiver
+# preparado para commit, o envio é abortado antes do commit — o remoto «publico» é internet.
+PASTAS_PROIBIDAS = ("dados/", "saida/", "setores/", "_revisar/")
 
 # Esconde janelas de console dos subprocessos no Windows.
 _NO_WINDOW = 0x08000000 if os.name == "nt" else 0
@@ -156,6 +160,27 @@ def ler_branch() -> str:
         return "?"
 
 
+def _git_saida(args: list[str]) -> str:
+    """Roda um git silencioso e devolve o stdout (ou "" se falhar)."""
+    try:
+        out = subprocess.run(["git", *args], cwd=str(RAIZ), capture_output=True,
+                             text=True, creationflags=_NO_WINDOW)
+        return out.stdout
+    except Exception:
+        return ""
+
+
+def arquivos_alterados() -> list[str]:
+    """Lista 'XY caminho' do que seria enviado (git status --short)."""
+    return [ln for ln in _git_saida(["status", "--short"]).splitlines() if ln.strip()]
+
+
+def staged_proibidos() -> list[str]:
+    """Arquivos preparados para commit que caem nas pastas proibidas (LGPD)."""
+    staged = _git_saida(["diff", "--cached", "--name-only"]).splitlines()
+    return [c for c in staged if c.strip().lower().lstrip("/").startswith(PASTAS_PROIBIDAS)]
+
+
 class Tarefa(QThread):
     """Roda uma funcao de trabalho em outra thread e repassa o log para a UI."""
 
@@ -217,6 +242,15 @@ def fabricar_trabalho_git(descricao: str):
         log("Preparando alteracoes (git add -A)...", "step")
         rodar_comando(["git", "add", "-A"], log)
 
+        # LGPD: barra o envio se algo das pastas proibidas foi preparado para commit.
+        proibidos = staged_proibidos()
+        if proibidos:
+            log("ABORTADO (LGPD) — dado sensivel preparado para commit:", "error")
+            for c in proibidos:
+                log(f"  • {c}", "error")
+            log("Remova do commit (git reset) e confira o .gitignore. Nada foi enviado.", "warn")
+            return False, f"Push cancelado: {len(proibidos)} arquivo(s) sensivel(is) no commit."
+
         log(f'Commit: "{msg}"', "step")
         rc = rodar_comando(["git", "commit", "-m", msg], log)
         if rc != 0:
@@ -225,7 +259,9 @@ def fabricar_trabalho_git(descricao: str):
         enviados, falhas = [], []
         for remoto, apelido in REMOTOS:
             log(f"Enviando para {apelido} ({remoto}) — branch {branch}...", "step")
-            rc = rodar_comando(["git", "push", remoto, branch], log)
+            # -u só no origin: fixa o tracking sem um remoto sobrescrever o do outro.
+            extra = ["-u"] if remoto == "origin" else []
+            rc = rodar_comando(["git", "push", *extra, remoto, branch], log)
             if rc == 0:
                 log(f"{apelido.upper()}: OK", "ok")
                 enviados.append(apelido)
@@ -415,6 +451,7 @@ class Painel(QWidget):
         self.log.setObjectName("log")
         self.log.setReadOnly(True)
         self.log.setAcceptRichText(True)
+        self.log.document().setMaximumBlockCount(5000)   # teto: sessões longas não crescem sem fim
         fonte = QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont)
         fonte.setPointSize(10)
         self.log.setFont(fonte)
@@ -546,7 +583,11 @@ class Painel(QWidget):
         aviso.setWindowTitle("Confirmar envio")
         aviso.setIcon(QMessageBox.Icon.Question)
         aviso.setText("Enviar para o GitHub (privado e publico)?")
-        aviso.setInformativeText(f'Commit: "{msg}"\nBranch: {ler_branch()}')
+        alterados = arquivos_alterados()
+        aviso.setInformativeText(f'Commit: "{msg}"\nBranch: {ler_branch()}\n'
+                                 f"{len(alterados)} arquivo(s) alterado(s) — veja os detalhes.")
+        if alterados:
+            aviso.setDetailedText("\n".join(alterados))
         aviso.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         aviso.setDefaultButton(QMessageBox.StandardButton.Yes)
         if aviso.exec() != QMessageBox.StandardButton.Yes:
