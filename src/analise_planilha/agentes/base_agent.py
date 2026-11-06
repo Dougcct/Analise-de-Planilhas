@@ -86,12 +86,14 @@ class AgenteBase:
 
     # ---- Escudo de Entrada (4 travas) ----------------------------------------------------------
     def preparar(self, bruto: pd.DataFrame) -> tuple[pd.DataFrame, list[str]]:
-        """Aplica as 4 travas na ordem segura e devolve (df_limpo, notas de transparência)."""
+        """Aplica as 4 travas na ordem segura e devolve (df_limpo, notas de transparência).
+
+        NÃO renomeia as colunas: preserva os rótulos originais (legíveis no relatório). A detecção
+        de IDs/valores/códigos é feita por sinônimos (`_canonico`), sem precisar renomear."""
         notas: list[str] = []
         df, nota = self._cacar_cabecalho(bruto)
         if nota:
             notas.append(nota)
-        df, _ = self.mapear(df)
         df, nota = self._filtrar_subtotais(df)
         if nota:
             notas.append(nota)
@@ -167,24 +169,30 @@ class AgenteBase:
         mapa = {c: v for c, v in mapa.items() if not (v in vistos or vistos.add(v))}
         return (df.rename(columns=mapa) if mapa else df), mapa
 
-    # ---- utilidades de nome de coluna ----------------------------------------------------------
+    # ---- utilidades de nome de coluna (reconhecem a coluna original por sinônimo) ---------------
+    def _canonico(self, col) -> str | None:
+        """Nome canônico de uma coluna original (ex.: 'Nr Atendimento' → 'atendimento'), ou None."""
+        return self.sinonimos.get(chave_texto(col))
+
+    def _e_desta(self, col, refs_canonicas: set[str]) -> bool:
+        """True se a coluna (pelo canônico ou pelo próprio nome) está no conjunto de canônicos-alvo."""
+        can = self._canonico(col)
+        return (can is not None and chave_texto(can) in refs_canonicas) or chave_texto(col) in refs_canonicas
+
     def _e_codigo(self, col) -> bool:
         k = chave_texto(col)
-        extras = tuple(self.config.get("codigos", []))
-        return any(t in k for t in CODIGOS) or any(chave_texto(t) == k for t in extras)
+        can = self._canonico(col)
+        kk = chave_texto(can) if can else k
+        extras = {chave_texto(t) for t in self.config.get("codigos", [])}
+        return any(t in kk or t in k for t in CODIGOS) or kk in extras or k in extras
 
     def _coluna_id(self, df: pd.DataFrame) -> str | None:
-        ids = self.config.get("ids_principais", [])
-        for ref in ids:
-            k = chave_texto(ref)
-            achou = next((c for c in df.columns if chave_texto(c) == k), None)
-            if achou:
-                return achou
-        return None
+        refs = {chave_texto(r) for r in self.config.get("ids_principais", [])}
+        return next((c for c in df.columns if self._e_desta(c, refs)), None)
 
     def _colunas_valor(self, df: pd.DataFrame) -> list[str]:
         refs = {chave_texto(r) for r in self.config.get("valores", [])}
-        return [c for c in df.columns if chave_texto(c) in refs]
+        return [c for c in df.columns if self._e_desta(c, refs)]
 
     # ---- análise específica do setor (sobrescrever) --------------------------------------------
     def analisar(self, df: pd.DataFrame) -> dict:

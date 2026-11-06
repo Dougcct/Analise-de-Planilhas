@@ -36,15 +36,15 @@ def test_num_ptbr_sanitiza_formatos():
 def test_escudo_acha_cabecalho_blinda_e_remove_subtotal():
     ag = AgenteFaturamento()
     df, notas = ag.preparar(_planilha_suja())
-    # cabeçalho real virou colunas canônicas
-    assert "guia" in df.columns and "vl_cobrado" in df.columns
+    # cabeçalho real virou colunas — rótulos ORIGINAIS preservados (legíveis no relatório)
+    assert "Guia" in df.columns and "Vl Cobrado" in df.columns
     # subtotal "TOTAL" foi descartado → sobram as 3 contas
     assert len(df) == 3
     # código blindado: "0007" continua texto com zero à esquerda
-    assert df["guia"].iloc[0] == "0007"
+    assert df["Guia"].iloc[0] == "0007"
     # valor sanitizado: negativo contábil e "-" tratados
-    assert df["vl_glosa"].iloc[1] == -50.0
-    assert pd.isna(df["vl_glosa"].iloc[2])
+    assert df["Vl Glosa"].iloc[1] == -50.0
+    assert pd.isna(df["Vl Glosa"].iloc[2])
     assert any("Cabeçalho" in n for n in notas)
     assert any("subtotal" in n.lower() for n in notas)
 
@@ -65,6 +65,38 @@ def test_faturamento_metricas_e_dedup():
     assert "Taxa de glosa" in txt
     # 3 guias, 2 atendimentos distintos (A1 aparece em duas guias)
     assert "2 internação" in txt and "3 guia" in txt
+
+
+def test_servico_aplica_agente_na_leitura():
+    """Sem modelo, o Agente de Faturamento assume a leitura crua (inversão de controle).
+    Efeito observável: a Guia (só dígitos) é blindada como texto, com zeros à esquerda — o
+    motor sozinho a trataria como número. O subtotal continua fora e os valores viram número."""
+    from analise_planilha import servico
+
+    # o agente é o alvo desta planilha (prova que o hook mira o agente certo)
+    cols = ["Guia", "Nr Atendimento", "Convenio", "Vl Cobrado", "Vl Glosa"]
+    assert isinstance(agentes.resolver(colunas=cols), AgenteFaturamento)
+
+    csv = ("Guia;Nr Atendimento;Convenio;Vl Cobrado;Vl Glosa\n"
+           "0012345;A1;UNIMED;1000,00;100,00\n"
+           "0067890;A2;BRADESCO;2000,00;0,00\n"
+           "TOTAL;;;3000,00;100,00\n").encode("utf-8-sig")
+    ds = servico.carregar(csv, "faturamento.csv")
+    df = servico.visiveis(ds.df)
+    assert df["Guia"].tolist() == ["0012345", "0067890"]       # blindada: texto com zero à esquerda
+    assert not df["Guia"].astype(str).str.fullmatch("TOTAL").any()   # subtotal removido
+    assert pd.api.types.is_numeric_dtype(df["Vl Cobrado"])     # valores sanitizados
+
+
+def test_servico_fallback_sem_agente():
+    """Planilha de outro domínio: nenhum agente casa → fluxo padrão, sem nota de agente."""
+    from analise_planilha import servico
+
+    assert agentes.resolver(colunas=["Produto", "Quantidade", "Preço"]) is None
+    csv = ("Produto;Quantidade;Preço\nCafé;10;5,00\nAçúcar;3;4,00\n").encode("utf-8-sig")
+    ds = servico.carregar(csv, "estoque.csv")
+    assert len(ds.df) == 2
+    assert not any("Agente" in a for a in ds.meta.diagnostico)
 
 
 def test_faturamento_pareto_da_glosa():

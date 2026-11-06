@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from . import cerebro, config, especificacao, indicadores, inferencia, leitura, metas, tratamento
+from . import agentes, cerebro, config, especificacao, indicadores, inferencia, leitura, metas, tratamento
 from .cerebro import dominios, nomes_mv
 from .modelo import Modelo
 from .modelos import Alerta, Analise, Dataset, Esquema, Filtros, MetaLeitura
@@ -76,6 +76,11 @@ def _ler_mapeado(fonte, nome_arquivo: str, aba: str | None, linha_cabecalho: int
         aba = aba or (modelo.aba if modelo else None)
         bruto, meta = leitura.ler(fonte, nome_arquivo, aba, linha_cabecalho, dicas=dicas, modelo=modelo)
         aproximados = []
+        if modelo is None:    # sem modelo: um Agente de setor pode assumir a limpeza (Escudo de Entrada)
+            agente = agentes.resolver(colunas=list(bruto.columns))
+            if agente is not None:
+                bruto, notas_ag = agente.preparar(bruto)
+                meta.diagnostico += [f"Agente «{agente.nome}»: {n}" for n in notas_ag]
         if modelo:
             bruto, tipos, faltando, aproximados = modelo.mapear(bruto)
         bruto[config.COL_LINHA] = bruto.index

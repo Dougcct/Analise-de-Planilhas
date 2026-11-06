@@ -26,6 +26,7 @@ class AgenteFaturamento(AgenteBase):
     DIAS_INTERNACAO_LONGA = 10
 
     def analisar(self, df: pd.DataFrame) -> dict:
+        df, _ = self.mapear(df)   # cálculos usam os nomes canônicos (vl_cobrado, atendimento…)
         achados: list[str] = []
         alertas: list[str] = []
         paineis: dict[str, pd.DataFrame] = {}
