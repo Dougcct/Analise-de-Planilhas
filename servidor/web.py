@@ -546,8 +546,8 @@ def _resumo_home(s: Session, escopo: Escopo, rels: list) -> dict:
     pub_q = select(Carga).where(Carga.status == PUBLICADA)
     rasc_q = select(Carga).where(Carga.status == RASCUNHO)
     if not escopo.eh_adm:
-        pub_q = pub_q.where(Carga.centro_custo_id == escopo.centro_custo_id)
-        rasc_q = rasc_q.where(Carga.centro_custo_id == escopo.centro_custo_id)
+        pub_q = pub_q.where(Carga.centro_custo_id.in_(escopo.centros_ids))
+        rasc_q = rasc_q.where(Carga.centro_custo_id.in_(escopo.centros_ids))
     nomes_rel = {r.id: r.nome for r in s.scalars(select(Relatorio))}
     ultimas = [{"rel": nomes_rel.get(c.relatorio_id, "?"),
                 "quando": c.publicado_em.strftime("%d/%m/%Y %H:%M") if c.publicado_em else "—"}
@@ -563,7 +563,7 @@ def _resumo_home(s: Session, escopo: Escopo, rels: list) -> dict:
                          "ic": "user", "url": "/web/usuarios"})
     elif gestor:
         n = s.scalar(select(func.count()).select_from(
-            select(Usuario.id).where(Usuario.centro_custo_id == escopo.centro_custo_id).subquery())) or 0
+            select(Usuario.id).where(Usuario.centro_custo_id.in_(escopo.centros_ids)).subquery())) or 0
         metricas.append({"rotulo": "Usuários do setor", "valor": n, "ic": "user", "url": "/web/usuarios"})
     if gestor:
         metricas.append({"rotulo": "Rascunhos p/ publicar", "valor": rascunhos, "ic": "rascunho",
@@ -583,11 +583,22 @@ def _resumo_home(s: Session, escopo: Escopo, rels: list) -> dict:
 
 
 # ---- navegação em pastas (estilo coleções do Metabase) -----------------------------------------
+def _setores_validos(s, ids) -> list[int]:
+    """IDs de setores ATIVOS válidos, sem repetir (filtra lixo do formulário)."""
+    saida = []
+    for x in ids or []:
+        if str(x).isdigit():
+            cc = s.get(CentroCusto, int(x))
+            if cc is not None and cc.ativo:
+                saida.append(cc.id)
+    return list(dict.fromkeys(saida))
+
+
 def _setor_acessivel(s, escopo, cc_id: int):
     cc = s.get(CentroCusto, cc_id)
     if cc is None or not cc.ativo:
         raise _Erro("Setor não encontrado.")
-    if not escopo.eh_adm and cc.id != escopo.centro_custo_id:
+    if not escopo.pode_setor(cc.id):
         raise _Erro("Fora do seu setor.")
     return cc
 
@@ -653,19 +664,23 @@ def home(request: Request, s: Session = Depends(_sessao)):
     rels = RepoRelatorios(s, escopo).listar()
     # relatórios de OUTRO setor emprestados por acesso temporário (não aparecem nas pastas do próprio setor)
     compart = [{"slug": r.slug, "nome": r.nome} for r in rels
-               if not escopo.eh_adm and r.centro_custo_id != escopo.centro_custo_id]
+               if not escopo.pode_setor(r.centro_custo_id)]
     ctx = dict(resumo=_resumo_home(s, escopo, rels), raiz=True, compartilhados=compart)
-    if escopo.eh_adm:                       # ADM: a raiz são os setores (pastas-raiz)
+    # ADM, ou qualquer usuário com MAIS DE UM setor: a raiz são os setores (pastas-raiz)
+    if escopo.eh_adm or len(escopo.centros_ids) > 1:
+        q_cc = select(CentroCusto).where(CentroCusto.ativo.is_(True))
+        if not escopo.eh_adm:
+            q_cc = q_cc.where(CentroCusto.id.in_(escopo.centros_ids))
         cards = []
-        for cc in s.scalars(select(CentroCusto).where(CentroCusto.ativo.is_(True)).order_by(CentroCusto.nome)):
+        for cc in s.scalars(q_cc.order_by(CentroCusto.nome)):
             n_rel = s.scalar(select(func.count()).select_from(Relatorio)
                              .where(Relatorio.centro_custo_id == cc.id, Relatorio.ativo.is_(True))) or 0
             n_sub = s.scalar(select(func.count()).select_from(Pasta)
                              .where(Pasta.centro_custo_id == cc.id, Pasta.pai_id.is_(None))) or 0
             cards.append({"tipo": "setor", "id": cc.id, "nome": cc.nome, "codigo": cc.codigo,
                           "url": f"/web/setor/{cc.id}", "n_sub": n_sub, "n_rel": n_rel})
-        ctx.update(titulo_local="Setores", pastas=cards, relatorios=[])
-    elif escopo.centro_custo_id:            # Gestor/Usuário: cai direto no conteúdo do próprio setor
+        ctx.update(titulo_local="Setores" if escopo.eh_adm else "Meus setores", pastas=cards, relatorios=[])
+    elif escopo.centro_custo_id:            # um setor só: cai direto no conteúdo do próprio setor
         subs, relatorios = _conteudo(s, escopo.centro_custo_id, None)
         cc = s.get(CentroCusto, escopo.centro_custo_id)
         ctx.update(titulo_local=cc.nome if cc else "Meu setor", pastas=subs, relatorios=relatorios)
@@ -962,7 +977,7 @@ def ver_relatorio(slug: str, request: Request, s: Session = Depends(_sessao)):
     except Exception:
         pass
     qs = request.url.query
-    dono = escopo.eh_adm or rel.centro_custo_id == escopo.centro_custo_id
+    dono = escopo.pode_setor(rel.centro_custo_id)
     return _pagina("relatorio.html", request, _ctx(request, escopo, s, "relatorios",
                    slug=slug, titulo=rel.nome, pode_compartilhar=(dono and _pode(escopo, GESTOR, ADM)),
                    tem_versao_editada=bool(rel.versao_editada),
@@ -983,13 +998,13 @@ def conteudo_relatorio(slug: str, request: Request, s: Session = Depends(_sessao
         return HTMLResponse("<p>Relatório não encontrado.</p>", status_code=404)
     ds = srv._dataset_do_relatorio(s, rel)
     f = _ler_filtros_query(request, ds)
-    if not escopo.eh_adm and rel.centro_custo_id != escopo.centro_custo_id:
+    if not escopo.pode_setor(rel.centro_custo_id):
         ac = srv.acesso_vigente(s, escopo.usuario_id, rel.id)
         if ac is not None and ac.anonimizar:
             f.anonimizar = True                      # forçado no servidor
     _audit(s, escopo, "abrir_relatorio", f"web:{slug}")
     s.commit()
-    dono = escopo.eh_adm or rel.centro_custo_id == escopo.centro_custo_id
+    dono = escopo.pode_setor(rel.centro_custo_id)
     pode_editar = dono and _pode(escopo, GESTOR, ADM)
     ac = None if dono else srv.acesso_vigente(s, escopo.usuario_id, rel.id)
     somente_editada = bool(ac is not None and getattr(ac, "usar_editada", False) and rel.versao_editada)
@@ -1003,6 +1018,31 @@ def conteudo_relatorio(slug: str, request: Request, s: Session = Depends(_sessao
                                       modo_editavel=modo_editavel, slug=rel.slug, versao_ativa=versao_ativa,
                                       tem_versao_editada=bool(rel.versao_editada), somente_editada=somente_editada)
     return HTMLResponse(html)
+
+
+@router.get("/r/{slug}/dados.csv")
+def dados_relatorio_csv(slug: str, request: Request, s: Session = Depends(_sessao)):
+    """Base completa do relatório em CSV (Excel pt-BR). Mesma regra de acesso do relatório; anonimiza
+    quando o acesso compartilhado exige. O HTML embute só uma prévia — os dados completos vêm por aqui."""
+    srv = _srv()
+    escopo = _escopo(request, s)
+    if escopo is None or escopo.precisa_trocar_senha:
+        return HTMLResponse("<p>Sessão expirada.</p>", status_code=401)
+    rel = RepoRelatorios(s, escopo).obter(slug)
+    if rel is None:
+        return HTMLResponse("<p>Relatório não encontrado.</p>", status_code=404)
+    ds = srv._dataset_do_relatorio(s, rel)
+    anon = False
+    if not escopo.pode_setor(rel.centro_custo_id):
+        ac = srv.acesso_vigente(s, escopo.usuario_id, rel.id)
+        anon = bool(ac is not None and ac.anonimizar)
+    base = servico.visiveis(servico.aplicar_filtros(ds, Filtros(anonimizar=anon))).reset_index(drop=True)
+    _audit(s, escopo, "baixar_dados", f"web:{slug}")
+    s.commit()
+    csv = base.to_csv(index=False, sep=";", decimal=",").encode("utf-8-sig")   # Excel pt-BR
+    nome = f"{slug}-dados.csv"
+    return Response(content=csv, media_type="text/csv; charset=utf-8",
+                    headers={"Content-Disposition": f"attachment; filename*=utf-8''{quote(nome)}"})
 
 
 @router.post("/r/{slug}/painel-executivo")
@@ -1081,18 +1121,27 @@ def usuarios(request: Request, busca: str = "", papel: str = "", setor: str = ""
     nomes = {c.id: c.nome for c in s.scalars(select(CentroCusto))}
     centros = [{"id": c.id, "codigo": c.codigo, "nome": c.nome}
                for c in s.scalars(select(CentroCusto).where(CentroCusto.ativo.is_(True)).order_by(CentroCusto.nome))
-               if escopo.eh_adm or c.id == escopo.centro_custo_id]
+               if escopo.eh_adm or c.id in escopo.centros_ids]
     papel_f = papel.upper() if papel.upper() in PAPEIS else ""
     setor_id = int(setor) if setor.isdigit() else None
-    itens, total, paginas = RepoUsuarios(s, escopo).listar_paginado(
+    repo_u = RepoUsuarios(s, escopo)
+    itens, total, paginas = repo_u.listar_paginado(
         busca=busca, papel=papel_f, centro_id=setor_id, pagina=pagina)
-    lista = [{"id": u.id, "login": u.login, "nome": u.nome, "email": u.email or "", "papel": u.papel,
-              "centro_custo_id": u.centro_custo_id, "cor": u.cor_avatar or COR_AVATAR_PADRAO,
-              "setor": nomes.get(u.centro_custo_id, "—" if u.papel == ADM else "?"),
-              "ativo": u.ativo, "eu": u.id == escopo.usuario_id,
-              # o Gestor só gerencia usuários comuns; o ADM gerencia todos (o backend também barra)
-              "gerenciavel": escopo.eh_adm or u.papel == USUARIO}
-             for u in itens]
+
+    def _resumo_setores(u):
+        extras = sorted(repo_u.setores_de(u) - ({u.centro_custo_id} if u.centro_custo_id else set()))
+        princ = nomes.get(u.centro_custo_id, "—" if u.papel == ADM else "?")
+        return extras, (princ + (f" +{len(extras)}" if extras else ""))
+
+    lista = []
+    for u in itens:
+        extras, setor_txt = _resumo_setores(u)
+        lista.append({"id": u.id, "login": u.login, "nome": u.nome, "email": u.email or "", "papel": u.papel,
+                      "centro_custo_id": u.centro_custo_id, "cor": u.cor_avatar or COR_AVATAR_PADRAO,
+                      "setor": setor_txt, "setores_ids": extras,
+                      "ativo": u.ativo, "eu": u.id == escopo.usuario_id,
+                      # o Gestor só gerencia usuários comuns; o ADM gerencia todos (o backend também barra)
+                      "gerenciavel": escopo.eh_adm or u.papel == USUARIO})
     pag = {"atual": min(max(1, pagina), paginas), "total": total, "paginas": paginas,
            "ini": 0 if total == 0 else (min(max(1, pagina), paginas) - 1) * 8 + 1,
            "fim": min(min(max(1, pagina), paginas) * 8, total)}
@@ -1104,7 +1153,8 @@ def usuarios(request: Request, busca: str = "", papel: str = "", setor: str = ""
 @router.post("/usuarios")
 def usuarios_criar(request: Request, login: str = Form(...), nome: str = Form(...), senha: str = Form(...),
                    email: str = Form(""), cor: str = Form(""), papel: str = Form(USUARIO),
-                   centro_custo_id: str = Form(""), s: Session = Depends(_sessao)):
+                   centro_custo_id: str = Form(""), setores: list[str] = Form([]),
+                   s: Session = Depends(_sessao)):
     escopo, redir = _exige_login(request, s)
     if redir:
         return redir
@@ -1114,25 +1164,33 @@ def usuarios_criar(request: Request, login: str = Form(...), nome: str = Form(..
         papel = papel.upper()
         if papel not in PAPEIS:
             raise _Erro("Papel inválido.")
+        extras: list[int] = []
         if escopo.eh_gestor:
             if papel != USUARIO:
                 raise _Erro("Gestor só cadastra usuários comuns.")
-            cc = escopo.centro_custo_id
+            cc = int(centro_custo_id) if centro_custo_id else escopo.centro_custo_id
+            if cc not in escopo.centros_ids:                      # só os setores do próprio gestor
+                raise _Erro("Setor fora do seu alcance.")
         else:
             cc = int(centro_custo_id) if centro_custo_id else None
             if papel != ADM and cc is None:
-                raise _Erro("Informe o centro de custo.")
+                raise _Erro("Informe o setor principal.")
             if cc is not None and s.get(CentroCusto, cc) is None:
                 raise _Erro("Centro de custo inexistente.")
+            if papel != ADM:                                      # ADM pode atribuir setores ADICIONAIS
+                extras = _setores_validos(s, setores)
         if not (login.strip() and nome.strip() and senha):
             raise _Erro("Preencha nome, login e senha.")
         if len(senha) < 6:
             raise _Erro("A senha provisória precisa de ao menos 6 caracteres.")
         if s.scalar(select(Usuario).where(Usuario.login == login.strip())) is not None:
             raise _Erro("Login já existe.")
-        s.add(Usuario(login=login.strip(), nome=nome.strip(), email=(email.strip() or None),
-                      cor_avatar=_cor_valida(cor), senha_hash=hash_senha(senha), papel=papel,
-                      centro_custo_id=(None if papel == ADM else cc), precisa_trocar_senha=True))
+        novo = Usuario(login=login.strip(), nome=nome.strip(), email=(email.strip() or None),
+                       cor_avatar=_cor_valida(cor), senha_hash=hash_senha(senha), papel=papel,
+                       centro_custo_id=(None if papel == ADM else cc), precisa_trocar_senha=True)
+        s.add(novo)
+        if extras:
+            RepoUsuarios(s, escopo).definir_setores(novo, cc, extras)
         _audit(s, escopo, "criar_usuario", login.strip())
         s.commit()
     except _Erro as e:
@@ -1257,7 +1315,7 @@ def usuarios_resetar_senha(usuario_id: int, request: Request, nova: str = Form(.
 @router.post("/usuarios/{usuario_id}/editar")
 def usuarios_editar(usuario_id: int, request: Request, nome: str = Form(...), email: str = Form(""),
                     cor: str = Form(""), papel: str = Form(""), centro_custo_id: str = Form(""),
-                    s: Session = Depends(_sessao)):
+                    setores: list[str] = Form([]), s: Session = Depends(_sessao)):
     escopo, redir = _exige_login(request, s)
     if redir:
         return redir
@@ -1269,23 +1327,24 @@ def usuarios_editar(usuario_id: int, request: Request, nome: str = Form(...), em
             raise _Erro("Gestor só edita usuários comuns.")   # mas o próprio perfil (nome/cor) é sempre editável
         if not nome.strip():
             raise _Erro("O nome não pode ficar vazio.")
+        repo = RepoUsuarios(s, escopo)
         novo_papel = None
-        novo_cc = None
-        if escopo.eh_adm and alvo.id != escopo.usuario_id:   # só o ADM muda papel/setor (e não o próprio)
+        if escopo.eh_adm and alvo.id != escopo.usuario_id:   # só o ADM muda papel/setores (e não o próprio)
             p = papel.upper()
             if p and p not in PAPEIS:
                 raise _Erro("Papel inválido.")
             novo_papel = p or alvo.papel
             if novo_papel == ADM:
-                novo_cc = None
+                novo_cc, extras = None, []
             elif centro_custo_id:
                 novo_cc = int(centro_custo_id)
                 if s.get(CentroCusto, novo_cc) is None:
                     raise _Erro("Centro de custo inexistente.")
+                extras = _setores_validos(s, setores)        # setores ADICIONAIS (podem ser vários)
             else:
-                raise _Erro("Informe o centro de custo.")
-        RepoUsuarios(s, escopo).editar(alvo, nome=nome.strip(), email=email.strip(),
-                                       papel=novo_papel, centro_custo_id=novo_cc)
+                raise _Erro("Informe o setor principal.")
+            repo.definir_setores(alvo, novo_cc, extras)      # principal + adicionais (substitui os adicionais)
+        repo.editar(alvo, nome=nome.strip(), email=email.strip(), papel=novo_papel)
         if cor:
             alvo.cor_avatar = _cor_valida(cor)
         _audit(s, escopo, "editar_usuario", alvo.login)
@@ -1301,7 +1360,7 @@ def usuarios_editar(usuario_id: int, request: Request, nome: str = Form(...), em
 def _relatorios_proprios(s, escopo):
     q = select(Relatorio).where(Relatorio.ativo.is_(True))
     if not escopo.eh_adm:
-        q = q.where(Relatorio.centro_custo_id == escopo.centro_custo_id)
+        q = q.where(Relatorio.centro_custo_id.in_(escopo.centros_ids))
     return list(s.scalars(q.order_by(Relatorio.nome)))
 
 
@@ -1319,7 +1378,7 @@ def enviar(request: Request, setor: str = "", pasta: str = "", s: Session = Depe
     modelos = _modelos_disponiveis()
     centros = [{"id": c.id, "codigo": c.codigo, "nome": c.nome}
                for c in s.scalars(select(CentroCusto).where(CentroCusto.ativo.is_(True)).order_by(CentroCusto.nome))
-               if escopo.eh_adm or c.id == escopo.centro_custo_id]
+               if escopo.eh_adm or c.id in escopo.centros_ids]
     p = s.get(Pasta, int(pasta)) if pasta.isdigit() else None   # pré-seleção vinda de uma pasta
     return _pagina("enviar.html", request, _ctx(request, escopo, s, "enviar",
                    relatorios=rels, modelos=modelos, centros=centros, eh_adm=escopo.eh_adm,
@@ -1407,8 +1466,10 @@ async def enviar_carga(request: Request, modo: str = Form("novo"),
             if rel_comum is None:
                 raise _Erro("Escolha um relatório do seu setor para atualizar.")
         else:
-            if escopo.eh_gestor:                          # Gestor cria só no próprio setor
-                cc_novo = escopo.centro_custo_id
+            if escopo.eh_gestor:                          # Gestor cria num dos SEUS setores
+                cc_novo = int(centro_custo_id) if centro_custo_id else escopo.centro_custo_id
+                if cc_novo not in escopo.centros_ids:
+                    raise _Erro("Setor fora do seu alcance.")
             else:                                        # ADM escolhe o setor
                 cc_novo = int(centro_custo_id) if centro_custo_id else None
                 if cc_novo is None:
@@ -1648,7 +1709,7 @@ def enviar_previa_conteudo(carga_id: int, request: Request, s: Session = Depends
         return HTMLResponse("<p>Prévia não encontrada.</p>", status_code=404)
     ds = srv._dataset_da_carga(carga, srv._modelo_do(rel), s)
     f = _ler_filtros_query(request, ds)
-    dono = escopo.eh_adm or rel.centro_custo_id == escopo.centro_custo_id
+    dono = escopo.pode_setor(rel.centro_custo_id)
     pode_editar = dono and _pode(escopo, GESTOR, ADM)
     ac = None if dono else srv.acesso_vigente(s, escopo.usuario_id, rel.id)
     somente_editada = bool(ac is not None and getattr(ac, "usar_editada", False) and rel.versao_editada)
@@ -2499,7 +2560,7 @@ def _relatorio_gerenciavel(s, escopo, slug):
     """Relatório que o escopo pode GERIR (ADM: qualquer; Gestor: só do próprio setor), ativo ou não."""
     q = select(Relatorio).where(Relatorio.slug == slug)
     if not escopo.eh_adm:
-        q = q.where(Relatorio.centro_custo_id == escopo.centro_custo_id)
+        q = q.where(Relatorio.centro_custo_id.in_(escopo.centros_ids))
     rel = s.scalar(q)
     if rel is None:
         raise _Erro("Relatório não encontrado (ou fora do seu setor).")

@@ -9,6 +9,10 @@
   .u-busca svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:17px;height:17px;color:var(--fraco)}
   .u-busca input{padding-left:36px;margin:0}
   .u-ferramentas select{width:auto;min-width:150px;margin:0}
+  .setores-extra{display:flex;flex-wrap:wrap;gap:6px 14px;max-height:140px;overflow:auto;padding:8px 10px;
+    border:1px solid var(--borda);border-radius:8px;background:var(--superficie)}
+  .setores-extra .chk{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;white-space:nowrap;margin:0}
+  .setores-extra .chk input{width:auto;margin:0}
   .u-avatar{width:34px;height:34px;border-radius:50%;flex:0 0 34px;display:grid;place-items:center;
     background:var(--marca-clara);color:var(--marca-mais-escura);font-weight:800;font-size:13px}
   .u-nome{display:flex;align-items:center;gap:11px}
@@ -108,7 +112,7 @@
       <div class="acoes">
         {% if u.gerenciavel or u.eu %}
         <button type="button" class="ic-btn" title="{{ 'Editar meu perfil (nome e cor)' if u.eu else 'Editar' }}"
-          onclick='abrirEditar({{ u.id }}, {{ u.nome|tojson }}, {{ u.email|tojson }}, {{ u.papel|tojson }}, {{ (u.centro_custo_id or "")|tojson }}, {{ u.login|tojson }}, {{ u.cor|tojson }})'>
+          onclick='abrirEditar({{ u.id }}, {{ u.nome|tojson }}, {{ u.email|tojson }}, {{ u.papel|tojson }}, {{ (u.centro_custo_id or "")|tojson }}, {{ u.login|tojson }}, {{ u.cor|tojson }}, {{ u.setores_ids|tojson }})'>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3z" stroke-linejoin="round"/><path d="M13.5 6.5l3 3" stroke-linecap="round"/></svg>
         </button>
         {% if u.eu %}
@@ -190,6 +194,17 @@
     <div><label>Papel</label>
       <select name="papel">{% for p in papeis %}<option value="{{ p }}">{{ p }}</option>{% endfor %}</select>
     </div>
+    <div><label>Setor principal</label>
+      <select name="centro_custo_id">
+        {% for c in centros %}<option value="{{ c.id }}">{{ c.codigo }} — {{ c.nome }}</option>{% endfor %}
+      </select>
+    </div>
+    <div><label>Setores adicionais <span class="apoio">(opcional — o usuário age com o papel dele em todos)</span></label>
+      <div class="setores-extra">
+        {% for c in centros %}<label class="chk"><input type="checkbox" name="setores" value="{{ c.id }}"> {{ c.codigo }} — {{ c.nome }}</label>{% endfor %}
+      </div>
+    </div>
+    {% elif centros|length > 1 %}
     <div><label>Setor</label>
       <select name="centro_custo_id">
         {% for c in centros %}<option value="{{ c.id }}">{{ c.codigo }} — {{ c.nome }}</option>{% endfor %}
@@ -230,10 +245,14 @@
       <div id="ed-adm">
         <label>Papel</label>
         <select name="papel" id="ed-papel">{% for p in papeis %}<option value="{{ p }}">{{ p }}</option>{% endfor %}</select>
-        <label>Setor</label>
+        <label>Setor principal</label>
         <select name="centro_custo_id" id="ed-setor">
           {% for c in centros %}<option value="{{ c.id }}">{{ c.codigo }} — {{ c.nome }}</option>{% endfor %}
         </select>
+        <label>Setores adicionais <span class="apoio">(opcional)</span></label>
+        <div class="setores-extra" id="ed-setores">
+          {% for c in centros %}<label class="chk"><input type="checkbox" name="setores" value="{{ c.id }}"> {{ c.codigo }} — {{ c.nome }}</label>{% endfor %}
+        </div>
       </div>
       {% endif %}
     </div>
@@ -278,7 +297,7 @@
     var s = Array.prototype.map.call(a, function(n){ return cj[n % cj.length]; }).join("");
     var i = document.getElementById(id); i.type = "text"; i.value = s;
   }
-  function abrirEditar(id, nome, email, papel, cc, login, cor){
+  function abrirEditar(id, nome, email, papel, cc, login, cor, setores){
     var f = document.getElementById("form-editar");
     f.action = "/web/usuarios/" + id + "/editar";
     document.getElementById("ed-login").textContent = "· " + login;
@@ -288,6 +307,11 @@
     if (r) r.checked = true;                                   // marca a cor atual
     var sp = document.getElementById("ed-papel");
     if (sp){ sp.value = papel; document.getElementById("ed-setor").value = cc || ""; }
+    var box = document.getElementById("ed-setores");           // marca os setores adicionais atuais
+    if (box){
+      var ids = (setores || []).map(String);
+      box.querySelectorAll('input[type=checkbox]').forEach(function(ch){ ch.checked = ids.indexOf(ch.value) >= 0; });
+    }
     document.getElementById("dlg-editar").showModal();
   }
   function abrirReset(id, login){

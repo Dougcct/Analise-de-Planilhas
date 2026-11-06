@@ -26,7 +26,8 @@ from .especificacao import ESTATISTICAS
 from .formatacao import fmt_pct, formatar_tabela
 from .modelos import Analise, Filtros
 
-MAX_LINHAS_BASE = 5000          # base detalhada no HTML: acima disso, corta (o arquivo ficaria enorme)
+MAX_LINHAS_BASE = 5000          # teto absoluto da base detalhada (histórico; ver PREVIEW_BASE)
+PREVIEW_BASE = 200              # só esta PRÉVIA vai embutida no HTML; a base completa sai por download
 MAX_ANOS_PRESET = 6             # nº máximo de anos como opção de período (evita arquivo gigante)
 
 
@@ -37,14 +38,40 @@ def _ambiente() -> Environment:
     return env
 
 
-def _bloco(df: pd.DataFrame, formatos: dict) -> tuple[list, list]:
-    """Tabela → (colunas [(título, chave, numérica)], linhas [{chave: texto}]) já formatadas em pt-BR."""
+# formatos numéricos que ganham mini-barra na célula (sparkline); «Linha» e «% acumulado» ficam de fora
+_FMT_BARRA = {"int", "dec", "moeda", "dias", "pct"}
+_SEM_BARRA = {config.COL_LINHA, "% acumulado", "% do total acumulado"}
+
+
+def _bloco(df: pd.DataFrame, formatos: dict, barras: bool = True) -> tuple[list, list]:
+    """Tabela → (colunas [(título, chave, numérica, tem_barra)], linhas [{chave: texto, chave+'_b': %}]).
+    Valores já formatados em pt-BR; `_b` é a largura (0–100) da mini-barra da célula, quando houver."""
     if df is None or df.empty:
         return [], []
     txt = formatar_tabela(df, formatos)
     chaves = [f"c{i}" for i in range(df.shape[1])]
-    colunas = [(str(c), k, c in formatos) for c, k in zip(df.columns, chaves)]
-    linhas = [dict(zip(chaves, r)) for r in txt.itertuples(index=False, name=None)]
+    larguras: dict[str, list] = {}
+    if barras and len(df) > 1:
+        for c, k in zip(df.columns, chaves):
+            if formatos.get(c) not in _FMT_BARRA or str(c) in _SEM_BARRA:
+                continue
+            s = pd.to_numeric(df[c], errors="coerce")
+            if formatos.get(c) == "pct":                       # 0–1 → 0–100% (teto 100)
+                w = (s.clip(lower=0) * 100).clip(upper=100)
+            else:
+                ref = float(s.abs().max()) if s.notna().any() else 0.0
+                if ref <= 0:
+                    continue
+                w = (s.abs() / ref * 100).clip(upper=100)
+            larguras[k] = [None if pd.isna(x) else round(float(x), 1) for x in w]
+    colunas = [(str(c), k, c in formatos, k in larguras) for c, k in zip(df.columns, chaves)]
+    linhas = []
+    for i, r in enumerate(txt.itertuples(index=False, name=None)):
+        d = dict(zip(chaves, r))
+        for k, ws in larguras.items():
+            if ws[i] is not None:
+                d[f"{k}_b"] = ws[i]
+        linhas.append(d)
     return colunas, linhas
 
 
@@ -431,8 +458,11 @@ def _vista(analise: Analise, idx: int, rotulo: str = "",
 def _base_ctx(base: pd.DataFrame | None, formatos_base: dict | None) -> dict | None:
     if base is None or base.empty:
         return None
-    colunas, linhas = _bloco(base.head(MAX_LINHAS_BASE), formatos_base or {})
-    return {"colunas": colunas, "linhas": linhas, "total": len(base), "cortado": len(base) > MAX_LINHAS_BASE}
+    # Embute só uma PRÉVIA leve (os agregados já estão nos painéis). A base completa sai por download
+    # no modo servidor — assim o HTML abre instantâneo mesmo com dezenas de milhares de linhas.
+    colunas, linhas = _bloco(base.head(PREVIEW_BASE), formatos_base or {}, barras=False)
+    return {"colunas": colunas, "linhas": linhas, "total": len(base),
+            "mostradas": min(len(base), PREVIEW_BASE), "cortado": len(base) > PREVIEW_BASE}
 
 
 _NOMES_MESES_ABREV = [

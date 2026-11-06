@@ -1,0 +1,52 @@
+# =============================================================================
+# AGENTE — Faturamento e Faturamento Hospitalar
+# =============================================================================
+# Vocabulário do setor (sinônimos → nome canônico) e listas que o Escudo de Entrada usa.
+# Editar este arquivo adapta o agente a um novo layout de ERP sem tocar no código (rules.py).
+
+# IDs que, quando faltam numa linha com valor, denunciam subtotal/rodapé (trava anti-subtotal).
+ids_principais = ["atendimento", "guia", "nr_conta", "paciente", "protocolo"]
+
+# Colunas de valor financeiro (sanitizador PT-BR: "R$ 1.250,50", "(450,00)" → float).
+valores = ["vl_cobrado", "vl_glosa", "vl_recursado", "vl_liberado"]
+
+# Nomes extras a tratar como código (além dos genéricos do base_agent: guia, conta, lote, nf…).
+codigos = ["num_guia", "nr_conta"]
+
+# ---- sinônimos: nome_canonico = [grafias que aparecem nos relatórios do ERP] ----------------
+[colunas]
+# identificação / IDs protegidos
+guia          = ["guia", "num guia", "nr guia", "numero da guia", "num_guia"]
+atendimento   = ["atendimento", "nr atendimento", "nr conta", "numero atendimento", "nr_conta", "conta"]
+paciente      = ["paciente", "nome paciente", "beneficiario"]
+protocolo     = ["protocolo", "nr protocolo"]
+lote          = ["lote", "nr lote"]
+remessa       = ["remessa"]
+nf            = ["nf", "nota fiscal", "nr nf"]
+rps           = ["rps"]
+tipo_conta    = ["tipo conta", "tipo de conta", "conta parcial", "parcial/final"]
+
+# valores
+vl_cobrado    = ["vl cobrado", "valor cobrado", "apresentado", "informado", "bruto", "vl apresentado", "valor bruto"]
+vl_glosa      = ["vl glosa", "valor glosa", "glosado", "vl glosado", "valor glosado"]
+vl_recursado  = ["vl recursado", "recuperado", "acatado", "vl recuperado", "valor recuperado"]
+vl_liberado   = ["vl liberado", "liquido", "pago", "vl pago", "valor liquido", "valor pago"]
+
+# dimensões
+convenio        = ["convenio", "operadora", "plano de saude"]
+plano           = ["plano", "produto"]
+setor           = ["setor", "clinica"]
+tipo_atendimento = ["tipo atendimento", "tipo de atendimento", "tipo internacao"]
+acomodacao      = ["acomodacao", "tipo acomodacao", "leito"]
+grupo_faturamento = ["grupo faturamento", "grupo de faturamento", "grupo", "grupo despesa"]
+procedimento    = ["procedimento", "tuss", "cod procedimento", "descricao procedimento"]
+motivo_glosa    = ["motivo glosa", "motivo da glosa", "descricao glosa", "cod glosa"]
+status_conta    = ["status conta", "status", "situacao", "situacao conta"]
+
+# datas
+dt_internacao = ["dt internacao", "data internacao", "dt_internacao"]
+dt_atendimento = ["dt atendimento", "data atendimento", "dt_atendimento"]
+dt_alta       = ["dt alta", "data alta", "dt_alta"]
+dt_fechamento = ["dt fechamento", "data fechamento"]
+dt_faturamento = ["dt faturamento", "data faturamento", "dt envio", "data envio", "dt_envio"]
+competencia   = ["competencia", "comp", "mes referencia", "referencia"]

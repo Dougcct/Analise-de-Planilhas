@@ -15,7 +15,8 @@ from difflib import SequenceMatcher
 
 import pandas as pd
 
-from . import config, graficos
+from . import config, graficos, previsao
+from . import metas as _metas
 from .especificacao import ESTATISTICAS, Especificacao
 from .formatacao import fmt_compacto, fmt_dec, fmt_int, fmt_moeda, fmt_pct
 from .modelos import KPI, MOEDA, Esquema, Painel, ResultadoMeta
@@ -234,6 +235,92 @@ def grafias_parecidas(df: pd.DataFrame, spec: Especificacao) -> pd.DataFrame:
     return pd.DataFrame(linhas)
 
 
+# ---- causa raiz e curva ABC --------------------------------------------------------------------
+def _rot_mes(p) -> str:
+    return f"{_MESES[p.month - 1]}/{str(p.year)[2:]}"
+
+
+def _causa_raiz(df: pd.DataFrame, spec: Especificacao, tipo_medida) -> list[str]:
+    """Decompõe a variação do último mês vs. o anterior: quem puxou? (ex.: «X respondeu por 70%»).
+    Usa a medida principal quando há; senão, a contagem de registros. Escolhe a dimensão que melhor
+    explica a variação e cita os 2 maiores contribuintes do mesmo sentido da variação total."""
+    if not spec.data_base or spec.data_base not in df.columns:
+        return []
+    dims = [d for d in spec.dimensoes if d in df.columns and df[d].nunique() > 1]
+    if not dims:
+        return []
+    per = pd.to_datetime(df[spec.data_base], errors="coerce").dt.to_period("M")
+    meses = sorted(p for p in per.dropna().unique())
+    if len(meses) < 2:
+        return []
+    a_p, b_p = meses[-2], meses[-1]
+    usar_medida = bool(spec.medida_principal and spec.medida_principal in df.columns)
+    rotulo = spec.medida_principal if usar_medida else spec.rotulo_registros.lower()
+    fval = (lambda v: _fmt_valor(v, tipo_medida)) if usar_medida else fmt_int
+
+    def soma_por(base: pd.DataFrame, dim: str) -> pd.Series:
+        if usar_medida:
+            return pd.to_numeric(base[spec.medida_principal], errors="coerce").groupby(base[dim]).sum()
+        return base.groupby(dim, observed=True).size()
+
+    base_a, base_b = df[per == a_p], df[per == b_p]
+    tot_a = float(soma_por(base_a, dims[0]).sum()) if usar_medida else float(len(base_a))
+    tot_b = float(soma_por(base_b, dims[0]).sum()) if usar_medida else float(len(base_b))
+    delta_tot = tot_b - tot_a
+    if not tot_a or abs(delta_tot) < 0.05 * abs(tot_a):     # variação pequena → sem causa relevante
+        return []
+
+    melhor = None   # (|share do maior contribuinte|, dim, série de deltas)
+    for dim in dims:
+        delta = soma_por(base_b, dim).subtract(soma_por(base_a, dim), fill_value=0)
+        mesmo = delta[delta * delta_tot > 0]                # contribuintes no sentido da variação
+        if mesmo.empty:
+            continue
+        share_top = abs(mesmo.max() if delta_tot > 0 else mesmo.min()) / abs(delta_tot)
+        if melhor is None or share_top > melhor[0]:
+            melhor = (share_top, dim, delta)
+    if melhor is None:
+        return []
+
+    _, dim, delta = melhor
+    mesmo = delta[delta * delta_tot > 0].sort_values(ascending=delta_tot < 0)
+    direc = "aumento" if delta_tot > 0 else "queda"
+    partes = [f"{_rot_cat(nome)} por {fmt_pct(abs(dv) / abs(delta_tot))} ({'+' if dv > 0 else '−'}{fval(abs(dv))})"
+              for nome, dv in mesmo.head(2).items()]
+    frase = (f"Causa da {direc} de {rotulo} em {_rot_mes(b_p)} vs {_rot_mes(a_p)} "
+             f"({'+' if delta_tot > 0 else '−'}{fval(abs(delta_tot))} no total): "
+             f"{dim} — {'; '.join(partes)}.")
+    return [frase]
+
+
+def _abc(df: pd.DataFrame, spec: Especificacao, tipo_medida, limite: int = 60):
+    """Curva ABC/Pareto: classifica os itens da medida principal em A (80% do total), B (até 95%) e
+    C (resto). Item = a entidade (quem) ou, na falta, a 1ª dimensão. Devolve (tabela, nota)."""
+    if not spec.medida_principal or spec.medida_principal not in df.columns:
+        return pd.DataFrame(), None
+    chave = spec.entidade if (spec.entidade and spec.entidade in df.columns) else None
+    if chave is None:
+        dims = [d for d in spec.dimensoes if d in df.columns]
+        chave = dims[0] if dims else None
+    if chave is None or chave not in df.columns:
+        return pd.DataFrame(), None
+    s = pd.to_numeric(df[spec.medida_principal], errors="coerce").groupby(df[chave], observed=True).sum()
+    s = s[s > 0].sort_values(ascending=False)
+    total = float(s.sum())
+    if len(s) < 3 or not total:
+        return pd.DataFrame(), None
+    acum = s.cumsum() / total
+    prev = acum.shift(fill_value=0.0)                       # o item que cruza 80% ainda é classe A
+    classe = prev.map(lambda a: "A" if a < 0.8 else ("B" if a < 0.95 else "C"))
+    tab = pd.DataFrame({chave: s.index.astype(str), f"{spec.medida_principal} (soma)": s.to_numpy(),
+                        "% do total": (s / total).to_numpy(), "% acumulado": acum.to_numpy(),
+                        "Classe": classe.to_numpy()})
+    n_a = int((classe == "A").sum())
+    nota = (f"Curva ABC por {chave}: {fmt_int(n_a)} de {fmt_int(len(s))} itens concentram 80% de "
+            f"{spec.medida_principal} (classe A) — foque a atenção neles.")
+    return tab.head(limite).reset_index(drop=True), nota
+
+
 # ---- achados -----------------------------------------------------------------------------------
 def _rot_cat(v) -> str:
     return f"«{v}»"
@@ -367,6 +454,10 @@ def achados(df: pd.DataFrame, spec: Especificacao, tipo_medida, problemas: pd.Da
             out.append(f"Volume em {b['Mês']}: {fmt_int(b['Registros'])} registros "
                        f"({'+' if var >= 0 else ''}{fmt_pct(var)} em relação a {a['Mês']})"
                        + (f" — mês incompleto: dados até {ultima:%d/%m}." if parcial else "."))
+    out += _causa_raiz(df, spec, tipo_medida)
+    _, nota_abc = _abc(df, spec, tipo_medida)
+    if nota_abc:
+        out.append(nota_abc)
     if spec.entidade:
         rec = df[spec.entidade].value_counts()
         if (rec >= 2).any():
@@ -391,7 +482,8 @@ def avaliar_metas(df: pd.DataFrame, spec: Especificacao, tipos: dict[str, str] |
             ok = None if valor is None else (valor >= m.alvo if m.sentido == ">=" else valor <= m.alvo)
             saida.append(ResultadoMeta(f"Ticket médio — {spec.medida_principal}",
                                        fmt(valor) if valor is not None else "—", fmt(m.alvo), m.sentido, ok,
-                                       valor_num=valor, alvo_num=float(m.alvo), tipo="moeda" if eh_moeda else "num"))
+                                       valor_num=valor, alvo_num=float(m.alvo), tipo="moeda" if eh_moeda else "num",
+                                       status=_metas.status(valor, m.alvo, m.sentido)))
             continue
         alvo, valor, rot, tipo = m.alvo, None, m.indicador, "num"
         if (t := spec.taxa(m.indicador)) is not None:
@@ -408,7 +500,8 @@ def avaliar_metas(df: pd.DataFrame, spec: Especificacao, tipos: dict[str, str] |
             continue
         ok = None if valor is None else (valor >= alvo if m.sentido == ">=" else valor <= alvo)
         saida.append(ResultadoMeta(rot, vf, af, m.sentido, ok,
-                                   valor_num=valor, alvo_num=float(alvo), tipo=tipo))
+                                   valor_num=valor, alvo_num=float(alvo), tipo=tipo,
+                                   status=_metas.status(valor, alvo, m.sentido)))
     return saida
 
 
@@ -464,8 +557,24 @@ def gerar_paineis(df: pd.DataFrame, spec: Especificacao, esquema: Esquema, probl
     paineis: list[Painel] = []
 
     if not mensal.empty:
-        fig = graficos.colunas(list(mensal["Mês"]), [("Registros", [float(x) for x in mensal["Registros"]], "var(--s1)")])
-        paineis.append(Painel("Volume mensal", f"Por mês ({spec.data_base.lower()})", fig, mensal, formatos=fmt_grupo))
+        meses = list(mensal["Mês"])
+        hist = [float(x) for x in mensal["Registros"]]
+        prev = previsao.prever(hist, n=3) if len(hist) >= previsao.MIN_PONTOS else None
+        if prev and spec.data_base in df.columns:
+            ult = pd.to_datetime(df[spec.data_base], errors="coerce").dropna().max().to_period("M")
+            futuros = [ult + k for k in range(1, len(prev["projecao"]) + 1)]
+            meses_all = meses + [f"{_MESES[p.month - 1]}/{str(p.year)[2:]}" for p in futuros]
+            serie_hist = hist + [0.0] * len(prev["projecao"])
+            serie_proj = [0.0] * len(hist) + prev["projecao"]
+            fig = graficos.colunas(meses_all, [("Registros", serie_hist, "var(--s1)"),
+                                               ("Projeção", serie_proj, "var(--s7)")],
+                                   tendencia=prev["tendencia"] + prev["projecao"])
+            desc_vm = "Linha pontilhada = tendência; colunas claras ao fim = projeção dos próximos meses (estimativa)."
+        else:
+            fig = graficos.colunas(meses, [("Registros", hist, "var(--s1)")])
+            desc_vm = ""
+        paineis.append(Painel("Volume mensal", f"Por mês ({spec.data_base.lower()})", fig, mensal,
+                              descricao=desc_vm, formatos=fmt_grupo))
 
     comp = _composicao(df, spec)
     if not comp.empty:
@@ -482,6 +591,18 @@ def gerar_paineis(df: pd.DataFrame, spec: Especificacao, esquema: Esquema, probl
                               descricao="Quanto cada parte soma e quanto representa do total.",
                               formatos={"Soma": fm, col_pct: "pct",
                                         "Registros com valor": "int", "Média (quando presente)": fm}))
+
+    tab_abc, nota_abc = _abc(df, spec, tipo_medida)
+    if not tab_abc.empty:
+        col_soma = f"{spec.medida_principal} (soma)"
+        itens_abc = [{"nome": str(r[tab_abc.columns[0]]), "v": float(r[col_soma]),
+                      "pct": f"{r['Classe']} · {fmt_pct(r['% acumulado'])} acum."}
+                     for _, r in tab_abc.head(12).iterrows()]
+        fig_abc = graficos.barras(itens_abc, campo_valor="v", detalhe="pct", paleta=True)
+        paineis.append(Painel("Curva ABC", f"Curva ABC de {spec.medida_principal} por {tab_abc.columns[0]}",
+                              fig_abc, tab_abc, descricao=nota_abc,
+                              formatos={col_soma: ("moeda" if tipo_medida == MOEDA else "dec"),
+                                        "% do total": "pct", "% acumulado": "pct"}))
 
     for dim in spec.dimensoes:
         if dim not in df.columns or df[dim].nunique() < 1:

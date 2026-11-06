@@ -97,6 +97,7 @@ MAX_CATEGORIAS_DIMENSAO = 60      # categórica com mais valores que isso não v
 MIN_CASOS_ACHADO = 3              # categoria precisa de pelo menos N registros para virar achado
 DESVIO_ACHADO_PP = 0.15           # taxa da categoria ≥ 15 p.p. pior que a geral → achado
 LIMIAR_GRAFIA_PARECIDA = 0.86     # similaridade para apontar possível grafia duplicada
+TOLERANCIA_META = 0.10            # a até 10% do alvo (mas fora da meta) = "atenção" (amarelo)
 ANO_MINIMO, ANO_MAXIMO = 2000, 2100
 FAIXAS_TEMPO = [(0, 3, "0–3"), (4, 7, "4–7"), (8, 14, "8–14"), (15, 21, "15–21"), (22, 30, "22–30"),
                 (31, 10_000, "31+")]

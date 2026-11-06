@@ -65,6 +65,39 @@ def test_ver_relatorio_renderiza_html(web):
     assert web.get("/web/r/garantia-atendimento/conteudo").status_code == 404
 
 
+def test_web_usuario_com_multiplos_setores(web):
+    import re
+    adm = _cli("admin", "admin123")
+    pg = adm.get("/web/usuarios").text
+    # mapa código→id dos setores (opções "COD — Nome" do formulário)
+    mapa = {cod: int(cid) for cid, cod in re.findall(r'<option value="(\d+)">([A-Z0-9]+) — ', pg)}
+    assert "FIN" in mapa and "ATD" in mapa                       # seed tem FIN e ATD
+    # cria um usuário no FIN com o ATD como setor ADICIONAL
+    adm.post("/web/usuarios", data={"login": "multi.fin", "nome": "Multi Setor", "senha": "senha123",
+                                    "papel": "USUARIO", "centro_custo_id": str(mapa["FIN"]),
+                                    "setores": [str(mapa["ATD"])]})
+    c = _cli("multi.fin")
+    c.post("/web/senha", data={"atual": "senha123", "nova": "novasenha1", "confirma": "novasenha1"})
+    # vê relatório do FIN (principal) E do ATD (adicional)
+    assert c.get("/web/r/faturamento-hunf/conteudo").status_code == 200
+    assert c.get("/web/r/garantia-atendimento/conteudo").status_code == 200
+    # a home lista os dois setores (não cai direto num só)
+    assert "Meus setores" in c.get("/web").text
+    # controle: usuário de um setor só continua sem ver o outro
+    assert _cli("user.fin").get("/web/r/garantia-atendimento/conteudo").status_code == 404
+
+
+def test_web_baixar_dados_csv(web):
+    _entrar(web)
+    r = web.get("/web/r/faturamento-hunf/dados.csv")
+    assert r.status_code == 200
+    assert "text/csv" in r.headers.get("content-type", "")
+    assert "attachment" in r.headers.get("content-disposition", "")
+    assert ";" in r.text                                   # CSV pt-BR (separador ;)
+    # outro setor: barrado
+    assert web.get("/web/r/garantia-atendimento/dados.csv").status_code == 404
+
+
 def test_logout(web):
     _entrar(web)
     assert web.get("/web").status_code == 200

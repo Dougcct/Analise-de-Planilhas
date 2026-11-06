@@ -4,12 +4,11 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
+from test_estrutura import _xlsx
 
 from analise_planilha import config, relatorio_html, servico
 from analise_planilha.modelo import carregar_modelo
 from analise_planilha.modelos import Filtros
-
-from test_estrutura import _xlsx
 
 RAIZ = Path(__file__).resolve().parents[1]
 
@@ -214,6 +213,82 @@ def test_modelo_garantia_de_referencia_carrega():
     m = carregar_modelo(RAIZ / "config" / "modelos" / "garantia_atendimento.toml.sample")
     assert m.abas == "todas"
     assert {"analise", "classificacao", "taxa", "tempo", "cruzamento", "qualidade", "meta"} <= set(m.regras)
+
+
+def test_causa_raiz_aponta_quem_puxou_a_variacao():
+    """Decompõe a queda do mês: «Setor A respondeu por 100% da queda de Valor»."""
+    from analise_planilha import indicadores
+    from analise_planilha.especificacao import Especificacao
+    from analise_planilha.modelos import MOEDA
+    linhas = []
+    for setor, jan, fev in [("A", 200, 40), ("B", 200, 200)]:   # A despenca, B estável
+        linhas += [{"Data": dt.datetime(2026, 1, 10), "Setor": setor, "Valor": jan / 2},
+                   {"Data": dt.datetime(2026, 1, 20), "Setor": setor, "Valor": jan / 2},
+                   {"Data": dt.datetime(2026, 2, 10), "Setor": setor, "Valor": fev / 2},
+                   {"Data": dt.datetime(2026, 2, 20), "Setor": setor, "Valor": fev / 2}]
+    df = pd.DataFrame(linhas)
+    spec = Especificacao(origem="modelo", data_base="Data", dimensoes=["Setor"],
+                         medida_principal="Valor", rotulo_registros="vendas")
+    frases = indicadores._causa_raiz(df, spec, MOEDA)
+    assert frases, "deveria achar causa raiz"
+    assert "Causa da queda de Valor" in frases[0]
+    assert "«A»" in frases[0] and "100,0%" in frases[0]
+    # variação pequena não gera causa raiz
+    estavel = df.copy()
+    estavel.loc[estavel["Data"] >= dt.datetime(2026, 2, 1), "Valor"] = 100
+    assert indicadores._causa_raiz(estavel, spec, MOEDA) == []
+
+
+def test_curva_abc_classifica_itens():
+    from analise_planilha import indicadores
+    from analise_planilha.especificacao import Especificacao
+    from analise_planilha.modelos import MOEDA
+    df = pd.DataFrame({"Cliente": ["A", "B", "C", "D", "E", "F"],
+                       "Valor": [800, 100, 40, 30, 20, 10]})      # A sozinho = 80%
+    spec = Especificacao(origem="modelo", entidade="Cliente", medida_principal="Valor",
+                         rotulo_registros="vendas")
+    tab, nota = indicadores._abc(df, spec, MOEDA)
+    assert tab["Classe"].iloc[0] == "A"
+    assert (tab["Classe"] == "A").sum() == 1                       # só A faz 80%
+    assert {"% do total", "% acumulado", "Classe"} <= set(tab.columns)
+    assert "classe A" in nota and "Cliente" in nota
+
+
+def test_bloco_gera_barras_nas_celulas_numericas():
+    from analise_planilha import relatorio_html as rh
+    df = pd.DataFrame({"Convênio": ["A", "B", "C"], "Valor": [100.0, 50.0, 25.0], "%": [0.5, 1.0, 0.1]})
+    colunas, linhas = rh._bloco(df, {"Valor": "moeda", "%": "pct"})
+    val = next(c for c in colunas if c[0] == "Valor")
+    pct = next(c for c in colunas if c[0] == "%")
+    conv = next(c for c in colunas if c[0] == "Convênio")
+    assert val[3] is True and pct[3] is True and conv[3] is False      # texto não ganha barra
+    assert linhas[0][f"{val[1]}_b"] == 100.0 and linhas[1][f"{val[1]}_b"] == 50.0   # escala pelo máximo
+    assert linhas[0][f"{pct[1]}_b"] == 50.0 and linhas[1][f"{pct[1]}_b"] == 100.0   # pct: 0–100
+    _, sem = rh._bloco(df, {"Valor": "moeda"}, barras=False)
+    assert not any(k.endswith("_b") for linha in sem for k in linha)
+    _, uma = rh._bloco(df.head(1), {"Valor": "moeda"})                 # 1 linha só → sem barra
+    assert not any(k.endswith("_b") for linha in uma for k in linha)
+
+
+def test_status_meta_tres_estados():
+    from analise_planilha import metas
+    assert metas.status(60, 50, ">=") == "ok"
+    assert metas.status(47, 50, ">=") == "atencao"     # 47 ≥ 45 (90% de 50), mas < 50
+    assert metas.status(40, 50, ">=") == "ruim"
+    assert metas.status(40, 50, "<=") == "ok"
+    assert metas.status(54, 50, "<=") == "atencao"     # 54 ≤ 55 (110% de 50), mas > 50
+    assert metas.status(60, 50, "<=") == "ruim"
+    assert metas.status(None, 50, ">=") is None
+
+
+def test_avaliar_metas_marca_atencao():
+    from analise_planilha import indicadores
+    from analise_planilha.especificacao import Especificacao, MetaGestor
+    df = pd.DataFrame({"Valor": range(95)})            # 95 registros
+    spec = Especificacao(origem="modelo", medida_principal="Valor", rotulo_registros="vendas",
+                         metas=[MetaGestor("registros", 100, ">=")])   # alvo 100, perto → atenção
+    r = indicadores.avaliar_metas(df, spec)[0]
+    assert r.ok is False and r.status == "atencao"
 
 
 def test_achados_ignora_dimensao_do_modelo_ausente_na_planilha():

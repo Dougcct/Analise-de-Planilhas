@@ -11,7 +11,7 @@ from pathlib import Path
 import pandas as pd
 
 from . import cerebro, config, especificacao, indicadores, inferencia, leitura, metas, tratamento
-from .cerebro import nomes_mv
+from .cerebro import dominios, nomes_mv
 from .modelo import Modelo
 from .modelos import Alerta, Analise, Dataset, Esquema, Filtros, MetaLeitura
 from .perfil import alertas_qualidade
@@ -216,8 +216,8 @@ def _processar(bruto: pd.DataFrame, meta: MetaLeitura, tipos: dict[str, str], fa
             meta.diagnostico.append(f"{len(descartadas)} coluna(s) fora do modelo descartada(s) na leitura "
                                     "(o modelo guarda só as colunas declaradas — ex.: dados bancários/CPF ficam de fora).")
 
-    # Nomes técnicos do MV (DT_, NM_, VL_…) → rótulos legíveis, quando a planilha tem cara de MV.
-    # Só no caminho sem modelo mapeado (com modelo, as colunas já vêm com os rótulos dele).
+    # Nomes técnicos do MV (DT_, NM_, VL_…) e códigos de domínio (S→Solteiro, M→Masculino…) viram
+    # legíveis. Só no caminho sem modelo mapeado (com modelo, as colunas já vêm com os rótulos dele).
     if modelo is None or cerebro.ativo(modelo):
         tecnicas = {config.COL_LINHA, config.COL_ABA, config.COL_ARQUIVO, config.NOME_COLUNA_SECAO}
         renome = nomes_mv.rotular_colunas([c for c in bruto.columns if c not in tecnicas])
@@ -228,6 +228,8 @@ def _processar(bruto: pd.DataFrame, meta: MetaLeitura, tipos: dict[str, str], fa
             amostra = "; ".join(f"{k} → {v}" for k, v in list(renome.items())[:6])
             extra_n = f" (+{len(renome) - 6})" if len(renome) > 6 else ""
             meta.diagnostico.append(f"Nomes técnicos do MV convertidos para rótulos legíveis: {amostra}{extra_n}.")
+        bruto, notas_dom = dominios.decodificar(bruto, ignorar=tecnicas)
+        meta.diagnostico += notas_dom
 
     tipos.update({config.COL_LINHA: "identificador", config.COL_ABA: "categorico"})
     tipos.update(overrides or {})  # correção do usuário vence o modelo

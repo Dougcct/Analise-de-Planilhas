@@ -25,7 +25,7 @@ class RepoRelatorios:
         """Relatórios que o usuário PODE LER: do próprio setor + os compartilhados vigentes."""
         q = select(Relatorio).where(Relatorio.ativo.is_(True))
         if not self._e.eh_adm:                      # ADM vê todos (e tudo fica auditado)
-            q = q.where(or_(Relatorio.centro_custo_id == self._e.centro_custo_id,
+            q = q.where(or_(Relatorio.centro_custo_id.in_(self._e.centros_ids),
                             Relatorio.id.in_(self._compartilhados_comigo())))
         return q
 
@@ -41,7 +41,7 @@ class RepoRelatorios:
         compartilhar. Garante que convidado (acesso temporário) NÃO faça essas ações no relatório alheio."""
         q = select(Relatorio).where(Relatorio.slug == slug, Relatorio.ativo.is_(True))
         if not self._e.eh_adm:
-            q = q.where(Relatorio.centro_custo_id == self._e.centro_custo_id)
+            q = q.where(Relatorio.centro_custo_id.in_(self._e.centros_ids))
         return self._s.scalar(q)
 
 
@@ -54,14 +54,14 @@ class RepoUsuarios:
 
     def obter(self, usuario_id: int) -> Usuario | None:
         q = select(Usuario).where(Usuario.id == usuario_id)
-        if not self._e.eh_adm:                       # Gestor: só o próprio setor
-            q = q.where(Usuario.centro_custo_id == self._e.centro_custo_id)
+        if not self._e.eh_adm:                       # Gestor: só usuários dos seus setores
+            q = q.where(Usuario.centro_custo_id.in_(self._e.centros_ids))
         return self._s.scalar(q)
 
     def _escopada(self):
         q = select(Usuario)
-        if not self._e.eh_adm:                           # Gestor: só o próprio setor
-            q = q.where(Usuario.centro_custo_id == self._e.centro_custo_id)
+        if not self._e.eh_adm:                           # Gestor: só usuários dos seus setores
+            q = q.where(Usuario.centro_custo_id.in_(self._e.centros_ids))
         return q
 
     def listar(self) -> list[Usuario]:
@@ -98,6 +98,21 @@ class RepoUsuarios:
         alvo.precisa_trocar_senha = True                 # obriga a trocar no próximo acesso
         alvo.tentativas_falhas = 0
 
+    def definir_setores(self, alvo: Usuario, principal_id: int | None, extras_ids) -> None:
+        """ADM: define o setor PRINCIPAL e substitui os ADICIONAIS do usuário (`usuario_centros`)."""
+        from sqlalchemy import delete
+
+        from .modelos_bd import UsuarioCentro
+        alvo.centro_custo_id = principal_id
+        self._s.flush()                                  # garante alvo.id para o vínculo
+        self._s.execute(delete(UsuarioCentro).where(UsuarioCentro.usuario_id == alvo.id))
+        for cid in {c for c in (extras_ids or []) if c and c != principal_id}:
+            self._s.add(UsuarioCentro(usuario_id=alvo.id, centro_custo_id=cid))
+
+    def setores_de(self, alvo: Usuario) -> set[int]:
+        from .modelos_bd import centros_do_usuario
+        return centros_do_usuario(self._s, alvo)
+
     def editar(self, alvo: Usuario, *, nome: str | None = None, email: str | None = None,
                papel: str | None = None, centro_custo_id: int | None = None) -> None:
         if nome is not None:
@@ -120,7 +135,7 @@ class RepoCargas:
     def _base(self):
         q = select(Carga)
         if not self._e.eh_adm:
-            q = q.where(Carga.centro_custo_id == self._e.centro_custo_id)
+            q = q.where(Carga.centro_custo_id.in_(self._e.centros_ids))
         return q
 
     def obter(self, carga_id: int) -> Carga | None:

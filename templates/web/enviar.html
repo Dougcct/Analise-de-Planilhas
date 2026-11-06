@@ -50,10 +50,10 @@
           {% for m in modelos %}<option value="{{ m.slug }}">{{ m.nome }}</option>{% endfor %}
         </select>
       </div>
-      {% if eh_adm %}
+      {% if eh_adm or centros|length > 1 %}
       <div><label>Setor <span class="obrig">*</span></label>
         <select name="centro_custo_id">
-          {% for c in centros %}<option value="{{ c.id }}">{{ c.codigo }} — {{ c.nome }}</option>{% endfor %}
+          {% for c in centros %}<option value="{{ c.id }}" {{ 'selected' if setor_pre == c.id }}>{{ c.codigo }} — {{ c.nome }}</option>{% endfor %}
         </select>
       </div>
       {% endif %}
@@ -71,7 +71,7 @@
       <label><input type="radio" name="separar" value="1">
         <span>Cada planilha é um <b>relatório separado</b><span class="dica">Cada arquivo vira um relatório com o nome do próprio arquivo (dá pra renomear depois).</span></span></label>
     </div>
-    {% if not eh_adm %}<p class="apoio" style="font-size:12px;margin-top:6px">Será criado no seu setor.</p>{% endif %}
+    {% if not eh_adm and centros|length <= 1 %}<p class="apoio" style="font-size:12px;margin-top:6px">Será criado no seu setor.</p>{% endif %}
     <div class="barra-caixa"><div class="barra"><i></i></div><div class="barra-rotulo">Enviando…</div></div>
     <button type="submit"><span class="giro"></span><span class="rotulo">Analisar e pré-visualizar</span></button>
   </form>

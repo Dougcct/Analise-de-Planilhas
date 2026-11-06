@@ -76,11 +76,13 @@ def legenda(itens: list[tuple[str, str]]) -> Markup:
 
 
 def colunas(categorias: list[str], series: list[tuple[str, list[float], str]], unidade: str = "registros",
-            altura: int = 260, moeda: bool = False, largura: int = 680) -> Markup:
+            altura: int = 260, moeda: bool = False, largura: int = 680,
+            tendencia: list[float] | None = None) -> Markup:
     """Colunas (empilhadas quando há mais de uma série). series = [(nome, valores, cor_css)].
 
     `moeda=True`: eixo e rótulos compactos (12,3 mi) e tooltip em R$. Com muitas categorias, o rótulo
-    do eixo X aparece de tantas em tantas e o total sobre a coluna fica só no tooltip (não sobrepõe)."""
+    do eixo X aparece de tantas em tantas e o total sobre a coluna fica só no tooltip (não sobrepõe).
+    `tendencia`: valores alinhados às categorias → linha pontilhada de tendência/projeção sobre as colunas."""
     if not categorias:
         return Markup('<p class="vazio">Sem dados no recorte.</p>')
     from .formatacao import fmt_moeda
@@ -136,6 +138,11 @@ def colunas(categorias: list[str], series: list[tuple[str, list[float], str]], u
             p.append(f'<text class="valor" x="{cx:.1f}" y="{y(totais[i]) - 6:.1f}" text-anchor="middle">{f_eixo(totais[i])}</text>')
         if (n - 1 - i) % cada == 0:            # espaçado a partir do último: ele sempre aparece, sem colidir
             p.append(f'<text class="eixo" x="{cx:.1f}" y="{H - 8}" text-anchor="middle">{escape(str(cat))}</text>')
+    if tendencia and len(tendencia) == n:      # linha pontilhada de tendência/projeção sobre as colunas
+        pts = " ".join(f"{ml + banda * i + banda / 2:.1f},{min(max(y(tendencia[i]), mt), mt + ph):.1f}"
+                       for i in range(n))
+        p.append(f'<polyline class="tendencia" fill="none" stroke="var(--ink-2)" stroke-width="2" '
+                 f'stroke-dasharray="5 4" stroke-linecap="round" points="{pts}"/>')
     p.append("</svg>")
     return Markup("".join(p))
 
@@ -217,9 +224,10 @@ def linhas(categorias: list[str], series: list[tuple[str, list, str]], moeda: bo
 
 def medidor(metas) -> Markup:
     """Medidores (gauges) horizontais das metas do gestor: valor × alvo, com marcador da meta e cor pelo
-    status (verde = na meta, laranja = fora, cinza = sem dado). Destaca o «resumo» visualmente.
+    status (verde = na meta, amarelo = perto/atenção, vermelho = fora, cinza = sem dado).
 
-    Recebe objetos com .rotulo .valor_fmt .alvo_fmt .sentido .ok .valor_num .alvo_num; ignora os sem número."""
+    Recebe objetos com .rotulo .valor_fmt .alvo_fmt .sentido .status (.ok p/ compat) .valor_num .alvo_num;
+    ignora os sem número."""
     linhas = []
     for m in metas or []:
         v, alvo = getattr(m, "valor_num", None), getattr(m, "alvo_num", None)
@@ -227,9 +235,13 @@ def medidor(metas) -> Markup:
             continue
         escala = (max(abs(v), abs(alvo)) * 1.25) or 1.0
         fx, fa = min(abs(v) / escala * 100, 100), min(abs(alvo) / escala * 100, 100)
-        ok = getattr(m, "ok", None)
-        cls = "ok" if ok is True else ("nok" if ok is False else "nd")
-        cor = "var(--ok)" if ok is True else ("var(--alerta)" if ok is False else "var(--axis)")
+        st = getattr(m, "status", None)
+        if st is None:                                  # compat.: deriva do ok binário antigo
+            ok = getattr(m, "ok", None)
+            st = "ok" if ok is True else ("ruim" if ok is False else None)
+        cls = {"ok": "ok", "atencao": "atencao", "ruim": "nok"}.get(st, "nd")
+        cor = {"ok": "var(--ok)", "atencao": "var(--atencao)",
+               "ruim": "var(--alerta)"}.get(st, "var(--axis)")
         sent = "≥" if getattr(m, "sentido", ">=") == ">=" else "≤"
         meta_txt = f"meta {sent} {m.alvo_fmt}"
         tip = escape(f"{m.rotulo}: {m.valor_fmt} ({meta_txt})")

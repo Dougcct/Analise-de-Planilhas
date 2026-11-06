@@ -104,10 +104,11 @@ class ResultadoMeta:
     valor_fmt: str
     alvo_fmt: str
     sentido: str              # ">=" | "<="
-    ok: bool | None           # None = sem dados
+    ok: bool | None           # None = sem dados (mantido p/ compatibilidade; status é o semáforo rico)
     valor_num: float | None = None   # valor numérico p/ o medidor (% em 0–100, dias, moeda ou nº)
     alvo_num: float | None = None     # alvo na mesma unidade de valor_num
     tipo: str = "num"                # pct | dias | moeda | num (como interpretar os números)
+    status: str | None = None        # semáforo: "ok" (verde) | "atencao" (amarelo) | "ruim" (vermelho) | None
 
 
 @dataclass

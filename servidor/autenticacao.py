@@ -7,7 +7,7 @@ from __future__ import annotations
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .modelos_bd import SessaoUsuario, Usuario, utcnow
+from .modelos_bd import SessaoUsuario, Usuario, centros_do_usuario, utcnow
 from .seguranca import Escopo, hash_token
 
 
@@ -22,4 +22,5 @@ def escopo_por_token(s: Session, token: str) -> Escopo | None:
     if u is None or not u.ativo:
         return None
     return Escopo(usuario_id=u.id, papel=u.papel, centro_custo_id=u.centro_custo_id,
-                  ip=sess.ip, precisa_trocar_senha=u.precisa_trocar_senha)
+                  ip=sess.ip, precisa_trocar_senha=u.precisa_trocar_senha,
+                  centros_ids=frozenset(centros_do_usuario(s, u)))

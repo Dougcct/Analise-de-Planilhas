@@ -15,7 +15,7 @@ import math
 
 import pandas as pd
 
-from . import graficos
+from . import graficos, metas
 from .formatacao import fmt_compacto, fmt_int, fmt_moeda, fmt_pct
 from .modelos import KPI, Painel, ResultadoMeta
 from .normalizacao import chave_texto
@@ -727,7 +727,8 @@ def _metas(spec, info: dict) -> list[ResultadoMeta]:
             v, alvo, vf, af = val, m.alvo, fmt_moeda(val), fmt_moeda(m.alvo)
         ok = None if v is None else (v >= alvo if m.sentido == ">=" else v <= alvo)
         saida.append(ResultadoMeta(rot, vf, af, m.sentido, ok,
-                                   valor_num=v, alvo_num=float(alvo), tipo=tipo))
+                                   valor_num=v, alvo_num=float(alvo), tipo=tipo,
+                                   status=metas.status(v, alvo, m.sentido)))
     return saida
 
 

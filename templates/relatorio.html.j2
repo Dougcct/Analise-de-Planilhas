@@ -10,7 +10,7 @@
   --page: #f9f9f7; --surface: #fcfcfb; --surface-2: #f2f1ed;
   --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
   --grid: #e1e0d9; --axis: #c3c2b7; --border: rgba(11,11,11,0.10);
-  --marca: #00995d; --alerta: #b4521f; --ok: #006300;
+  --marca: #00995d; --alerta: #b4521f; --ok: #006300; --atencao: #b8860b;
   --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100;
   --s5: #7c5cd6; --s6: #d4457a; --s7: #9a998f; --s8: #4aa3b8;
 }
@@ -20,7 +20,7 @@
     --page: #0d0d0d; --surface: #1a1a19; --surface-2: #232321;
     --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781;
     --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10);
-    --marca: #2fbf7f; --alerta: #ec835a; --ok: #0ca30c;
+    --marca: #2fbf7f; --alerta: #ec835a; --ok: #0ca30c; --atencao: #e0a82e;
     --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500;
     --s5: #9478e8; --s6: #e0628f; --s7: #6f6e68; --s8: #57b3c8;
   }
@@ -30,7 +30,7 @@
   --page: #0d0d0d; --surface: #1a1a19; --surface-2: #232321;
   --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781;
   --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10);
-  --marca: #2fbf7f; --alerta: #ec835a; --ok: #0ca30c;
+  --marca: #2fbf7f; --alerta: #ec835a; --ok: #0ca30c; --atencao: #e0a82e;
   --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500;
   --s5: #9478e8; --s6: #e0628f; --s7: #6f6e68; --s8: #57b3c8;
 }
@@ -84,7 +84,7 @@ h3 { font-size: 14px; margin: 18px 0 6px; color: var(--ink-2); }
 .kpi .nota { color: var(--muted); font-size: 11.5px; }
 ul.achados { margin: 0; padding-left: 18px; } ul.achados li { margin: 4px 0; position: relative; }
 table.metas { width: auto; margin: 4px 0 12px; } table.metas td { border: none; padding: 3px 14px 3px 0; font-size: 13.5px; }
-.metas .ok { color: var(--ok); font-weight: 600; } .metas .nok { color: var(--alerta); font-weight: 600; } .metas .nd { color: var(--muted); }
+.metas .ok { color: var(--ok); font-weight: 600; } .metas .nok { color: var(--alerta); font-weight: 600; } .metas .atencao { color: var(--atencao); font-weight: 600; } .metas .nd { color: var(--muted); }
 .obs { background: var(--surface-2); border-left: 3px solid var(--marca); padding: 8px 12px; border-radius: 0 6px 6px 0; margin: 4px 0 14px; white-space: pre-wrap; }
 /* Resumo em destaque (hero) — a parte mais útil do relatório */
 section.resumo { border: 1.5px solid var(--marca); box-shadow: 0 0 0 3px rgba(0,153,93,0.07), var(--sombra, 0 1px 2px rgba(0,0,0,.04));
@@ -105,7 +105,7 @@ section.resumo > h2::before { content: ""; width: 6px; height: 21px; background:
 .med-top { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
 .med-rot { color: var(--ink); font-weight: 600; font-size: 13px; }
 .med-val { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 14px; }
-.med-val.ok { color: var(--ok); } .med-val.nok { color: var(--alerta); } .med-val.nd { color: var(--muted); }
+.med-val.ok { color: var(--ok); } .med-val.nok { color: var(--alerta); } .med-val.atencao { color: var(--atencao); } .med-val.nd { color: var(--muted); }
 .med-trilho { position: relative; height: 12px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 999px; margin: 6px 0 4px; }
 .med-barra { position: absolute; left: 0; top: 0; height: 100%; border-radius: 999px; min-width: 2px; }
 .med-alvo { position: absolute; top: -3px; width: 2px; height: 18px; background: var(--ink); opacity: .7; }
@@ -233,7 +233,16 @@ table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
 th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--grid); vertical-align: top; }
 th { color: var(--ink-2); font-weight: 600; background: var(--surface-2); position: sticky; top: 0; }
 td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+td.barra { position: relative; }
+td.barra > span { position: relative; z-index: 1; }
+td.barra::before { content: ""; position: absolute; left: 4px; top: 50%; transform: translateY(-50%);
+  height: 62%; width: var(--w, 0%); max-width: calc(100% - 8px); background: var(--s1); opacity: 0.16;
+  border-radius: 3px; z-index: 0; }
 tbody tr:hover { background: var(--surface-2); }
+@media print { td.barra::before { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+.baixar-dados { display: inline-block; margin-left: 8px; font-size: 12.5px; font-weight: 600;
+  color: var(--marca); text-decoration: none; border: 1px solid var(--border); border-radius: 8px; padding: 2px 10px; }
+.baixar-dados:hover { background: var(--surface-2); }
 details { margin-top: 10px; } summary { cursor: pointer; color: var(--ink-2); font-size: 13px; }
 details .tabela-wrap { max-height: 480px; overflow: auto; margin-top: 8px; }
 .grade-paineis { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 10px 24px; }
@@ -314,8 +323,14 @@ body.modo-editavel .ed-achado-del { display: inline; }
 <body class="{{ 'modo-editavel' if a.modo_editavel }}" data-largura="{{ a.largura_pagina or 'padrao' }}">
 {%- macro tabela(colunas, linhas) -%}
 <div class="tabela-wrap"><table>
-  <thead><tr>{% for titulo, chave, num in colunas %}<th class="{{ 'n' if num }}">{{ titulo }}</th>{% endfor %}</tr></thead>
-  <tbody>{% for linha in linhas %}<tr>{% for titulo, chave, num in colunas %}<td class="{{ 'n' if num }}">{{ linha.get(chave, '') }}</td>{% endfor %}</tr>{% endfor %}</tbody>
+  <thead><tr>{% for col in colunas %}<th class="{{ 'n' if col[2] }}">{{ col[0] }}</th>{% endfor %}</tr></thead>
+  <tbody>{% for linha in linhas %}<tr>{% for col in colunas %}
+    {%- if col[3] and (col[1] ~ '_b') in linha -%}
+      <td class="n barra" style="--w:{{ linha[col[1] ~ '_b'] }}%"><span>{{ linha.get(col[1], '') }}</span></td>
+    {%- else -%}
+      <td class="{{ 'n' if col[2] }}">{{ linha.get(col[1], '') }}</td>
+    {%- endif -%}
+  {% endfor %}</tr>{% endfor %}</tbody>
 </table></div>
 {%- endmacro %}
 <header class="topo"><div class="topo-in">
@@ -638,7 +653,8 @@ body.modo-editavel .ed-achado-del { display: inline; }
   {% if v.metas %}
   <details><summary>Ver metas do gestor em tabela</summary>
   <table class="metas">{% for m in v.metas %}
-    <tr><td class="{{ 'ok' if m.ok is sameas true else ('nok' if m.ok is sameas false else 'nd') }}">{{ '✔' if m.ok is sameas true else ('✗' if m.ok is sameas false else '•') }}</td>
+    {% set st = m.status if m.status else ('ok' if m.ok is sameas true else ('ruim' if m.ok is sameas false else none)) %}
+    <tr><td class="{{ {'ok':'ok','atencao':'atencao','ruim':'nok'}.get(st,'nd') }}">{{ {'ok':'✔','atencao':'⚠','ruim':'✗'}.get(st,'•') }}</td>
         <td>{{ m.rotulo }}</td><td><b>{{ m.valor_fmt }}</b></td>
         <td class="nd">meta {{ '≥' if m.sentido == '>=' else '≤' }} {{ m.alvo_fmt }}</td></tr>{% endfor %}
   </table>
@@ -751,8 +767,11 @@ body.modo-editavel .ed-achado-del { display: inline; }
     <button type="button" class="ed-mini-btn perigo" onclick="edOcultarSecao('base', 'Base detalhada')">✕ Ocultar seção</button>
   </div>
   <h2 data-editavel="1">Base detalhada</h2>
-  <p class="desc">{{ a.base.total }} linha(s) do recorte{% if a.base.cortado %} — exibidas as primeiras {{ a.base.linhas|length }}{% endif %}.</p>
-  <details><summary>Abrir base</summary>{{ tabela(a.base.colunas, a.base.linhas) }}</details>
+  <p class="desc">{{ a.base.total }} linha(s) do recorte{% if a.base.cortado %} — prévia das primeiras {{ a.base.mostradas }}
+    (os indicadores acima usam a base completa){% endif %}.
+    {% if a.slug and a.base.cortado %}<a class="baixar-dados" href="/web/r/{{ a.slug }}/dados.csv" title="Baixar a base completa em CSV (Excel)">⬇ Baixar dados completos (CSV)</a>{% endif %}
+  </p>
+  <details><summary>Abrir prévia</summary>{{ tabela(a.base.colunas, a.base.linhas) }}</details>
 </section>
 {% endif %}
 

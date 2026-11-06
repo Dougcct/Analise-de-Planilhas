@@ -27,6 +27,21 @@ def chave_relatorio(modelo) -> str:
     return modelo.nome if modelo is not None else SEM_MODELO
 
 
+def status(valor: float | None, alvo: float, sentido: str,
+           tol: float = config.TOLERANCIA_META) -> str | None:
+    """Semáforo de 3 estados: "ok" (na meta), "atencao" (fora, mas a até `tol` do alvo) ou "ruim".
+    None quando não há valor. `sentido` ">=" = maior é melhor; "<=" = menor é melhor."""
+    if valor is None:
+        return None
+    if sentido == ">=":
+        if valor >= alvo:
+            return "ok"
+        return "atencao" if valor >= alvo * (1 - tol) else "ruim"
+    if valor <= alvo:
+        return "ok"
+    return "atencao" if valor <= alvo * (1 + tol) else "ruim"
+
+
 def catalogo(spec: Especificacao) -> list[tuple[str, str, str, str]]:
     """(chave, rótulo, tipo, sentido sugerido) dos indicadores que podem virar meta neste relatório.
     tipo: pct (alvo em %) | dias | moeda | num."""

@@ -41,9 +41,15 @@ class Escopo:
     """Quem é o usuário autenticado — montado SEMPRE a partir da sessão, nunca do que a tela envia."""
     usuario_id: int
     papel: str
-    centro_custo_id: int | None
+    centro_custo_id: int | None               # setor PRINCIPAL (padrão p/ envio, criação, tela inicial)
     ip: str | None = None
     precisa_trocar_senha: bool = False
+    centros_ids: frozenset[int] = frozenset()  # TODOS os setores do usuário (principal + adicionais)
+
+    def __post_init__(self):
+        # garante que o principal esteja sempre no conjunto (coerência)
+        if self.centro_custo_id is not None and self.centro_custo_id not in self.centros_ids:
+            object.__setattr__(self, "centros_ids", frozenset(self.centros_ids | {self.centro_custo_id}))
 
     @property
     def eh_adm(self) -> bool:
@@ -52,3 +58,7 @@ class Escopo:
     @property
     def eh_gestor(self) -> bool:
         return self.papel == "GESTOR"
+
+    def pode_setor(self, centro_custo_id: int | None) -> bool:
+        """ADM vê tudo; os demais, só os setores a que pertencem (principal + adicionais)."""
+        return self.eh_adm or (centro_custo_id is not None and centro_custo_id in self.centros_ids)

@@ -45,6 +45,24 @@ class Usuario(Base):
     ultimo_acesso: Mapped[dt.datetime | None] = mapped_column(DateTime)
 
 
+class UsuarioCentro(Base):
+    """Setores ADICIONAIS de um usuário (além do `usuarios.centro_custo_id`, que é o principal).
+    O usuário age com o SEU papel em todos eles. Só o ADM atribui. Ver `centros_do_usuario`."""
+    __tablename__ = "usuario_centros"
+    usuario_id: Mapped[int] = mapped_column(ForeignKey("usuarios.id", ondelete="CASCADE"), primary_key=True)
+    centro_custo_id: Mapped[int] = mapped_column(ForeignKey("centros_custo.id"), primary_key=True)
+
+
+def centros_do_usuario(sessao, usuario) -> set[int]:
+    """Conjunto de setores do usuário: o principal + os adicionais (`usuario_centros`)."""
+    from sqlalchemy import select
+    ids = set(sessao.scalars(select(UsuarioCentro.centro_custo_id)
+                             .where(UsuarioCentro.usuario_id == usuario.id)))
+    if usuario.centro_custo_id is not None:
+        ids.add(usuario.centro_custo_id)
+    return ids
+
+
 class SessaoUsuario(Base):
     __tablename__ = "sessoes"
     id: Mapped[int] = mapped_column(primary_key=True)
