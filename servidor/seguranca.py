@@ -10,7 +10,7 @@ from argon2 import PasswordHasher
 from argon2.exceptions import InvalidHashError, VerifyMismatchError
 
 _ph = PasswordHasher()
-DURACAO_SESSAO = dt.timedelta(hours=8)        # um turno de trabalho (DOCS/18 §7)
+DURACAO_SESSAO = dt.timedelta(hours=8)        # um turno de trabalho (dominio/docs/18 §7)
 MAX_TENTATIVAS = 5
 
 

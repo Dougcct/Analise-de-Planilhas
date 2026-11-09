@@ -16,15 +16,15 @@ RUN pip install -r servidor/requirements.txt
 
 # 2) código: o motor, a API, os templates e os MODELOS (.toml) usados na análise real
 COPY src/ src/
-COPY Agentes/ Agentes/
+COPY dominio/Agentes/ dominio/Agentes/
 COPY servidor/ servidor/
 COPY templates/ templates/
 COPY assets/ assets/
 COPY automacao/ automacao/
-COPY config/modelos/ config/modelos/
-# cópia-semente FORA do volume: config/modelos vira um volume (editável em runtime) e começa vazio,
+COPY dominio/modelos/ dominio/modelos/
+# cópia-semente FORA do volume: dominio/modelos vira um volume (editável em runtime) e começa vazio,
 # então o start semeia a partir daqui na 1ª vez (ver servidor.app._semear_modelos).
-COPY config/modelos/ _seed_modelos/
+COPY dominio/modelos/ _seed_modelos/
 
 # usuário sem privilégio (não rodar como root). A pasta das cargas é criada aqui com o dono certo,
 # para o volume nomeado (montado nela) herdar a permissão de escrita do usuário app.

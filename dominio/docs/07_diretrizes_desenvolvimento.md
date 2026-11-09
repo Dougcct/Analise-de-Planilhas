@@ -6,7 +6,7 @@
   (o `-dev` inclui a stack do servidor + pytest/ruff).
 - Ambiente virtual por projeto: `python -m venv .venv ; .venv\Scripts\activate`.
 - O **produto** sobe com `docker compose up` (serviços `db` + `api`). Para o motor isolado, use as CLIs
-  (`python gerar_relatorio.py`, `python analisar.py`).
+  (`python scripts/gerar_relatorio.py`, `python scripts/analisar.py`).
 - Executar sempre a partir da raiz do projeto.
 
 ## Organização e estilo
@@ -14,10 +14,10 @@
 - Código, nomes e comentários em **português**, coerentes com o domínio e com os arquivos vizinhos.
 - **Nenhum `import` de interface dentro de `src/analise_planilha`** — o motor é lógica pura. O servidor
   (`servidor/`) e as CLIs consomem o motor; a interface só monta parâmetros/`Filtros` e chama `servico.py`.
-- O pacote `Agentes/` (raiz) usa o motor como ferramenta e importa dele por caminho absoluto
+- O pacote `dominio/Agentes/` usa o motor como ferramenta e importa dele por caminho absoluto
   (`from analise_planilha...`); dentro do pacote, imports relativos.
 - Regras ajustáveis (limiares, dicas de nome) ficam em `config.py`; estrutura de planilha, em
-  `config/modelos/*.toml`; vocabulário de setor, no `config.toml` do agente.
+  `dominio/modelos/*.toml`; vocabulário de setor, no `config.toml` do agente.
 - Todo número exibido passa por `formatacao.py` (pt-BR). Gráficos em SVG puro (`graficos.py`), **sem JS de terceiros**.
 - PEP 8; linhas até 120 caracteres. `ruff check .` antes de abrir PR.
 
@@ -33,7 +33,7 @@
 - Toda mudança entra no [CHANGELOG.md](CHANGELOG.md) (formato *Keep a Changelog*) antes do release.
 - Git: `main` estável; branches `feature/<nome>` e `fix/<nome>`; tag `vX.Y.Z` a cada release. Commits em
   Conventional Commits (`feat(agentes): ...`, `fix(leitura): ...`, `docs: ...`). O `.gitignore` exclui
-  `dados/`, `saida/`, `Setores/` (LGPD).
+  `dados/` (LGPD).
 
 ## Testes
 
@@ -55,7 +55,7 @@ novas; a migração leve cobre os bancos de container que já têm dados.
 
 - Planilhas e relatórios podem conter **dados pessoais e de saúde**. Ficam só atrás da rede interna, com
   acesso escopado por setor.
-- Nunca versionar `dados/`, `saida/`, `Setores/`; nunca anexar base real em chamados/e-mails abertos.
+- Nunca versionar `dados/` (tudo dado real vive lá); nunca anexar base real em chamados/e-mails abertos.
 - Não publicar o relatório HTML em serviços externos de hospedagem.
 - Logs não registram valores de células — apenas nomes de colunas, tipos e contagens. O Modo I.A envia só
   estrutura anonimizada. Detalhes em [18](18_seguranca_lgpd_v2.md).

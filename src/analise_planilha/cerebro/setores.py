@@ -1,7 +1,7 @@
-"""Leitura da pasta `Setores/<Setor>/<Tipo de documento>/*` → modelos v2 + conhecimento inicial + manifesto.
+"""Leitura da pasta `dados/setores/<Setor>/<Tipo de documento>/*` → modelos v2 + conhecimento inicial + manifesto.
 
 Cada subpasta de tipo de documento vira UM modelo (todas as planilhas dela são lidas juntas, então
-variações de cabeçalho entre meses viram sinônimos). Saídas, todas em `config/modelos/` (vão para o
+variações de cabeçalho entre meses viram sinônimos). Saídas, todas em `dominio/modelos/` (vão para o
 servidor junto com os modelos ao reconstruir a imagem):
 
     <setor>_<tipo>.toml            modelo v2 (só estrutura)
@@ -69,7 +69,7 @@ def documentos(arqs: list[Path]) -> list[str | None]:
     for p in arqs:
         try:
             brutas, ocultas = leitura._ler_excel(p.read_bytes(), p.suffix.lower())
-        except Exception:  # noqa: BLE001, S112 - CSV/TXT não têm abas; arquivo ilegível é tratado na leitura
+        except Exception:  # noqa: S112 - CSV/TXT não têm abas; arquivo ilegível é tratado na leitura
             continue
         for nome, bruta in brutas.items():
             if nome in ocultas:

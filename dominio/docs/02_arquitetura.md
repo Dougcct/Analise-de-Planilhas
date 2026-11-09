@@ -6,25 +6,25 @@ interface.** O servidor web e as CLIs consomem o mesmo motor → os números sã
 ```
 ┌ Interface ───────────────────────────────────────────────────────────────────┐
 │ servidor/  (FastAPI + Docker) — o PRODUTO: login, setores, envio/prévia, HTML  │
-│ gerar_relatorio.py · analisar.py — CLIs (motor direto, sem servidor)           │
+│ scripts/ (gerar_relatorio.py · analisar.py) — CLIs (motor direto, sem servidor)│
 └───────────────────────────────┬───────────────────────────────────────────────┘
                                  │  chama
 ┌ Motor ─────────────────────────▼───────────────────────────────────────────────┐
 │ src/analise_planilha/  — leitura → inferência/Cérebro → especificação →          │
 │                          tratamento → indicadores → Analise → relatório HTML     │
-│ Agentes/  — Agentes de setor (Escudo de ERP + análise setorial) plugados no motor │
+│ dominio/Agentes/  — Agentes de setor (Escudo de ERP + análise setorial) plugados no motor │
 └──────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ## Fluxo de dados
 
 ```
-planilha enviada (ou dados/<relatório>/*.xlsx|ods|csv)
+planilha enviada (ou dados/relatorios/<relatório>/*.xlsx|ods|csv)
         │  leitura.py        formato, encoding, separador, abas, células mescladas → grade bruta
         │  estrutura.py      acha a tabela: cabeçalho, seções, totais, notas, escolhe a aba → diagnóstico
         ▼
   base bruta
-        │  Agentes/ (se modelo is None e a planilha é de um setor conhecido — ver 19):
+        │  dominio/Agentes/ (se modelo is None e a planilha é de um setor conhecido — ver 19):
         │    Escudo de Entrada limpa o export de ERP (cabeçalho real, subtotais, códigos, números PT-BR)
         │  modelo.py          (se houver modelo) mapeia cabeçalhos → canônicos e fixa tipos; abas="todas" consolida
         ▼
@@ -38,7 +38,7 @@ planilha enviada (ou dados/<relatório>/*.xlsx|ods|csv)
   Dataset { df tratado, esquema, spec, problemas, meta, agente }
         │  indicadores.py     (por recorte) KPIs, quebras, tempos, cruzamentos, recorrência, achados, metas
         │  perfil.py          alertas genéricos de qualidade, resumo por coluna
-        │  Agentes/           (se há agente) achados + painéis + alertas do SETOR são dobrados na Analise
+        │  dominio/Agentes/           (se há agente) achados + painéis + alertas do SETOR são dobrados na Analise
         ▼
   Analise { kpis, achados, metas, paineis (tabelas + gráficos), alertas, filtros_desc }
         │
@@ -65,8 +65,9 @@ templates/web/          casca web (Jinja2): base, login, relatório, prévia, ad
 templates/relatorio.html.j2   o relatório HTML gerado
 
 src/analise_planilha/   motor (lógica pura; nenhum import de servidor/)
-Agentes/                Agentes Especialistas por Setor (ver 19)
-gerar_relatorio.py      CLI: relatório HTML com filtros          analisar.py  CLI: resumo da inferência
+dominio/Agentes/                Agentes Especialistas por Setor (ver 19)
+scripts/                CLIs e utilitários (fora do produto): gerar_relatorio.py (relatório HTML com
+                        filtros), analisar.py (resumo da inferência), painel-controle.py, *.bat
 ```
 
 **Nenhum `import` do servidor existe dentro de `src/analise_planilha`.** A lógica roda igual com ou sem o
@@ -97,7 +98,7 @@ servidor — é o que as CLIs e os testes exercitam. Trocar/estender a interface
 | `relatorio_html.py` | Relatório HTML (`templates/relatorio.html.j2`) |
 | `servico.py` | Orquestração (carregar/consolidar → analisar; filtros, "período pela", anonimização, metas, Agente) |
 
-## Agentes de setor (`Agentes/`, na raiz)
+## Agentes de setor (`dominio/Agentes/`)
 
 Pacote **top-level** (fora de `src`), 100% determinístico. Quando `modelo is None`, `servico.py` pergunta ao
 `router` qual agente assume a planilha; se nenhum casa (ou o pacote falta), roda como hoje — **fallback
@@ -108,7 +109,7 @@ transparente**. Um agente (a) limpa o export de ERP (Escudo de Entrada) e (b) ac
 
 - **`Analise` como contrato.** `servico.analisar` devolve um objeto único; web e relatório HTML consomem o
   mesmo objeto → números idênticos em qualquer lugar.
-- **Modelo editável fora do código.** A estrutura de cada cliente mora em `config/modelos/*.toml`, não em `if`.
+- **Modelo editável fora do código.** A estrutura de cada cliente mora em `dominio/modelos/*.toml`, não em `if`.
 - **Gráficos sem JavaScript de terceiros.** SVG puro: abre offline, imprime/vira PDF. Ver [06](06_relatorio_html.md).
 - **Isolamento por setor.** Consultas escopadas (`repositorio.py`) e papéis garantem que cada equipe só vê o
   que é seu ([18](18_seguranca_lgpd_v2.md)).
@@ -116,10 +117,10 @@ transparente**. Um agente (a) limpa o export de ERP (Escudo de Entrada) e (b) ac
 
 ## Como estender (resumo — detalhes no [POP-03](pops/POP-03_manutencao_modulos.md))
 
-- **Nova coluna/cliente:** criar/editar `config/modelos/<cliente>.toml` ([04](04_modelo_de_cliente.md)).
+- **Nova coluna/cliente:** criar/editar `dominio/modelos/<cliente>.toml` ([04](04_modelo_de_cliente.md)).
 - **Nova regra de negócio (taxa, tempo, classificação…):** no `.toml` — sem código.
 - **Novo tipo de regra/indicador:** campo em `especificacao.py`, cálculo em `tratamento.py` (por linha) ou
   `indicadores.py` (agregado); documentar em [10](10_indicadores.md) e testar.
 - **Novo tipo semântico:** detector em `inferencia.py`.
-- **Novo Agente de setor:** subpacote em `Agentes/<setor>/` (`rules.py` + `config.toml`) + 1 linha no router ([19](19_agentes_por_setor.md)).
+- **Novo Agente de setor:** subpacote em `dominio/Agentes/<setor>/` (`rules.py` + `config.toml`) + 1 linha no router ([19](19_agentes_por_setor.md)).
 - **Novo formato de saída:** novo módulo que consome `Analise` (nunca recalcula números).

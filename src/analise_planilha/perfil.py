@@ -3,8 +3,8 @@ from __future__ import annotations
 
 import pandas as pd
 
-from .modelos import TIPOS_DATA, TIPOS_NUMERICOS, Alerta, Esquema
 from .formatacao import fmt_dec, fmt_int, fmt_pct
+from .modelos import TIPOS_DATA, TIPOS_NUMERICOS, Alerta, Esquema
 
 
 def estatisticas_numericas(serie: pd.Series) -> dict:

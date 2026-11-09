@@ -11,6 +11,8 @@ Trabalha só com estrutura + números (nenhum dado é exposto): devolve tabelas 
 """
 from __future__ import annotations
 
+from typing import ClassVar
+
 import pandas as pd
 
 from ..base_agent import AgenteBase, _num_ptbr
@@ -103,8 +105,9 @@ class AgenteCustos(AgenteBase):
                 return col
         return None
 
-    _ROTULOS = {"centro_custo": "centro de custo", "grupo_despesa": "grupo de despesa",
-                "conta_contabil": "conta contábil", "rubrica": "rubrica", "natureza": "natureza"}
+    _ROTULOS: ClassVar[dict[str, str]] = {
+        "centro_custo": "centro de custo", "grupo_despesa": "grupo de despesa",
+        "conta_contabil": "conta contábil", "rubrica": "rubrica", "natureza": "natureza"}
 
     def _rotulo(self, dim: str | None, plural: bool = False) -> str:
         base = self._ROTULOS.get(dim, "item") if dim else "item"
@@ -129,7 +132,7 @@ class AgenteCustos(AgenteBase):
             nota = (f"Maior estouro: «{estouro.index[0]}» gastou {pior['Realizado']:,.0f} "
                     f"({pior['% Desvio']:+.0f}% do orçado).")
         tab = g.reset_index().rename(columns={dim: self._rotulo(dim).title()})
-        return tab, nota, int(len(estouro))
+        return tab, nota, len(estouro)
 
     def _pareto(self, df, dim, serie):
         if not dim:

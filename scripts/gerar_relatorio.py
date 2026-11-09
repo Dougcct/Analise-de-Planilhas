@@ -1,26 +1,28 @@
 """Geração do relatório pela linha de comando (útil para agendamento/RPA).
 
 Mesmo padrão do projeto Garantia de Atendimento: lê as planilhas da pasta do relatório
-(dados/<pasta do modelo>/), aplica filtros e grava o HTML em saida/.
+(dados/relatorios/<pasta do modelo>/), aplica filtros e grava o HTML em dados/saida/.
 
 Exemplos:
-    python gerar_relatorio.py --listar
-    python gerar_relatorio.py --relatorio "Contas Convênio"
-    python gerar_relatorio.py --relatorio "Contas Convênio" --anonimizar
-    python gerar_relatorio.py --relatorio "Contas Convênio" --dim "Convênio=AMIL" --dim "Ano=2026"
-    python gerar_relatorio.py --inicio 2026-07-01 --fim 2026-07-31      # "Sem modelo" (dados/entrada/)
+    python scripts/gerar_relatorio.py --listar
+    python scripts/gerar_relatorio.py --relatorio "Contas Convênio"
+    python scripts/gerar_relatorio.py --relatorio "Contas Convênio" --anonimizar
+    python scripts/gerar_relatorio.py --relatorio "Contas Convênio" --dim "Convênio=AMIL" --dim "Ano=2026"
+    python scripts/gerar_relatorio.py --inicio 2026-07-01 --fim 2026-07-31      # "Sem modelo" (dados/relatorios/entrada/)
 """
 import argparse
 import sys
 from datetime import date
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
+_RAIZ = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(_RAIZ / "src"))
+sys.path.insert(0, str(_RAIZ / "dominio"))   # pacote Agentes (Especialistas por Setor)
 
-from analise_planilha import __version__, config, relatorio_html, servico  # noqa: E402
-from analise_planilha.modelo import carregar_modelo, listar_modelos  # noqa: E402
-from analise_planilha.modelos import Filtros  # noqa: E402
-from analise_planilha.normalizacao import chave_texto  # noqa: E402
+from analise_planilha import __version__, config, relatorio_html, servico
+from analise_planilha.modelo import carregar_modelo, listar_modelos
+from analise_planilha.modelos import Filtros
+from analise_planilha.normalizacao import chave_texto
 
 SEM_MODELO = "Sem modelo"
 FMT_TIPO = {"moeda": "moeda", "percentual": "pct", "inteiro": "int", "decimal": "dec"}
@@ -43,8 +45,8 @@ def main() -> int:
     if args.listar:
         for nome, caminho in modelos.items():
             m = carregar_modelo(caminho)
-            print(f"{nome:40s} dados\\{m.subpasta}\\  ({len(config.listar_arquivos(config.pasta_relatorio(m.subpasta)))} arquivo(s))")
-        print(f"{SEM_MODELO:40s} dados\\entrada\\  ({len(config.listar_arquivos(config.PASTA_ENTRADA))} arquivo(s))")
+            print(f"{nome:40s} dados\\relatorios\\{m.subpasta}\\  ({len(config.listar_arquivos(config.pasta_relatorio(m.subpasta)))} arquivo(s))")
+        print(f"{SEM_MODELO:40s} dados\\relatorios\\entrada\\  ({len(config.listar_arquivos(config.PASTA_ENTRADA))} arquivo(s))")
         return 0
 
     modelo = None

@@ -2,7 +2,7 @@
 REM Envia as alteracoes para o GitHub (add + commit + push) na branch atual.
 REM A versao e lida automaticamente de src\analise_planilha\__init__.py.
 REM Duplo-clique, confira os arquivos e digite so uma descricao curta.
-cd /d "%~dp0"
+cd /d "%~dp0.."
 
 for /f "delims=" %%b in ('git rev-parse --abbrev-ref HEAD') do set BRANCH=%%b
 

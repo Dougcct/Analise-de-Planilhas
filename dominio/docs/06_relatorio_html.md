@@ -1,6 +1,6 @@
 # 06 · Relatório HTML
 
-O botão **Gerar HTML** (e a CLI `gerar_relatorio.py`) produzem um relatório autocontido em `saida/`, no
+A publicação na web (e a CLI `scripts/gerar_relatorio.py`) produzem um relatório autocontido em `dados/saida/`, no
 mesmo padrão do projeto Garantia de Atendimento. Código em `relatorio_html.py` + `templates/relatorio.html.j2`
 (Jinja2) + `graficos.py` (SVG).
 
@@ -40,15 +40,15 @@ rodapé LGPD. Com o seletor de período, tudo de **Filtros** até as seções de
 
 ## Nome e local
 
-`saida/relatorio_<relatório>_AAAAMMDD_HHMMSS.html`. A pasta `saida/` **não** é versionada (LGPD).
+`dados/saida/relatorio_<relatório>_AAAAMMDD_HHMMSS.html`. A pasta `dados/saida/` **não** é versionada (LGPD).
 
 ## Gerar pela linha de comando (RPA/agendamento)
 
 ```powershell
-python gerar_relatorio.py --listar                                   # relatórios e suas pastas
-python gerar_relatorio.py --relatorio "Contas Convênio"
-python gerar_relatorio.py --relatorio "Contas Convênio" --anonimizar --dim "Ano=2026"
-python gerar_relatorio.py --inicio 2026-07-01 --fim 2026-07-31 --data-base "Data da solicitação"
+python scripts/gerar_relatorio.py --listar                           # relatórios e suas pastas
+python scripts/gerar_relatorio.py --relatorio "Contas Convênio"
+python scripts/gerar_relatorio.py --relatorio "Contas Convênio" --anonimizar --dim "Ano=2026"
+python scripts/gerar_relatorio.py --inicio 2026-07-01 --fim 2026-07-31 --data-base "Data da solicitação"
 ```
 
 Por código:

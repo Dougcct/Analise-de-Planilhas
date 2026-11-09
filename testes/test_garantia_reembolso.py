@@ -4,14 +4,12 @@ Cobre as peças novas: `apenas_mapeadas` (descarta colunas não declaradas — L
 arquivo sem abas (CSV), motor tabular (taxa ponderada + tempo) e a página «Todas as abas» na janela.
 """
 import datetime as dt
-import io
 
 import pytest
+from test_estrutura import _xlsx
 
 from analise_planilha import config, servico
 from analise_planilha.modelo import carregar_modelo
-
-from test_estrutura import _xlsx
 
 MOD_REEMB = """
 nome = "Reemb"

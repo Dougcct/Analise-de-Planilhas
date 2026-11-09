@@ -1,6 +1,6 @@
 # servidor/ — API v2 (em desenvolvimento, branch `v2`)
 
-Backend cliente-servidor da v2.0 (ver [DOCS/16](../DOCS/16_arquitetura_v2.md)). **Fase 1 (atual):** API
+Backend cliente-servidor da v2.0 (ver [dominio/docs/16](../dominio/docs/16_arquitetura_v2.md)). **Fase 1 (atual):** API
 mínima, sem banco e sem login, servindo um relatório sintético — só para provar o fim a fim HTTP.
 
 ## Rodar em desenvolvimento
@@ -15,4 +15,4 @@ mínima, sem banco e sem login, servindo um relatório sintético — só para p
 - Documentação interativa: `http://localhost:8000/docs`
 
 As dependências de servidor estão em `requirements.txt` (usadas pela imagem Docker; em dev já entram pelo
-`requirements-dev.txt`). Docker/compose e os detalhes das próximas fases: [DOCS/16 §8](../DOCS/16_arquitetura_v2.md#8-plano-em-fases).
+`requirements-dev.txt`). Docker/compose e os detalhes das próximas fases: [dominio/docs/16 §8](../dominio/docs/16_arquitetura_v2.md#8-plano-em-fases).

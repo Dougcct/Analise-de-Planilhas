@@ -1,15 +1,17 @@
 """CLI: resumo da inferência de uma planilha, sem interface (RPA/agendamento).
 
-    python analisar.py dados\\entrada\\arquivo.xlsx [--aba NOME]
+    python scripts/analisar.py dados\\entrada\\arquivo.xlsx [--aba NOME]
 """
 import argparse
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
+_RAIZ = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(_RAIZ / "src"))
+sys.path.insert(0, str(_RAIZ / "dominio"))   # pacote Agentes (Especialistas por Setor)
 
-from analise_planilha import servico  # noqa: E402
-from analise_planilha.perfil import tabela_tipos  # noqa: E402
+from analise_planilha import servico
+from analise_planilha.perfil import tabela_tipos
 
 
 def main() -> int:

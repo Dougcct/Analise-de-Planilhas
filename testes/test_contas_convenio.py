@@ -6,7 +6,8 @@ import io
 import openpyxl
 import pytest
 
-from analise_planilha import config, contas_convenio as cc, leitura, servico
+from analise_planilha import config, leitura, servico
+from analise_planilha import contas_convenio as cc
 from analise_planilha.modelo import carregar_modelo
 
 MODELO = config.PASTA_MODELOS / "contas_convenio.toml"

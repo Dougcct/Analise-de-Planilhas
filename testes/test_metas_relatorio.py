@@ -64,7 +64,7 @@ def test_listar_arquivos_ignora_temporarios(tmp_path):
 
 def test_periodo_pela_coluna_escolhida():
     csv = ("Abertura;Finalização;Cidade\n01/01/2026;10/03/2026;A\n15/02/2026;20/02/2026;B\n"
-           "20/03/2026;25/03/2026;C\n").encode("utf-8")
+           "20/03/2026;25/03/2026;C\n").encode()
     ds = servico.carregar(csv, "p.csv")
     assert set(servico.colunas_data(ds)) == {"Abertura", "Finalização"}
     f = Filtros(periodo=("2026-03-01", "2026-03-31"), coluna_data="Finalização")

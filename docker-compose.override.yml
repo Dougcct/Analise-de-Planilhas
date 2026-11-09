@@ -9,7 +9,7 @@ services:
       - "8000:8000"     # mantém o :8000 (descoberta automática do cliente desktop usa essa porta)
     volumes:
       - ./src:/app/src:ro
-      - ./Agentes:/app/Agentes:ro
+      - ./dominio/Agentes:/app/dominio/Agentes:ro
       - ./servidor:/app/servidor:ro
       - ./templates:/app/templates:ro
       - ./assets:/app/assets:ro

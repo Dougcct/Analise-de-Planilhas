@@ -62,7 +62,7 @@ leitura não replica células mescladas. Quantidade gravada como texto ("125") v
 
 ## Modelo e indicadores
 
-`config/modelos/contas_convenio.toml` (selecione **Contas Convênio** na web):
+`dominio/modelos/contas_convenio.toml` (selecione **Contas Convênio** na web):
 
 - **KPIs:** atendimentos e pacientes distintos; *Margem (contas apuradas)* ponderada por valor;
   *Contas com custo apurado*; *Peso de OPME* e *Peso de honorários* no faturamento; somas de
@@ -93,9 +93,9 @@ Na barra lateral: **Pasta** «Contas Convênio» → **Relatório** = o arquivo 
 
 - **Page 1** — a aba em blocos, uma linha por atendimento (o grosso da análise, acima).
   A aba de cesarianas de 2025 é **anexada** aqui como colunas «… (aba resumo)» para conferência.
-  Modelo: `config/modelos/contas_convenio.toml`.
+  Modelo: `dominio/modelos/contas_convenio.toml`.
 - **CESARIANA (FETO ÚNICO OU MÚLTIP…)** — só em 2025; analisada **à parte** (uma linha por paciente:
-  faturamento, custo, resultado e margem). Modelo: `config/modelos/resumo_cesariana.toml`.
+  faturamento, custo, resultado e margem). Modelo: `dominio/modelos/resumo_cesariana.toml`.
 
 Cada arquivo/página é analisado **à parte**. Para comparar os anos, use **Arquivos (juntar)** abaixo do
 menu: marque `2025.xlsx` e `2026.xlsx` e clique **Recarregar** — os dois anos são **consolidados** numa

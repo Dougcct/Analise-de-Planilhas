@@ -24,7 +24,8 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
-from analise_planilha import __version__, config as _cfg, relatorio_html, servico
+from analise_planilha import __version__, relatorio_html, servico
+from analise_planilha import config as _cfg
 from analise_planilha.cerebro import layout as _cl
 from analise_planilha.cerebro import papeis as _cp
 from analise_planilha.modelos import Filtros
@@ -32,9 +33,26 @@ from analise_planilha.modelos import Filtros
 from . import aprendizado, bd, modelos_fs, validacao
 from .autenticacao import escopo_por_token
 from .modelos_bd import (
-    ADM, GESTOR, PAPEIS, PUBLICADA, RASCUNHO, SUBSTITUIDA, USUARIO,
-    AcessoTemporario, Auditoria, Carga, CentroCusto, ConhecimentoColuna, Pasta, PedidoSenha, Relatorio,
-    SessaoUsuario, Sugestao, SugestaoMensagem, Usuario, utcnow,
+    ADM,
+    GESTOR,
+    PAPEIS,
+    PUBLICADA,
+    RASCUNHO,
+    SUBSTITUIDA,
+    USUARIO,
+    AcessoTemporario,
+    Auditoria,
+    Carga,
+    CentroCusto,
+    ConhecimentoColuna,
+    Pasta,
+    PedidoSenha,
+    Relatorio,
+    SessaoUsuario,
+    Sugestao,
+    SugestaoMensagem,
+    Usuario,
+    utcnow,
 )
 from .repositorio import RepoCargas, RepoRelatorios, RepoUsuarios
 from .seguranca import DURACAO_SESSAO, MAX_TENTATIVAS, Escopo, conferir_senha, gerar_token, hash_senha, hash_token
@@ -66,7 +84,7 @@ def obter_classe_cor(usuario_tipo: str, cor: str) -> str:
     return cor if cor in PALETA_AVATAR else COR_AVATAR_PADRAO
 
 def _srv():
-    from . import app          # import tardio: evita ciclo (app importa web no fim)
+    from . import app  # import tardio: evita ciclo (app importa web no fim)
     return app
 
 
@@ -719,7 +737,7 @@ def home(request: Request, s: Session = Depends(_sessao)):
     # relatórios de OUTRO setor emprestados por acesso temporário (não aparecem nas pastas do próprio setor)
     compart = [{"slug": r.slug, "nome": r.nome} for r in rels
                if not escopo.pode_setor(r.centro_custo_id)]
-    ctx = dict(resumo=_resumo_home(s, escopo, rels), raiz=True, compartilhados=compart)
+    ctx = {"resumo": _resumo_home(s, escopo, rels), "raiz": True, "compartilhados": compart}
     # ADM, ou qualquer usuário com MAIS DE UM setor: a raiz são os setores (pastas-raiz)
     if escopo.eh_adm or len(escopo.centros_ids) > 1:
         q_cc = select(CentroCusto).where(CentroCusto.ativo.is_(True))
@@ -1474,7 +1492,7 @@ def _auto_modelo(srv, s, rel, carga) -> dict | None:
     try:
         ds0 = srv._dataset_da_carga(carga, None, s)             # leitura sem modelo (já em cache)
         colunas = [p.nome for p in (ds0.entendimento.todas if ds0.entendimento else [])]
-    except Exception:  # noqa: BLE001
+    except Exception:
         return None
     sugestoes = modelos_fs.sugerir(colunas)
     melhor = next((x for x in sugestoes if x["obrig_ok"]), None)
@@ -1484,7 +1502,7 @@ def _auto_modelo(srv, s, rel, carga) -> dict | None:
     srv.esquecer_dataset(carga.id)                              # reler com o modelo aplicado
     try:
         srv._dataset_da_carga(carga, srv._modelo_do(rel), s)
-    except Exception:  # noqa: BLE001 - modelo não casou de fato: melhor ficar sem modelo
+    except Exception:
         rel.modelo = None
         srv.esquecer_dataset(carga.id)
         srv._dataset_da_carga(carga, None, s)
@@ -1584,7 +1602,7 @@ async def enviar_carga(request: Request, modo: str = Form("novo"),
             srv.esquecer_dataset(carga.id)               # id reaproveitado (SQLite) não pode herdar cache
             try:                                         # confirma que o motor LÊ antes da prévia
                 srv._dataset_da_carga(carga, srv._modelo_do(rel), s)
-            except Exception as e:  # noqa: BLE001
+            except Exception as e:
                 caminho.unlink(missing_ok=True)
                 criados.pop()
                 s.delete(carga)
@@ -1716,7 +1734,7 @@ async def enviar_previa_modelo(carga_id: int, request: Request, modelo: str = Fo
         srv.esquecer_dataset(carga.id)
         try:                                               # a planilha precisa ler com o novo modelo
             srv._dataset_da_carga(carga, srv._modelo_do(rel), s)
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             rel.modelo = anterior
             srv.esquecer_dataset(carga.id)
             raise _Erro(f"A planilha não pôde ser lida com esse modelo ({type(e).__name__}).") from e
@@ -1756,7 +1774,7 @@ async def enviar_previa_agente(carga_id: int, request: Request, agente: str = Fo
         srv.esquecer_dataset(carga.id)
         try:                                               # a planilha precisa ler com o agente escolhido
             srv._dataset_da_carga(carga, srv._modelo_do(rel), s)
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             carga.agente = anterior
             srv.esquecer_dataset(carga.id)
             raise _Erro(f"A planilha não pôde ser lida com esse agente ({type(e).__name__}).") from e
@@ -1798,7 +1816,7 @@ async def enviar_previa_reanalisar(carga_id: int, request: Request, s: Session =
         srv.esquecer_dataset(carga.id)
         try:
             srv._dataset_da_carga(carga, modelo, s)
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             raise _Erro(f"Com essas correções a planilha não pôde ser analisada: {type(e).__name__}") from e
     except _Erro as e:
         return _redir(f"/web/enviar/previa/{carga_id}", erro=str(e))
@@ -2114,7 +2132,7 @@ def admin_modelo(slug: str, request: Request, s: Session = Depends(_sessao)):
         return _pagina("erro.html", request, _ctx(request, escopo, s, "admin", mensagem="Modelo não encontrado."))
     try:
         m = carregar_modelo(slug)
-    except Exception as e:  # noqa: BLE001 - modelo quebrado: deixa editar o TOML para consertar
+    except Exception as e:
         return _pagina("erro.html", request, _ctx(request, escopo, s, "admin",
                        mensagem=f"Modelo «{slug}» com erro ({type(e).__name__}). Edite o TOML para corrigir."))
     colunas = [{"rotulo": c.rotulo, "canonico": c.canonico, "tipo": c.tipo, "papel": getattr(c, "papel", None),
@@ -2289,7 +2307,7 @@ async def conversor_analisar(request: Request, arquivo: UploadFile = File(...), 
     try:
         ds, notas = conv.ler(dados, nome_orig)
         diag = conv.diagnostico(ds, notas)
-    except Exception as e:  # noqa: BLE001 - erro de leitura vira aviso amigável na tela
+    except Exception as e:
         return _redir("/web/admin/conversor", erro=f"Não consegui ler o arquivo: {e}")
     token = uuid.uuid4().hex + ext
     (_conv_tmp_dir() / token).write_bytes(dados)
@@ -2317,7 +2335,7 @@ def conversor_gerar(request: Request, token: str = Form(...), titulo: str = Form
         df = conv.aplicar(ds, agrupar.strip() or None, _conv_parse_renomear(renomear))
         setor = _conv_nome_centro(s, centro_id)
         res = conv.salvar_xlsx(df, _conv_saida_dir(setor), titulo, conv.periodo(ds))
-    except Exception as e:  # noqa: BLE001
+    except Exception as e:
         return _redir("/web/admin/conversor", erro=f"Falha ao gerar o Excel: {e}")
     tmp.unlink(missing_ok=True)
     _audit(s, escopo, "conversor_gerar", res["nome"])
@@ -2450,9 +2468,9 @@ def admin_modelos_exportar(request: Request, s: Session = Depends(_sessao)):
                     headers={"Content-Disposition": 'attachment; filename="modelos.zip"'})
 
 
-# ----- importar a leitura da pasta Setores/ (ADM) -----------------------------------------------
+# ----- importar a leitura da pasta dados/setores/ (ADM) -----------------------------------------------
 def _manifesto_setores() -> list[dict] | None:
-    """Tipos de documento lidos por `scripts/aprender_setores.py` (vêm na imagem, em config/modelos/)."""
+    """Tipos de documento lidos por `scripts/aprender_setores.py` (vêm na imagem, em dominio/modelos/)."""
     from analise_planilha import config as _config
     from analise_planilha.cerebro import setores as _setores
 
@@ -2823,7 +2841,7 @@ def gestao_carga_republicar(carga_id: int, request: Request, s: Session = Depend
         destino = f"/web/gestao/relatorio/{rel.slug}"
         try:
             srv._dataset_da_carga(carga, srv._modelo_do(rel), s)   # confirma que ainda lê
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             raise _Erro(f"Esta versão não pôde ser processada: {type(e).__name__}") from e
         for ant in s.scalars(select(Carga).where(Carga.relatorio_id == rel.id, Carga.status == PUBLICADA)):
             ant.status = SUBSTITUIDA

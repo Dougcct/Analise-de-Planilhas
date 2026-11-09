@@ -12,4 +12,4 @@ O programa-base vem **em branco** (sem nenhum modelo ativo) — por padrão usa 
 > O arquivo `exemplo.toml.sample` termina em `.sample` de propósito: serve de template e **não** entra
 > no seletor de modelos. Só arquivos `.toml` são carregados.
 
-Guia completo do formato: [../../DOCS/04_modelo_de_cliente.md](../../DOCS/04_modelo_de_cliente.md).
+Guia completo do formato: [../../dominio/docs/04_modelo_de_cliente.md](../../dominio/docs/04_modelo_de_cliente.md).

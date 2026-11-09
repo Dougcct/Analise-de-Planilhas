@@ -11,7 +11,7 @@ repetido a cada página):
     Valor total:                      <valor>  [<custo>] [<resultado>]
 
 Saída: UMA LINHA POR ATENDIMENTO, com um valor por grupo de faturamento e os totais separados em
-dois conceitos que o relatório mistura (ver DOCS/12):
+dois conceitos que o relatório mistura (ver dominio/docs/12):
 
 - **Faturamento bruto** = soma dos grupos (o que o sistema faturou; comparável entre anos);
 - **Faturamento apurado / Custo / Resultado** = só onde a equipe apurou o custo. Nesses casos o

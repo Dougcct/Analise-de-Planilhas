@@ -6,7 +6,7 @@ medidas (valores), quais taxas importam ("resolvidas na rede"), quais tempos med
 dias úteis e meta), que cruzamentos mostrar e que checagens de qualidade fazer.
 
 Duas origens:
-- `de_modelo`: lida das seções do `.toml` do cliente ([analise], [[taxa]], [[tempo]]…) — DOCS/04;
+- `de_modelo`: lida das seções do `.toml` do cliente ([analise], [[taxa]], [[tempo]]…) — dominio/docs/04;
 - `automatica`: deduzida dos tipos inferidos (sem modelo) — entidade pelo nome, categóricas viram
   dimensões, valores viram medidas, pares de datas viram tempos, sim/não viram taxas.
 """

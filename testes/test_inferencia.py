@@ -1,8 +1,16 @@
 import pandas as pd
 
-from analise_planilha import inferencia, leitura, servico
+from analise_planilha import leitura, servico
 from analise_planilha.modelos import (
-    BOOLEANO, CATEGORICO, DATA, IDENTIFICADOR, INTEIRO, MOEDA, TEXTO_LIVRE, VAZIO, Filtros,
+    BOOLEANO,
+    CATEGORICO,
+    DATA,
+    IDENTIFICADOR,
+    INTEIRO,
+    MOEDA,
+    TEXTO_LIVRE,
+    VAZIO,
+    Filtros,
 )
 from analise_planilha.normalizacao import texto_para_numero
 

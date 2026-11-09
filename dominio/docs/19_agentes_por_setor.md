@@ -4,12 +4,12 @@ Agentes que assumem uma planilha **de um setor conhecido** (Faturamento, Custos,
 analista daquele setor faria: sabem o vocabulário do ERP, limpam o export bagunçado e **acrescentam a
 análise do setor** ao relatório. São **100% determinísticos** — nenhuma chamada de LLM em execução.
 
-Pacote na **raiz** do projeto: `Agentes/` (maiúsculo, de propósito), fora de `src/`.
+Pacote em `dominio/Agentes/` (maiúsculo, de propósito), fora de `src/`.
 
 ## Quando um agente age (e quando não age)
 
 - Só **sem modelo** (`modelo is None`). Com modelo do cliente, o `.toml` manda e o agente não entra.
-- O `router` escolhe o agente pela planilha; se **nenhum** casa, ou se o pacote `Agentes/` não existir, o
+- O `router` escolhe o agente pela planilha; se **nenhum** casa, ou se o pacote `dominio/Agentes/` não existir, o
   motor roda exatamente como antes — **fallback transparente** (zero mudança de comportamento).
 - O usuário pode **confirmar, trocar ou desligar** o agente na prévia do envio (ver §Interface).
 
@@ -65,13 +65,13 @@ vale na publicação. Rota: `POST /web/enviar/previa/{id}/agente`.
 
 Nenhuma mudança no motor — só o pacote do agente e uma linha no router:
 
-1. **Crie** `Agentes/<setor>/` com:
+1. **Crie** `dominio/Agentes/<setor>/` com:
    - `config.toml` — vocabulário do setor: `[colunas]` (canônico = [grafias]), `ids_principais`,
      `valores`, `codigos`. Editar o TOML adapta o agente a um layout de ERP novo **sem tocar no código**.
    - `rules.py` — classe que herda `AgenteBase`, define `nome`, `setor`, `palavras_chave` e sobrescreve
      `analisar(df)` (chame `self.mapear(df)` no início para usar os nomes canônicos).
    - `__init__.py` — `from .rules import Agente<Setor>`.
-2. **Registre** a classe na tupla `AGENTES` em `Agentes/router.py`.
+2. **Registre** a classe na tupla `AGENTES` em `dominio/Agentes/router.py`.
 3. **Teste** em `testes/test_agentes.py` (Escudo, roteamento, métricas; dados **sintéticos**).
 
 O Escudo (4 travas), o mapeamento por sinônimos e o encaixe no relatório já vêm prontos da base.

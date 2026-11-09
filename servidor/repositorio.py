@@ -1,4 +1,4 @@
-"""Acesso a dados SEMPRE filtrado pelo escopo do usuário — a trava de isolamento (DOCS/18 §5).
+"""Acesso a dados SEMPRE filtrado pelo escopo do usuário — a trava de isolamento (dominio/docs/18 §5).
 As rotas não recebem a sessão crua do banco; recebem repositórios que já nascem filtrados, para que
 "esquecer o WHERE centro_custo_id" seja estruturalmente difícil."""
 from __future__ import annotations

@@ -7,7 +7,7 @@ def _ok(v) -> bool:
 
 
 def fmt_int(v) -> str:
-    return f"{int(round(v)):,}".replace(",", ".") if _ok(v) else "—"
+    return f"{round(v):,}".replace(",", ".") if _ok(v) else "—"
 
 
 def fmt_dec(v, casas: int = 2) -> str:

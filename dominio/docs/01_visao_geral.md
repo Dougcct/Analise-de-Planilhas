@@ -21,7 +21,7 @@ rede da organização (LGPD). Espelha o desenho do projeto **Garantia de Atendim
 O programa é uma **estrutura base**. Cada planilha de cliente tem estrutura diferente, então, em vez de
 reescrever o programa para cada uma, há três caminhos (do mais explícito ao mais automático):
 
-- **Modelo do cliente** (`config/modelos/<cliente>.toml`): colunas, tipos, grafias e **regras de negócio** —
+- **Modelo do cliente** (`dominio/modelos/<cliente>.toml`): colunas, tipos, grafias e **regras de negócio** —
   leitura determinística ([04](04_modelo_de_cliente.md)).
 - **Cérebro** (sem modelo): entende a planilha sozinho — papel de cada coluna, grão e layout — e aprende
   com as correções feitas na prévia.

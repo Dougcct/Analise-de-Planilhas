@@ -97,7 +97,7 @@ testes/                 testes do motor + testes/servidor/ (API, isolamento, aud
 ```
 
 - **Nada é duplicado:** a API/web e as CLIs chamam o mesmo `servico.py`.
-- `pytest`, `gerar_relatorio.py` e `analisar.py` continuam locais e offline, usando o motor diretamente.
+- `pytest`, `scripts/gerar_relatorio.py` e `scripts/analisar.py` continuam locais e offline, usando o motor diretamente.
 
 ## 4. Papéis e permissões (RBAC)
 

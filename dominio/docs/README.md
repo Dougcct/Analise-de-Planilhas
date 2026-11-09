@@ -38,5 +38,5 @@ Esta pasta documenta a base para que adaptar a uma planilha nova seja rápido e 
 
 `leitura → estrutura → (Agente de setor | modelo) → inferência/Cérebro → especificação → tratamento → indicadores → Analise → relatório HTML (web)`.
 A lógica (`src/analise_planilha/`) não depende da interface; adaptar a um cliente é editar um `.toml` —
-colunas **e regras de negócio** (exemplo completo: `config/modelos/garantia_atendimento.toml.sample`) — ou,
+colunas **e regras de negócio** (exemplo completo: `dominio/modelos/garantia_atendimento.toml.sample`) — ou,
 para um setor inteiro bagunçado de ERP, um **Agente** ([19](19_agentes_por_setor.md)).

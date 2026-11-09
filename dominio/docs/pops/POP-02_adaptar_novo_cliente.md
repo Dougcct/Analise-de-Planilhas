@@ -14,7 +14,7 @@ explícito); escolha o menor que resolver:
 
 1. **Sem nada** — o **Cérebro** entende a planilha sozinho (papéis/grão) e aprende com as correções da prévia.
 2. **Agente de setor** — se a planilha é de um setor conhecido e vem bagunçada de ERP ([19](../19_agentes_por_setor.md)).
-3. **Modelo de cliente** (`config/modelos/<cliente>.toml`) — leitura determinística, com regras de negócio
+3. **Modelo de cliente** (`dominio/modelos/<cliente>.toml`) — leitura determinística, com regras de negócio
    ([04](../04_modelo_de_cliente.md)). É o caminho recomendado quando o relatório é recorrente.
 
 ## Procedimento (pela web)
@@ -38,10 +38,10 @@ explícito); escolha o menor que resolver:
 
 ## Criar o modelo `.toml`
 
-- Gerencie os modelos em *Administração → Gerenciar Modelos*; o arquivo mora em `config/modelos/<cliente>.toml`.
+- Gerencie os modelos em *Administração → Gerenciar Modelos*; o arquivo mora em `dominio/modelos/<cliente>.toml`.
 - Estrutura: colunas (rótulo canônico + tipo + **sinônimos** de cabeçalho), `aba`/`abas="todas"`, e as
   **regras de negócio** em `[analise]`: entidade, `[[taxa]]`, `[[tempo]]` (prazo + meta), `[[classificacao]]`,
-  cruzamentos, campos obrigatórios, metas. Molde: `config/modelos/garantia_atendimento.toml.sample`; guia
+  cruzamentos, campos obrigatórios, metas. Molde: `dominio/modelos/garantia_atendimento.toml.sample`; guia
   completo em [04](../04_modelo_de_cliente.md).
 
 ## Quando mexer no código (fora do modelo)

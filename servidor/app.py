@@ -13,7 +13,7 @@ from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(RAIZ / "src"))
-sys.path.insert(0, str(RAIZ))      # pacote Agentes/ na raiz (Agentes Especialistas por Setor)
+sys.path.insert(0, str(RAIZ / "dominio"))   # pacote Agentes (Especialistas por Setor) em dominio/Agentes
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, RedirectResponse
@@ -31,9 +31,10 @@ SEMENTE_MODELOS = Path(os.getenv("SEMENTE_MODELOS", "/app/_seed_modelos"))  # c�
 
 
 def _semear_modelos() -> None:
-    """config/modelos é um volume (editável em runtime) e começa vazio: na 1ª vez, copia os modelos
+    """dominio/modelos é um volume (editável em runtime) e começa vazio: na 1ª vez, copia os modelos
     da pasta-semente baked. Idempotente; em dev (sem a semente) não faz nada e usa os arquivos do repo."""
     import shutil
+
     from analise_planilha import config as _cfg
 
     destino = _cfg.PASTA_MODELOS
@@ -61,7 +62,7 @@ app = FastAPI(title="Análise de Planilhas — v2 (web)", version=__version__, l
 
 
 # ---- modelos e datasets ---------------------------------------------------------------
-# O servidor analisa com o MESMO modelo da v1 (config/modelos/*.toml): a planilha enviada — ou, na
+# O servidor analisa com o MESMO modelo da v1 (dominio/modelos/*.toml): a planilha enviada — ou, na
 # falta dela, uma SINTÉTICA no formato do modelo (dados_demo) — vira a mesma análise rica (tempos,
 # taxas, convênio × mês…). Nada de dado pessoal real em homologação (LGPD).
 _cache_modelos: dict[str, object] = {}
@@ -194,6 +195,6 @@ def servir_asset(nome_arquivo: str):
 
 
 # ---- site web (navegador), servido em /web ----
-from . import web  # noqa: E402  (importado no fim: web faz import tardio de helpers deste módulo)
+from . import web
 
 app.include_router(web.router)

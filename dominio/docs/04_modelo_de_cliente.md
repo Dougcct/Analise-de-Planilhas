@@ -8,8 +8,8 @@ um cliente em duas camadas:
    de qualidade e metas importam. É o que transforma estatística genérica em **indicadores de gestão**
    (mesmo padrão do projeto *Garantia de Atendimento* — ver [10](10_indicadores.md)).
 
-Os modelos ficam em `config/modelos/<cliente>.toml` e aparecem no seletor da web. **Exemplo completo
-com todas as seções:** `config/modelos/garantia_atendimento.toml.sample` (reproduz a Garantia só com
+Os modelos ficam em `dominio/modelos/<cliente>.toml` e aparecem no seletor da web. **Exemplo completo
+com todas as seções:** `dominio/modelos/garantia_atendimento.toml.sample` (reproduz a Garantia só com
 configuração). Sem modelo, as regras são **deduzidas** dos tipos (ver "Sem modelo" abaixo).
 
 ## Cabeçalho do arquivo
@@ -105,7 +105,7 @@ composicao     = ["diarias", "opme"]    # partes da medida principal → painel 
 ```
 
 Margem e participações se declaram como **taxa ponderada** (`numerador`/`denominador`) — ver o
-exemplo completo em `config/modelos/contas_convenio.toml` ([12](12_contas_convenio.md)).
+exemplo completo em `dominio/modelos/contas_convenio.toml` ([12](12_contas_convenio.md)).
 
 ## `[[classificacao]]` — coluna nova por regra de texto
 
@@ -209,5 +209,5 @@ regras no modelo.
 modelo…** → gera as `[[coluna]]`. Depois acrescente as regras (passo B).
 
 **B) Editando o `.toml`:** copie `exemplo.toml.sample` (mínimo) ou `garantia_atendimento.toml.sample`
-(completo) para `config/modelos/<cliente>.toml` e edite. Erros de formato (tipo/papel inválido) são
+(completo) para `dominio/modelos/<cliente>.toml` e edite. Erros de formato (tipo/papel inválido) são
 avisados ao carregar; regra que cita coluna inexistente é **ignorada com aviso** no diagnóstico.

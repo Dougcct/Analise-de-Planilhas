@@ -70,7 +70,7 @@ def propor(arquivos: list[tuple], nome: str, setor: str = "", tipo_documento: st
     for fonte, nome_arq in arquivos:
         try:
             ds = servico.carregar(fonte, nome_arq, aba=aba, conhecimento=conhecimento, contexto=prop.contexto)
-        except Exception as e:  # noqa: BLE001 - arquivo ilegível não derruba a leitura do tipo
+        except Exception as e:
             prop.avisos.append(f"{nome_arq}: não foi possível ler ({type(e).__name__}).")
             continue
         ent = ds.entendimento

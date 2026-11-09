@@ -2,6 +2,36 @@
 
 Formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · [SemVer](https://semver.org/lang/pt-BR/)
 
+## [2.0.1] — 2026-11-09
+
+Organização do repositório (sem mudança de comportamento do produto), painel de operação e lint.
+
+### Alterado (estrutura — "um lugar para achar cada coisa")
+- **`dominio/`** passa a reunir as definições de negócio versionadas: `dominio/Agentes/` (ex-`Agentes/`),
+  `dominio/modelos/` (ex-`config/modelos/`) e `dominio/docs/` (ex-`DOCS/`), com um `dominio/README.md` que
+  mapeia tudo. O import segue `from Agentes import …` (`dominio/` entra no `pythonpath`/`sys.path`); o
+  servidor copia para `/app/dominio/…` e o volume de modelos monta em `/app/dominio/modelos`.
+- **`dados/`** vira a única casa do dado local (LGPD): `dados/relatorios/` (entradas por relatório, ex-`dados/`),
+  `dados/saida/` (ex-`saida/`), `dados/setores/` (ex-`Setores/`) e `dados/revisar/` (ex-`Revisar planilha/`).
+  `config.PASTA_DADOS`/`PASTA_SAIDA` e os scripts apontam para lá.
+- **`scripts/`** reúne CLIs e utilitários fora do produto: `gerar_relatorio.py`, `analisar.py`,
+  `painel-controle.py`, `aprender_setores.py` e os `.bat` (`reiniciar-docker`, `enviar-github`).
+- Documentação, `CLAUDE.md`, `README.md` e comentários atualizados para a nova estrutura.
+
+### Adicionado (painel de controle — ferramenta de operação, `scripts/painel-controle.py`)
+- Atalhos: **abrir o site**, **abrir a pasta do projeto** e a **pasta de saída**; e tarefas com log ao
+  vivo: **rodar testes** (pytest), **lint** (ruff), **ver logs do Docker** e **parar o Docker**.
+
+### Corrigido
+- **LGPD:** a pasta de revisão (`Revisar planilha/`) não era ignorada pelo git (o `.gitignore` tinha o nome
+  antigo `_revisar/`). Agora **todo** dado real vive sob `dados/` e o `.gitignore`/`.dockerignore` usam uma
+  única regra `dados/`, blindada.
+- **Lint:** política de `ruff` revisada (ignora idiomas intencionais — `B008` do FastAPI, `BLE001`, `S110`,
+  `ISC`, etc. — com justificativa) e correções pontuais; `ruff check .` passa limpo.
+
+### Removido
+- `iniciar.bat` (apontava para o `main.py` do desktop já removido) e a pasta `DOCS/Planejamento` (histórico).
+
 ## [2.0.0] — 2026-11-09
 
 Marco do **produto web v2**: consolida o servidor (FastAPI + Docker, login e controle por setor) como o

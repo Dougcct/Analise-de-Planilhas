@@ -195,7 +195,7 @@ def resumo_estrutura(ds, cfg: ConfigIA) -> dict:
             if ex:
                 info["exemplos"] = ex
         colunas.append(info)
-    return {"arquivo": ds.meta.arquivo, "aba": ds.meta.aba, "linhas": int(len(df)), "colunas": colunas}
+    return {"arquivo": ds.meta.arquivo, "aba": ds.meta.aba, "linhas": len(df), "colunas": colunas}
 
 
 # ---- prompt ----------------------------------------------------------------

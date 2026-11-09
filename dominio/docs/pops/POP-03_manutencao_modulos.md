@@ -36,10 +36,10 @@ tipo semântico novo, gráfico/painel novo, formato de saída novo **ou um novo 
 
 ## D. Novo Agente de setor
 
-1. Crie `Agentes/<setor>/` com `config.toml` (vocabulário: `[colunas]`, `ids_principais`, `valores`,
+1. Crie `dominio/Agentes/<setor>/` com `config.toml` (vocabulário: `[colunas]`, `ids_principais`, `valores`,
    `codigos`), `rules.py` (classe que herda `AgenteBase`, com `nome`/`setor`/`palavras_chave` e
    `analisar(df)`) e `__init__.py`.
-2. Registre a classe na tupla `AGENTES` em `Agentes/router.py`.
+2. Registre a classe na tupla `AGENTES` em `dominio/Agentes/router.py`.
 3. O Escudo de Entrada, o mapeamento por sinônimos e o encaixe no relatório já vêm da base. Guia completo:
    [19_agentes_por_setor.md](../19_agentes_por_setor.md).
 

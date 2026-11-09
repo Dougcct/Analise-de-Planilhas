@@ -235,7 +235,7 @@ def _resumo_col(df: pd.DataFrame, c) -> str:
     if c.tipo in TIPOS_DATA and len(serie):
         try:
             return f"{serie.min():%d/%m/%Y} a {serie.max():%d/%m/%Y}"
-        except Exception:  # noqa: BLE001,S110 - resumo é cosmético; data atípica cai nos outros resumos
+        except Exception:
             pass
     if len(serie):
         top = serie.astype(str).value_counts().head(3)
@@ -301,7 +301,7 @@ def diagnostico(ds, notas: list[str] | None = None) -> dict:
         a = servico.analisar(ds)
         alertas = [{"nivel": al.nivel, "texto": al.texto} for al in a.alertas]
         kpis = [{"rotulo": k.rotulo, "valor": k.valor} for k in a.kpis]
-    except Exception:  # noqa: BLE001 - KPIs são opcionais na prévia; sem eles, mostramos só os alertas de leitura
+    except Exception:
         alertas = [{"nivel": al.nivel, "texto": al.texto} for al in servico.alertas_de_leitura(ds)]
         kpis = []
     return {

@@ -210,7 +210,7 @@ def test_relatorio_html_com_achados_e_metas(modelo, planilha):
 
 def test_modelo_garantia_de_referencia_carrega():
     """O .sample completo (todas as seções) precisa continuar válido."""
-    m = carregar_modelo(RAIZ / "config" / "modelos" / "garantia_atendimento.toml.sample")
+    m = carregar_modelo(RAIZ / "dominio" / "modelos" / "garantia_atendimento.toml.sample")
     assert m.abas == "todas"
     assert {"analise", "classificacao", "taxa", "tempo", "cruzamento", "qualidade", "meta"} <= set(m.regras)
 

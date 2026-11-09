@@ -1,4 +1,4 @@
-"""Validação de arquivo enviado (DOCS/18 §4): extensão, tamanho, assinatura real e proteção contra
+"""Validação de arquivo enviado (dominio/docs/18 §4): extensão, tamanho, assinatura real e proteção contra
 zip bomb. Puro e testável — não toca em disco nem em banco."""
 from __future__ import annotations
 

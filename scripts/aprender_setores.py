@@ -1,11 +1,11 @@
-"""Lê a pasta Setores/ e gera os modelos novos (Cérebro) — roda NA MÁQUINA, os dados não saem dela.
+"""Lê a pasta dados/setores/ e gera os modelos novos (Cérebro) — roda NA MÁQUINA, os dados não saem dela.
 
-Organização esperada:   Setores/<Setor>/<Tipo de documento>/*.xlsx   (várias planilhas por tipo = mais aprendizado)
+Organização esperada:   dados/setores/<Setor>/<Tipo de documento>/*.xlsx   (várias planilhas por tipo = mais aprendizado)
 
-    python scripts/aprender_setores.py              # lê Setores/ e grava em config/modelos/
+    python scripts/aprender_setores.py              # lê dados/setores/ e grava em dominio/modelos/
     python scripts/aprender_setores.py --seco       # só mostra o que entenderia, sem gravar nada
 
-Gera em config/modelos/: um <setor>_<tipo>.toml por tipo (só estrutura), o _manifesto_setores.json e o
+Gera em dominio/modelos/: um <setor>_<tipo>.toml por tipo (só estrutura), o _manifesto_setores.json e o
 _conhecimento_inicial.json. Depois: reconstrua o servidor (docker compose up -d --build) e, na web,
 Administração → «Importar setores». O que é impresso aqui é só estrutura — nenhum valor de célula (LGPD).
 """
@@ -25,7 +25,8 @@ from analise_planilha.cerebro import setores
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--pasta", type=Path, default=RAIZ / "Setores", help="raiz Setores/<Setor>/<Tipo>/")
+    ap.add_argument("--pasta", type=Path, default=RAIZ / "dados" / "setores",
+                    help="raiz dados/setores/<Setor>/<Tipo>/")
     ap.add_argument("--saida", type=Path, default=config.PASTA_MODELOS, help="onde gravar os modelos")
     ap.add_argument("--seco", action="store_true", help="não grava: só mostra o entendimento")
     args = ap.parse_args(argv)
@@ -40,7 +41,7 @@ def main(argv: list[str] | None = None) -> int:
     resultados = setores.aprender(args.pasta, saida)
     print(setores.resumo(resultados))
     if args.seco:
-        print("\n(--seco: nada foi gravado em config/modelos/)")
+        print("\n(--seco: nada foi gravado em dominio/modelos/)")
     else:
         print(f"\nModelos gravados em {saida}. Próximo passo: docker compose up -d --build e, na web, "
               "Administração → «Importar setores».")

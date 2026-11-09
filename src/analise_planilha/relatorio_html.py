@@ -363,7 +363,7 @@ def _aplicar_edicao_secoes(secoes: list[dict], edicao: dict | None, modo_editave
                 continue
             cfg_p = layout_pain.get(pid) if isinstance(layout_pain.get(pid), dict) else {}
             p_copia = dict(p, oculto=p_oculto)
-            if "largura" in cfg_p and cfg_p["largura"]:
+            if cfg_p.get("largura"):
                 p_copia["largura"] = int(cfg_p["largura"])
                 p_copia["meia"] = p_copia["largura"] <= 6
             elif "meia" in cfg_p:
@@ -754,9 +754,9 @@ def montar_html(analise: Analise, titulo: str, subtitulo: str = "", base: pd.Dat
                 tem_versao_editada: bool = False, somente_editada: bool = False) -> str:
     d_info = _datas_info(ds, filtros)
     f_info = _filtros_info(ds, filtros)
-    kw = dict(config_exec=config_exec, edicao=edicao, pode_editar=pode_editar,
-              modo_editavel=modo_editavel, slug=slug, versao_ativa=versao_ativa,
-              tem_versao_editada=tem_versao_editada, somente_editada=somente_editada)
+    kw = {"config_exec": config_exec, "edicao": edicao, "pode_editar": pode_editar,
+              "modo_editavel": modo_editavel, "slug": slug, "versao_ativa": versao_ativa,
+              "tem_versao_editada": tem_versao_editada, "somente_editada": somente_editada}
     if ds is not None and not modo_editavel and not somente_editada:
         vistas, base_periodo, anteriores = _vistas_por_periodo(analise, ds, filtros)
         if vistas:
@@ -773,7 +773,7 @@ def gerar(analise: Analise, titulo: str, subtitulo: str = "", destino: Path | No
           base: pd.DataFrame | None = None, formatos_base: dict | None = None,
           prefixo: str = "relatorio", ds=None, filtros: Filtros | None = None, *,
           config_exec: dict | None = None, edicao: dict | None = None) -> Path:
-    """Grava em saida/<prefixo>_AAAAMMDD_HHMMSS.html (ou em `destino`) e devolve o caminho.
+    """Grava em dados/saida/<prefixo>_AAAAMMDD_HHMMSS.html (ou em `destino`) e devolve o caminho.
 
     Com `ds` (e `filtros` atuais), embute os «períodos prontos» (seletor de período no HTML)."""
     config.PASTA_SAIDA.mkdir(parents=True, exist_ok=True)

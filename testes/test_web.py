@@ -16,9 +16,9 @@ os.environ["DATABASE_URL"] = f"sqlite+pysqlite:///{_DB.as_posix()}"
 os.environ.setdefault("CARGAS_DIR", tempfile.mkdtemp(prefix="analise_cargas_web_"))
 os.environ.setdefault("ATUALIZACOES_DIR", tempfile.mkdtemp(prefix="analise_atualiz_web_"))
 
-from fastapi.testclient import TestClient      # noqa: E402
+from fastapi.testclient import TestClient
 
-from servidor.app import app                   # noqa: E402
+from servidor.app import app
 
 
 @pytest.fixture(scope="module")
@@ -318,6 +318,7 @@ def test_web_admin_cria_setor_e_relatorio(web):
 
 def _cesariana_xlsx(n):
     import io
+
     import openpyxl
     wb = openpyxl.Workbook(); ws = wb.active; ws.title = "CESARIANA (FETO ÚNICO OU MÚLTIP"
     ws.append(["Paciente", "Faturamento (R$)", "Custo (R$)", "Resultado (R$)"])
@@ -342,6 +343,7 @@ def _subir(c, **campos):
 def _custos_xlsx(n=6):
     """Planilha SINTÉTICA de custos (aciona o Agente de Custos na prévia, sem modelo)."""
     import io
+
     import openpyxl
     wb = openpyxl.Workbook(); ws = wb.active; ws.title = "Custos"
     ws.append(["Centro de Custo", "Conta Contabil", "Competencia", "Orcado", "Realizado"])
@@ -594,7 +596,6 @@ def test_correcao_na_previa_vira_conhecimento(web):
 def test_importar_setores_cria_setor_relatorio_e_conhecimento(web, tmp_path, monkeypatch):
     from analise_planilha import config, modelo
     from analise_planilha.cerebro import setores
-
     from testes.test_cerebro import montar_setores
     pasta = tmp_path / "modelos"
     setores.aprender(montar_setores(tmp_path / "Setores"), pasta)

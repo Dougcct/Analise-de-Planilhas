@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Painel de Controle — Analise de Planilhas
 =========================================
@@ -6,13 +5,17 @@ Interface unica (PyQt6, estilo vidro) para operar o projeto no dia a dia:
 
   - Reiniciar Docker : derruba e sobe TUDO (db + api) e confirma que o site respondeu.
   - Subir para o Git : add + commit + push nos dois remotos (origin + publico).
+  - Ferramentas      : abrir o site, abrir a pasta do projeto e a pasta de saida;
+                       rodar os testes (pytest), o lint (ruff), ver os logs do Docker
+                       e parar os containers.
 
-Cada acao roda em segundo plano, com log ao vivo, timestamps, detalhes de cada
-passo e status final. Arquivo unico, sem dependencias alem do PyQt6.
+As tarefas rodam em segundo plano, com log ao vivo, timestamps, detalhes de cada
+passo e status final; os atalhos de abrir sao instantaneos. Arquivo unico, sem
+dependencias alem do PyQt6.
 
 Como usar:
     pip install PyQt6
-    python painel-controle.py        (ou pythonw painel-controle.py, sem console)
+    python scripts/painel-controle.py    (ou pythonw scripts/painel-controle.py, sem console)
 """
 
 from __future__ import annotations
@@ -23,16 +26,26 @@ import subprocess
 import sys
 import time
 import urllib.request
+import webbrowser
 from datetime import datetime
 from pathlib import Path
 
 try:
-    from PyQt6.QtCore import Qt, QThread, pyqtSignal, QPoint, QSize
-    from PyQt6.QtGui import QColor, QFont, QFontDatabase
+    from PyQt6.QtCore import QPoint, Qt, QThread, pyqtSignal
+    from PyQt6.QtGui import QColor, QFontDatabase
     from PyQt6.QtWidgets import (
-        QApplication, QWidget, QFrame, QLabel, QPushButton, QVBoxLayout,
-        QHBoxLayout, QTextEdit, QLineEdit, QGraphicsDropShadowEffect,
-        QMessageBox, QSizePolicy,
+        QApplication,
+        QFrame,
+        QGraphicsDropShadowEffect,
+        QHBoxLayout,
+        QLabel,
+        QLineEdit,
+        QMessageBox,
+        QPushButton,
+        QSizePolicy,
+        QTextEdit,
+        QVBoxLayout,
+        QWidget,
     )
 except ImportError:  # pragma: no cover - ajuda quem nao instalou a dependencia
     print("PyQt6 nao esta instalado. Rode:  pip install PyQt6")
@@ -42,14 +55,16 @@ except ImportError:  # pragma: no cover - ajuda quem nao instalou a dependencia
 # ----------------------------------------------------------------------------
 # Configuracao do projeto
 # ----------------------------------------------------------------------------
-RAIZ = Path(__file__).resolve().parent
+RAIZ = Path(__file__).resolve().parents[1]   # scripts/ -> raiz do projeto
 URL_SITE = os.environ.get("PAINEL_URL_SITE", "http://localhost:8000/web/login")
+URL_ABRIR = os.environ.get("PAINEL_URL_ABRIR", "http://localhost:8000/web")   # aberto no navegador
+PASTA_SAIDA = RAIZ / "dados" / "saida"
 REMOTOS = [("origin", "privado"), ("publico", "publico")]
 VERSAO_ARQ = RAIZ / "src" / "analise_planilha" / "__init__.py"
 
-# LGPD: pastas que NUNCA podem ir pro Git (podem conter dado real). Se algo delas estiver
+# LGPD: todo dado real vive sob dados/ (relatorios, saida, setores, revisar). Se algo de lá estiver
 # preparado para commit, o envio é abortado antes do commit — o remoto «publico» é internet.
-PASTAS_PROIBIDAS = ("dados/", "saida/", "setores/", "_revisar/")
+PASTAS_PROIBIDAS = ("dados/",)
 
 # Esconde janelas de console dos subprocessos no Windows.
 _NO_WINDOW = 0x08000000 if os.name == "nt" else 0
@@ -130,6 +145,30 @@ def rodar_comando(cmd: list[str], log, cwd: Path = RAIZ) -> int:
     return proc.returncode
 
 
+def abrir_url(url: str, log) -> None:
+    """Abre uma URL no navegador padrao (acao instantanea)."""
+    try:
+        webbrowser.open(url)
+        log(f"Abrindo no navegador: {url}", "ok")
+    except Exception as exc:  # pragma: no cover
+        log(f"Nao consegui abrir o navegador ({exc}).", "error")
+
+
+def abrir_caminho(caminho: Path, log) -> None:
+    """Abre uma pasta no gerenciador de arquivos do sistema (cria se nao existir)."""
+    try:
+        caminho.mkdir(parents=True, exist_ok=True)
+        if os.name == "nt":
+            os.startfile(str(caminho))  # type: ignore[attr-defined]
+        elif sys.platform == "darwin":
+            subprocess.Popen(["open", str(caminho)])
+        else:
+            subprocess.Popen(["xdg-open", str(caminho)])
+        log(f"Abrindo pasta: {caminho}", "ok")
+    except Exception as exc:  # pragma: no cover
+        log(f"Nao consegui abrir a pasta: {caminho} ({exc})", "error")
+
+
 def site_responde(timeout: float = 2.0) -> int | None:
     """Retorna o status HTTP do site, ou None se nao respondeu."""
     try:
@@ -153,7 +192,7 @@ def ler_branch() -> str:
     try:
         out = subprocess.run(
             ["git", "rev-parse", "--abbrev-ref", "HEAD"],
-            cwd=str(RAIZ), capture_output=True, text=True, creationflags=_NO_WINDOW,
+            cwd=str(RAIZ), capture_output=True, text=True, creationflags=_NO_WINDOW, check=False,
         )
         return out.stdout.strip() or "?"
     except Exception:
@@ -164,7 +203,7 @@ def _git_saida(args: list[str]) -> str:
     """Roda um git silencioso e devolve o stdout (ou "" se falhar)."""
     try:
         out = subprocess.run(["git", *args], cwd=str(RAIZ), capture_output=True,
-                             text=True, creationflags=_NO_WINDOW)
+                             text=True, creationflags=_NO_WINDOW, check=False)
         return out.stdout
     except Exception:
         return ""
@@ -276,6 +315,38 @@ def fabricar_trabalho_git(descricao: str):
     return trabalho_git
 
 
+def trabalho_testes(log) -> tuple[bool, str]:
+    log("Rodando a suite de testes (pytest)...", "step")
+    rc = rodar_comando([sys.executable, "-m", "pytest", "-q"], log)
+    if rc == 0:
+        return True, "Testes: todos passaram."
+    return False, "Testes: houve falhas — veja o log."
+
+
+def trabalho_lint(log) -> tuple[bool, str]:
+    log("Verificando o estilo do codigo (ruff check .)...", "step")
+    rc = rodar_comando([sys.executable, "-m", "ruff", "check", "."], log)
+    if rc == 0:
+        return True, "Lint: nenhum problema."
+    return False, "Lint: apontou itens — veja o log."
+
+
+def trabalho_logs_docker(log) -> tuple[bool, str]:
+    log("Ultimas 200 linhas do log do Docker (db + api)...", "step")
+    rc = rodar_comando(["docker", "compose", "logs", "--tail", "200"], log)
+    if rc == 0:
+        return True, "Logs do Docker exibidos."
+    return False, "Nao consegui ler os logs do Docker."
+
+
+def trabalho_parar_docker(log) -> tuple[bool, str]:
+    log("Derrubando os containers (docker compose down)...", "step")
+    rc = rodar_comando(["docker", "compose", "down"], log)
+    if rc == 0:
+        return True, "Containers parados."
+    return False, "Falha ao parar os containers."
+
+
 # ----------------------------------------------------------------------------
 # Widgets da interface
 # ----------------------------------------------------------------------------
@@ -298,7 +369,7 @@ class Painel(QWidget):
         self.tarefa: Tarefa | None = None
         self._arrasto = QPoint()
         self.setWindowTitle("Painel — Analise de Planilhas")
-        self.setMinimumSize(880, 680)
+        self.setMinimumSize(900, 760)
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self._montar()
@@ -321,6 +392,7 @@ class Painel(QWidget):
         col.addLayout(self._barra_titulo())
         col.addWidget(self._faixa_status())
         col.addLayout(self._linha_acoes())
+        col.addWidget(self._barra_ferramentas())
         col.addWidget(self._area_log(), 1)
         col.addWidget(self._rodape())
 
@@ -425,6 +497,58 @@ class Painel(QWidget):
         lin.addWidget(cd)
         lin.addWidget(cg)
         return lin
+
+    def _barra_ferramentas(self) -> QFrame:
+        """Atalhos: abrir site/pastas (instantaneo) e ferramentas de dev (rodam no log)."""
+        cartao = Cartao()
+        lay = QVBoxLayout(cartao)
+        lay.setContentsMargins(22, 16, 22, 18)
+        lay.setSpacing(12)
+        tit = QLabel("⚡  Ferramentas")
+        tit.setObjectName("cardTitulo")
+        lay.addWidget(tit)
+
+        def gbtn(texto: str, slot, dica: str = "") -> QPushButton:
+            b = QPushButton(texto)
+            b.setObjectName("btnGhost")
+            b.setCursor(Qt.CursorShape.PointingHandCursor)
+            b.setMinimumHeight(40)
+            if dica:
+                b.setToolTip(dica)
+            b.clicked.connect(slot)
+            return b
+
+        lin = QHBoxLayout()
+        lin.setSpacing(10)
+
+        # Grupo 1 — atalhos instantaneos (nao travam durante tarefas)
+        self.btn_site = gbtn("🌐  Abrir site", lambda: abrir_url(URL_ABRIR, self.registrar),
+                             URL_ABRIR)
+        self.btn_proj = gbtn("📁  Pasta do projeto", lambda: abrir_caminho(RAIZ, self.registrar),
+                             str(RAIZ))
+        self.btn_saida = gbtn("📂  Pasta de saida", lambda: abrir_caminho(PASTA_SAIDA, self.registrar),
+                              str(PASTA_SAIDA))
+        for b in (self.btn_site, self.btn_proj, self.btn_saida):
+            lin.addWidget(b)
+
+        lin.addStretch(1)
+
+        # Grupo 2 — tarefas (transmitem no log; travam junto com Docker/Git)
+        self.btn_testes = gbtn("🧪  Testes", lambda: self._iniciar(trabalho_testes, "Rodando testes…"),
+                               "python -m pytest -q")
+        self.btn_lint = gbtn("🧹  Lint", lambda: self._iniciar(trabalho_lint, "Verificando o estilo…"),
+                             "ruff check .")
+        self.btn_logs = gbtn("📋  Logs Docker",
+                             lambda: self._iniciar(trabalho_logs_docker, "Lendo os logs do Docker…"),
+                             "docker compose logs --tail 200")
+        self.btn_parar = gbtn("⏹  Parar Docker",
+                              lambda: self._iniciar(trabalho_parar_docker, "Parando o Docker…"),
+                              "docker compose down")
+        for b in (self.btn_testes, self.btn_lint, self.btn_logs, self.btn_parar):
+            lin.addWidget(b)
+
+        lay.addLayout(lin)
+        return cartao
 
     def _area_log(self) -> QFrame:
         cartao = Cartao()
@@ -550,7 +674,9 @@ class Painel(QWidget):
         sb.setValue(sb.maximum())
 
     def _travar(self, travado: bool, estado: str = ""):
-        for b in (self.btn_docker, self.btn_git, self.btn_atualizar, self.ed_commit):
+        # Botoes que disparam tarefas em segundo plano (os atalhos de abrir ficam sempre ativos).
+        for b in (self.btn_docker, self.btn_git, self.btn_atualizar, self.ed_commit,
+                  self.btn_testes, self.btn_lint, self.btn_logs, self.btn_parar):
             b.setEnabled(not travado)
         if estado:
             self.lbl_estado.setText(estado)

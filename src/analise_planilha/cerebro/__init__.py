@@ -3,7 +3,7 @@
     layout (como os dados estão dispostos) → papéis (o que cada coluna é) → grão (o que cada linha é)
 
 Nada sai da máquina/servidor: é léxico de domínio + leitura dos valores + o que o sistema APRENDEU
-(base de conhecimento alimentada pela leitura de `Setores/`, pelas correções na prévia e pelas
+(base de conhecimento alimentada pela leitura de `dados/setores/`, pelas correções na prévia e pelas
 publicações). Substitui a dedução "por tipo" que somava protocolo e contava itens como atendimentos.
 """
 from __future__ import annotations

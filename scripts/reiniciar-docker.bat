@@ -1,7 +1,7 @@
 @echo off
 REM Reinicia TUDO: derruba e sobe todos os containers (db + api) e confirma que subiram.
 REM Basta dar duplo-clique neste arquivo. Para rebuild completo, use: docker compose up -d --build
-cd /d "%~dp0"
+cd /d "%~dp0.."
 
 echo Derrubando todos os containers...
 docker compose down

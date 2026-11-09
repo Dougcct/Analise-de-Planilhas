@@ -1,5 +1,5 @@
 """Tabelas do banco (fase 2): centros de custo, usuários, sessões, relatórios e auditoria.
-Modelo de dados completo planejado em DOCS/16 §5. Migrações (Alembic) entram quando o esquema
+Modelo de dados completo planejado em dominio/docs/16 §5. Migrações (Alembic) entram quando o esquema
 estabilizar; por ora o schema é criado por `bd.criar_schema()`."""
 from __future__ import annotations
 
@@ -145,7 +145,7 @@ class Relatorio(Base):
     nome: Mapped[str] = mapped_column(String(160))
     centro_custo_id: Mapped[int] = mapped_column(ForeignKey("centros_custo.id"), index=True)
     pasta_id: Mapped[int | None] = mapped_column(ForeignKey("pastas.id"), index=True)  # nulo = raiz do setor
-    modelo: Mapped[str | None] = mapped_column(String(64))   # slug do modelo (config/modelos/*.toml)
+    modelo: Mapped[str | None] = mapped_column(String(64))   # slug do modelo (dominio/modelos/*.toml)
     config_exec: Mapped[str | None] = mapped_column(Text)    # JSON: customização do Painel Executivo (Gestor/ADM)
     versao_editada: Mapped[str | None] = mapped_column(Text) # JSON: 2ª versão (editável/curada p/ impressão e compartilhamento)
     ativo: Mapped[bool] = mapped_column(Boolean, default=True)
@@ -153,7 +153,7 @@ class Relatorio(Base):
 
 class Carga(Base):
     """Uma planilha enviada para um relatório. O arquivo bruto fica no volume com nome aleatório
-    (UUID), nunca o nome original (DOCS/18 §4)."""
+    (UUID), nunca o nome original (dominio/docs/18 §4)."""
     __tablename__ = "cargas"
     id: Mapped[int] = mapped_column(primary_key=True)
     relatorio_id: Mapped[int] = mapped_column(ForeignKey("relatorios.id"), index=True)
@@ -173,7 +173,7 @@ class Carga(Base):
 
 class AcessoTemporario(Base):
     """Empréstimo de um relatório a alguém de OUTRO setor, por prazo e (em geral) anonimizado.
-    O convidado age como Usuário (só leitura) naquele relatório — DOCS/16 §3.3."""
+    O convidado age como Usuário (só leitura) naquele relatório — dominio/docs/16 §3.3."""
     __tablename__ = "acessos_temporarios"
     id: Mapped[int] = mapped_column(primary_key=True)
     relatorio_id: Mapped[int] = mapped_column(ForeignKey("relatorios.id"), index=True)
@@ -204,7 +204,7 @@ class ConhecimentoColuna(Base):
 
 
 class Auditoria(Base):
-    """Append-only (a aplicação só INSERE; nunca UPDATE/DELETE) — ver DOCS/18 §6."""
+    """Append-only (a aplicação só INSERE; nunca UPDATE/DELETE) — ver dominio/docs/18 §6."""
     __tablename__ = "auditoria"
     id: Mapped[int] = mapped_column(primary_key=True)
     quando: Mapped[dt.datetime] = mapped_column(DateTime, default=utcnow)

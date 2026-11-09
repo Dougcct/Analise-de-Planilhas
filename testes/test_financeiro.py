@@ -3,11 +3,10 @@ import datetime as dt
 import os
 
 import pytest
+from test_estrutura import _xlsx
 
 from analise_planilha import graficos, relatorio_html, servico
 from analise_planilha.modelo import carregar_modelo
-
-from test_estrutura import _xlsx
 
 DEZ23, JAN, FEV, MAR, ABR = (dt.datetime(2023, 12, 1), dt.datetime(2024, 1, 1), dt.datetime(2024, 2, 1),
                              dt.datetime(2024, 3, 1), dt.datetime(2024, 4, 1))

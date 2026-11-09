@@ -1,7 +1,7 @@
 """Dados de DEMONSTRAÇÃO no PADRÃO das planilhas reais do projeto (não mais Cidade/Valor genéricos).
 
 Gera planilhas SINTÉTICAS (sem nenhum dado pessoal real — regra de LGPD do homologação) na MESMA
-estrutura dos modelos que o programa já analisa (`config/modelos/*.toml`), para o servidor rodar a
+estrutura dos modelos que o programa já analisa (`dominio/modelos/*.toml`), para o servidor rodar a
 análise de verdade (tempos, taxas, cruzamentos, convênio × mês…) e a tela mostrar o relatório como ele é.
 
 Cada gerador devolve (bytes do .xlsx, nome_de_arquivo). O servidor carrega com o modelo correspondente.
@@ -42,7 +42,7 @@ def _garantia() -> tuple[bytes, str]:
     meses = [("JANEIRO", 1), ("FEVEREIRO", 2), ("MARÇO", 3)]
     folhas: dict[str, pd.DataFrame] = {}
     n = 1
-    for tipo, _meta in tipos.items():
+    for tipo in tipos:
         for nome_mes, mnum in meses:
             linhas = []
             for _ in range(rng.integers(18, 34)):

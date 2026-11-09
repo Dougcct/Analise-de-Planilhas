@@ -31,7 +31,7 @@ services:
       CARGAS_DIR: /app/dados_cargas
     volumes:
       - cargas:/app/dados_cargas                  # planilhas brutas enviadas (fora da imagem; LGPD)
-      - modelos:/app/config/modelos               # modelos editáveis em runtime (semeados no 1º start)
+      - modelos:/app/dominio/modelos              # modelos editáveis em runtime (semeados no 1º start)
     depends_on:
       db:
         condition: service_healthy

@@ -8,12 +8,31 @@ import pandas as pd
 
 from . import config
 from .modelos import (
-    BOOLEANO, CATEGORICO, DATA, DATA_HORA, DECIMAL, IDENTIFICADOR, INTEIRO, MOEDA, PERCENTUAL,
-    TEXTO_LIVRE, TIPOS, TIPOS_DATA, VAZIO, ColunaInferida, Esquema,
+    BOOLEANO,
+    CATEGORICO,
+    DATA,
+    DATA_HORA,
+    DECIMAL,
+    IDENTIFICADOR,
+    INTEIRO,
+    MOEDA,
+    PERCENTUAL,
+    TEXTO_LIVRE,
+    TIPOS,
+    TIPOS_DATA,
+    VAZIO,
+    ColunaInferida,
+    Esquema,
 )
 from .normalizacao import (
-    eh_data_nativa, para_booleano, para_data, para_numero, sem_acento, serial_excel_para_data,
-    tem_zero_a_esquerda, tokens_nome,
+    eh_data_nativa,
+    para_booleano,
+    para_data,
+    para_numero,
+    sem_acento,
+    serial_excel_para_data,
+    tem_zero_a_esquerda,
+    tokens_nome,
 )
 
 _RE_PCT = re.compile(r"^[-+]?\s*[\d.,]+\s*%$")

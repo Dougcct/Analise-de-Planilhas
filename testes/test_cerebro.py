@@ -222,7 +222,7 @@ def test_regras_de_aprendizado(tmp_path):
     assert Conhecimento.carregar(caminho).consultar("Tipo", "FAT/Glosa").papel == P.DIMENSAO
 
 
-# ---- gerador de modelos (pasta Setores/<Setor>/<Tipo de documento>/) ------------------------------
+# ---- gerador de modelos (pasta dados/setores/<Setor>/<Tipo de documento>/) ------------------------------
 def _contas(cab):
     linhas = [cab]
     for a in range(12):
@@ -255,7 +255,7 @@ def test_gerador_de_modelo_junta_grafias_e_grava_v2(tmp_path):
 
 
 def montar_setores(raiz):
-    """Setores/<Setor>/<Tipo>/ sintético: tabela por atendimento, matriz DRE, pasta vazia e trava do Excel."""
+    """dados/setores/<Setor>/<Tipo>/ sintético: tabela por atendimento, matriz DRE, pasta vazia e trava do Excel."""
     glosa = raiz / "Faturamento" / "Glosa"
     glosa.mkdir(parents=True)
     (glosa / "jan.xlsx").write_bytes(_contas(["Nº Atendimento", "Paciente", "Data", "Valor Item"]))

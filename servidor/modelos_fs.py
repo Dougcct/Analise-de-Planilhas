@@ -1,4 +1,4 @@
-"""Operações de arquivo sobre os modelos de análise (config/modelos/*.toml) para o módulo de gestão.
+"""Operações de arquivo sobre os modelos de análise (dominio/modelos/*.toml) para o módulo de gestão.
 
 Só estrutura (cabeçalhos, papéis, regras, layout) — nunca dado de célula (LGPD). Toda gravação é validada
 carregando o modelo antes de substituir o arquivo. O "bloqueio" (esconder do seletor) fica num sidecar
@@ -72,7 +72,7 @@ def listar_info() -> list[dict]:
         try:
             m = carregar_modelo(p)
             info.update(nome=m.nome, versao=m.versao, layout=m.layout or "plana", colunas=len(m.colunas))
-        except Exception as e:  # noqa: BLE001 - modelo quebrado deve aparecer na lista, não sumir
+        except Exception as e:
             info["erro"] = f"{type(e).__name__}: {e}"
         saida.append(info)
     return saida
@@ -112,7 +112,7 @@ def sugerir(colunas: list[str], limiar: float = LIMIAR_SUGESTAO) -> list[dict]:
     for info in disponiveis():
         try:
             m = carregar_modelo(info["slug"])
-        except Exception:  # noqa: BLE001, S112 - modelo quebrado não entra na sugestão
+        except Exception:  # noqa: S112 - modelo quebrado não entra na sugestão
             continue
         casadas = obrig_faltando = 0
         for cm in m.colunas:
@@ -141,7 +141,7 @@ def _validar(texto: str):
         tmp = Path(f.name)
     try:
         return carregar_modelo(tmp)
-    except Exception as e:  # noqa: BLE001
+    except Exception as e:
         raise ErroModelo(f"TOML inválido: {e}") from e
     finally:
         tmp.unlink(missing_ok=True)

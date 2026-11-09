@@ -5,7 +5,7 @@ import zipfile
 import pytest
 
 pytest.importorskip("fastapi")   # validacao mora em servidor/ (só roda com as deps de servidor)
-from servidor import validacao   # noqa: E402
+from servidor import validacao
 
 
 def _xlsx_valido() -> bytes:

@@ -522,7 +522,7 @@ def _analise_do_agente(ds: Dataset, df) -> tuple[list[str], list[Alerta], list[P
         return [], [], []
     try:
         res = agente.analisar(df)
-    except Exception:   # noqa: BLE001  — agente é best-effort; relatório segue como hoje
+    except Exception:
         return [], [], []
     achados = list(res.get("achados") or [])
     alertas = [Alerta("aviso", t) for t in (res.get("alertas") or [])]

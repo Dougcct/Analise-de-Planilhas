@@ -1,15 +1,14 @@
 """Caminhos e limiares do motor de inferência (ajustáveis em um lugar só)."""
 from pathlib import Path
 
-
 RAIZ = Path(__file__).resolve().parents[2]   # raiz do repositório / pasta do app (templates/, config/, dados/)
 NOME_APLICACAO = "Análise de Planilhas"
 ID_APLICACAO = "NucleoInovacao.AnalisePlanilhas"      # ícone próprio na barra de tarefas do Windows
-PASTA_DADOS = RAIZ / "dados"                          # uma subpasta por relatório (não versionar — LGPD)
+PASTA_DADOS = RAIZ / "dados" / "relatorios"           # uma subpasta por relatório (não versionar — LGPD)
 PASTA_ENTRADA = PASTA_DADOS / "entrada"               # relatório "Sem modelo"
-PASTA_SAIDA = RAIZ / "saida"
+PASTA_SAIDA = RAIZ / "dados" / "saida"
 PASTA_CONFIG = RAIZ / "config"
-PASTA_MODELOS = PASTA_CONFIG / "modelos"
+PASTA_MODELOS = RAIZ / "dominio" / "modelos"   # modelos de cliente (.toml) unificados em dominio/
 PASTA_TEMPLATES = RAIZ / "templates"
 ICONE = RAIZ / "assets" / "icon.ico"
 
@@ -17,7 +16,7 @@ EXTENSOES = (".xlsx", ".xlsm", ".xls", ".ods", ".csv", ".tsv", ".txt")
 
 
 def pasta_relatorio(subpasta: str | None) -> Path:
-    """Pasta de dados de um relatório: dados/<subpasta>/ (sem subpasta = dados/entrada/)."""
+    """Pasta de dados de um relatório: dados/relatorios/<subpasta>/ (sem subpasta = dados/relatorios/entrada/)."""
     return PASTA_DADOS / subpasta if subpasta else PASTA_ENTRADA
 
 

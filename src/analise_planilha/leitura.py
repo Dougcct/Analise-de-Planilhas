@@ -226,7 +226,7 @@ def ler(fonte, nome_arquivo: str, aba: str | None = None, linha_cabecalho: int |
         brutas, ocultas = _ler_excel(dados, ext)
         usar_cerebro = modelo is None or getattr(modelo, "versao", 1) >= 2
         relatorio = None if usar_cerebro else _aba_relatorio_contas(brutas, aba, ext)
-        if relatorio:   # modelo antigo (v1) de Contas Convênio: leitor próprio — DOCS/12
+        if relatorio:   # modelo antigo (v1) de Contas Convênio: leitor próprio — dominio/docs/12
             return contas_convenio.ler(dados, nome_arquivo, relatorio)
         meta.abas = list(brutas)
         grades = {}

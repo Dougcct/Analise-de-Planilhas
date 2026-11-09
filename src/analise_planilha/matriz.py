@@ -48,7 +48,7 @@ Linhas de referência vão para `meta.extras["referencias"]`. Meses sem nenhum l
 (futuros ou ainda não preenchidos) saem do detalhe e são informados no diagnóstico.
 
 O leitor usa os VALORES que o Excel calculou e salvou (`data_only`) — as abas se referenciam por
-fórmula; ver DOCS/13.
+fórmula; ver dominio/docs/13.
 """
 from __future__ import annotations
 

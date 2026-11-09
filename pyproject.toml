@@ -7,14 +7,27 @@ requires-python = ">=3.10"
 version = { attr = "analise_planilha.__version__" }
 
 [tool.pytest.ini_options]
-pythonpath = ["src", "."]   # "." → pacote Agentes/ (Agentes Especialistas por Setor) na raiz
+pythonpath = ["src", ".", "dominio"]   # "dominio" → pacote Agentes (Especialistas por Setor) em dominio/Agentes
 testpaths = ["testes"]
 
 [tool.ruff]
 line-length = 120
-src = ["src", "app", "."]   # "." → first-party: reconhece o pacote Agentes/ na raiz
+src = ["src", ".", "dominio"]   # "dominio" → first-party: reconhece o pacote Agentes em dominio/Agentes
+
+[tool.ruff.lint]
+# Regras desligadas por serem IDIOMAS intencionais do projeto (não bugs) — tentar "corrigir"
+# quebraria o código. O resto do conjunto do ruff continua ativo.
+ignore = [
+    "B008",    # FastAPI: Depends()/Form()/File() em default de parâmetro é o idioma oficial
+    "BLE001",  # `except Exception` proposital (best-effort / fallback transparente dos Agentes e da web)
+    "S110",    # try/except/pass proposital (ex.: vidro do Windows, área de transferência)
+    "ISC001",  # concatenação implícita de strings (conflita com o formatador)
+    "ISC004",  # f-strings multilinha dentro de lista/tupla (uma frase só, de propósito)
+    "PLR0124", # `v != v` é detecção de NaN proposital (formatacao.py)
+    "B023",    # lambdas passadas a .map()/apply() e consumidas na MESMA iteração (sem late-binding real)
+]
 
 [tool.ruff.lint.per-file-ignores]
-# O dono pediu a pasta de agentes na RAIZ com o nome "Agentes" (maiúsculo, como no desenho do
-# projeto). Isso é intencional, então liberamos a regra de nome-de-módulo minúsculo só aqui.
-"Agentes/**" = ["N999"]
+# O pacote de agentes usa o nome "Agentes" (maiúsculo, como no desenho do projeto), agora em
+# dominio/Agentes. Isso é intencional, então liberamos a regra de nome-de-módulo minúsculo só aqui.
+"dominio/Agentes/**" = ["N999"]

@@ -1,7 +1,7 @@
 """Modelo de planilha por cliente: mapeia cabeçalhos reais → colunas canônicas e fixa os tipos.
 
 Com modelo, a leitura é determinística (confiável). Sem modelo, o sistema cai na inferência
-automática. Os modelos ficam em `config/modelos/<cliente>.toml`; adaptar a um novo cliente é
+automática. Os modelos ficam em `dominio/modelos/<cliente>.toml`; adaptar a um novo cliente é
 editar/duplicar um arquivo, sem tocar no código.
 """
 from __future__ import annotations
@@ -43,7 +43,7 @@ class ColunaModelo:
     rotulo: str
     tipo: str
     sinonimos: list[str] = field(default_factory=list)
-    # regras de negócio por coluna (todas opcionais — ver DOCS/04)
+    # regras de negócio por coluna (todas opcionais — ver dominio/docs/04)
     papel: str | None = None          # dimensao | medida | entidade | texto (padrão: deduzido do tipo)
     obrigatoria: bool = False         # vazio vira ocorrência de qualidade
     aliases: dict[str, str] = field(default_factory=dict)   # grafia variante → grafia padrão
@@ -163,7 +163,7 @@ def _txt(valor: str) -> str:
 
 def salvar_modelo(nome: str, colunas: list[ColunaModelo], aba: str | None = None,
                   arquivo: str | None = None) -> Path:
-    """Escreve um modelo em config/modelos/<arquivo>.toml e devolve o caminho."""
+    """Escreve um modelo em dominio/modelos/<arquivo>.toml e devolve o caminho."""
     PASTA_MODELOS.mkdir(parents=True, exist_ok=True)
     base = arquivo or chave_texto(nome) or "modelo"
     caminho = PASTA_MODELOS / (base if base.endswith(".toml") else f"{base}.toml")
@@ -183,7 +183,7 @@ def salvar_modelo(nome: str, colunas: list[ColunaModelo], aba: str | None = None
 
 
 def carregar_modelo(origem: str | Path) -> Modelo:
-    """Carrega um modelo de um arquivo .toml (caminho) ou pelo nome do arquivo em config/modelos/."""
+    """Carrega um modelo de um arquivo .toml (caminho) ou pelo nome do arquivo em dominio/modelos/."""
     caminho = Path(origem)
     if not caminho.exists():
         caminho = PASTA_MODELOS / (str(origem) if str(origem).endswith(".toml") else f"{origem}.toml")

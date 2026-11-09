@@ -1,7 +1,7 @@
 """Base de conhecimento: o que o sistema APRENDEU sobre colunas, por nome de cabeçalho.
 
 Cada regra liga a assinatura de um cabeçalho («Nº Protocolo» → "noprotocolo") a um papel (identificador,
-valor, dimensão…). Ela nasce da leitura inicial das pastas de `Setores/`, de uma correção feita na prévia
+valor, dimensão…). Ela nasce da leitura inicial das pastas de `dados/setores/`, de uma correção feita na prévia
 ou de uma publicação, e vale para as próximas planilhas.
 
 Regras de convivência:

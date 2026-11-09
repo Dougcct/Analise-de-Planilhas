@@ -1,5 +1,5 @@
 """Dados de demonstração: centros de custo, usuários de cada papel e relatórios no PADRÃO REAL do
-projeto (cada relatório aponta um modelo de `config/modelos`). Sem carga publicada, o servidor gera uma
+projeto (cada relatório aponta um modelo de `dominio/modelos`). Sem carga publicada, o servidor gera uma
 planilha SINTÉTICA no formato do modelo (ver `dados_demo.py`) — nada de dado pessoal real (LGPD).
 Idempotente — só semeia se o banco estiver vazio. SENHAS DE DEMONSTRAÇÃO: trocar antes de produção."""
 from __future__ import annotations
@@ -26,7 +26,7 @@ DEMO = [
     ("gestor.fat", "Gestor Faturamento", "senha123", GESTOR, "FAT"),
 ]
 
-# relatórios no padrão real: (slug, nome, setor, modelo em config/modelos)
+# relatórios no padrão real: (slug, nome, setor, modelo em dominio/modelos)
 RELATORIOS = [
     ("garantia-atendimento", "Garantia de Atendimento", "ATD", "garantia_atendimento"),
     ("faturamento-hunf", "Faturamento HUNF", "FIN", "faturamento_hunf"),
