@@ -40,6 +40,16 @@ def test_csv_com_bytes_nulos():
         validacao.validar("x.csv", b"a;b\n1;\x00\x00\x00")
 
 
+def test_aceita_pdf_com_assinatura():
+    validacao.validar("relatorio.pdf", b"%PDF-1.4\n%\xe2\xe3\xcf\xd3\n... conteudo ...")
+    assert ".pdf" in validacao.EXT_OK
+
+
+def test_rejeita_pdf_sem_assinatura():
+    with pytest.raises(validacao.ErroArquivo, match="pdf"):
+        validacao.validar("falso.pdf", b"isto nao e um pdf")
+
+
 def test_xlsx_que_nao_e_zip():
     with pytest.raises(validacao.ErroArquivo, match="ZIP"):
         validacao.validar("falso.xlsx", b"isto nao e um zip")

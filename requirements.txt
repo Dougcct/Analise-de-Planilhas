@@ -3,6 +3,7 @@ pandas>=2.2
 openpyxl>=3.1      # .xlsx / .xlsm
 odfpy>=1.4         # .ods
 xlrd>=2.0          # .xls (legado)
+pdfplumber>=0.11   # .pdf (extração de tabelas)
 charset-normalizer>=3.0
 
 # Relatório HTML (template Jinja2 + gráficos SVG puros — sem JavaScript de terceiros)

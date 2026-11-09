@@ -12,7 +12,7 @@ PASTA_MODELOS = RAIZ / "dominio" / "modelos"   # modelos de cliente (.toml) unif
 PASTA_TEMPLATES = RAIZ / "templates"
 ICONE = RAIZ / "assets" / "icon.ico"
 
-EXTENSOES = (".xlsx", ".xlsm", ".xls", ".ods", ".csv", ".tsv", ".txt")
+EXTENSOES = (".xlsx", ".xlsm", ".xls", ".ods", ".csv", ".tsv", ".txt", ".pdf")
 
 
 def pasta_relatorio(subpasta: str | None) -> Path:

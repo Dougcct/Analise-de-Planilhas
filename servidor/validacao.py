@@ -6,7 +6,7 @@ import io
 import zipfile
 from pathlib import Path
 
-EXT_OK = {".xlsx", ".ods", ".csv", ".tsv", ".txt"}   # .xlsm fica de fora (macros); .xls legado idem
+EXT_OK = {".xlsx", ".ods", ".csv", ".tsv", ".txt", ".pdf"}   # .xlsm fica de fora (macros); .xls legado idem
 MAX_BYTES = 25 * 1024 * 1024          # arquivo enviado
 MAX_DESCOMP = 300 * 1024 * 1024       # soma descompactada (xlsx/ods são ZIP)
 MAX_RAZAO = 100                       # razão de compressão suspeita
@@ -21,13 +21,16 @@ def validar(nome: str, conteudo: bytes) -> None:
     """Levanta ErroArquivo se o arquivo não puder ser aceito; devolve None se estiver OK."""
     ext = Path(nome).suffix.lower()
     if ext not in EXT_OK:
-        raise ErroArquivo(f"Extensão não aceita: {ext or '(sem extensão)'}. Use .xlsx, .ods ou .csv.")
+        raise ErroArquivo(f"Extensão não aceita: {ext or '(sem extensão)'}. Use .xlsx, .ods, .csv ou .pdf.")
     if not conteudo:
         raise ErroArquivo("Arquivo vazio.")
     if len(conteudo) > MAX_BYTES:
         raise ErroArquivo(f"Arquivo acima do limite de {MAX_BYTES // (1024 * 1024)} MB.")
     if ext in (".csv", ".tsv", ".txt"):
         _validar_texto(conteudo)
+    elif ext == ".pdf":
+        if not conteudo.lstrip()[:8].startswith(b"%PDF"):
+            raise ErroArquivo("Arquivo .pdf inválido (assinatura não reconhecida).")
     else:
         _validar_zip(conteudo)
 

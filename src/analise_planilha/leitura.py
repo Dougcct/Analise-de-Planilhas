@@ -195,6 +195,29 @@ def _escolher_aba(grades: dict[str, pd.DataFrame], ocultas: set[str], dicas, lin
     return nome, est, motivo
 
 
+def _ler_pdf(dados: bytes) -> pd.DataFrame:
+    """Extrai as tabelas de um PDF (pdfplumber) numa grade bruta — como o CSV/Excel antes do cabeçalho.
+    PDF escaneado (imagem) não tem tabela extraível (precisaria de OCR, fora do escopo)."""
+    try:
+        import pdfplumber
+    except ImportError as e:   # pragma: no cover — a lib está no servidor; local pode faltar
+        raise ValueError("Leitura de PDF indisponível: instale pdfplumber (pip install pdfplumber).") from e
+    linhas: list[list[str]] = []
+    try:
+        with pdfplumber.open(io.BytesIO(dados)) as pdf:
+            for pagina in pdf.pages:
+                for tabela in pagina.extract_tables() or []:
+                    for linha in tabela:
+                        linhas.append([("" if c is None else str(c)).strip() for c in linha])
+    except Exception as e:     # arquivo corrompido / não é um PDF legível
+        raise ValueError(f"Não foi possível ler o PDF ({type(e).__name__}).") from e
+    if not linhas:
+        raise ValueError("Nenhuma tabela detectada no PDF. Se for um PDF escaneado/imagem, precisaria de "
+                         "OCR (fora do escopo) — use o Conversor ou exporte a planilha em .xlsx/.csv.")
+    largura = max(len(linha) for linha in linhas)
+    return pd.DataFrame([linha + [""] * (largura - len(linha)) for linha in linhas])
+
+
 def ler(fonte, nome_arquivo: str, aba: str | None = None, linha_cabecalho: int | None = None,
         dicas: list[set[str]] | None = None, modelo=None) -> tuple[pd.DataFrame, MetaLeitura]:
     """Devolve (DataFrame bruto com cabeçalho aplicado, metadados).
@@ -216,6 +239,11 @@ def ler(fonte, nome_arquivo: str, aba: str | None = None, linha_cabecalho: int |
         bruto, meta.encoding, meta.separador = _ler_csv(dados)
         grade, erros = _limpar_grade(bruto)
         est = estrutura.analisar(grade, dicas, linha_cabecalho)
+    elif ext == ".pdf":
+        grade, erros = _limpar_grade(_ler_pdf(dados))
+        est = estrutura.analisar(grade, dicas, linha_cabecalho)
+        meta.diagnostico.append("PDF: tabela(s) extraída(s) automaticamente — confira a leitura "
+                                "(PDF é menos preciso que .xlsx/.csv).")
     else:
         cfg_matriz = matriz.config_modelo(modelo)
         if cfg_matriz is not None:   # matriz conta × mês (FATURAMENTO/DRE/CUSTOS…): leitor próprio

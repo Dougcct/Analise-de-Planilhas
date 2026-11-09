@@ -55,7 +55,7 @@ def test_graficos_svg_sem_dados():
 
 # ---- pastas e «Período pela» --------------------------------------------------
 def test_listar_arquivos_ignora_temporarios(tmp_path):
-    for nome in ("b.xlsx", "a.csv", "~$a.xlsx", ".oculto.csv", "nota.pdf"):
+    for nome in ("b.xlsx", "a.csv", "~$a.xlsx", ".oculto.csv", "nota.docx"):
         (tmp_path / nome).write_bytes(b"x")
     assert [p.name for p in config.listar_arquivos(tmp_path)] == ["a.csv", "b.xlsx"]
     assert config.pasta_relatorio(None) == config.PASTA_ENTRADA
