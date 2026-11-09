@@ -6,7 +6,8 @@ import io
 import zipfile
 from pathlib import Path
 
-EXT_OK = {".xlsx", ".ods", ".csv", ".tsv", ".txt", ".pdf"}   # .xlsm fica de fora (macros); .xls legado idem
+EXT_OK = {".xlsx", ".ods", ".csv", ".tsv", ".txt", ".pdf", ".xls"}   # .xlsm fica de fora (macros)
+_MAGIC_OLE2 = b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"   # assinatura do .xls (formato OLE2 legado)
 MAX_BYTES = 25 * 1024 * 1024          # arquivo enviado
 MAX_DESCOMP = 300 * 1024 * 1024       # soma descompactada (xlsx/ods são ZIP)
 MAX_RAZAO = 100                       # razão de compressão suspeita
@@ -31,6 +32,9 @@ def validar(nome: str, conteudo: bytes) -> None:
     elif ext == ".pdf":
         if not conteudo.lstrip()[:8].startswith(b"%PDF"):
             raise ErroArquivo("Arquivo .pdf inválido (assinatura não reconhecida).")
+    elif ext == ".xls":
+        if not conteudo.startswith(_MAGIC_OLE2):
+            raise ErroArquivo("Arquivo .xls inválido (assinatura não reconhecida).")
     else:
         _validar_zip(conteudo)
 

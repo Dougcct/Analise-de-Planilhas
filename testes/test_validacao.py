@@ -50,6 +50,13 @@ def test_rejeita_pdf_sem_assinatura():
         validacao.validar("falso.pdf", b"isto nao e um pdf")
 
 
+def test_aceita_xls_legado():
+    validacao.validar("antigo.xls", b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1" + b"\x00" * 40)
+    assert ".xls" in validacao.EXT_OK
+    with pytest.raises(validacao.ErroArquivo, match="xls"):
+        validacao.validar("falso.xls", b"nao e um ole2")
+
+
 def test_xlsx_que_nao_e_zip():
     with pytest.raises(validacao.ErroArquivo, match="ZIP"):
         validacao.validar("falso.xlsx", b"isto nao e um zip")
