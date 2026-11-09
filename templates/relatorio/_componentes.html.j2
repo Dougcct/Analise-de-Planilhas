@@ -1,0 +1,69 @@
+{# Componentes reutilizáveis dos 4 layouts (cabeçalho, rodapé, KPIs, achados, tabela, bloco c/ gráfico). #}
+
+{% macro cabecalho(a) %}
+<header class="topo">
+  <div>
+    <span class="tag-tipo">{{ a.tipo }}</span>
+    <h1>{{ a.titulo }}</h1>
+    <div class="sub">{{ a.subtitulo or ("Relatório " ~ a.tipo) }}</div>
+  </div>
+  <div class="meta">Gerado em {{ a.gerado_em }}<br>v{{ a.versao }}</div>
+</header>
+{% endmacro %}
+
+{% macro kpis(lista) %}
+{% if lista %}
+<div class="kpis">
+  {% for k in lista %}
+  <div class="kpi {{ 'hero' if loop.first }}">
+    <div class="rot">{{ k.rotulo }}</div>
+    <div class="val">{{ k.valor }}</div>
+    {% if k.detalhe %}<div class="nota">{{ k.detalhe }}</div>{% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endmacro %}
+
+{% macro achados(lista) %}
+{% if lista %}<ul class="achados">{% for frase in lista %}<li>{{ frase }}</li>{% endfor %}</ul>{% endif %}
+{% endmacro %}
+
+{# tabela crua (só o <table>), reutilizada por tabela() e bloco() #}
+{% macro _tab(p) %}
+<table>
+  <thead><tr>{% for col in p.colunas %}<th class="{{ 'n' if col[2] }}">{{ col[0] }}</th>{% endfor %}</tr></thead>
+  <tbody>
+    {% for ln in p.linhas %}<tr>{% for col in p.colunas %}<td class="{{ 'n' if col[2] }}">{{ ln[col[1]] }}</td>{% endfor %}</tr>{% endfor %}
+  </tbody>
+</table>
+{% endmacro %}
+
+{% macro tabela(p) %}
+{% if p and p.linhas %}
+<section class="painel">
+  <h2>{{ p.titulo }}</h2>
+  {% if p.descricao %}<p class="desc">{{ p.descricao }}</p>{% endif %}
+  {{ _tab(p) }}
+</section>
+{% endif %}
+{% endmacro %}
+
+{# uma seção com título + (gráfico opcional) + (tabela opcional) + estado vazio #}
+{% macro bloco(titulo, fig, p) %}
+<section class="painel">
+  <h2>{{ titulo }}</h2>
+  {% if p and p.descricao %}<p class="desc">{{ p.descricao }}</p>{% endif %}
+  {% if fig %}{{ fig }}{% endif %}
+  {% if p and p.linhas %}{{ _tab(p) }}{% endif %}
+  {% if not fig and not (p and p.linhas) %}<p class="vazio">Sem dados neste recorte.</p>{% endif %}
+</section>
+{% endmacro %}
+
+{% macro rodape(a) %}
+<footer class="rodape">
+  {% if a.filtros %}<div class="filtros">{% for rot, val in a.filtros %}<span><b>{{ rot }}:</b> {{ val }}</span>{% endfor %}</div>{% endif %}
+  {% if a.arquivos %}<div class="fonte">Fonte: {{ a.arquivos|join(", ") }}</div>{% endif %}
+  <div class="lgpd">Uso interno — pode conter dados sensíveis. Não distribuir externamente (LGPD).</div>
+</footer>
+{% endmacro %}

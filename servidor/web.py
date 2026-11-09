@@ -24,7 +24,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
-from analise_planilha import __version__, relatorio_html, servico
+from analise_planilha import __version__, relatorio_html, relatorio_pdf, servico
 from analise_planilha import config as _cfg
 from analise_planilha.cerebro import layout as _cl
 from analise_planilha.cerebro import papeis as _cp
@@ -1090,6 +1090,35 @@ def conteudo_relatorio(slug: str, request: Request, s: Session = Depends(_sessao
                                       modo_editavel=modo_editavel, slug=rel.slug, versao_ativa=versao_ativa,
                                       tem_versao_editada=bool(rel.versao_editada), somente_editada=somente_editada)
     return HTMLResponse(html)
+
+
+@router.get("/r/{slug}/modelo")
+def modelo_relatorio(slug: str, request: Request, tipo: str = "executivo", s: Session = Depends(_sessao)):
+    """Baixa um dos 4 modelos print-first (executivo/gerencial/analitico/auditoria) como PDF
+    (WeasyPrint, no servidor) — ou, se a lib não estiver disponível, devolve o HTML para imprimir."""
+    srv = _srv()
+    escopo = _escopo(request, s)
+    if escopo is None or escopo.precisa_trocar_senha:
+        return HTMLResponse("<p>Sessão expirada.</p>", status_code=401)
+    if tipo not in relatorio_pdf.TIPOS:
+        return HTMLResponse("<p>Tipo de relatório inválido.</p>", status_code=400)
+    rel = RepoRelatorios(s, escopo).obter(slug)
+    if rel is None:
+        return HTMLResponse("<p>Relatório não encontrado.</p>", status_code=404)
+    ds = srv._dataset_do_relatorio(s, rel)
+    f = _ler_filtros_query(request, ds)
+    if not escopo.pode_setor(rel.centro_custo_id):
+        ac = srv.acesso_vigente(s, escopo.usuario_id, rel.id)
+        if ac is not None and ac.anonimizar:
+            f.anonimizar = True                      # forçado no servidor (LGPD)
+    _audit(s, escopo, "baixar_modelo", f"web:{slug}:{tipo}")
+    s.commit()
+    analise = servico.analisar(ds, f)
+    pdf = relatorio_pdf.montar_pdf_bytes(analise, rel.nome, tipo)
+    if pdf is not None:
+        return Response(content=pdf, media_type="application/pdf",
+                        headers={"Content-Disposition": f'inline; filename="{slug}_{tipo}.pdf"'})
+    return HTMLResponse(relatorio_pdf.montar_html(analise, rel.nome, tipo))   # sem WeasyPrint: HTML
 
 
 @router.get("/r/{slug}/dados.csv")

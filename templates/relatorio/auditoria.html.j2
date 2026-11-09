@@ -1,0 +1,15 @@
+{% extends "relatorio/_base_print.html.j2" %}
+{% import "relatorio/_componentes.html.j2" as c %}
+{% block corpo %}
+{{ c.cabecalho(a) }}
+{% if a.alertas %}
+<section class="painel">
+  <h2>Alertas de validação</h2>
+  <ul class="achados alertas">{% for al in a.alertas %}<li>[{{ al.nivel }}] {{ al.texto }}</li>{% endfor %}</ul>
+</section>
+{% endif %}
+{% if a.atipicos_barra %}<section class="painel"><h2>Lançamentos atípicos (por magnitude)</h2>{{ a.atipicos_barra }}</section>{% endif %}
+{% for p in a.paineis %}{{ c.tabela(p) }}{% endfor %}
+{% if not a.paineis and not a.alertas %}<p class="vazio">Nenhum lançamento atípico ou item de conferência neste recorte.</p>{% endif %}
+{{ c.rodape(a) }}
+{% endblock %}

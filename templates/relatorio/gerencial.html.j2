@@ -1,0 +1,9 @@
+{% extends "relatorio/_base_print.html.j2" %}
+{% import "relatorio/_componentes.html.j2" as c %}
+{% block corpo %}
+{{ c.cabecalho(a) }}
+{{ c.bloco("Curva ABC das despesas", a.abc_fig or a.abc_barra, a.abc) }}
+<div class="quebra-antes"></div>
+{{ c.bloco("Variações que pioram o resultado", a.variacoes_barra, a.variacoes) }}
+{{ c.rodape(a) }}
+{% endblock %}

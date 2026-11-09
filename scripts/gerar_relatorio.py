@@ -19,7 +19,7 @@ _RAIZ = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_RAIZ / "src"))
 sys.path.insert(0, str(_RAIZ / "dominio"))   # pacote Agentes (Especialistas por Setor)
 
-from analise_planilha import __version__, config, relatorio_html, servico
+from analise_planilha import __version__, config, relatorio_html, relatorio_pdf, servico
 from analise_planilha.modelo import carregar_modelo, listar_modelos
 from analise_planilha.modelos import Filtros
 from analise_planilha.normalizacao import chave_texto
@@ -39,6 +39,10 @@ def main() -> int:
     p.add_argument("--dim", action="append", default=[], metavar="COLUNA=VALOR",
                    help="filtro por dimensão, repetível (ex.: --dim \"Convênio=AMIL\")")
     p.add_argument("--anonimizar", action="store_true", help="mascara nomes (iniciais)")
+    p.add_argument("--tipo", choices=relatorio_pdf.TIPOS,
+                   help="gera um dos 4 modelos print-first (executivo/gerencial/analitico/auditoria)")
+    p.add_argument("--pdf", action="store_true",
+                   help="com --tipo, tenta gerar PDF (WeasyPrint); sem a lib, cai para HTML")
     args = p.parse_args()
 
     modelos = listar_modelos()
@@ -82,6 +86,16 @@ def main() -> int:
     analise = servico.analisar(ds, filtros)
     base = servico.visiveis(servico.aplicar_filtros(ds, filtros)).reset_index(drop=True)
     fmt = {c.nome: FMT_TIPO[c.tipo] for c in ds.esquema.colunas if c.tipo in FMT_TIPO}
+
+    if args.tipo:   # um dos 4 modelos print-first (versão de teste em dados/saida/_teste_layouts)
+        nome = chave_texto(args.relatorio) or "planilhas"
+        dest_dir = args.saida or (config.PASTA_SAIDA / "_teste_layouts")
+        destino = dest_dir / f"{nome}_{args.tipo}_{date.today():%Y%m%d}"
+        caminho, formato = relatorio_pdf.gerar(analise, args.relatorio, args.tipo, destino,
+                                               fmt=("pdf" if args.pdf else "auto"))
+        print(f"[{args.relatorio}] modelo «{args.tipo}» gerado ({formato.upper()}): {caminho}")
+        return 0
+
     destino = None
     if args.saida:
         args.saida.mkdir(parents=True, exist_ok=True)

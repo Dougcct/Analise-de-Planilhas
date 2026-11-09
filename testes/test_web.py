@@ -392,6 +392,17 @@ def test_web_enviar_novo_e_publicar(web):
     assert "7 registro" in c.get("/web/r/cesariana-teste-web/conteudo").text
 
 
+def test_web_baixar_modelo_relatorio(web):
+    """Rota /r/{slug}/modelo: 4 tipos print-first. Sem WeasyPrint no teste, cai para HTML (200)."""
+    c = _cli("gestor.fat")
+    cid = _subir(c, modo="novo", nome="Modelo PDF Teste", modelo="resumo_cesariana", n=7)
+    c.post(f"/web/enviar/previa/{cid}/publicar")
+    r = c.get("/web/r/modelo-pdf-teste/modelo?tipo=executivo")
+    assert r.status_code == 200
+    assert "executivo" in r.text.lower()
+    assert c.get("/web/r/modelo-pdf-teste/modelo?tipo=xpto").status_code == 400   # tipo inválido
+
+
 def test_web_enviar_atualizar_existente(web):
     """Reenviar a MESMA planilha (mesmo nome) substitui a versão anterior (que vira backup)."""
     c = _cli("gestor.fat")

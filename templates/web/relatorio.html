@@ -33,6 +33,14 @@
     {% endif %}
     <button type="button" class="btn-sec btn-cheia" onclick="imprimirRelatorio()" style="padding:8px 14px" title="Imprimir ou salvar como PDF">
       🖨 Imprimir</button>
+    <select class="btn-sec" style="padding:8px 12px" title="Baixar um modelo pronto (PDF)"
+            onchange="if(this.value){window.open('/web/r/{{ slug }}/modelo?tipo='+this.value+'{{ ('&'+query_conteudo[1:]) if query_conteudo else '' }}','_blank');this.selectedIndex=0;}">
+      <option value="">📄 Baixar modelo…</option>
+      <option value="executivo">Executivo (C-Level)</option>
+      <option value="gerencial">Gerencial (Custos)</option>
+      <option value="analitico">Analítico (DRE, paisagem)</option>
+      <option value="auditoria">Auditoria (atípicos)</option>
+    </select>
     <button type="button" class="btn-sec btn-cheia" onclick="telaCheiaRelatorio()" style="padding:8px 14px">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="15" height="15"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3" stroke-linecap="round" stroke-linejoin="round"/></svg>
       Tela cheia</button>

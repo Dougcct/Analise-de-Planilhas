@@ -10,6 +10,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
+# libs nativas do WeasyPrint (PDF dos relatórios): Pango/Cairo/GDK-PixBuf + fontes
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        libpango-1.0-0 libpangocairo-1.0-0 libgdk-pixbuf-2.0-0 libcairo2 libffi8 \
+        fonts-dejavu-core \
+    && rm -rf /var/lib/apt/lists/*
+
 # 1) dependências primeiro (camada reaproveitada enquanto o requirements não muda)
 COPY servidor/requirements.txt servidor/requirements.txt
 RUN pip install -r servidor/requirements.txt

@@ -1,0 +1,9 @@
+{% extends "relatorio/_base_print.html.j2" %}
+{% import "relatorio/_componentes.html.j2" as c %}
+{% block corpo %}
+{{ c.cabecalho(a) }}
+{% if a.evolucao_fig %}<section class="painel"><h2>Evolução do resultado</h2>{{ a.evolucao_fig }}</section>{% endif %}
+{% for p in a.paineis %}{{ c.tabela(p) }}{% endfor %}
+{% if not a.paineis %}<p class="vazio">Sem demonstrativo/evolução neste recorte.</p>{% endif %}
+{{ c.rodape(a) }}
+{% endblock %}
