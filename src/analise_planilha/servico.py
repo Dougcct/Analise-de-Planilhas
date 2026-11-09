@@ -10,10 +10,10 @@ from pathlib import Path
 
 import pandas as pd
 
-from . import agentes, cerebro, config, especificacao, indicadores, inferencia, leitura, metas, tratamento
+from . import cerebro, config, especificacao, indicadores, inferencia, leitura, metas, tratamento
 from .cerebro import dominios, nomes_mv
 from .modelo import Modelo
-from .modelos import Alerta, Analise, Dataset, Esquema, Filtros, MetaLeitura
+from .modelos import Alerta, Analise, Dataset, Esquema, Filtros, MetaLeitura, Painel
 from .perfil import alertas_qualidade
 
 AVISO = config.PREFIXO_AVISO    # diagnóstico com este prefixo vira Alerta de nível «aviso»
@@ -61,8 +61,26 @@ def _ler_consolidado(fonte, nome_arquivo: str, modelo: Modelo, dicas) -> tuple[p
     return base, meta_final, aproximados, ignoradas
 
 
+AGENTE_NENHUM = "__nenhum__"   # escolha explícita do usuário: não usar agente (fallback puro)
+
+
+def _agente_para(colunas, contexto: str = "", forcado: str | None = None):
+    """Agente de setor para esta planilha (Custos/Faturamento…), ou None (fallback transparente).
+    `forcado` = escolha do usuário na prévia: um nome/chave de agente, ou AGENTE_NENHUM para desligar;
+    vazio/None = automático (router). O pacote `Agentes` vive na raiz; ausente → None (roda como hoje)."""
+    if forcado == AGENTE_NENHUM:
+        return None
+    try:
+        from Agentes import por_nome, resolver
+    except ImportError:
+        return None
+    if forcado:
+        return por_nome(forcado)
+    return resolver(contexto=contexto, colunas=list(colunas))
+
+
 def _ler_mapeado(fonte, nome_arquivo: str, aba: str | None, linha_cabecalho: int | None,
-                 modelo: Modelo | None):
+                 modelo: Modelo | None, agente_forcado: str | None = None):
     """Lê UM arquivo e aplica o mapeamento do modelo → (bruto, meta, tipos, faltando, aproximados).
     `bruto` já traz a coluna de rastreabilidade (linha real na planilha) e índice 0..n."""
     dicas = modelo.dicas_cabecalho() if modelo else None
@@ -77,7 +95,7 @@ def _ler_mapeado(fonte, nome_arquivo: str, aba: str | None, linha_cabecalho: int
         bruto, meta = leitura.ler(fonte, nome_arquivo, aba, linha_cabecalho, dicas=dicas, modelo=modelo)
         aproximados = []
         if modelo is None:    # sem modelo: um Agente de setor pode assumir a limpeza (Escudo de Entrada)
-            agente = agentes.resolver(colunas=list(bruto.columns))
+            agente = _agente_para(bruto.columns, forcado=agente_forcado)
             if agente is not None:
                 bruto, notas_ag = agente.preparar(bruto)
                 meta.diagnostico += [f"Agente «{agente.nome}»: {n}" for n in notas_ag]
@@ -90,22 +108,25 @@ def _ler_mapeado(fonte, nome_arquivo: str, aba: str | None, linha_cabecalho: int
 
 def carregar(fonte, nome_arquivo: str, aba: str | None = None, overrides: dict[str, str] | None = None,
              linha_cabecalho: int | None = None, modelo: Modelo | None = None, *,
-             conhecimento=None, contexto: str = "", correcoes: dict[str, str] | None = None) -> Dataset:
+             conhecimento=None, contexto: str = "", correcoes: dict[str, str] | None = None,
+             agente: str | None = None) -> Dataset:
     """Lê, tipa e trata a planilha.
 
     Com `modelo` antigo (v1), os cabeçalhos são mapeados para os rótulos canônicos e as regras do .toml
     valem. Sem modelo (ou modelo v2), o Cérebro entende a planilha: layout, papel de cada coluna e grão.
     `overrides` (tipo físico) e `correcoes` (papel, vindas da prévia) são correções do usuário e vencem.
     `conhecimento` = base aprendida (padrão: a ativa); `contexto` = "setor/tipo de documento".
+    `agente` = escolha do usuário na prévia (nome/chave de agente, AGENTE_NENHUM, ou None = automático).
     """
-    bruto, meta, tipos, faltando, aproximados = _ler_mapeado(fonte, nome_arquivo, aba, linha_cabecalho, modelo)
+    bruto, meta, tipos, faltando, aproximados = _ler_mapeado(fonte, nome_arquivo, aba, linha_cabecalho,
+                                                             modelo, agente)
     return _processar(bruto, meta, tipos, faltando, aproximados, overrides, modelo,
-                      conhecimento=conhecimento, contexto=contexto, correcoes=correcoes)
+                      conhecimento=conhecimento, contexto=contexto, correcoes=correcoes, agente_forcado=agente)
 
 
 def carregar_varios(arquivos: list[tuple], overrides: dict[str, str] | None = None,
                     modelo: Modelo | None = None, *, conhecimento=None, contexto: str = "",
-                    correcoes: dict[str, str] | None = None) -> Dataset:
+                    correcoes: dict[str, str] | None = None, agente: str | None = None) -> Dataset:
     """Vários arquivos com o mesmo layout (ex.: um por ano) numa base só.
 
     Cada arquivo é lido como em `carregar` (aba automática) e ganha a coluna «Arquivo de origem»;
@@ -129,7 +150,7 @@ def carregar_varios(arquivos: list[tuple], overrides: dict[str, str] | None = No
 
     extra = {"conhecimento": conhecimento, "contexto": contexto, "correcoes": correcoes}
     if len(usaveis) == 1:
-        ds = carregar(usaveis[0][0], usaveis[0][1], overrides=overrides, modelo=modelo, **extra)
+        ds = carregar(usaveis[0][0], usaveis[0][1], overrides=overrides, modelo=modelo, agente=agente, **extra)
         ds.meta.diagnostico += nota_ign
         return ds
 
@@ -138,7 +159,7 @@ def carregar_varios(arquivos: list[tuple], overrides: dict[str, str] | None = No
     abas = []
     extras_lista: list[dict] = []
     for fonte, nome in usaveis:
-        bruto, meta, t, falt, aprox = _ler_mapeado(fonte, nome, None, None, modelo)
+        bruto, meta, t, falt, aprox = _ler_mapeado(fonte, nome, None, None, modelo, agente)
         extras_lista.append(meta.extras)
         bruto.insert(0, config.COL_ARQUIVO, nome)
         partes.append(bruto)
@@ -165,7 +186,7 @@ def carregar_varios(arquivos: list[tuple], overrides: dict[str, str] | None = No
         if falt - set(faltando):
             meta.diagnostico.append(f"[{nome}] sem as colunas: {', '.join(sorted(falt - set(faltando)))}.")
     tipos[config.COL_ARQUIVO] = "categorico"
-    return _processar(base, meta, tipos, faltando, aproximados, overrides, modelo, **extra)
+    return _processar(base, meta, tipos, faltando, aproximados, overrides, modelo, agente_forcado=agente, **extra)
 
 
 def _versoes_sobrepostas(partes: list[pd.DataFrame], extras: list[dict], modelo, nomes: list[str]):
@@ -209,8 +230,11 @@ def _juntar_extras(lista: list[dict]) -> dict:
 
 def _processar(bruto: pd.DataFrame, meta: MetaLeitura, tipos: dict[str, str], faltando: list[str],
                aproximados: list, overrides: dict[str, str] | None, modelo: Modelo | None, *,
-               conhecimento=None, contexto: str = "", correcoes: dict[str, str] | None = None) -> Dataset:
+               conhecimento=None, contexto: str = "", correcoes: dict[str, str] | None = None,
+               agente_forcado: str | None = None) -> Dataset:
     """Tipagem, especificação e tratamento — comum a `carregar` e `carregar_varios`."""
+    # sem modelo, o Agente de setor que limpou a planilha também analisa o setor no relatório
+    agente = _agente_para(bruto.columns, contexto, agente_forcado) if modelo is None else None
     meta.diagnostico += [f"Coluna «{orig}» associada a «{rot}» do modelo por semelhança de nome."
                          for orig, rot in dict.fromkeys(aproximados)]
     if modelo is not None and modelo.apenas_mapeadas:   # LGPD: descarta colunas não declaradas (CPF/banco/PIX…)
@@ -242,17 +266,17 @@ def _processar(bruto: pd.DataFrame, meta: MetaLeitura, tipos: dict[str, str], fa
     df[config.COL_LINHA] = pd.to_numeric(bruto[config.COL_LINHA]).astype("Int64")  # nº, não texto
     if cerebro.ativo(modelo):
         return _processar_cerebro(df, esquema, bruto, meta, tipos, faltando, overrides, modelo,
-                                  conhecimento, contexto, correcoes)
+                                  conhecimento, contexto, correcoes, agente)
     spec =(especificacao.de_modelo(modelo, df, esquema) if modelo
             else especificacao.automatica(df, esquema))
     meta.diagnostico += spec.avisos
     df, esquema, problemas = tratamento.aplicar(df, bruto, esquema, spec, meta.aba)
     return Dataset(df=df, esquema=esquema, meta=meta, modelo=modelo, colunas_faltando=faltando,
-                   spec=spec, problemas=problemas)
+                   spec=spec, problemas=problemas, agente=agente)
 
 
 def _processar_cerebro(df, esquema, bruto, meta, tipos, faltando, overrides, modelo,
-                       conhecimento, contexto, correcoes) -> Dataset:
+                       conhecimento, contexto, correcoes, agente=None) -> Dataset:
     """Caminho do Cérebro: papéis → tipo físico coerente com o papel → grão → especificação → tratamento."""
     extras = meta.extras or {}
     tipo_layout = extras.get("layout", cerebro.layout.PLANA)
@@ -284,7 +308,7 @@ def _processar_cerebro(df, esquema, bruto, meta, tipos, faltando, overrides, mod
     ref = df if ent.grao.consolidado else bruto
     df, esquema, problemas = tratamento.aplicar(df, ref, esquema, spec, meta.aba)
     return Dataset(df=df, esquema=esquema, meta=meta, modelo=modelo, colunas_faltando=faltando,
-                   spec=spec, problemas=problemas, entendimento=ent)
+                   spec=spec, problemas=problemas, entendimento=ent, agente=agente)
 
 
 # ---- recorte -----------------------------------------------------------------------------------
@@ -470,6 +494,48 @@ def _analisar_serie_cerebro(ds: Dataset, df: pd.DataFrame, spec, filtros: Filtro
     )
 
 
+# ---- análise do Agente de setor (dobra achados/painéis/alertas no relatório) --------------------
+_MOEDA_HINT = ("custo", "valor", "orçado", "orcado", "realizado", "desvio", "glosa", "cobrado",
+               "recursado", "liberado", "empenhado", "ticket", "total", "r$")
+_INT_HINT = ("contas", "conta(s)", "qtd", "quantidade", "registros", "lançamentos", "linhas")
+
+
+def _formatos_auto(tab) -> dict[str, str]:
+    """Infere o formato de cada coluna da tabela do agente pelo nome (as % já vêm em 0–100)."""
+    fmt: dict[str, str] = {}
+    for c in tab.columns:
+        k = str(c).lower()
+        if "%" in k or "σ" in k or "acumulado" in k:
+            fmt[c] = "dec"
+        elif any(h in k for h in _MOEDA_HINT):
+            fmt[c] = "moeda"
+        elif any(h in k for h in _INT_HINT):
+            fmt[c] = "int"
+    return fmt
+
+
+def _analise_do_agente(ds: Dataset, df) -> tuple[list[str], list[Alerta], list[Painel]]:
+    """Achados/alertas/painéis do Agente de setor para este recorte (vazio se não há agente).
+    Nunca deixa um erro do agente quebrar o relatório (fallback transparente)."""
+    agente = getattr(ds, "agente", None)
+    if agente is None:
+        return [], [], []
+    try:
+        res = agente.analisar(df)
+    except Exception:   # noqa: BLE001  — agente é best-effort; relatório segue como hoje
+        return [], [], []
+    achados = list(res.get("achados") or [])
+    alertas = [Alerta("aviso", t) for t in (res.get("alertas") or [])]
+    aba = f"Análise de {agente.setor}" if getattr(agente, "setor", "") else "Análise do setor"
+    paineis: list[Painel] = []
+    for titulo, tab in (res.get("paineis") or {}).items():
+        if tab is None or getattr(tab, "empty", True):
+            continue
+        paineis.append(Painel(aba=aba, titulo=titulo, tabela=tab,
+                              formatos=_formatos_auto(tab), aberta=True))
+    return achados, alertas, paineis
+
+
 def analisar(ds: Dataset, filtros: Filtros | None = None, metas_cfg: dict | None = None) -> Analise:
     """Indicadores do recorte. `metas_cfg` = metas do gestor (padrão: as gravadas em config/metas.json
     para este relatório); elas definem a estatística de tempo e os alvos ✔/✗."""
@@ -500,6 +566,9 @@ def analisar(ds: Dataset, filtros: Filtros | None = None, metas_cfg: dict | None
     alertas = alertas_de_leitura(ds) + alertas_qualidade(df[[c.nome for c in originais.colunas]], originais,
                                                          vazio_esperado)
     kpis, paineis, achados, resultado_metas = indicadores.montar(df, spec, ds.esquema, problemas)
+    # Agente de setor (Custos/Faturamento…): achados e painéis do setor vêm primeiro; alertas somam
+    ach_ag, alertas_ag, paineis_ag = _analise_do_agente(ds, df)
+    achados, paineis, alertas = ach_ag + achados, paineis_ag + paineis, alertas + alertas_ag
     return Analise(
         kpis=kpis, paineis=paineis, alertas=alertas, esquema=ds.esquema,
         linhas=len(df), colunas=len(originais.colunas),

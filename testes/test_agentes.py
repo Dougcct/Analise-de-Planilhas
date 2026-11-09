@@ -6,9 +6,10 @@ from __future__ import annotations
 
 import pandas as pd
 
-from analise_planilha import agentes
-from analise_planilha.agentes.base_agent import _num_ptbr
-from analise_planilha.agentes.faturamento.rules import AgenteFaturamento
+import Agentes as agentes
+from Agentes.base_agent import _num_ptbr
+from Agentes.custos.rules import AgenteCustos
+from Agentes.faturamento.rules import AgenteFaturamento
 
 
 def _planilha_suja() -> pd.DataFrame:
@@ -109,3 +110,109 @@ def test_faturamento_pareto_da_glosa():
     r = AgenteFaturamento().analisar(df)
     assert "Pareto da glosa (80%)" in r["paineis"]
     assert any("80% da glosa" in a for a in r["achados"])
+
+
+# ---- Agente de Custos --------------------------------------------------------------------------
+def test_router_reconhece_custos():
+    assert isinstance(agentes.resolver(contexto="Custos Hospitalares"), AgenteCustos)
+    cols = ["Centro de Custo", "Conta Contabil", "Competencia", "Orcado", "Realizado"]
+    assert isinstance(agentes.resolver(colunas=cols), AgenteCustos)
+
+
+def test_custos_orcado_realizado_e_alertas():
+    df = pd.DataFrame({
+        "centro_custo": ["UTI", "UTI", "Pronto Socorro", "Lavanderia", "Lavanderia", "Farmácia"],
+        "vl_orcado":    [100000, 0, 50000, 10000, 0, 0],
+        "vl_realizado": [130000, 5000, 48000, 9000, 2000, 8000],
+    })
+    r = AgenteCustos().analisar(df)
+    achados = " ".join(r["achados"]).lower()
+    alertas = " ".join(r["alertas"]).lower()
+    assert "desvio" in achados
+    assert any("Orçado × Realizado" in k for k in r["paineis"])
+    assert any("Curva ABC" in k for k in r["paineis"])
+    assert "estouro" in alertas          # UTI (+35%) e Lavanderia (+10%) estouraram
+    assert "sem orçamento" in alertas    # Farmácia gastou sem orçar
+
+
+def test_custos_atipicos():
+    # 20 lançamentos ~100 na mesma conta + 1 fora da curva → atípico (z ≥ 3 possível com n alto)
+    valores = [100.0] * 20 + [100000.0]
+    df = pd.DataFrame({"conta_contabil": ["3.1.1.01"] * 21, "vl_realizado": valores})
+    r = AgenteCustos().analisar(df)
+    assert "Lançamentos atípicos (fora do padrão da conta)" in r["paineis"]
+    assert any("fora do padrão" in a for a in r["alertas"])
+
+
+def test_custos_evolucao_por_competencia():
+    df = pd.DataFrame({
+        "centro_custo": ["UTI", "UTI", "UTI"],
+        "competencia": ["2026-01", "2026-02", "2026-03"],
+        "vl_realizado": [100000.0, 120000.0, 90000.0],
+    })
+    r = AgenteCustos().analisar(df)
+    assert "Evolução do custo por competência" in r["paineis"]
+    assert any("2026-03" in a for a in r["achados"])
+
+
+def test_servico_dobra_agente_custos_no_relatorio():
+    """Sem modelo, o Agente de Custos limpa a planilha E injeta seus painéis/achados na Análise."""
+    from analise_planilha import servico
+
+    cols = ["Centro de Custo", "Conta Contabil", "Competencia", "Orcado", "Realizado"]
+    assert isinstance(agentes.resolver(colunas=cols), AgenteCustos)
+
+    linhas = ["Centro de Custo;Conta Contabil;Competencia;Orcado;Realizado"]
+    for i in range(6):
+        linhas.append(f"UTI;3.1.1;2026-0{i % 3 + 1};100000,00;{130000 + i * 1000},00")
+        linhas.append(f"Lavanderia;3.1.2;2026-0{i % 3 + 1};10000,00;9000,00")
+    csv = ("\n".join(linhas) + "\n").encode("utf-8-sig")
+
+    ds = servico.carregar(csv, "custos.csv")
+    assert ds.agente is not None and ds.agente.setor == "Custos"
+    an = servico.analisar(ds)
+    assert any(p.aba == "Análise de Custos" for p in an.paineis)
+    assert any("desvio" in a.lower() for a in an.achados)
+
+
+# ---- roteamento robusto (passo 3) --------------------------------------------------------------
+def test_router_por_nome():
+    assert isinstance(agentes.por_nome("custos"), AgenteCustos)
+    assert isinstance(agentes.por_nome("Faturamento Hospitalar"), AgenteFaturamento)
+    assert agentes.por_nome("") is None
+    assert agentes.por_nome("inexistente") is None
+
+
+def test_router_contexto_vence_densidade():
+    # colunas claramente de faturamento, mas o setor do relatório é Custos → o contexto manda
+    cols = ["Guia", "Convenio", "Vl Cobrado", "Vl Glosa", "Procedimento"]
+    assert isinstance(agentes.resolver(colunas=cols), AgenteFaturamento)
+    assert isinstance(agentes.resolver(contexto="Custos Hospitalares", colunas=cols), AgenteCustos)
+
+
+def test_router_candidatos_marca_automatico():
+    cols = ["Centro de Custo", "Conta Contabil", "Competencia", "Orcado", "Realizado"]
+    cands = agentes.candidatos(colunas=cols)
+    assert {c["chave"] for c in cands} == {"custos", "faturamento"}
+    auto = [c for c in cands if c["auto"]]
+    assert len(auto) == 1 and auto[0]["chave"] == "custos"
+    # ordenado por score desc: o automático vem primeiro
+    assert cands[0]["chave"] == "custos"
+
+
+# ---- override do usuário na prévia (passo 2) ---------------------------------------------------
+def test_servico_forcar_e_desligar_agente():
+    from analise_planilha import servico
+
+    csv = ("Centro de Custo;Conta Contabil;Competencia;Orcado;Realizado\n"
+           "UTI;3.1.1;2026-01;100000,00;130000,00\n"
+           "Lavanderia;3.1.2;2026-01;10000,00;9000,00\n").encode("utf-8-sig")
+
+    # automático → Custos
+    assert servico.carregar(csv, "c.csv").agente.setor == "Custos"
+    # forçar Faturamento (mesmo sendo planilha de custos) → respeita a escolha
+    assert servico.carregar(csv, "c.csv", agente="faturamento").agente.setor == "Faturamento"
+    # desligar → nenhum agente e nenhuma nota de Escudo no diagnóstico
+    ds = servico.carregar(csv, "c.csv", agente=servico.AGENTE_NENHUM)
+    assert ds.agente is None
+    assert not any("Agente" in d for d in ds.meta.diagnostico)

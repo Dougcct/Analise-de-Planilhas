@@ -34,6 +34,9 @@
   .msg-txt{white-space:pre-wrap;font-size:14px;line-height:1.55}
   .msg-img{display:block;margin-top:8px;border:1px solid var(--borda);border-radius:var(--raio-s);overflow:hidden;max-width:320px}
   .msg-img img{display:block;width:100%;max-height:240px;object-fit:contain;background:var(--superficie)}
+  .msg-anexo{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:6px 12px;font-size:13px;font-weight:600;
+    text-decoration:none;color:var(--acento-texto);background:var(--superficie);border:1px solid var(--borda);border-radius:var(--raio-s);word-break:break-all}
+  .msg-anexo:hover{background:var(--marca-clara);border-color:var(--marca)}
 
   details.responder{margin-top:12px}
   details.responder>summary{display:inline-flex;align-items:center;gap:7px;cursor:pointer;list-style:none;
@@ -91,6 +94,7 @@
         <div class="msg-cab">{% if m.de_adm %}<span class="papel">Equipe</span>{% endif %}<b>{{ m.autor }}</b><span class="qd">{{ m.quando }}</span></div>
         <div class="msg-txt">{{ m.texto }}</div>
         {% if m.tem_img %}<a class="msg-img" href="/web/sugestao-imagem/{{ m.id }}" target="_blank" rel="noopener"><img src="/web/sugestao-imagem/{{ m.id }}" alt="Imagem da mensagem"></a>{% endif %}
+        {% if m.tem_anexo %}<a class="msg-anexo" href="/web/sugestao-anexo/{{ m.id }}">📎 {{ m.anexo_nome }}</a>{% endif %}
       </div>
       {% endfor %}
     </div>
@@ -105,6 +109,11 @@
           <input type="file" name="imagem" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
           <span class="dica">ou cole um print com <kbd>Ctrl</kbd>+<kbd>V</kbd></span>
           <div class="rf-previa" hidden><button type="button" class="btn-perigo" data-clear>Remover</button><img alt="Prévia"></div>
+        </div>
+        <div class="rf-anexo">
+          <button type="button" class="btn-sec" data-pick-arq>📄 Anexar arquivo</button>
+          <input type="file" name="anexo" accept=".xlsx,.xls,.xlsm,.ods,.csv,.tsv,.txt,.pdf,.json,.zip" hidden>
+          <span class="dica" data-arq-nome>Planilha ou arquivo (até 25 MB)</span>
         </div>
         <div class="pe">
           <button type="submit">Enviar resposta</button>
@@ -153,6 +162,13 @@
     pick.addEventListener("click", function(){ inp.click(); });
     inp.addEventListener("change", function(){ mostrar(inp.files[0]); });
     clear.addEventListener("click", function(){ try{ inp.value=""; }catch(e){} mostrar(null); });
+    var pickArq = form.querySelector('[data-pick-arq]'), arq = form.querySelector('input[name=anexo]'),
+        arqNome = form.querySelector('[data-arq-nome]');
+    if(pickArq && arq){
+      pickArq.addEventListener("click", function(){ arq.click(); });
+      arq.addEventListener("change", function(){
+        arqNome.textContent = arq.files && arq.files[0] ? ("📎 " + arq.files[0].name) : "Planilha ou arquivo (até 25 MB)"; });
+    }
     form.addEventListener("paste", function(ev){
       var items = (ev.clipboardData||{}).items || [];
       for(var i=0;i<items.length;i++){

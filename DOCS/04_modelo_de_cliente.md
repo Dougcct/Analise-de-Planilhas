@@ -8,7 +8,7 @@ um cliente em duas camadas:
    de qualidade e metas importam. É o que transforma estatística genérica em **indicadores de gestão**
    (mesmo padrão do projeto *Garantia de Atendimento* — ver [10](10_indicadores.md)).
 
-Os modelos ficam em `config/modelos/<cliente>.toml` e aparecem no seletor da janela. **Exemplo completo
+Os modelos ficam em `config/modelos/<cliente>.toml` e aparecem no seletor da web. **Exemplo completo
 com todas as seções:** `config/modelos/garantia_atendimento.toml.sample` (reproduz a Garantia só com
 configuração). Sem modelo, as regras são **deduzidas** dos tipos (ver "Sem modelo" abaixo).
 
@@ -205,7 +205,7 @@ regras no modelo.
 
 ## Dois jeitos de criar um modelo
 
-**A) Pelo assistente da janela:** abra sem modelo → corrija tipos na aba **Tipos** → **Salvar como
+**A) Pelo assistente da web:** abra sem modelo → corrija os tipos → **Salvar como
 modelo…** → gera as `[[coluna]]`. Depois acrescente as regras (passo B).
 
 **B) Editando o `.toml`:** copie `exemplo.toml.sample` (mínimo) ou `garantia_atendimento.toml.sample`

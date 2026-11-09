@@ -58,5 +58,5 @@ descartava em silêncio; aqui ela conta e aparece em Qualidade com aba e linha.
 
 ## Privacidade (LGPD)
 
-"Anonimizar nomes" (janela) troca a entidade por iniciais em toda a análise, na aba Dados, na
+"Anonimizar nomes" troca a entidade por iniciais em toda a análise, nos dados, na
 recorrência, nas ocorrências de qualidade e no relatório HTML.

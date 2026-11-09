@@ -25,11 +25,11 @@ encoding, separador, abas, células mescladas).
 | Várias abas (capa, instruções, base, listas ocultas) | Escolhe a aba da base (maior tabela; com modelo, a que mais casa) | "Aba «X» escolhida automaticamente" |
 | CSV com preâmbulo / separador `;` `,` `TAB` `\|` | Separador pela consistência do nº de campos; **nenhuma linha é perdida** | — |
 | Datas mistas (nativas + texto, ou 2 formatos) | Converte todas (formato dominante primeiro) | — |
-| Data como número serial do Excel (45292) em coluna "Data…" | Converte para data | evidência na aba Tipos |
+| Data como número serial do Excel (45292) em coluna "Data…" | Converte para data | evidência no diagnóstico |
 | Formato "largo" (colunas Jan/26, Fev/26, Mar/26…) | Mantém, mas sinaliza | "Formato «largo»" |
 
 **Nada é descartado em silêncio:** tudo vai para `MetaLeitura.diagnostico` e aparece como alerta
-(nível *info*) na janela e no relatório. Planilha limpa não gera diagnóstico.
+(nível *info*) na web e no relatório HTML. Planilha limpa não gera diagnóstico.
 
 ## Como o cabeçalho é escolhido
 
@@ -63,7 +63,7 @@ O modelo deixa a leitura **guiada** ([04](04_modelo_de_cliente.md)):
 - Tabelas **lado a lado** na mesma aba (separadas por coluna vazia) são lidas como uma só.
 - Formato largo é só sinalizado; ainda não é "despivotado" para uma coluna de período.
 - Cabeçalho com 3+ níveis: só os dois últimos níveis são combinados.
-- A linha do cabeçalho pode ser forçada por código (`linha_cabecalho=`), ainda não pela janela.
+- A linha do cabeçalho pode ser forçada por código (`linha_cabecalho=`), ainda não pela web.
 
 ## Onde ajustar
 

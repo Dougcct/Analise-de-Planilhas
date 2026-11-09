@@ -486,6 +486,7 @@
     .anexo-dica{font-size:12px;color:var(--fraco);margin-top:6px}
     .anexo-dica kbd{font:inherit;font-size:11px;background:var(--superficie-2);border:1px solid var(--borda);
       border-radius:5px;padding:1px 5px}
+    .anexo-nome{font-size:12.5px;color:var(--acento-texto);font-weight:600;word-break:break-all}
     .previa-img{margin-top:10px;position:relative;display:none;border:1px solid var(--borda);
       border-radius:var(--raio-s);overflow:hidden;background:var(--superficie-2)}
     .previa-img img{display:block;width:100%;max-height:200px;object-fit:contain}
@@ -526,6 +527,13 @@
             <button type="button" class="btn-perigo tirar" onclick="sugTirarImagem()">Remover</button>
             <img id="sug-previa-img" alt="Prévia do print">
           </div>
+          <div class="anexo-botoes" style="margin-top:12px">
+            <button type="button" class="btn-sec" onclick="document.getElementById('sug-arq').click()">📄 Anexar arquivo</button>
+            <input type="file" name="anexo" id="sug-arq"
+                   accept=".xlsx,.xls,.xlsm,.ods,.csv,.tsv,.txt,.pdf,.json,.zip" style="display:none">
+            <span class="anexo-nome" id="sug-arq-nome"></span>
+          </div>
+          <div class="anexo-dica">Opcional. Envie a planilha ou o arquivo que você precisa incluir (até 25 MB).</div>
         </div>
         <div class="lgpd-nota">Evite incluir dados pessoais (nomes, documentos) no texto ou na imagem.</div>
       </div>
@@ -551,6 +559,9 @@
       }
       inp.addEventListener("change", function(){ mostrar(inp.files[0]); });
       window.sugTirarImagem = function(){ try{ inp.value=""; }catch(e){} mostrar(null); };
+      var arq = document.getElementById("sug-arq"), arqNome = document.getElementById("sug-arq-nome");
+      if(arq){ arq.addEventListener("change", function(){
+        arqNome.textContent = arq.files && arq.files[0] ? ("📎 " + arq.files[0].name) : ""; }); }
       // colar (Ctrl+V) uma imagem da área de transferência enquanto o modal está aberto
       dlg.addEventListener("paste", function(ev){
         var items = (ev.clipboardData||{}).items || [];

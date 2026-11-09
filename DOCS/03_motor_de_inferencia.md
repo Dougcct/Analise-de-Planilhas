@@ -63,5 +63,5 @@ Aplicada a qualquer coluna já numérica, nesta ordem:
 
 ## Correção manual
 
-Na janela, a aba **Tipos** permite trocar o tipo de qualquer coluna (override) e reprocessar na hora —
-útil quando a inferência erra e ainda não há modelo. O override vence o modelo.
+O tipo de qualquer coluna pode ser trocado (override) e reprocessado — útil quando a inferência erra e
+ainda não há modelo. O override vence o modelo.

@@ -7,9 +7,14 @@ requires-python = ">=3.10"
 version = { attr = "analise_planilha.__version__" }
 
 [tool.pytest.ini_options]
-pythonpath = ["src"]
+pythonpath = ["src", "."]   # "." → pacote Agentes/ (Agentes Especialistas por Setor) na raiz
 testpaths = ["testes"]
 
 [tool.ruff]
 line-length = 120
-src = ["src", "app"]
+src = ["src", "app", "."]   # "." → first-party: reconhece o pacote Agentes/ na raiz
+
+[tool.ruff.lint.per-file-ignores]
+# O dono pediu a pasta de agentes na RAIZ com o nome "Agentes" (maiúsculo, como no desenho do
+# projeto). Isso é intencional, então liberamos a regra de nome-de-módulo minúsculo só aqui.
+"Agentes/**" = ["N999"]

@@ -13,6 +13,7 @@ from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(RAIZ / "src"))
+sys.path.insert(0, str(RAIZ))      # pacote Agentes/ na raiz (Agentes Especialistas por Setor)
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, RedirectResponse
@@ -86,6 +87,7 @@ def _dataset_da_carga(carga: Carga, modelo=None, s: Session | None = None):
     if carga.id not in _cache_cargas:
         bruto = (CARGAS_DIR / carga.arquivo_uuid).read_bytes()
         kw = aprendizado.argumentos(s, carga, modelo) if s is not None else {}
+        kw["agente"] = carga.agente    # escolha do usuário na prévia (None = automático)
         _cache_cargas[carga.id] = servico.carregar(bruto, carga.nome_original, modelo=modelo, **kw)
     return _cache_cargas[carga.id]
 
@@ -108,6 +110,7 @@ def _dataset_consolidado(cargas: list[Carga], modelo=None, s: Session | None = N
             kw = {"conhecimento": aprendizado.base(s),
                   "contexto": aprendizado.contexto_de(s, s.get(Relatorio, cargas[0].relatorio_id), modelo),
                   "correcoes": correcoes}
+        kw["agente"] = cargas[0].agente    # escolha do agente feita na prévia (a 1ª carga do conjunto)
         _cache_consolidado[chave] = servico.carregar_varios(arquivos, modelo=modelo, **kw)
     return _cache_consolidado[chave]
 

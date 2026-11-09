@@ -1,0 +1,45 @@
+# =============================================================================
+# AGENTE — Custos (contabilidade de custos / orçamento hospitalar)
+# =============================================================================
+# Vocabulário do setor (sinônimos → nome canônico) e listas que o Escudo de Entrada usa.
+# Editar este arquivo adapta o agente a um novo layout de ERP/contabilidade sem tocar no
+# código (rules.py). Casa relatórios de centro de custo, conta contábil, orçado × realizado.
+
+# IDs que, quando faltam numa linha com valor, denunciam subtotal/rodapé (trava anti-subtotal).
+ids_principais = ["centro_custo", "conta_contabil", "rubrica", "grupo_despesa"]
+
+# Colunas de valor financeiro (sanitizador PT-BR: "R$ 1.250,50", "(450,00)" → float).
+valores = ["vl_orcado", "vl_realizado", "vl_empenhado", "vl_realizado_ant"]
+
+# Nomes extras a tratar como código (além dos genéricos do base_agent: conta contábil,
+# centro de custo, lote, nf… já são blindados lá). Preserva zero à esquerda do plano de contas.
+codigos = ["cod_conta", "cod_centro", "reducao"]
+
+# ---- sinônimos: nome_canonico = [grafias que aparecem nos relatórios do ERP] ----------------
+[colunas]
+# identificação / dimensões de custo
+centro_custo  = ["centro de custo", "centro custo", "cc", "ccusto", "cod centro", "centro_custo",
+                 "unidade de custo", "setor de custo", "nucleo de custo"]
+conta_contabil = ["conta contabil", "conta contábil", "conta", "cod conta", "codigo conta",
+                  "classificacao contabil", "plano de contas", "reducao", "conta_contabil"]
+grupo_despesa = ["grupo de despesa", "grupo despesa", "grupo", "classe", "categoria",
+                 "grupo de conta", "grupo contabil", "elemento de despesa"]
+natureza      = ["natureza", "natureza da despesa", "tipo de custo", "fixo/variavel",
+                 "classificacao do custo", "custo fixo/variavel"]
+rubrica       = ["rubrica", "item", "descricao da despesa", "descricao conta", "descricao",
+                 "historico", "histórico", "especificacao"]
+
+# valores
+vl_orcado     = ["orcado", "orçado", "valor orcado", "vl orcado", "orcamento", "orçamento",
+                 "previsto", "vl previsto", "valor previsto", "meta orcamentaria"]
+vl_realizado  = ["realizado", "valor realizado", "vl realizado", "efetivado", "executado",
+                 "vl executado", "gasto", "despesa realizada", "incorrido", "apurado"]
+vl_empenhado  = ["empenhado", "valor empenhado", "comprometido", "vl empenhado"]
+vl_realizado_ant = ["realizado anterior", "mes anterior", "realizado mes anterior",
+                    "vl mes anterior", "periodo anterior"]
+quantidade    = ["quantidade", "qtd", "qtde", "volume"]
+
+# tempo
+competencia   = ["competencia", "competência", "comp", "mes", "mês", "mes referencia",
+                 "referencia", "periodo", "mes/ano", "ano/mes"]
+dt_lancamento = ["dt lancamento", "data lancamento", "data do lancamento", "data", "dt_lancamento"]

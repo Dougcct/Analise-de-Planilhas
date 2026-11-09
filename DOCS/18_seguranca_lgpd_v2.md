@@ -1,6 +1,6 @@
 # 18 · Segurança da informação e LGPD na v2
 
-> **Status: planejamento.** Complementa [16 · Arquitetura v2](16_arquitetura_v2.md). O sistema trata
+> **Status: vigente (v2 em produção).** Complementa [16 · Arquitetura v2](16_arquitetura_v2.md). O sistema trata
 > planilhas administrativas, financeiras e assistenciais — incluindo **nome de paciente** (Contas Convênio,
 > [12](12_contas_convenio.md)).
 
@@ -58,12 +58,11 @@
 **Conferido no código:**
 
 - As mensagens **do próprio motor** citam aba, modelo ou formato — **nunca** valor de célula.
-- Mas a carga em thread mostra o **texto bruto da exceção** (`CarregadorWorker`: `"{tipo}: {exceção}"`).
-  Exceções de bibliotecas (pandas, openpyxl) **podem conter o valor de uma célula** (ex.: "não foi possível
-  converter 'FULANO DE TAL' para número"). Na v1 isso só aparece para quem já tem a planilha; na v2 não pode
-  ir para log nem para o cliente.
-- O `autoteste.txt` registra o **nome do arquivo** testado em cada relatório. Nomes de arquivo podem
-  conter nome de pessoa.
+- Mas a leitura da planilha pode propagar o **texto bruto da exceção**. Exceções de bibliotecas (pandas,
+  openpyxl) **podem conter o valor de uma célula** (ex.: "não foi possível converter 'FULANO DE TAL' para
+  número"). Esse texto não pode ir para log nem para o cliente.
+- Nomes de **arquivo** também podem conter nome de pessoa — por isso não aparecem em log nem auditoria (ver
+  tabela abaixo).
 - O **relatório HTML está protegido contra injeção de código:** o template tem `autoescape` ligado e os
   gráficos SVG escapam todo texto vindo da planilha (categorias, rótulos, legendas, tooltips) antes de
   marcá-lo como seguro.
@@ -77,8 +76,6 @@
 | Auditoria | ids, ações e nomes de filtros/dimensões; **sem** conteúdo de célula |
 | Arquivos no servidor | referenciados por `carga_id`/UUID, não pelo nome original, em log e auditoria |
 | Relatório HTML | manter `autoescape` + `escape()` nos gráficos; **teste** com célula contendo `<script>` para travar esse comportamento |
-
-Melhoria pequena e opcional na v1, quando conveniente: o autoteste mostrar só a contagem de arquivos.
 
 ## 4. Upload seguro
 
@@ -146,12 +143,12 @@ Complementos: identificadores não sequenciais nas URLs (slug/UUID, contra enume
 | Tema | Regra |
 |---|---|
 | Transporte | **HTTPS sempre**, mesmo na LAN (Caddy com certificado interno). O cliente traz a **identificação do certificado do servidor** na configuração e recusa qualquer outro (*pinning*) — dispensa instalar CA em cada PC e barra servidor falso na rede |
-| pfSense | só a porta 443 do servidor aberta para a LAN; banco **sem** porta exposta (rede interna do Docker); saída do servidor só para `github.com` (espelho de atualização, [17](17_atualizacao_v2.md)) |
+| pfSense | só a porta 443 do servidor aberta para a LAN; banco **sem** porta exposta (rede interna do Docker); saída do servidor restrita ao mínimo necessário |
 | Sessão | expira em 8 h (turno); revogação imediata ao inativar o usuário; bloqueio após tentativas falhas; limite de tentativas de login por IP |
 | Senhas | Argon2id; troca obrigatória no 1º acesso e após reset; primeiro ADM criado por comando no contêiner |
 | Segredos | senha do banco, segredo do HMAC de pseudônimos e chaves do Modo IA ficam em variáveis/segredos do contêiner, **fora do git** (`.env` no `.gitignore`) |
 | Modo IA | a chave sai das máquinas e fica só no servidor; mantém a regra de enviar **só estrutura anonimizada**; cada uso vira evento de auditoria |
-| Marca d'água | rodapé na janela e no HTML exportado: nome, login, setor, data/hora (e IP no HTML). **Desestimula** foto de tela e repasse; não impede |
+| Marca d'água | rodapé na web e no HTML exportado: nome, login, setor, data/hora (e IP no HTML). **Desestimula** foto de tela e repasse; não impede |
 | Backup | `pg_dump` + volume de arquivos, **criptografados**, com cópia fora do servidor e **teste de restauração periódico** (backup nunca restaurado não conta como backup) |
 | Retenção | arquivos brutos expurgados após o prazo definido com o DPO; indicadores agregados sem dado pessoal podem ficar |
 
@@ -171,6 +168,6 @@ Complementos: identificadores não sequenciais nas URLs (slug/UUID, contra enume
 | Pergunta | Resposta |
 |---|---|
 | Como a anonimização funciona hoje e o que reforçar? | Só a coluna "entidade", com iniciais, por opção da tela; nada no "Sem modelo". Reforço: sensibilidade por coluna, pseudônimo HMAC no servidor, detector no upload (§2) |
-| Erros e diagnósticos podem gravar célula sensível? | As mensagens do motor não gravam; exceções de bibliotecas podem conter valor de célula e o autoteste registra nomes de arquivo. Na v2: mensagem genérica + código, log sem `str(exceção)` (§3) |
+| Erros e diagnósticos podem gravar célula sensível? | As mensagens do motor não gravam; exceções de bibliotecas podem conter valor de célula e nomes de arquivo podem conter nome de pessoa. Na v2: mensagem genérica + código, log sem `str(exceção)`, arquivos por UUID (§3) |
 | Travas no upload? | Lista fechada de extensões, tamanho, assinatura real, teto de descompactação, `defusedxml`, processo isolado, nome aleatório (§4) |
 | Padrão para não esquecer o `WHERE centro_custo_id`? | Escopo obrigatório + repositórios filtrados + RLS no Postgres + teste que percorre todas as rotas (§5) |

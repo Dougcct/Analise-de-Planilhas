@@ -16,6 +16,7 @@ RUN pip install -r servidor/requirements.txt
 
 # 2) código: o motor, a API, os templates e os MODELOS (.toml) usados na análise real
 COPY src/ src/
+COPY Agentes/ Agentes/
 COPY servidor/ servidor/
 COPY templates/ templates/
 COPY assets/ assets/

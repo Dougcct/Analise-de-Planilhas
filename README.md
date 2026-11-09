@@ -11,7 +11,7 @@ O produto é um **servidor web** (FastAPI + Docker) com login e **controle por s
 planilhas (`xlsx`, `ods`, `csv`), o sistema padroniza os dados e publica um **relatório analítico HTML** no
 navegador — no mesmo desenho do projeto **Garantia de Atendimento e Reembolso**.
 
-**Versão:** 1.5.0 · **Saídas:** HTML (PDF e DOCX previstos)
+**Versão:** 2.0.0 · **Saídas:** HTML (PDF e DOCX previstos)
 
 ---
 
@@ -27,6 +27,10 @@ navegador — no mesmo desenho do projeto **Garantia de Atendimento e Reembolso*
   publicar ou descartar.
 - **Controle por setor**: login, papéis (ADM / gestor), isolamento de dados por equipe, autoatendimento de
   senha (trocar / esqueci, com aviso ao ADM) e compartilhamento de versão curada entre setores.
+- **Agentes Especialistas por Setor** (determinísticos, sem IA em execução): quando a planilha é de um
+  setor conhecido (ex.: **Faturamento**, **Custos**), um agente limpa o export de ERP bagunçado (acha o
+  cabeçalho real, descarta subtotais, blinda códigos, arruma números) e **acrescenta a análise do setor**
+  ao relatório (glosa, orçado × realizado, Curva ABC, aging…). Escolha/troca na prévia. [DOCS/19](DOCS/19_agentes_por_setor.md).
 
 Exemplo pronto: **Contas Convênio** (contas hospitalares em blocos — [DOCS/12](DOCS/12_contas_convenio.md)).
 
@@ -76,6 +80,7 @@ Requisitos: **Python 3.11+** (testado em 3.12) e **Docker** para subir o servido
 gerar_relatorio.py      linha de comando (relatório HTML com filtros)
 analisar.py             linha de comando (resumo da inferência)
 src/analise_planilha/   lógica pura (leitura, modelo, inferência, indicadores, metas, relatório, Cérebro)
+Agentes/                Agentes Especialistas por Setor (Escudo de ERP + análise setorial; determinístico)
 servidor/               servidor web (FastAPI + Docker): web.py (rotas), app.py (API), bd, segurança…
 templates/              relatório HTML (Jinja2) + casca web (templates/web/)
 config/                 modelos de cliente (.toml); locais e não versionados: metas.json, ia.toml

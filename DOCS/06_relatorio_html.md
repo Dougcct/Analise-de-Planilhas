@@ -14,13 +14,13 @@ mesmo padrão do projeto Garantia de Atendimento. Código em `relatorio_html.py`
 - **Tema claro/escuro** (botão ◐ tema, lembrado no navegador; segue o sistema por padrão).
 - **Filtro de período embutido** (quando o relatório tem datas): seletor **Período** no índice, ao lado do
   ◐ tema — ver abaixo.
-- **Mesmos números da tela:** consome o mesmo objeto `Analise` da janela (contrato único).
+- **Mesmos números da tela:** consome o mesmo objeto `Analise` da web (contrato único).
 
 ## Filtro de período («períodos prontos»)
 
 Relatórios com uma coluna de data (ex.: os financeiros HUNF, pela coluna «Mês») saem com um **seletor
 Período** no topo. Ele troca a visão **no navegador**, como o ◐ tema — sem recalcular nada: cada visão é
-**calculada no Python** e embutida, então os números batem sempre com a janela e não há JavaScript de
+**calculada no Python** e embutida, então os números batem sempre com a web e não há JavaScript de
 matemática (nem risco de divergir). Opções: **Todo o período**, **cada ano** e **Últimos 12 meses** (e o
 **recorte atual**, como 1ª opção, se o usuário tiver estreitado o De/até antes de gerar).
 

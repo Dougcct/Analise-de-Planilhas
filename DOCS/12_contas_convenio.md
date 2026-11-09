@@ -5,7 +5,7 @@ procedimento e o faturamento por grupo (diárias, materiais e medicamentos, OPME
 alguns arquivos a equipe lançou **custo e resultado** à mão.
 
 > **LGPD:** o relatório traz **nome de paciente**. Os arquivos ficam só em `dados/` (não versionado);
-> na janela, use **Anonimizar nomes** antes de mostrar a tela ou gerar o HTML para terceiros. Este
+> na web, use **Anonimizar nomes** antes de mostrar a tela ou gerar o HTML para terceiros. Este
 > documento descreve só a estrutura — nenhum dado real.
 
 ## Por que precisou de um leitor próprio
@@ -62,7 +62,7 @@ leitura não replica células mescladas. Quantidade gravada como texto ("125") v
 
 ## Modelo e indicadores
 
-`config/modelos/contas_convenio.toml` (selecione **Contas Convênio** na janela):
+`config/modelos/contas_convenio.toml` (selecione **Contas Convênio** na web):
 
 - **KPIs:** atendimentos e pacientes distintos; *Margem (contas apuradas)* ponderada por valor;
   *Contas com custo apurado*; *Peso de OPME* e *Peso de honorários* no faturamento; somas de

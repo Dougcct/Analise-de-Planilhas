@@ -16,9 +16,7 @@ estrutura da planilha (+ amostra anonimizada)
       → servico.carregar(modelo=…) → análise igual à de um modelo escrito à mão
 ```
 
-Código: [src/analise_planilha/ia.py](../src/analise_planilha/ia.py). Interface: painel "Modo I.A" na
-barra lateral ([app/janela.py](../app/janela.py)) + `DialogoIA` e `TrabalhoIA` (thread) em
-[app/dialogo_ia.py](../app/dialogo_ia.py).
+Código: [src/analise_planilha/ia.py](../src/analise_planilha/ia.py). Configuração em `config/ia.toml`.
 
 ## Privacidade (LGPD) — o que sai da máquina
 
@@ -51,7 +49,7 @@ Arquivo **ignorado no git** (contém a chave). Campos: `dialeto` (`openai` | `an
   (`responseMimeType`). `base_url` padrão `https://generativelanguage.googleapis.com/v1beta`, modelo
   `gemini-2.0-flash`. Chave: `GEMINI_API_KEY` (ou `GOOGLE_API_KEY`).
 
-Sem SDK — só `urllib` da stdlib, para o `.exe` ficar leve ([02](02_arquitetura.md)).
+Sem SDK — só `urllib` da stdlib, para manter o motor leve e sem dependências extras.
 
 ## O que a IA gera
 
@@ -59,7 +57,7 @@ Um modelo completo no formato de [04](04_modelo_de_cliente.md): colunas (`rotulo
 `papel`, `obrigatoria`, `validar`) e regras de negócio (`[analise]`, `[[classificacao]]`, `[[taxa]]`,
 `[[tempo]]`, `[[cruzamento]]`, `[qualidade]`, `[[meta]]`). O JSON da IA é serializado para `.toml` por
 `json_para_toml` e **validado por `carregar_modelo`** (tipos/papéis inválidos são rejeitados; referências
-a colunas inexistentes viram avisos, não quebram). Ao final, a janela oferece **salvar o `.toml`** para
+a colunas inexistentes viram avisos, não quebram). Ao final, o sistema oferece **salvar o `.toml`** para
 reusar depois sem a IA.
 
 ## Autodetecção (só a chave basta)
@@ -90,7 +88,7 @@ erro na hora:
    de `ia.ordenar_modelos`, uma tentativa rápida cada — `ia._chamar_com_alternativas`;
 3. só se tudo falhar aparece uma mensagem clara, com a lista dos modelos tentados.
 
-Se a geração precisou trocar de modelo, a janela **salva o modelo que respondeu** em `config/ia.toml`,
+Se a geração precisou trocar de modelo, o sistema **salva o modelo que respondeu** em `config/ia.toml`,
 para começar por ele na próxima vez.
 
 **Detecção testa de verdade**: em vez de confiar no nome, `ia.autoconfigurar` manda um pedido mínimo
@@ -105,11 +103,11 @@ Erros **definitivos** (400 requisição inválida, 401/403 chave sem permissão)
 progresso aparece no painel e na barra de status ("Provedor ocupado; nova tentativa em 4s…"). As
 mensagens de erro mostram só o texto legível do provedor, não o JSON cru.
 
-## Uso na janela
+## Uso
 
 1. **Configurar…** → cole a chave → **Detectar** (ou só salve: detecta ao fechar). Escolha o nível de amostra.
 2. Abra uma planilha.
-3. Marque **"Adaptar o programa a esta planilha (IA)"**. A chamada roda em thread (não congela a tela);
+3. Marque **"Adaptar o programa a esta planilha (IA)"**. A chamada roda em segundo plano (não trava a tela);
    ao voltar, o modelo é aplicado e o cabeçalho mostra "⚡ modelo gerado por IA".
 4. Desmarcar volta ao modelo do cliente / inferência automática. Abrir outra planilha regenera.
 
@@ -117,8 +115,7 @@ mensagens de erro mostram só o texto legível do provedor, não o JSON cru.
 
 - A IA vê as colunas **já tipadas** pelo pipeline (nomes podem já estar canônicos se havia um modelo
   antes). Para o melhor resultado, ligue o Modo IA com "Sem modelo" selecionado.
-- A qualidade do modelo depende do provedor/modelo escolhido; sempre dá para revisar na aba **Tipos** e
-  editar o `.toml` salvo.
+- A qualidade do modelo depende do provedor/modelo escolhido; sempre dá para revisar e editar o `.toml` salvo.
 - Requer rede e chave de API. Sem conexão, o recurso falha com mensagem clara e volta ao normal.
 
 ## Testes

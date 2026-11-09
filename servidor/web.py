@@ -298,6 +298,10 @@ def pedido_senha_resolver(pedido_id: int, request: Request, s: Session = Depends
 # Tipos de imagem aceitos no print opcional (anexado ou colado com Ctrl+V). Pequeno e seguro.
 _IMG_EXT = {"image/png": ".png", "image/jpeg": ".jpg", "image/webp": ".webp", "image/gif": ".gif"}
 _IMG_MAX = 8 * 1024 * 1024          # 8 MB por print
+# Anexo opcional além do print: tipicamente a planilha que a pessoa quer incluir. Validado por extensão
+# (os content-types de planilha variam entre navegadores). Pequeno e seguro.
+_ANEXO_EXT = {".xlsx", ".xls", ".xlsm", ".ods", ".csv", ".tsv", ".txt", ".pdf", ".json", ".zip"}
+_ANEXO_MAX = 25 * 1024 * 1024       # 25 MB por anexo
 
 
 def _sugestoes_dir() -> Path:
@@ -322,6 +326,24 @@ async def _ler_imagem(imagem: UploadFile | None) -> tuple[str | None, str | None
     return nome, None
 
 
+async def _ler_anexo(anexo: UploadFile | None) -> tuple[str | None, str | None, str | None]:
+    """Valida e salva um arquivo opcional (ex.: a planilha a incluir). Retorna (uuid_no_volume,
+    nome_original, erro). (None, None, None) = sem anexo. Validação por extensão."""
+    if anexo is None or not anexo.filename:
+        return None, None, None
+    nome_orig = Path(anexo.filename).name          # descarta qualquer caminho vindo do cliente
+    ext = Path(nome_orig).suffix.lower()
+    if ext not in _ANEXO_EXT:
+        aceitos = ", ".join(sorted(e.lstrip(".") for e in _ANEXO_EXT))
+        return None, None, f"Tipo de arquivo não aceito (use: {aceitos})."
+    conteudo = await anexo.read(_ANEXO_MAX + 1)
+    if len(conteudo) > _ANEXO_MAX:
+        return None, None, "O arquivo passa de 25 MB."
+    nome = uuid.uuid4().hex + ext
+    (_sugestoes_dir() / nome).write_bytes(conteudo)
+    return nome, nome_orig[:255], None
+
+
 def _voltar_seguro(voltar: str, padrao: str) -> str:
     return voltar if voltar.startswith("/web") else padrao
 
@@ -335,6 +357,7 @@ def _thread(s: Session, sug_id: int) -> list[dict]:
         msgs.append({"id": m.id, "de_adm": m.de_adm,
                      "autor": a.nome if a else ("Administração" if m.de_adm else "(removido)"),
                      "texto": m.texto, "tem_img": bool(m.imagem_uuid),
+                     "tem_anexo": bool(m.anexo_uuid), "anexo_nome": m.anexo_nome or "arquivo",
                      "quando": m.criado_em.strftime("%d/%m/%Y %H:%M") if m.criado_em else "—"})
     return msgs
 
@@ -361,6 +384,7 @@ def _chamado_para(s: Session, escopo: Escopo, sug_id: int):
 @router.post("/sugestao")
 async def sugestao_enviar(request: Request, tipo: str = Form("sugestao"), texto: str = Form(...),
                           url: str = Form(""), imagem: UploadFile | None = File(None),
+                          anexo: UploadFile | None = File(None),
                           s: Session = Depends(_sessao)):
     """Qualquer usuário logado ABRE um chamado (sugestão ou bug). A 1ª mensagem é a abertura."""
     escopo, redir = _exige_login(request, s)
@@ -374,6 +398,9 @@ async def sugestao_enviar(request: Request, tipo: str = Form("sugestao"), texto:
     img_uuid, erro = await _ler_imagem(imagem)
     if erro:
         return _redir(destino, erro=erro)
+    anexo_uuid, anexo_nome, erro = await _ler_anexo(anexo)
+    if erro:
+        return _redir(destino, erro=erro)
     agora = utcnow()
     g = Sugestao(tipo=tipo, usuario_id=escopo.usuario_id, centro_custo_id=escopo.centro_custo_id,
                  url=destino[:300], user_agent=(request.headers.get("user-agent") or "")[:300],
@@ -381,7 +408,8 @@ async def sugestao_enviar(request: Request, tipo: str = Form("sugestao"), texto:
     s.add(g)
     s.flush()
     s.add(SugestaoMensagem(sugestao_id=g.id, autor_id=escopo.usuario_id, de_adm=False,
-                           texto=texto[:4000], imagem_uuid=img_uuid, criado_em=agora))
+                           texto=texto[:4000], imagem_uuid=img_uuid,
+                           anexo_uuid=anexo_uuid, anexo_nome=anexo_nome, criado_em=agora))
     _audit(s, escopo, "abrir_chamado", tipo)
     s.commit()
     return _redir(destino, ok="Obrigado! Seu chamado foi aberto. Acompanhe em «Minhas sugestões».")
@@ -390,6 +418,7 @@ async def sugestao_enviar(request: Request, tipo: str = Form("sugestao"), texto:
 @router.post("/sugestoes/{sug_id}/mensagem")
 async def sugestao_mensagem(sug_id: int, request: Request, texto: str = Form(...), voltar: str = Form(""),
                             resolver: str = Form(""), imagem: UploadFile | None = File(None),
+                            anexo: UploadFile | None = File(None),
                             s: Session = Depends(_sessao)):
     """Responde no chamado. Vale para o ADM e para o autor (no próprio chamado)."""
     escopo, redir = _exige_login(request, s)
@@ -406,9 +435,13 @@ async def sugestao_mensagem(sug_id: int, request: Request, texto: str = Form(...
     img_uuid, erro = await _ler_imagem(imagem)
     if erro:
         return _redir(destino, erro=erro)
+    anexo_uuid, anexo_nome, erro = await _ler_anexo(anexo)
+    if erro:
+        return _redir(destino, erro=erro)
     agora = utcnow()
     s.add(SugestaoMensagem(sugestao_id=g.id, autor_id=escopo.usuario_id, de_adm=eh_adm,
-                           texto=texto[:4000], imagem_uuid=img_uuid, criado_em=agora))
+                           texto=texto[:4000], imagem_uuid=img_uuid,
+                           anexo_uuid=anexo_uuid, anexo_nome=anexo_nome, criado_em=agora))
     if eh_adm:                         # quem escreve já "viu" tudo até aqui; responder reabre se estava resolvido
         g.visto_adm_em = agora
         if g.status == "resolvido" and resolver != "1":
@@ -458,9 +491,11 @@ def sugestao_excluir(sug_id: int, request: Request, s: Session = Depends(_sessao
     if g is None:
         return _redir("/web/admin/sugestoes", erro="Chamado não encontrado.")
     msgs = list(s.scalars(select(SugestaoMensagem).where(SugestaoMensagem.sugestao_id == sug_id)))
-    for m in msgs:                                  # apaga os prints do volume antes de remover os registros
+    for m in msgs:                                  # apaga prints e anexos do volume antes de remover os registros
         if m.imagem_uuid:
             (_sugestoes_dir() / m.imagem_uuid).unlink(missing_ok=True)
+        if m.anexo_uuid:
+            (_sugestoes_dir() / m.anexo_uuid).unlink(missing_ok=True)
         s.delete(m)
     s.flush()                                       # garante o DELETE das mensagens antes do chamado (FK)
     s.delete(g)
@@ -485,6 +520,25 @@ def sugestao_imagem(msg_id: int, request: Request, s: Session = Depends(_sessao)
     if not caminho.is_file():
         return Response(status_code=404)
     return FileResponse(str(caminho))
+
+
+@router.get("/sugestao-anexo/{msg_id}")
+def sugestao_anexo(msg_id: int, request: Request, s: Session = Depends(_sessao)):
+    """Baixa o arquivo anexado a uma mensagem (ex.: a planilha). Visível ao ADM e ao autor do chamado."""
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    m = s.get(SugestaoMensagem, msg_id)
+    if m is None or not m.anexo_uuid:
+        return Response(status_code=404)
+    g = s.get(Sugestao, m.sugestao_id)
+    if g is None or (not _pode(escopo, ADM) and g.usuario_id != escopo.usuario_id):
+        return Response(status_code=403)
+    caminho = _sugestoes_dir() / m.anexo_uuid
+    if not caminho.is_file():
+        return Response(status_code=404)
+    return FileResponse(str(caminho), filename=m.anexo_nome or m.anexo_uuid,
+                        media_type="application/octet-stream")
 
 
 @router.get("/minhas-sugestoes", response_class=HTMLResponse)
@@ -1597,6 +1651,20 @@ def _entendimento_tela(ent) -> dict | None:
             "papeis": [(p, _cp.ROTULOS[p]) for p in _cp.PAPEIS]}
 
 
+def _agentes_previa(ds) -> tuple[str, list[dict]]:
+    """(nome do agente ativo, lista de candidatos p/ a prévia). Vazio se o pacote Agentes não existir
+    ou se um modelo está aplicado (com modelo, o agente não age)."""
+    if getattr(ds, "modelo", None) is not None:
+        return "", []
+    try:
+        from Agentes import candidatos
+    except ImportError:
+        return "", []
+    cols = [c.nome for c in ds.esquema.colunas]
+    ativo = ds.agente.nome if getattr(ds, "agente", None) else ""
+    return ativo, candidatos(colunas=cols)
+
+
 @router.get("/enviar/previa/{carga_id}", response_class=HTMLResponse)
 def enviar_previa(carga_id: int, request: Request, s: Session = Depends(_sessao)):
     escopo, redir = _exige_login(request, s)
@@ -1616,12 +1684,14 @@ def enviar_previa(carga_id: int, request: Request, s: Session = Depends(_sessao)
     qs = request.url.query
     novo = not rel.ativo and not s.scalar(select(Carga).where(Carga.relatorio_id == rel.id, Carga.status == PUBLICADA))
     pos, total, prox = _fila_lote(s, escopo, carga)       # posição na fila do envio em lote
+    agente_nome, agentes_disp = _agentes_previa(ds)
     return _pagina("previa.html", request, _ctx(request, escopo, s, "enviar",
                    carga_id=carga_id, titulo=rel.nome, arquivo=carga.nome_original,
                    registros=a.linhas, paineis=len(a.paineis), novo=novo,
                    lote_pos=pos, lote_total=total, tem_proximo=(prox is not None),
                    modelo_atual=(rel.modelo or ""), modelo_nome=(mod.nome if mod else ""),
                    modelos=modelos_fs.disponiveis(),
+                   agente_atual=(carga.agente or ""), agente_nome=agente_nome, agentes=agentes_disp,
                    entendimento=_entendimento_tela(ds.entendimento),
                    datas_filtro=_info_datas_tela(ds, f), query_conteudo=(f"?{qs}" if qs else "")))
 
@@ -1657,6 +1727,45 @@ async def enviar_previa_modelo(carga_id: int, request: Request, modelo: str = Fo
     nome = modelos_fs.existe(novo_modelo) and next(
         (m["nome"] for m in modelos_fs.disponiveis() if m["slug"] == novo_modelo), novo_modelo) or "Sem modelo"
     return _redir(f"/web/enviar/previa/{carga_id}", ok=f"Modelo alterado para «{nome}».")
+
+
+@router.post("/enviar/previa/{carga_id}/agente")
+async def enviar_previa_agente(carga_id: int, request: Request, agente: str = Form(""),
+                               s: Session = Depends(_sessao)):
+    """Confirma ou troca o Agente de setor que analisa esta planilha ("" = automático, «__nenhum__» =
+    desligado). Só vale sem modelo aplicado — com modelo, o agente não age."""
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    srv = _srv()
+    from analise_planilha.servico import AGENTE_NENHUM
+    try:
+        if not _pode(escopo, GESTOR, ADM):
+            raise _Erro("Acesso restrito a gestores.")
+        carga, rel = _carga_previa(s, escopo, carga_id)
+        escolha = agente.strip() or None
+        if escolha and escolha != AGENTE_NENHUM:
+            try:
+                from Agentes import por_nome
+            except ImportError:
+                por_nome = None
+            if por_nome is None or por_nome(escolha) is None:
+                raise _Erro("Agente não encontrado.")
+        anterior = carga.agente
+        carga.agente = escolha
+        srv.esquecer_dataset(carga.id)
+        try:                                               # a planilha precisa ler com o agente escolhido
+            srv._dataset_da_carga(carga, srv._modelo_do(rel), s)
+        except Exception as e:  # noqa: BLE001
+            carga.agente = anterior
+            srv.esquecer_dataset(carga.id)
+            raise _Erro(f"A planilha não pôde ser lida com esse agente ({type(e).__name__}).") from e
+        _audit(s, escopo, "trocar_agente", f"{rel.slug}:{escolha or 'automatico'}")
+        s.commit()
+    except _Erro as e:
+        return _redir(f"/web/enviar/previa/{carga_id}", erro=str(e))
+    rotulo = "Automático (detectar)" if not escolha else ("Nenhum" if escolha == AGENTE_NENHUM else escolha)
+    return _redir(f"/web/enviar/previa/{carga_id}", ok=f"Agente atualizado: {rotulo}.")
 
 
 @router.post("/enviar/previa/{carga_id}/reanalisar")

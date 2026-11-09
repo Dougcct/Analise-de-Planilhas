@@ -31,11 +31,16 @@ ruff check .                   # lint (line-length 120)
   - `ia.py` — Modo I.A (envia só estrutura anonimizada; config em `config/ia.toml`)
   - `cerebro/` — "Cérebro": substitui a dedução por tipo. `conhecimento.py` `papeis.py` `lexico.py`
     `serie.py` `setores.py` `modelo_auto.py` `layout.py` `grao.py`
+- **`Agentes/`** (raiz, maiúsculo) — Agentes Especialistas por Setor, 100% determinístico. `base_agent.py`
+  (Escudo de Entrada de ERP: caça cabeçalho, remove subtotal, blinda códigos, sanitiza nº PT-BR),
+  `router.py` (`resolver`/`por_nome`/`candidatos`), e um subpacote por setor (`faturamento/`, `custos/`:
+  `rules.py` + `config.toml`). Ligado em `servico.py` quando `modelo is None` (fallback transparente se o
+  pacote faltar); limpa a planilha e injeta análise setorial na `Analise`. Ver [DOCS/19](DOCS/19_agentes_por_setor.md).
 - **`servidor/`** — backend FastAPI da v2 (Docker) — **o produto**. `web.py` (rotas web, o que o usuário
   usa), `app.py` (API v1 + monta a web), `bd.py`, `autenticacao.py`, `seguranca.py`, `repositorio.py`,
   `modelos_bd.py` / `modelos_fs.py`, `aprendizado.py` (base do Cérebro).
 - **`templates/`** — `relatorio.html.j2` (relatório gerado) e `web/` (casca web da v2, Jinja).
-- **`testes/`** — pytest. **`DOCS/`** — documentação numerada (01…16) + POPs + CHANGELOG.
+- **`testes/`** — pytest (inclui `test_agentes.py`, `test_web.py`). **`DOCS/`** — documentação numerada + POPs + CHANGELOG.
 
 ## Convenções
 
@@ -43,7 +48,7 @@ ruff check .                   # lint (line-length 120)
 - **LGPD:** `dados/`, `saida/`, `Setores/`, `_revisar/` nunca são versionados e podem conter dado real.
   Ao ler dados reais, trabalhe só com a **estrutura** (nomes de coluna/tipos), nunca com os valores.
   O Modo I.A envia apenas estrutura anonimizada.
-- O motor (`src/`) é lógica pura e não importa a UI (`app/`). Mantenha essa separação.
+- O motor (`src/`) é lógica pura e não importa a UI (`servidor/`). Mantenha essa separação.
 - Versão única em `src/analise_planilha/__init__.py` (`__version__`); o pyproject a lê de lá.
 
 ## Memória do projeto

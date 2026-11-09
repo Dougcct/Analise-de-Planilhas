@@ -3,7 +3,7 @@
 O workbook do HUNF (`DADOS HUNF.xlsx`, pasta `dados\HUNF\`) tem 21 abas; três são **matrizes**: cada
 linha é uma conta (ou convênio) e cada coluna é um mês. Elas ganharam um **leitor próprio**
 (`matriz.py`), que converte para uma linha por conta × mês, e um **motor de análise financeira**
-(`financeiro.py`), que monta os dashboards. Navegação na janela: **Pasta** HUNF › **Relatório**
+(`financeiro.py`), que monta os dashboards. Navegação na web: **Pasta** HUNF › **Relatório**
 DADOS HUNF › **Página** FATURAMENTO · DRE HUNF · CUSTOS. Cada página é analisada à parte.
 
 **Base a partir de jan/2024** (`a_partir_de = "2024-01"` nos três modelos). Meses sem nenhum lançamento
@@ -40,7 +40,7 @@ hospitalar**. Achados:
 - O **custo detalhado** (soma das contas) e o **contábil** são visões diferentes: o detalhado fica
   acima no período. **Não somar** um com o outro.
 
-## Dashboards no HTML (e abas na janela)
+## Dashboards no HTML (e seções na web)
 
 Comuns às três páginas: **Resumo e achados** (KPIs do período, último mês × mês anterior e × mesmo mês do
 ano anterior, últimos 12 meses × 12 anteriores, acumulado do ano; frases automáticas), **Contas /

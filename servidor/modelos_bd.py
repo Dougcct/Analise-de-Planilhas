@@ -112,7 +112,9 @@ class Sugestao(Base):
 
 class SugestaoMensagem(Base):
     """Uma mensagem da conversa de um chamado (inclui a mensagem de abertura). `de_adm` distingue quem
-    falou; `imagem_uuid` é um print opcional (anexo ou colado com Ctrl+V), guardado no volume (UUID)."""
+    falou; `imagem_uuid` é um print opcional (anexo ou colado com Ctrl+V), guardado no volume (UUID).
+    `anexo_uuid` é um arquivo opcional (ex.: a planilha que a pessoa quer incluir), guardado no volume
+    com nome UUID; `anexo_nome` preserva o nome original para o download."""
     __tablename__ = "sugestao_mensagens"
     id: Mapped[int] = mapped_column(primary_key=True)
     sugestao_id: Mapped[int] = mapped_column(ForeignKey("sugestoes.id"), index=True)
@@ -120,6 +122,8 @@ class SugestaoMensagem(Base):
     de_adm: Mapped[bool] = mapped_column(Boolean, default=False)          # mensagem escrita pelo ADM?
     texto: Mapped[str] = mapped_column(Text)
     imagem_uuid: Mapped[str | None] = mapped_column(String(72))           # print opcional (nulo = sem imagem)
+    anexo_uuid: Mapped[str | None] = mapped_column(String(72))            # arquivo opcional no volume (nulo = sem anexo)
+    anexo_nome: Mapped[str | None] = mapped_column(String(255))           # nome original do arquivo anexado
     criado_em: Mapped[dt.datetime] = mapped_column(DateTime, default=utcnow, index=True)
 
 
@@ -164,6 +168,7 @@ class Carga(Base):
     publicado_em: Mapped[dt.datetime | None] = mapped_column(DateTime)
     correcoes: Mapped[str | None] = mapped_column(Text)   # JSON {coluna: papel} corrigido na prévia
     lote: Mapped[str | None] = mapped_column(String(32), index=True)   # agrupa planilhas enviadas juntas (envio em lote)
+    agente: Mapped[str | None] = mapped_column(String(32))   # Agente de setor escolhido na prévia (nulo = automático; "__nenhum__" = desligado)
 
 
 class AcessoTemporario(Base):

@@ -26,7 +26,7 @@ referência faz — e ignora abas sem o layout (ex.: DASHBOARD).
 - **Pagamento:** somas de valor do documento e do reembolso; quebras por centro de custo, fluxo, forma
   de pagamento e prestador; série mensal pela data do depósito.
 
-## Navegação na janela
+## Navegação na web
 
 Pasta (ex.: `Reembolso`) › Relatório (o **arquivo**) › Página **«Todas as abas (consolidado)»**. A
 página de consolidação aparece quando o modelo tem `abas = "todas"`; o relatório lê e junta todas as

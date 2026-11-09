@@ -16,7 +16,7 @@ from pathlib import Path
 import pandas as pd
 import tomllib
 
-from ..normalizacao import chave_texto, nomes_unicos
+from analise_planilha.normalizacao import chave_texto, nomes_unicos
 
 # Termos de rodapé/resumo que um relatório de ERP costuma trazer no fim dos blocos.
 SUBTOTAIS = ("total", "subtotal", "resumo", "consolidado", "total geral", "soma", "totais")

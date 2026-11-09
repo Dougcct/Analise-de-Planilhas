@@ -7,6 +7,6 @@ o motor roda como hoje (fallback transparente). O agente usa as funções do mot
 from __future__ import annotations
 
 from .base_agent import AgenteBase
-from .router import AGENTES, resolver
+from .router import AGENTES, candidatos, chave_agente, por_nome, resolver
 
-__all__ = ["AGENTES", "AgenteBase", "resolver"]
+__all__ = ["AGENTES", "AgenteBase", "candidatos", "chave_agente", "por_nome", "resolver"]

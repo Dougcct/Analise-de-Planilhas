@@ -73,6 +73,7 @@ class Dataset:
     spec: object | None = None            # Especificacao: papéis e regras de negócio (modelo ou automática)
     problemas: pd.DataFrame | None = None  # qualidade por linha: aba, linha, entidade, campo, problema, valor
     entendimento: object | None = None    # cerebro.Entendimento: papéis/grão/layout (sem modelo antigo)
+    agente: object | None = None          # Agente de setor (Custos/Faturamento…) que analisa o recorte, ou None
 
 
 @dataclass

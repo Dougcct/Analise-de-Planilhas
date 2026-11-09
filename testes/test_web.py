@@ -339,6 +339,45 @@ def _subir(c, **campos):
     return m.group(1)
 
 
+def _custos_xlsx(n=6):
+    """Planilha SINTÉTICA de custos (aciona o Agente de Custos na prévia, sem modelo)."""
+    import io
+    import openpyxl
+    wb = openpyxl.Workbook(); ws = wb.active; ws.title = "Custos"
+    ws.append(["Centro de Custo", "Conta Contabil", "Competencia", "Orcado", "Realizado"])
+    for i in range(n):
+        ws.append(["UTI", "3.1.1", f"2026-0{i % 3 + 1}", 100000, 130000 + i * 1000])
+        ws.append(["Lavanderia", "3.1.2", f"2026-0{i % 3 + 1}", 10000, 9000])
+    b = io.BytesIO(); wb.save(b); return b.getvalue()
+
+
+def test_web_previa_agente_custos(web):
+    """Passo 2: sem modelo, a prévia detecta o Agente de Custos e permite trocar/desligar."""
+    import re
+    c = _cli("gestor.fat")
+    r = c.post("/web/enviar", data={"modo": "novo", "nome": "Custos Web", "modelo": ""},
+               files={"arquivos": ("custos.xlsx", _custos_xlsx(6), "x")}, follow_redirects=False)
+    assert r.status_code == 303, r.text
+    cid = re.search(r"/previa/(\d+)", r.headers["location"]).group(1)
+
+    previa = c.get(f"/web/enviar/previa/{cid}").text
+    assert "Agente de setor" in previa and "Custos" in previa     # selo + seletor do agente
+
+    # desligar o agente
+    rp = c.post(f"/web/enviar/previa/{cid}/agente", data={"agente": "__nenhum__"}, follow_redirects=False)
+    assert rp.status_code == 303 and "ok=" in rp.headers["location"]
+    assert "Sem agente" in c.get(f"/web/enviar/previa/{cid}").text
+
+    # voltar ao automático → Custos ativo de novo
+    rp2 = c.post(f"/web/enviar/previa/{cid}/agente", data={"agente": ""}, follow_redirects=False)
+    assert rp2.status_code == 303
+    assert "Ativo:" in c.get(f"/web/enviar/previa/{cid}").text
+
+    # agente inexistente é rejeitado
+    rx = c.post(f"/web/enviar/previa/{cid}/agente", data={"agente": "inexistente"}, follow_redirects=False)
+    assert "erro=" in rx.headers["location"]
+
+
 def test_web_enviar_novo_e_publicar(web):
     c = _cli("gestor.fat")
     cid = _subir(c, modo="novo", nome="Cesariana Teste Web", modelo="resumo_cesariana", n=7)

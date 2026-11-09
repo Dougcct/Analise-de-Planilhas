@@ -2,6 +2,50 @@
 
 Formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · [SemVer](https://semver.org/lang/pt-BR/)
 
+## [2.0.0] — 2026-11-09
+
+Marco do **produto web v2**: consolida o servidor (FastAPI + Docker, login e controle por setor) como o
+único produto e **remove em definitivo** o app desktop PyQt6 e o build `.exe`/Nuitka/atualizador. Estreia os
+**Agentes Especialistas por Setor**.
+
+### Adicionado (Agentes Especialistas por Setor)
+- **Pacote `Agentes/`** (raiz, 100% determinístico, sem IA em execução): **Escudo de Entrada de ERP**
+  (caça o cabeçalho real, descarta subtotais, blinda códigos, sanitiza números PT-BR) + roteamento com
+  **fallback transparente**. Vocabulário de cada setor em `config.toml` (adaptável sem tocar no código).
+  Ver [DOCS/19](19_agentes_por_setor.md).
+- **Agente de Faturamento Hospitalar**: taxa de glosa, valor líquido, taxa de recuperação, dedup de contas
+  parciais (guia × internação), aging alta→envio e backlog, Pareto 80% da glosa, alertas de risco.
+- **Agente de Custos**: Orçado × Realizado por centro/grupo (desvio R$ e %), Curva ABC (80/20), evolução por
+  competência, composição por grupo/natureza, lançamentos atípicos (z-score), alertas (estouro, gasto sem
+  orçamento, estorno, concentração).
+- **Análise setorial no relatório**: os achados/painéis/alertas do agente são dobrados na `Analise`
+  (aba "Análise de {setor}") — antes o agente só limpava a planilha.
+- **Roteamento robusto**: pontuação determinística (contexto do setor domina a densidade de colunas;
+  empate pela ordem de registro); `por_nome` (escolha forçada) e `candidatos` (lista para a prévia).
+- **Seletor de Agente na prévia** (`POST /web/enviar/previa/{id}/agente`): *Automático* / escolher / *Nenhum*,
+  salvo na carga (coluna `cargas.agente`); só sem modelo aplicado.
+
+### Adicionado (chamados)
+- **Anexo de arquivo** opcional nos chamados (além do print de imagem): a pessoa anexa a planilha que tenta
+  incluir. Tipos aceitos (xlsx/xls/xlsm/ods/csv/tsv/txt/pdf/json/zip) até 25 MB, com download pelo nome
+  original. Arquivo no volume (nome UUID), nunca no banco; servido só ao ADM e ao autor do chamado (LGPD).
+  Novas colunas `sugestao_mensagens.anexo_uuid` / `anexo_nome`.
+
+### Alterado
+- **Documentação reescrita para o produto web** (01 visão geral, 02 arquitetura, 05 interface web,
+  07 diretrizes), índice e READMEs atualizados; 16/18 passam a descrever a v2 como **vigente** (não mais
+  "planejamento"). POPs revisados para o fluxo web.
+
+### Removido
+- Documentos e referências do **app desktop PyQt6** e do **build `.exe`/Nuitka**/atualizador (08 e 17 já não
+  existiam; `05` deixou de ser a "janela PyQt6"); pasta `DOCS/Planejamento` (histórico já incorporado).
+
+### Migração
+- **Banco**: `cargas.agente` e `sugestao_mensagens.anexo_uuid`/`anexo_nome` entram pela migração leve
+  (`servidor/bd.py`, `ALTER TABLE ADD COLUMN` idempotente) — nada a fazer manualmente.
+- **Compatibilidade**: sem modelo e sem agente aplicável, o comportamento é idêntico ao anterior
+  (fallback transparente). Modelos `.toml` existentes continuam valendo.
+
 ## [1.6.0] — 2026-11-04
 
 ### Alterado (menu lateral reorganizado + Administração em telas separadas)

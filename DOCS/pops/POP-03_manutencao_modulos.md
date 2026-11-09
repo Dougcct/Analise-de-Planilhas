@@ -10,7 +10,7 @@
 ## Objetivo
 
 Estender o programa quando a adaptação por modelo ([POP-02](POP-02_adaptar_novo_cliente.md)) não resolve:
-tipo semântico novo, gráfico/painel novo ou formato de saída novo.
+tipo semântico novo, gráfico/painel novo, formato de saída novo **ou um novo Agente de setor**.
 
 ## A. Preparação
 
@@ -32,20 +32,30 @@ tipo semântico novo, gráfico/painel novo ou formato de saída novo.
    `formatos` (int | dec | pct | moeda | dias).
 2. Gráfico (opcional) em `graficos.py`: **SVG/HTML puro** (`colunas`, `barras` ou função nova no mesmo
    estilo — cores por variável CSS `--s1…`, tooltip `data-tip`). **Sem bibliotecas JavaScript.**
-3. O painel entra em `Analise.paineis`: vira aba na janela e seção no relatório HTML automaticamente.
+3. O painel entra em `Analise.paineis`: vira seção no relatório HTML (e aba na web) automaticamente.
 
-## D. Novo formato de saída (PDF/DOCX)
+## D. Novo Agente de setor
+
+1. Crie `Agentes/<setor>/` com `config.toml` (vocabulário: `[colunas]`, `ids_principais`, `valores`,
+   `codigos`), `rules.py` (classe que herda `AgenteBase`, com `nome`/`setor`/`palavras_chave` e
+   `analisar(df)`) e `__init__.py`.
+2. Registre a classe na tupla `AGENTES` em `Agentes/router.py`.
+3. O Escudo de Entrada, o mapeamento por sinônimos e o encaixe no relatório já vêm da base. Guia completo:
+   [19_agentes_por_setor.md](../19_agentes_por_setor.md).
+
+## E. Novo formato de saída (PDF/DOCX)
 
 1. Crie `relatorio_<formato>.py` recebendo o objeto `Analise` — **nunca recalcule números**.
-2. Ligue a um botão em `app/janela.py`.
+2. Ligue na interface web (`servidor/web.py`) e/ou numa CLI.
 
-## E. Testes e qualidade
+## F. Testes e qualidade
 
 1. Fixture **sintética** em `testes/conftest.py` cobrindo o caso (inclusive o limite).
-2. Teste unitário (detector/função) e de ponta a ponta (`servico.carregar`/`analisar`).
-3. `python -m pytest` e `python main.py --autoteste` sem falhas.
+2. Teste unitário (detector/função) e de ponta a ponta (`servico.carregar`/`analisar`); Agente em
+   `testes/test_agentes.py`; web em `testes/test_web.py`.
+3. `python -m pytest` e `ruff check .` sem falhas.
 
-## F. Entrega
+## G. Entrega
 
 1. Atualize [CHANGELOG.md](../CHANGELOG.md) e os docs afetados; incremente a versão se for release.
 2. Commits em Conventional Commits; abra PR; revisão; merge.
