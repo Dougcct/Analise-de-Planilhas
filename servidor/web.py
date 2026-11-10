@@ -1150,6 +1150,73 @@ def dados_relatorio_csv(slug: str, request: Request, s: Session = Depends(_sessa
                     headers={"Content-Disposition": f"attachment; filename*=utf-8''{quote(nome)}"})
 
 
+@router.get("/r/{slug}/sumario.md")
+def sumario_markdown(slug: str, request: Request, s: Session = Depends(_sessao)):
+    """Sumário executivo formatado em Markdown pronto para atas, e-mails de diretoria ou notas de reunião."""
+    srv = _srv()
+    escopo = _escopo(request, s)
+    if escopo is None or escopo.precisa_trocar_senha:
+        return Response(content="# Sessão expirada.\n", media_type="text/markdown; charset=utf-8", status_code=401)
+    rel = RepoRelatorios(s, escopo).obter(slug)
+    if rel is None:
+        return Response(content="# Relatório não encontrado.\n", media_type="text/markdown; charset=utf-8", status_code=404)
+    ds = srv._dataset_do_relatorio(s, rel)
+    f = _ler_filtros_query(request, ds)
+    if not escopo.pode_setor(rel.centro_custo_id):
+        ac = srv.acesso_vigente(s, escopo.usuario_id, rel.id)
+        if ac is not None and ac.anonimizar:
+            f.anonimizar = True
+    _audit(s, escopo, "baixar_sumario_md", f"web:{slug}")
+    s.commit()
+    analise = servico.analisar(ds, f)
+
+    agora = dt.datetime.now().strftime("%d/%m/%Y às %H:%M")
+    linhas_md = [
+        f"# Sumário Executivo — {rel.nome}",
+        f"*Gerado em {agora} pelo Sistema de Análise de Planilhas*",
+        "",
+        "---",
+        "",
+        "## 📌 Indicadores-Chave (KPIs)",
+    ]
+    for kpi in analise.kpis:
+        det = f" *({kpi.detalhe})*" if kpi.detalhe else ""
+        linhas_md.append(f"- **{kpi.rotulo}**: `{kpi.valor}`{det}")
+
+    if analise.achados:
+        linhas_md.extend(["", "## 💡 Principais Achados & Destaques Analíticos"])
+        for idx, achado in enumerate(analise.achados, start=1):
+            linhas_md.append(f"{idx}. {achado}")
+
+    if analise.metas:
+        linhas_md.extend(["", "## 🎯 Metas & Conformidade"])
+        for meta in analise.metas:
+            chk = "[x]" if meta.ok else "[ ]"
+            status_txt = f" ({meta.status})" if getattr(meta, "status", None) else ""
+            linhas_md.append(f"- {chk} **{meta.rotulo}**: Realizado `{meta.valor_fmt}` / Alvo `{meta.alvo_fmt}`{status_txt}")
+
+    if analise.resumo or analise.observacoes:
+        linhas_md.extend(["", "## 📋 Resumo & Contexto"])
+        if analise.resumo:
+            linhas_md.append(analise.resumo)
+        if analise.observacoes:
+            linhas_md.append(f"\n> {analise.observacoes}")
+
+    linhas_md.extend([
+        "",
+        "---",
+        f"*Fonte dos dados: {rel.slug} ({analise.linhas} linhas analisadas).*",
+    ])
+
+    conteudo_md = "\n".join(linhas_md) + "\n"
+    nome = f"{slug}-sumario-executivo.md"
+    return Response(
+        content=conteudo_md.encode("utf-8"),
+        media_type="text/markdown; charset=utf-8",
+        headers={"Content-Disposition": f"inline; filename*=utf-8''{quote(nome)}"},
+    )
+
+
 @router.post("/r/{slug}/painel-executivo")
 async def salvar_painel_executivo(slug: str, request: Request, s: Session = Depends(_sessao)):
     from fastapi.responses import JSONResponse

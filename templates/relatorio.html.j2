@@ -274,6 +274,33 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 12px
 
 /* ============ MODO VERSÃO EDITÁVEL (2ª versão p/ edição, impressão e compartilhamento) ============ */
 [data-oculto="1"] { display: none !important; }
+/* Drag and Drop e Redimensionamento no Editor */
+body.modo-editavel .painel, body.modo-editavel .exec-fig, body.modo-editavel .kpi-exec {
+  cursor: grab;
+  transition: transform .12s, box-shadow .12s, opacity .12s;
+}
+body.modo-editavel .painel.arrastando, body.modo-editavel .exec-fig.arrastando, body.modo-editavel .kpi-exec.arrastando {
+  opacity: 0.38 !important;
+  cursor: grabbing !important;
+  transform: scale(0.98);
+}
+body.modo-editavel .painel.arraste-alvo, body.modo-editavel .exec-fig.arraste-alvo, body.modo-editavel .kpi-exec.arraste-alvo {
+  outline: 2.5px dashed var(--marca) !important;
+  outline-offset: 4px;
+}
+.alca-redim {
+  position: absolute; right: 4px; bottom: 4px; width: 16px; height: 16px;
+  cursor: nwse-resize; opacity: 0; transition: opacity .15s;
+  background: linear-gradient(135deg, transparent 50%, var(--marca) 50%);
+  border-radius: 2px; z-index: 6; user-select: none;
+}
+body.modo-editavel .painel:hover .alca-redim, body.modo-editavel .exec-fig:hover .alca-redim {
+  opacity: 0.85;
+}
+body.redimensionando-card {
+  user-select: none !important;
+  cursor: nwse-resize !important;
+}
 #barra-editavel { display: none; position: sticky; top: 37px; z-index: 14; background: var(--surface);
   border-bottom: 2px solid var(--marca); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
 body.modo-editavel #barra-editavel { display: block; }
@@ -810,6 +837,8 @@ body.modo-editavel .ed-achado-del { display: inline; }
           <option value="barras">Barras horizontais (ranking)</option>
           <option value="colunas">Colunas verticais</option>
           <option value="linha">Linha de tendência (SVG)</option>
+          <option value="area">Área preenchida (Evolução / Tendência)</option>
+          <option value="waterfall">Cascata / Waterfall (DRE / Variações)</option>
           <option value="rosca">Rosca / Proporção (Donut)</option>
         </select>
       </div>
@@ -1191,6 +1220,7 @@ body.modo-editavel .ed-achado-del { display: inline; }
     document.body.classList.add('modo-editavel');
     edAtualizarEditaveis(true);
     edAtualizarListaOcultos();
+    edHabilitarDragDropERedim();
     var btn = document.getElementById('btn-gerar-editavel');
     if (btn) btn.textContent = '✎ Editando versão';
   };
@@ -1307,6 +1337,116 @@ body.modo-editavel .ed-achado-del { display: inline; }
     var sel = document.getElementById('ed-sel-larg-pag');
     if (sel && sel.value !== larg) sel.value = larg;
   };
+
+  var elementoArrastado = null;
+  window.edHabilitarDragDropERedim = function () {
+    if (!document.body.classList.contains('modo-editavel')) return;
+    var itens = document.querySelectorAll('.exec-fig, .painel, .kpi-exec');
+    for (var i = 0; i < itens.length; i++) {
+      var item = itens[i];
+      if (item.getAttribute('data-dd-ativo') === '1') continue;
+      item.setAttribute('data-dd-ativo', '1');
+      item.setAttribute('draggable', 'true');
+
+      if (!item.classList.contains('kpi-exec') && !item.querySelector('.alca-redim')) {
+        var alca = document.createElement('span');
+        alca.className = 'alca-redim no-print';
+        alca.title = 'Arraste para redimensionar largura e altura';
+        (function (card, hnd) {
+          hnd.addEventListener('mousedown', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            document.body.classList.add('redimensionando-card');
+            var startX = e.clientX, startY = e.clientY;
+            var startW = card.offsetWidth;
+            var startH = card.offsetHeight;
+            var pai = card.parentElement;
+            var parentW = pai ? pai.offsetWidth : 1200;
+            var wrap = card.querySelector('.painel-fig-wrap, .exec-fig-corpo');
+            var svg = card.querySelector('svg.grafico');
+
+            function onMouseMove(ev) {
+              ev.preventDefault();
+              var dx = ev.clientX - startX;
+              var dy = ev.clientY - startY;
+              var pct = (startW + dx) / parentW;
+              var snap = 6;
+              if (pct <= 0.29) snap = 3;
+              else if (pct <= 0.42) snap = 4;
+              else if (pct <= 0.58) snap = 6;
+              else if (pct <= 0.83) snap = 8;
+              else snap = 12;
+              window.edDefinirLarguraCard(card, snap);
+
+              var novaH = Math.max(120, Math.min(800, startH + dy));
+              card.setAttribute('data-altura', String(novaH));
+              if (wrap) wrap.style.minHeight = novaH + 'px';
+              if (svg) svg.style.height = novaH + 'px';
+            }
+
+            function onMouseUp() {
+              document.body.classList.remove('redimensionando-card');
+              window.removeEventListener('mousemove', onMouseMove);
+              window.removeEventListener('mouseup', onMouseUp);
+            }
+
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('mouseup', onMouseUp);
+          });
+        })(item, alca);
+        item.appendChild(alca);
+      }
+
+      item.addEventListener('dragstart', function (e) {
+        if (!document.body.classList.contains('modo-editavel')) return;
+        var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
+        if (tag === 'input' || tag === 'select' || tag === 'button' || (e.target && e.target.isContentEditable)) {
+          e.preventDefault();
+          return;
+        }
+        elementoArrastado = this;
+        this.classList.add('arrastando');
+        if (e.dataTransfer) {
+          e.dataTransfer.effectAllowed = 'move';
+          try { e.dataTransfer.setData('text/plain', this.getAttribute('data-gid') || this.getAttribute('data-painel-id') || 'card'); } catch (err) {}
+        }
+      });
+
+      item.addEventListener('dragend', function () {
+        this.classList.remove('arrastando');
+        var alvos = document.querySelectorAll('.arraste-alvo');
+        for (var k = 0; k < alvos.length; k++) alvos[k].classList.remove('arraste-alvo');
+        elementoArrastado = null;
+      });
+
+      item.addEventListener('dragover', function (e) {
+        if (!elementoArrastado || elementoArrastado === this) return;
+        if (elementoArrastado.parentElement !== this.parentElement) return;
+        e.preventDefault();
+        if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+        this.classList.add('arraste-alvo');
+      });
+
+      item.addEventListener('dragleave', function () {
+        this.classList.remove('arraste-alvo');
+      });
+
+      item.addEventListener('drop', function (e) {
+        e.preventDefault();
+        this.classList.remove('arraste-alvo');
+        if (!elementoArrastado || elementoArrastado === this) return;
+        var pai = this.parentElement;
+        if (!pai || elementoArrastado.parentElement !== pai) return;
+        var rect = this.getBoundingClientRect();
+        var meio = rect.left + rect.width / 2;
+        if (e.clientX > meio) {
+          pai.insertBefore(elementoArrastado, this.nextSibling);
+        } else {
+          pai.insertBefore(elementoArrastado, this);
+        }
+      });
+    }
+  };
   window.edMoverKpiExec = function (btn, dir) {
     var kpi = btn.closest('.kpi-exec');
     if (!kpi || !kpi.parentElement) return;
@@ -1372,6 +1512,7 @@ body.modo-editavel .ed-achado-del { display: inline; }
     var card = criarCardGraficoExec(pid, tit, fw.innerHTML, 6, ehCustom);
     contGraf.appendChild(card);
     contGraf.hidden = false;
+    edHabilitarDragDropERedim();
     var ck = document.querySelector('#exec-cfg-graficos .exec-ck-graf[value="' + pid + '"]');
     if (ck) ck.checked = true;
     card.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1543,6 +1684,58 @@ body.modo-editavel .ed-achado-del { display: inline; }
         svg += '<text class="valor" x="' + cx + '" y="' + (y - 5) + '" text-anchor="middle">' + escHtml(pares[k].fmt) + '</text>';
         svg += '<text class="eixo" x="' + cx + '" y="' + (padT + plotH + 16) + '" text-anchor="middle">' + escHtml(rotCurto) + '</text>';
       }
+    } else if (tipo === 'area') {
+      var pts = [];
+      for (var l = 0; l < n; l++) {
+        var px = n === 1 ? Math.round(padL + plotW / 2) : Math.round(padL + (l / (n - 1)) * plotW);
+        var py = Math.round(padT + plotH - (Math.max(0, pares[l].val) / maxV) * plotH);
+        pts.push({ x: px, y: py, p: pares[l] });
+      }
+      var poly = pts.map(function (pt) { return pt.x + ',' + pt.y; }).join(' ');
+      var baseY = padT + plotH;
+      var pathArea = 'M ' + pts[0].x + ',' + baseY + ' L ' + pts.map(function (pt) { return pt.x + ',' + pt.y; }).join(' L ') + ' L ' + pts[pts.length - 1].x + ',' + baseY + ' Z';
+      svg += '<path d="' + pathArea + '" fill="var(--s1)" fill-opacity="0.22"></path>';
+      svg += '<polyline fill="none" stroke="var(--s1)" stroke-width="2.5" points="' + poly + '"></polyline>';
+      for (var pIdx = 0; pIdx < pts.length; pIdx++) {
+        var pt = pts[pIdx];
+        var rCurto = pt.p.rot.length > 10 ? pt.p.rot.slice(0, 9) + '…' : pt.p.rot;
+        svg += '<circle cx="' + pt.x + '" cy="' + pt.y + '" r="4.5" fill="var(--s1)" data-tip="' + escHtml(pt.p.rot + ': ' + pt.p.fmt) + '"></circle>';
+        svg += '<text class="valor" x="' + pt.x + '" y="' + (pt.y - 8) + '" text-anchor="middle">' + escHtml(pt.p.fmt) + '</text>';
+        svg += '<text class="eixo" x="' + pt.x + '" y="' + (padT + plotH + 16) + '" text-anchor="middle">' + escHtml(rCurto) + '</text>';
+      }
+    } else if (tipo === 'waterfall') {
+      var acum = 0, maxCum = 0, minCum = 0;
+      var dadosW = [];
+      for (var w = 0; w < n; w++) {
+        var vW = pares[w].val;
+        var inicioW = acum;
+        acum += vW;
+        if (acum > maxCum) maxCum = acum;
+        if (acum < minCum) minCum = acum;
+        dadosW.push({ rot: pares[w].rot, val: vW, fmt: pares[w].fmt, de: inicioW, para: acum });
+      }
+      var rangeW = Math.max(1, maxCum - Math.min(0, minCum));
+      var stepW = plotW / Math.max(1, n);
+      var bwW = Math.max(12, Math.min(46, Math.round(stepW * 0.64)));
+      for (var kw = 0; kw < n; kw++) {
+        var itemW = dadosW[kw];
+        var y1 = padT + plotH - (Math.max(0, Math.min(itemW.de, itemW.para)) / rangeW) * plotH;
+        var y2 = padT + plotH - (Math.max(0, Math.max(itemW.de, itemW.para)) / rangeW) * plotH;
+        var altW = Math.max(4, Math.round(Math.abs(y1 - y2)));
+        var yTop = Math.min(y1, y2);
+        var xW = Math.round(padL + kw * stepW + (stepW - bwW) / 2);
+        var cxW = Math.round(xW + bwW / 2);
+        var corW = itemW.val >= 0 ? 'var(--ok, #28c76f)' : 'var(--alerta, #ea5455)';
+        if (kw === n - 1) corW = 'var(--marca, #00995d)';
+        var rotCurtoW = itemW.rot.length > 11 ? itemW.rot.slice(0, 10) + '…' : itemW.rot;
+        svg += '<rect x="' + xW + '" y="' + yTop + '" width="' + bwW + '" height="' + altW + '" rx="3" fill="' + corW + '" data-tip="' + escHtml(itemW.rot + ': ' + itemW.fmt) + '"></rect>';
+        if (kw < n - 1) {
+          var xProx = Math.round(padL + (kw + 1) * stepW + (stepW - bwW) / 2);
+          svg += '<line x1="' + (xW + bwW) + '" y1="' + yTop + '" x2="' + xProx + '" y2="' + yTop + '" stroke="var(--border)" stroke-dasharray="2 2"></line>';
+        }
+        svg += '<text class="valor" x="' + cxW + '" y="' + (yTop - 5) + '" text-anchor="middle">' + escHtml(itemW.fmt) + '</text>';
+        svg += '<text class="eixo" x="' + cxW + '" y="' + (padT + plotH + 16) + '" text-anchor="middle">' + escHtml(rotCurtoW) + '</text>';
+      }
     } else {
       var pts = [];
       for (var l = 0; l < n; l++) {
@@ -1654,6 +1847,7 @@ body.modo-editavel .ed-achado-del { display: inline; }
         pn.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     }
+    edHabilitarDragDropERedim();
     window.edFecharModalGrafico();
   };
   window.edAlternarFigura = function (btn) {
@@ -1853,6 +2047,7 @@ body.modo-editavel .ed-achado-del { display: inline; }
   if (document.body.classList.contains('modo-editavel')) {
     edAtualizarEditaveis(true);
     edAtualizarListaOcultos();
+    edHabilitarDragDropERedim();
   }
 
   // ---- filtros de dimensão (Convênio, Ano, Arquivo de origem, …) — valem no servidor web ----

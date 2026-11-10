@@ -53,6 +53,7 @@ fórmula; ver dominio/docs/13.
 """
 from __future__ import annotations
 
+import hashlib
 import io
 import re
 
@@ -91,7 +92,16 @@ def _mes(texto) -> pd.Timestamp:
     return pd.Timestamp(t + "-01" if len(t) == 7 else t).normalize().replace(day=1)
 
 
+_CACHE_GRADE: dict[tuple[bytes, str], list[tuple]] = {}
+_MAX_CACHE_GRADE = 16
+
+
 def _grade(dados: bytes, aba: str) -> list[tuple]:
+    """Retorna as linhas brutas da aba da planilha em memória, com cache LRU por hash dos dados."""
+    chave = (hashlib.sha256(dados).digest(), aba)
+    if chave in _CACHE_GRADE:
+        return _CACHE_GRADE[chave]
+
     import openpyxl
 
     wb = openpyxl.load_workbook(io.BytesIO(dados), data_only=True, read_only=True)
@@ -100,9 +110,14 @@ def _grade(dados: bytes, aba: str) -> list[tuple]:
             raise ValueError(f"A aba «{aba}» não existe nesta planilha.")
         ws = wb[aba]
         ws.reset_dimensions()
-        return [tuple(r) for r in ws.iter_rows(values_only=True)]
+        linhas = [tuple(r) for r in ws.iter_rows(values_only=True)]
     finally:
         wb.close()
+
+    if len(_CACHE_GRADE) >= _MAX_CACHE_GRADE:
+        _CACHE_GRADE.pop(next(iter(_CACHE_GRADE)))
+    _CACHE_GRADE[chave] = linhas
+    return linhas
 
 
 def _negrito_coluna(dados: bytes, aba: str, col: int) -> dict[int, bool]:
@@ -310,6 +325,25 @@ def ler(dados: bytes, nome_arquivo: str, aba: str, cfg: dict) -> tuple[pd.DataFr
     for _, regs in unicas.values():
         registros += regs
     if not registros:
+        tem_formulas = False
+        try:
+            import openpyxl
+
+            wb_diag = openpyxl.load_workbook(io.BytesIO(dados), data_only=False, read_only=True)
+            if aba in wb_diag.sheetnames:
+                ws_diag = wb_diag[aba]
+                for r in ws_diag.iter_rows(min_row=ini, max_row=min(fim, ini + 30), values_only=True):
+                    if any(isinstance(c, str) and c.startswith("=") for c in r):
+                        tem_formulas = True
+                        break
+            wb_diag.close()
+        except Exception:
+            pass
+        if tem_formulas:
+            raise ValueError(
+                f"A aba «{aba}» contém fórmulas cujos valores não foram pré-calculados pelo Excel ao salvar. "
+                "Abra a planilha no Microsoft Excel, pressione Ctrl+Alt+F9 para forçar o recálculo e salve o arquivo antes de carregar."
+            )
         raise ValueError(
             f"A aba «{aba}» está no formato matriz, mas nenhuma conta com valores foi lida no intervalo de "
             f"linhas {ini}–{fim}. Se as abas da planilha se referenciam por fórmula, abra o arquivo no Excel "

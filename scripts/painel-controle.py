@@ -178,6 +178,25 @@ def site_responde(timeout: float = 2.0) -> int | None:
         return None
 
 
+def db_status() -> str:
+    """Retorna o status do container PostgreSQL (ex.: healthy, starting, running, fora)."""
+    try:
+        out = subprocess.run(
+            ["docker", "inspect", "-f", "{{.State.Health.Status}}", "analise-planilhas-banco"],
+            cwd=str(RAIZ), capture_output=True, text=True, creationflags=_NO_WINDOW, check=False,
+        )
+        st = out.stdout.strip()
+        if st:
+            return st
+        out2 = subprocess.run(
+            ["docker", "inspect", "-f", "{{.State.Status}}", "analise-planilhas-banco"],
+            cwd=str(RAIZ), capture_output=True, text=True, creationflags=_NO_WINDOW, check=False,
+        )
+        return out2.stdout.strip() or "fora"
+    except Exception:
+        return "fora"
+
+
 def ler_versao() -> str:
     try:
         for linha in VERSAO_ARQ.read_text(encoding="utf-8").splitlines():
@@ -347,6 +366,39 @@ def trabalho_parar_docker(log) -> tuple[bool, str]:
     return False, "Falha ao parar os containers."
 
 
+def trabalho_sincronizar_modelos(log) -> tuple[bool, str]:
+    """Copia os modelos TOML locais para o volume do Docker e reinicia o serviço web."""
+    log("Sincronizando modelos TOML locais para o Docker...", "step")
+    pasta_modelos = RAIZ / "dominio" / "modelos"
+    modelos = list(pasta_modelos.glob("*.toml"))
+    log(f"Encontrados {len(modelos)} modelo(s) em {pasta_modelos.name}/.", "info")
+    for m in modelos:
+        log(f"  • {m.name}", "info")
+
+    log("Copiando para analise-planilhas-servidor:/app/dominio/modelos/ ...", "step")
+    rc = rodar_comando(
+        ["docker", "cp", f"{pasta_modelos}/.", "analise-planilhas-servidor:/app/dominio/modelos/"],
+        log,
+    )
+    if rc != 0:
+        log("Falha ao copiar arquivos para o container. Ele esta em execucao?", "error")
+        return False, "Falha na sincronizacao de modelos."
+
+    log("Reiniciando a API para aplicar as alteracoes...", "step")
+    rc2 = rodar_comando(["docker", "compose", "restart", "api"], log)
+    if rc2 != 0:
+        rodar_comando(["docker", "restart", "analise-planilhas-servidor"], log)
+
+    log("Aguardando o site restabelecer...", "step")
+    for _ in range(15):
+        if site_responde() == 200:
+            log("API respondendo 200 OK com novos modelos!", "ok")
+            return True, f"{len(modelos)} modelos sincronizados com sucesso."
+        time.sleep(1.5)
+
+    return True, f"{len(modelos)} modelos copiados (aguardando resposta da API)."
+
+
 # ----------------------------------------------------------------------------
 # Widgets da interface
 # ----------------------------------------------------------------------------
@@ -430,8 +482,9 @@ class Painel(QWidget):
 
         self.lbl_branch = QLabel()
         self.lbl_versao = QLabel()
+        self.lbl_db = QLabel()
         self.lbl_site = QLabel()
-        for lbl in (self.lbl_branch, self.lbl_versao, self.lbl_site):
+        for lbl in (self.lbl_branch, self.lbl_versao, self.lbl_db, self.lbl_site):
             lbl.setObjectName("statusItem")
             lin.addWidget(lbl)
         lin.addStretch(1)
@@ -534,6 +587,9 @@ class Painel(QWidget):
         lin.addStretch(1)
 
         # Grupo 2 — tarefas (transmitem no log; travam junto com Docker/Git)
+        self.btn_sync_modelos = gbtn("🔄  Sincronizar Modelos",
+                                     lambda: self._iniciar(trabalho_sincronizar_modelos, "Sincronizando modelos com Docker…"),
+                                     "Copia dominio/modelos/*.toml para o container Docker e recarrega a API")
         self.btn_testes = gbtn("🧪  Testes", lambda: self._iniciar(trabalho_testes, "Rodando testes…"),
                                "python -m pytest -q")
         self.btn_lint = gbtn("🧹  Lint", lambda: self._iniciar(trabalho_lint, "Verificando o estilo…"),
@@ -544,7 +600,7 @@ class Painel(QWidget):
         self.btn_parar = gbtn("⏹  Parar Docker",
                               lambda: self._iniciar(trabalho_parar_docker, "Parando o Docker…"),
                               "docker compose down")
-        for b in (self.btn_testes, self.btn_lint, self.btn_logs, self.btn_parar):
+        for b in (self.btn_sync_modelos, self.btn_testes, self.btn_lint, self.btn_logs, self.btn_parar):
             lin.addWidget(b)
 
         lay.addLayout(lin)
@@ -655,6 +711,15 @@ class Painel(QWidget):
     def atualizar_cabecalho(self):
         self.lbl_branch.setText(f"Branch:  <b>{html.escape(ler_branch())}</b>")
         self.lbl_versao.setText(f"Versao:  <b>{html.escape(ler_versao())}</b>")
+
+        db_st = db_status()
+        if db_st == "healthy":
+            self.lbl_db.setText(f"Banco:  <b style='color:{ACCENT}'>saudavel (healthy)</b>")
+        elif db_st in ("starting", "running"):
+            self.lbl_db.setText(f"Banco:  <b style='color:#f5b544'>{html.escape(db_st)}</b>")
+        else:
+            self.lbl_db.setText("Banco:  <b style='color:#ff6b6b'>fora do ar</b>")
+
         status = site_responde(timeout=1.5)
         if status == 200:
             self.lbl_site.setText(f"Site:  <b style='color:{ACCENT}'>no ar (200)</b>")
@@ -676,7 +741,7 @@ class Painel(QWidget):
     def _travar(self, travado: bool, estado: str = ""):
         # Botoes que disparam tarefas em segundo plano (os atalhos de abrir ficam sempre ativos).
         for b in (self.btn_docker, self.btn_git, self.btn_atualizar, self.ed_commit,
-                  self.btn_testes, self.btn_lint, self.btn_logs, self.btn_parar):
+                  self.btn_sync_modelos, self.btn_testes, self.btn_lint, self.btn_logs, self.btn_parar):
             b.setEnabled(not travado)
         if estado:
             self.lbl_estado.setText(estado)

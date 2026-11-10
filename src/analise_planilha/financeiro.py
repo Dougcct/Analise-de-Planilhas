@@ -249,6 +249,19 @@ def _kpis_gerais(df, c: _Ctx, meses, base) -> tuple[list[KPI], dict]:
             info["var_ytd"] = _var(ytd, float(s[s.index.isin(ant)].sum()))
             nota = f"{_pct_txt(info['var_ytd'])} vs {rm(ant[0])}–{rm(ant[-1])}"
         k.append(KPI(f"Acumulado {ult.year} ({rm(ano[0])}–{rm(ano[-1])})", rs(ytd), nota, valor_num=ytd, fmt="moeda"))
+        if 0 < len(ano) < 12:
+            media_ano = ytd / len(ano)
+            restantes = 12 - len(ano)
+            projecao = ytd + (media_ano * restantes)
+            info["projecao_ano"] = projecao
+            info["ano_corrente"] = ult.year
+            k.append(KPI(
+                f"Projeção {ult.year} (fechamento)",
+                rs(projecao),
+                f"YTD ({len(ano)} m) + {restantes} m na média ({rs(media_ano)}/m)",
+                valor_num=projecao,
+                fmt="moeda",
+            ))
     info.update(total=total, media=media, ultimo=v_ult)
     return k, info
 
@@ -777,6 +790,11 @@ def montar(df: pd.DataFrame, spec, extras: dict, cfg: dict, filtrado_por_conta: 
             achados.append(f"{c.nome} no período {info['base']}: {_pct_txt(info['var_base'])}{alerta}.")
         if info.get("var_ytd") is not None:
             achados.append(f"Acumulado de {meses[-1].year}: {_pct_txt(info['var_ytd'])} em relação ao mesmo período do ano anterior.")
+        if info.get("projecao_ano") is not None:
+            achados.append(
+                f"Projeção de fechamento para {info['ano_corrente']}: {rs(info['projecao_ano'])} "
+                f"(estimativa com base no realizado YTD + média mensal projetada para os meses restantes)."
+            )
 
     if c.perfil != "dre":           # na DRE a composição é a das despesas (já no demonstrativo)
         p, f = _paineis_composicao(df, c, meses, base)
