@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="pt-br"><head><meta charset="utf-8"><title>Feedback NPS</title>
+<style>
+    @page { size: A4 landscape; margin: 14mm 16mm; }
+    @page tabela { size: A4 portrait; margin: 16mm; }
+    * { box-sizing: border-box; }
+    body { font-family: Calibri, 'Segoe UI', Arial, sans-serif; color:#222; margin:0; }
+    .pg { page-break-after: always; position: relative; }
+    .pg:last-child { page-break-after: auto; }
+    h1 { text-align:center; font-size:22px; margin:0 0 14px; }
+    .totais { font-weight:700; font-size:13px; margin:2px 0; }
+    .pergunta { font-size:15px; font-weight:700; margin:16px 0 4px; }
+    .grid { display:flex; gap:28px; align-items:center; margin-top:10px; }
+    .col-leg { flex:1 1 55%; }
+    .col-chart { flex:1 1 45%; text-align:center; }
+    .escala { font-weight:700; font-size:13px; margin-bottom:8px; }
+    .leg-row { display:flex; align-items:center; gap:10px; margin:7px 0; font-size:13px; }
+    .sw { width:16px; height:16px; border-radius:3px; display:inline-block; flex:0 0 auto; }
+    .leg-rot { flex:1 1 auto; font-weight:600; }
+    .leg-tot { width:90px; font-weight:700; }
+    .leg-pct { width:48px; text-align:center; color:#fff; font-weight:700;
+               border-radius:3px; padding:2px 0; }
+    .donut { width:280px; height:280px; }
+    .chart-titulo { font-size:13px; font-weight:700; margin-bottom:6px; }
+    .rodape { margin-top:22px; font-size:11px; color:#444; line-height:1.5; }
+    .rodape p { margin:4px 0; }
+    /* Página 4 */
+    .pg-tab { page: tabela; page-break-after:auto; }
+    .tab-head { display:flex; justify-content:space-between; font-weight:700;
+                font-size:14px; margin-bottom:10px; }
+    table.serv { width:100%; border-collapse:collapse; font-size:12px; }
+    table.serv th, table.serv td { border:1px solid #bbb; padding:5px 8px; }
+    table.serv th { background:#d9d9d9; }
+    table.serv td.num { text-align:center; width:70px; }
+    table.serv thead th { text-align:center; }
+    table.serv thead th.sv { text-align:left; }
+    </style></head><body>
+
+<section class="pg">
+  <h1>NPS (Net Promoter Score)</h1>
+  <div class="totais">TOTAL DE ATENDIMENTOS EM SETEMBRO DE 2026: 4428</div>
+  <div class="totais">TOTAL DE PESQUISAS APURADAS EM SETEMBRO DE 2026: 188</div>
+  <div class="pergunta">1. Qual a probabilidade de recomendação do nosso Hospital a amigos ou familiares que necessitem de atendimento?</div>
+  <div class="grid">
+    <div class="col-leg">
+      <div class="escala">ESCALA:</div>
+      <div class="leg-row"><span class="sw" style="background:#ff0000"></span><span class="leg-rot">0-6 = CLIENTES DETRATORES</span><span class="leg-tot">TOTAL: 5</span><span class="leg-pct" style="background:#ff0000">3%</span></div><div class="leg-row"><span class="sw" style="background:#2e75b6"></span><span class="leg-rot">7-8 = CLIENTES NEUTROS</span><span class="leg-tot">TOTAL: 26</span><span class="leg-pct" style="background:#2e75b6">14%</span></div><div class="leg-row"><span class="sw" style="background:#00b050"></span><span class="leg-rot">9-10 = CLIENTES PROMOTORES</span><span class="leg-tot">TOTAL: 155</span><span class="leg-pct" style="background:#00b050">82%</span></div><div class="leg-row"><span class="sw" style="background:#d9d9d9"></span><span class="leg-rot">SEM RESPOSTA</span><span class="leg-tot">TOTAL: 2</span><span class="leg-pct" style="background:#d9d9d9">1%</span></div>
+    </div>
+    <div class="col-chart">
+      <div class="chart-titulo">Qual a probabilidade de recomendação do nosso Hospital a amigos ou familiares que necessitem de atendimento?</div>
+      <svg viewBox="0 0 42 42" class="donut"><circle cx="21" cy="21" r="15.915" fill="#fff" stroke="#f2f2f2" stroke-width="10"></circle><circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#ff0000" stroke-width="10" stroke-dasharray="2.660 97.340" stroke-dashoffset="25.000"></circle><circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#2e75b6" stroke-width="10" stroke-dasharray="13.830 86.170" stroke-dashoffset="22.340"></circle><circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#00b050" stroke-width="10" stroke-dasharray="82.447 17.553" stroke-dashoffset="8.511"></circle><circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#d9d9d9" stroke-width="10" stroke-dasharray="1.064 98.936" stroke-dashoffset="-73.936"></circle></svg>
+    </div>
+  </div>
+  <div class="rodape"><p><b>Clientes DETRATORES</b> aqueles que tiveram experiências ruins e não tiveram suas expectativas atendidas e, portanto, podem falar mal da empresa para seus amigos.</p><p><b>Clientes NEUTROS ou passivos</b> aqueles que tiveram experiências parciais, no caso de uma recomendação eles o fariam com ressalvas. São grandes as chances de eles migrarem para a concorrência pois não estão “fidelizados”.</p><p><b>Clientes PROMOTORES</b> aqueles que tiveram uma boa experiência e se tornam leais à empresa. Também costumam interagir com a marca e recomenda-la para os conhecidos.</p></div>
+</section>
+
+<section class="pg">
+  <div class="pergunta">2. Como avalia o tempo de espera para seu atendimento?</div>
+  <div class="grid">
+    <div class="col-leg"><div class="leg-row"><span class="sw" style="background:#ff0000"></span><span class="leg-rot">RUIM</span><span class="leg-tot">TOTAL: 8</span><span class="leg-pct" style="background:#ff0000">4%</span></div><div class="leg-row"><span class="sw" style="background:#ffc000"></span><span class="leg-rot">REGULAR</span><span class="leg-tot">TOTAL: 12</span><span class="leg-pct" style="background:#ffc000">6%</span></div><div class="leg-row"><span class="sw" style="background:#00b0f0"></span><span class="leg-rot">BOM</span><span class="leg-tot">TOTAL: 131</span><span class="leg-pct" style="background:#00b0f0">70%</span></div><div class="leg-row"><span class="sw" style="background:#00b050"></span><span class="leg-rot">ÓTIMO</span><span class="leg-tot">TOTAL: 35</span><span class="leg-pct" style="background:#00b050">19%</span></div></div>
+    <div class="col-chart">
+      <div class="chart-titulo">Como avalia o tempo de espera para seu atendimento?</div>
+      <svg viewBox="0 0 42 42" class="donut"><circle cx="21" cy="21" r="15.915" fill="#fff" stroke="#f2f2f2" stroke-width="10"></circle><circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#ff0000" stroke-width="10" stroke-dasharray="4.255 95.745" stroke-dashoffset="25.000"></circle><circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#ffc000" stroke-width="10" stroke-dasharray="6.383 93.617" stroke-dashoffset="20.745"></circle><circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#00b0f0" stroke-width="10" stroke-dasharray="69.681 30.319" stroke-dashoffset="14.362"></circle><circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#00b050" stroke-width="10" stroke-dasharray="18.617 81.383" stroke-dashoffset="-55.319"></circle></svg>
+    </div>
+  </div>
+</section>
+
+<section class="pg">
+  <div class="pergunta">3. O serviço atendeu suas expectativas?</div>
+  <div class="grid">
+    <div class="col-leg"><div class="leg-row"><span class="sw" style="background:#00b050"></span><span class="leg-rot">SIM</span><span class="leg-tot">TOTAL: 183</span><span class="leg-pct" style="background:#00b050">97%</span></div><div class="leg-row"><span class="sw" style="background:#ff0000"></span><span class="leg-rot">NÃO</span><span class="leg-tot">TOTAL: 3</span><span class="leg-pct" style="background:#ff0000">2%</span></div></div>
+    <div class="col-chart">
+      <div class="chart-titulo">O serviço atendeu suas expectativas?</div>
+      <svg viewBox="0 0 42 42" class="donut"><circle cx="21" cy="21" r="15.915" fill="#fff" stroke="#f2f2f2" stroke-width="10"></circle><circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#00b050" stroke-width="10" stroke-dasharray="97.340 2.660" stroke-dashoffset="25.000"></circle><circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#ff0000" stroke-width="10" stroke-dasharray="1.596 98.404" stroke-dashoffset="-72.340"></circle></svg>
+    </div>
+  </div>
+</section>
+
+<section class="pg pg-tab">
+  <div class="tab-head"><span>Total de Pesquisas: 188</span><span>Atingiu as Expectativas?</span></div>
+  <table class="serv">
+    <thead><tr><th class="sv">Serviço</th><th>SIM</th><th>NÃO</th></tr></thead>
+    <tbody><tr><td class="serv">Atendimento Recepção Adulto</td><td class="num">132</td><td class="num">2</td></tr><tr><td class="serv">Atendimento Recepção Infantil</td><td class="num">20</td><td class="num">0</td></tr><tr><td class="serv">Agente de Portaria</td><td class="num">7</td><td class="num">0</td></tr><tr><td class="serv">Concierge</td><td class="num">51</td><td class="num">0</td></tr><tr><td class="serv">Enfermagem Pronto Atendimento</td><td class="num">58</td><td class="num">0</td></tr><tr><td class="serv">Equipe de Médicos Clínicos Pronto Atendimento</td><td class="num">122</td><td class="num">0</td></tr><tr><td class="serv">Equipe de Médicos Obstétras Pronto Atendimento</td><td class="num">10</td><td class="num">0</td></tr><tr><td class="serv">Equipe de Médicos Ortopedistas Pronto Atendimento</td><td class="num">17</td><td class="num">0</td></tr><tr><td class="serv">Equipe de Médicos Pediatras Pronto Atendimento</td><td class="num">32</td><td class="num">1</td></tr><tr><td class="serv">Laboratório de Análises Clínicas</td><td class="num">10</td><td class="num">0</td></tr><tr><td class="serv">Centro Infusional</td><td class="num">0</td><td class="num">0</td></tr><tr><td class="serv">Atendimento Recepção de Internação</td><td class="num">2</td><td class="num">0</td></tr><tr><td class="serv">Atendimento Recepção de Visitas e Acompanhantes</td><td class="num">1</td><td class="num">0</td></tr><tr><td class="serv">Psicologia</td><td class="num">1</td><td class="num">0</td></tr><tr><td class="serv">Serviço Social</td><td class="num">0</td><td class="num">0</td></tr><tr><td class="serv">Enfermagem Internação</td><td class="num">2</td><td class="num">0</td></tr><tr><td class="serv">Equipe Médica Internação</td><td class="num">1</td><td class="num">0</td></tr><tr><td class="serv">Centro Cirúrgico</td><td class="num">1</td><td class="num">0</td></tr><tr><td class="serv">Radiologia (Raio-x)</td><td class="num">4</td><td class="num">0</td></tr><tr><td class="serv">Farmácia</td><td class="num">1</td><td class="num">0</td></tr><tr><td class="serv">Recepção Centro Infusional e Oncologia</td><td class="num">0</td><td class="num">0</td></tr><tr><td class="serv">Enfermagem Centro Infusional e Oncologia</td><td class="num">0</td><td class="num">0</td></tr><tr><td class="serv">Equipe Médica Centro Infusional e Oncologia</td><td class="num">0</td><td class="num">0</td></tr><tr><td class="serv">Tomografia</td><td class="num">0</td><td class="num">0</td></tr><tr><td class="serv">Atendimento Recepção Hemodinâmica</td><td class="num">0</td><td class="num">0</td></tr><tr><td class="serv">Enfermagem Hemodinâmica</td><td class="num">0</td><td class="num">0</td></tr><tr><td class="serv">Equipe Médica Hemodinâmica</td><td class="num">0</td><td class="num">0</td></tr><tr><td class="serv">Atendimento Recepção Casarão</td><td class="num">1</td><td class="num">0</td></tr><tr><td class="serv">Enfermagem Casarão</td><td class="num">0</td><td class="num">0</td></tr><tr><td class="serv">Equipe Médica Casarão</td><td class="num">0</td><td class="num">0</td></tr></tbody>
+  </table>
+</section>
+
+</body></html>
