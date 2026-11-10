@@ -1,0 +1,78 @@
+# =============================================================================
+# MODELO — ESPAÇO · Evolução de Custos (relatório R_COMP_EVO_CUSTOS, centro de custo ESPAÇO CUIDAR)
+# =============================================================================
+# Matriz «Conta de Custos × Competência» PAGINADA EM BLOCOS: o ERP repete o cabeçalho «Competência:»
+# a cada 7 meses (bloco 1 = 02–09/2025, bloco 2 = 10/2025–04/2026, bloco 3 = 05–08/2026). Cada mês
+# traz «Total» (R$) e «%(*)» (análise vertical, derivada). Regras do relatório que a leitura respeita:
+#   - o mês de cada valor é o do cabeçalho do PRÓPRIO bloco;
+#   - a linha de grupo (CUSTOS HOSPITALARES…) é SUBTOTAL: só conferência, nunca somada de novo;
+#   - «Total Geral» = total do mês (conferência); «Total da Conta de Custo» = total da linha (ignorado);
+#   - colunas «%» e o rodapé (NOTAS / SELEÇÃO DE PARÂMETROS) ficam de fora.
+# Os valores NÃO são alterados — só reorganizados em série mensal (Grupo, Conta, Mês, Custo).
+# Leitor: src/analise_planilha/matriz_blocos.py (agnóstico de formato: .xls/.xlsx/.csv/.pdf).
+# -----------------------------------------------------------------------------
+
+nome  = "ESPAÇO — Evolução de Custos"
+pasta = "ESPACO"
+aba   = "R_COMP_EVO_CUSTOS"
+
+[leitura]
+formato       = "matriz_blocos"
+rotulo_conta  = "Conta"
+rotulo_grupo  = "Grupo"
+rotulo_valor  = "Custo"
+limpar_codigo = true              # «AGUA E ESGOTO 70188» → «AGUA E ESGOTO»
+totais        = ["Total Geral"]   # total do mês: referência de conferência
+parar_em      = ["NOTAS", "SELEÇÃO DE PARÂMETROS"]
+
+# Grupos do relatório (cabeçalho de seção = subtotal do grupo), na ordem em que aparecem.
+[[leitura.secao]]
+inicio = "CUSTOS HOSPITALARES"
+grupo  = "Custos Hospitalares"
+
+[[leitura.secao]]
+inicio = "DESPESAS ADMINISTRATIVAS HUNF"
+grupo  = "Despesas Administrativas"
+
+[[leitura.secao]]
+inicio = "DESPESAS COM EMPREGADOS HUNF"
+grupo  = "Despesas com Empregados"
+
+[[leitura.secao]]
+inicio = "DESPESAS COM ENCARGOS SOCIAIS"
+grupo  = "Encargos Sociais"
+
+[[leitura.secao]]
+inicio = "REMUNERACAO POR SERV TERCEIROS"
+grupo  = "Serviços de Terceiros"
+
+[analise]
+tipo             = "serie"        # série financeira mensal: dashboards financeiros (financeiro.py)
+perfil           = "custos"
+sentido          = "menor"        # para custo, subir é ruim
+medida_principal = "Custo"
+dimensoes        = ["Grupo", "Conta"]
+top = 20
+
+[[coluna]]
+canonico = "grupo"
+rotulo   = "Grupo"
+tipo     = "categorico"
+papel    = "dimensao"
+
+[[coluna]]
+canonico = "conta"
+rotulo   = "Conta"
+tipo     = "categorico"
+papel    = "dimensao"
+
+[[coluna]]
+canonico = "mes"
+rotulo   = "Mês"
+tipo     = "data"
+
+[[coluna]]
+canonico = "custo"
+rotulo   = "Custo"
+tipo     = "moeda"
+papel    = "medida"

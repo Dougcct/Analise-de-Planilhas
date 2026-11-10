@@ -3,7 +3,16 @@ import math
 
 
 def _ok(v) -> bool:
-    return v is not None and not (isinstance(v, float) and math.isnan(v))
+    """True se `v` é um número/valor formatável. Trata None, NaN e também `pd.NA` (tipos nullable
+    do pandas), cujo `bool()` é ambíguo — sem importar o pandas (usa o truque `v != v`)."""
+    if v is None:
+        return False
+    try:
+        if v != v:            # NaN e pd.NA não são iguais a si mesmos
+            return False
+    except TypeError:         # pd.NA: bool(pd.NA) levanta TypeError → tratar como ausente
+        return False
+    return True
 
 
 def fmt_int(v) -> str:

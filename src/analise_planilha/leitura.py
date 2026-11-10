@@ -11,7 +11,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from . import config, contas_convenio, estrutura, matriz
+from . import config, contas_convenio, estrutura, matriz, matriz_blocos
 from .cerebro import layout as cerebro_layout
 from .modelos import MetaLeitura
 from .normalizacao import tokens_nome
@@ -235,15 +235,26 @@ def ler(fonte, nome_arquivo: str, aba: str | None = None, linha_cabecalho: int |
     meta = MetaLeitura(arquivo=nome_arquivo)
     erros = 0
 
+    cfg_blocos = matriz_blocos.config_modelo(modelo)
+    if cfg_blocos is not None:   # matriz conta × mês PAGINADA em blocos: leitor próprio, em qualquer formato
+        alvo = aba or (modelo.aba if modelo else None)
+        return matriz_blocos.ler(_grade_unica(dados, ext, alvo), nome_arquivo, cfg_blocos)
+
     if ext in _TEXTO:
         bruto, meta.encoding, meta.separador = _ler_csv(dados)
         grade, erros = _limpar_grade(bruto)
+        esp = _layout_especial_unico(grade, nome_arquivo, meta, modelo, linha_cabecalho)
+        if esp is not None:                       # matriz conta×mês / blocos reconhecida no CSV
+            return esp
         est = estrutura.analisar(grade, dicas, linha_cabecalho)
     elif ext == ".pdf":
         grade, erros = _limpar_grade(_ler_pdf(dados))
-        est = estrutura.analisar(grade, dicas, linha_cabecalho)
         meta.diagnostico.append("PDF: tabela(s) extraída(s) automaticamente — confira a leitura "
                                 "(PDF é menos preciso que .xlsx/.csv).")
+        esp = _layout_especial_unico(grade, nome_arquivo, meta, modelo, linha_cabecalho)
+        if esp is not None:                       # matriz conta×mês / blocos reconhecida no PDF
+            return esp
+        est = estrutura.analisar(grade, dicas, linha_cabecalho)
     else:
         cfg_matriz = matriz.config_modelo(modelo)
         if cfg_matriz is not None:   # matriz conta × mês (FATURAMENTO/DRE/CUSTOS…): leitor próprio
@@ -326,6 +337,31 @@ def _ler_especial(grades: dict[str, pd.DataFrame], especial, nome_arquivo: str, 
                                 "(maior conteúdo com estrutura reconhecida).")
     meta_l.diagnostico = meta.diagnostico + meta_l.diagnostico
     return df, meta_l
+
+
+def _grade_unica(dados: bytes, ext: str, aba: str | None) -> pd.DataFrame:
+    """A grade bruta (limpa) de qualquer formato, numa aba só: CSV/TXT, PDF, ou a aba pedida (senão a 1ª)
+    de um Excel/ODS — para leitores que detectam a estrutura pelo conteúdo (ex.: matriz em blocos)."""
+    if ext in _TEXTO:
+        bruto, _, _ = _ler_csv(dados)
+        return _limpar_grade(bruto)[0]
+    if ext == ".pdf":
+        return _limpar_grade(_ler_pdf(dados))[0]
+    brutas, _ = _ler_excel(dados, ext)
+    nome = aba if aba in brutas else next(iter(brutas))
+    return _limpar_grade(brutas[nome])[0]
+
+
+def _layout_especial_unico(grade: pd.DataFrame, nome_arquivo: str, meta: MetaLeitura,
+                           modelo, linha_cabecalho) -> tuple[pd.DataFrame, MetaLeitura] | None:
+    """Fontes de uma grade só (CSV/TXT/PDF): tenta a detecção de matriz conta×mês / blocos do Cérebro,
+    igual ao ramo do Excel. Devolve (df, meta) se reconheceu um layout especial; senão None (segue o
+    fluxo normal). Grade plana comum → None (sem mudança de comportamento)."""
+    usar_cerebro = modelo is None or getattr(modelo, "versao", 1) >= 2
+    if not usar_cerebro or linha_cabecalho is not None:
+        return None
+    especial = _maior_layout_especial({nome_arquivo: grade}, [nome_arquivo])
+    return _ler_especial({nome_arquivo: grade}, especial, nome_arquivo, meta) if especial else None
 
 
 def _aba_relatorio_contas(brutas: dict[str, pd.DataFrame], aba: str | None, ext: str) -> str | None:
