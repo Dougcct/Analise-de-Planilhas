@@ -1,18 +1,15 @@
 # =============================================================================
-# MODELO — Dados Hunf · DRE HUNF  (demonstrativo de resultado: conta × mês)
+# MODELO — Dados Hunf · DRE HUNF (demonstrativo de resultado: conta × mês)
 # =============================================================================
 # A aba «DRE HUNF» é uma matriz: uma linha por conta, uma coluna por mês. A receita vem POSITIVA e os
-# custos/despesas NEGATIVOS. O que é GRUPO e o que é CONTA vem do NEGRITO da coluna A (o setor marca os
-# blocos em negrito): linha em negrito = bloco/subtotal (RECEITA OPERACIONAL BRUTA, DESPESAS COM PESSOAL,
-# RESULTADO LÍQUIDO…) → vira a coluna «Grupo» e o valor dela é o subtotal da planilha (guardado para o
-# demonstrativo e a conferência, não entra na soma das contas); texto normal = conta. Assim EPI e IMPOSTOS,
-# que estão em CAIXA ALTA mas NÃO em negrito, são contas (dos blocos acima deles), como no original. As
-# linhas de fórmula/observação («*(Item …)*», «(Soma dos itens …)») são ignoradas. A DRE vai da linha 2
-# (RECEITA…) até 117 (fecho do RESULTADO LÍQUIDO); as mini-tabelas abaixo (oncologia etc.) ficam de fora.
-#
-# Este modelo é v1 de propósito: usa o leitor de matriz (matriz.py) + o motor DRE dedicado
-# (financeiro.py, perfil="dre"), que separa BLOCO × CONTA corretamente — ao contrário da dedução
-# genérica do Cérebro, que misturava grupos e contas nesta DRE. Ver DOCS/13_financeiro_hunf.md.
+# custos/despesas NEGATIVOS. Os blocos e linhas de resultado da DRE estão declarados explicitamente em
+# `[[leitura.secao]]`, alinhando os grupos de custos/despesas (Custos Hospitalares, Despesas com
+# Empregados, Encargos Sociais, Despesas Administrativas, Outras Despesas Operacionais…) com os demais
+# relatórios do setor (CUSTOS e ESPAÇO). O valor de cada cabeçalho de seção é guardado como subtotal
+# da planilha para montar o Demonstrativo (DRE) e para a conferência «soma das contas × subtotal».
+# As linhas de fórmula/observação («*(Item …)*», «(Soma dos itens …)») são ignoradas. A DRE vai da
+# linha 2 (RECEITA…) até 117 (fecho do RESULTADO LÍQUIDO); as mini-tabelas abaixo ficam de fora.
+# Ver DOCS/13_financeiro_hunf.md.
 # -----------------------------------------------------------------------------
 
 nome           = "Dados Hunf — DRE HUNF"
@@ -26,23 +23,88 @@ coluna_rotulo  = 0                # coluna A: nome da conta/bloco
 rotulo_conta   = "Conta"
 rotulo_grupo   = "Grupo"
 rotulo_valor   = "Valor"
-agrupamento    = "negrito"        # célula do rótulo em NEGRITO = bloco/subtotal (vira o grupo); normal = conta
+agrupamento    = "secoes"         # blocos declarados abaixo (seguem exatamente a DRE)
+pular          = []               # subtotais são os próprios cabeçalhos de seção
 pular_prefixos = ["*", "(Soma"]   # linhas de fórmula/observação («*(Item…)*», «(Soma dos itens…)») — não são dado
 a_partir_de    = "2024-01"
 linha_inicio   = 2
 linha_fim      = 117              # até o fecho de «RESULTADO LÍQUIDO DO PERÍODO» (abaixo são outras tabelas)
 
+[[leitura.secao]]
+inicio = "RECEITA OPERACIONAL BRUTA"
+grupo  = "Receita Operacional Bruta"
+
+[[leitura.secao]]
+inicio = "CUSTOS COM MATERIAIS E SERVIÇOS HOSPITALARES"
+grupo  = "Custos Hospitalares"
+
+[[leitura.secao]]
+inicio = "DESPESAS COM PESSOAL"
+grupo  = "Despesas com Empregados"
+
+[[leitura.secao]]
+inicio = "ENCARGOS SOCIAIS E TRABALHISTAS"
+grupo  = "Encargos Sociais"
+
+[[leitura.secao]]
+inicio = "DESPESAS GERAIS, OPERACIONAIS E ADMINISTRATIVAS"
+grupo  = "Despesas Administrativas"
+
+[[leitura.secao]]
+inicio = "OUTRAS DESPESAS OPERACIONAIS"
+grupo  = "Outras Despesas Operacionais"
+
+[[leitura.secao]]
+inicio = "RESULTADO OPERACIONAL ANTES FINANCEIRO"
+grupo  = "Resultado Operacional antes Financeiro"
+
+[[leitura.secao]]
+inicio = "8. RECEITAS FINANCEIRAS E DEDUÇÕES"
+grupo  = "Receitas Financeiras e Deduções"
+
+[[leitura.secao]]
+inicio = "RECEITAS FINANCEIRAS E DEDUÇÕES"
+grupo  = "Receitas Financeiras e Deduções"
+
+[[leitura.secao]]
+inicio = "9. DESPESAS FINANCEIRAS"
+grupo  = "Despesas Financeiras"
+
+[[leitura.secao]]
+inicio = "DESPESAS FINANCEIRAS"
+grupo  = "Despesas Financeiras"
+
+[[leitura.secao]]
+inicio = "10. RESULTADO FINANCEIRO"
+grupo  = "Resultado Financeiro"
+
+[[leitura.secao]]
+inicio = "RESULTADO FINANCEIRO"
+grupo  = "Resultado Financeiro"
+
+[[leitura.secao]]
+inicio = "11. OUTROS RESULTADOS NÃO-OPERACIONAIS / AJUSTES"
+grupo  = "Outros Resultados Não-Operacionais / Ajustes"
+
+[[leitura.secao]]
+inicio = "OUTROS RESULTADOS NÃO-OPERACIONAIS / AJUSTES"
+grupo  = "Outros Resultados Não-Operacionais / Ajustes"
+
+[[leitura.secao]]
+inicio = "RESULTADO LÍQUIDO DO PERÍODO"
+grupo  = "Resultado Líquido do Período"
+
 [analise]
-tipo             = "serie"
-perfil           = "dre"
-sentido          = "maior"
-medida_principal = "Valor"
-dimensoes        = ["Grupo", "Conta"]
-top = 20
-# linhas-chave da DRE (nome do bloco, como aparece após normalizar caixa/acento) usadas nos indicadores
-receita               = "Receita operacional bruta"
-resultado_operacional = "Resultado operacional antes financeiro"
-resultado             = "Resultado líquido do período"
+tipo                  = "serie"
+perfil                = "dre"
+sentido               = "maior"
+medida_principal      = "Valor"
+dimensoes             = ["Grupo", "Conta"]
+top                   = 20
+# linhas-chave da DRE usadas nos indicadores (casam por chave_texto com os grupos acima)
+receita               = "Receita Operacional Bruta"
+resultado_operacional = "Resultado Operacional antes Financeiro"
+resultado             = "Resultado Líquido do Período"
 
 [[coluna]]
 canonico = "grupo"

@@ -234,3 +234,60 @@ papel = "medida"
     assert df[df["Conta"] == "EPI"]["Grupo"].iloc[0] == "Custos"     # EPI entra no bloco de cima
     # subtotais (linhas-grupo) não entram na soma das contas
     assert df["Valor"].sum() == (200 + 100) * 3 + (-50 - 100) * 3 + (-30) * 3
+
+
+def test_matriz_agrupamento_mapa_faturamento(tmp_path):
+    """Modo «mapa»: cada convênio recebe o grupo configurado em [[leitura.grupo]] (ou grupo_padrao)."""
+    linhas = [
+        ["PERIODO", *MESES],
+        ["UNIMED NOVA FRIBURGO", 100, 110, 120],
+        ["PARTICULAR", 20, 30, 40],
+        ["NOVO CONVENIO", 5, 5, 5],
+        ["TOTAL MÊS", 125, 145, 165],
+    ]
+    modelo = _modelo(tmp_path, """
+nome = "Fat"
+aba = "FAT"
+[leitura]
+formato = "matriz_mensal"
+coluna_rotulo = 0
+rotulo_conta = "Convênio"
+rotulo_grupo = "Grupo"
+rotulo_valor = "Faturamento"
+agrupamento = "mapa"
+grupo_padrao = "Outros Convênios"
+pular = ["TOTAL"]
+[[leitura.grupo]]
+nome = "Unimed Nova Friburgo (054)"
+itens = ["UNIMED NOVA FRIBURGO"]
+[[leitura.grupo]]
+nome = "Particular"
+itens = ["PARTICULAR"]
+[analise]
+medida_principal = "Faturamento"
+dimensoes = ["Grupo", "Convênio"]
+[[coluna]]
+canonico = "grupo"
+rotulo = "Grupo"
+tipo = "categorico"
+[[coluna]]
+canonico = "convenio"
+rotulo = "Convênio"
+tipo = "categorico"
+[[coluna]]
+canonico = "mes"
+rotulo = "Mês"
+tipo = "data"
+[[coluna]]
+canonico = "faturamento"
+rotulo = "Faturamento"
+tipo = "moeda"
+papel = "medida"
+""")
+    ds = servico.carregar(_xlsx({"FAT": linhas}), "fat.xlsx", modelo=modelo)
+    df = ds.df
+    assert set(df["Grupo"]) == {"Unimed Nova Friburgo (054)", "Particular", "Outros Convênios"}
+    assert df[df["Convênio"] == "UNIMED NOVA FRIBURGO"]["Grupo"].iloc[0] == "Unimed Nova Friburgo (054)"
+    assert df[df["Convênio"] == "NOVO CONVENIO"]["Grupo"].iloc[0] == "Outros Convênios"
+    assert df["Faturamento"].sum() == (100 + 110 + 120) + (20 + 30 + 40) + (5 + 5 + 5)
+

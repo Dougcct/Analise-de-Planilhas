@@ -2,16 +2,16 @@
 # MODELO — DRE HUNF (demonstrativo de resultado por conta × mês)
 # =============================================================================
 # Aba «DRE HUNF»: uma conta por linha e um mês por coluna. Receita vem positiva e custo/despesa
-# NEGATIVO; os títulos em CAIXA ALTA (RECEITA OPERACIONAL BRUTA, DESPESAS COM PESSOAL, RESULTADO…)
-# são os blocos — viram «Grupo» e o valor deles é o subtotal da planilha (a própria DRE, guardada
-# para o demonstrativo e para a conferência). A DRE é calculada pela planilha a partir de FATURAMENTO
-# e CUSTOS (fórmulas entre abas). Base a partir de jan/2024 (a aba começa em jan/2025).
+# NEGATIVO; os blocos e linhas de resultado da DRE estão declarados explicitamente em `[[leitura.secao]]`,
+# alinhando os grupos (Custos Hospitalares, Despesas com Empregados, Encargos Sociais, Despesas
+# Administrativas…) com os demais relatórios do setor. O valor de cada cabeçalho de seção é guardado
+# como subtotal da planilha (para o Demonstrativo e a conferência).
 # Leitura gerencial — ver DOCS/13_financeiro_hunf.md
 # -----------------------------------------------------------------------------
 
-nome = "DRE HUNF"
+nome  = "DRE HUNF"
 pasta = "HUNF"
-aba = "DRE HUNF"              # página (aba real) deste relatório
+aba   = "DRE HUNF"            # página (aba real) deste relatório
 ordem = 2                     # ordem da página (aba) no seletor
 
 [leitura]
@@ -20,24 +20,88 @@ coluna_rotulo  = 0                # coluna A: nome da conta
 rotulo_conta   = "Conta"
 rotulo_grupo   = "Grupo"
 rotulo_valor   = "Valor"
-agrupamento    = "maiusculas"     # linha em CAIXA ALTA = bloco/subtotal (vira o grupo)
-contas         = ["EPI", "IMPOSTOS"]   # em caixa alta, mas são contas (não blocos)
+agrupamento    = "secoes"         # blocos declarados abaixo (seguem exatamente a DRE)
+pular          = []               # subtotais são os próprios cabeçalhos de seção
 pular_prefixos = ["*", "(Soma"]   # linhas de fórmula/observação («*(Item…)*», «(Soma dos itens…)»)
 a_partir_de    = "2024-01"
 linha_inicio   = 2
 linha_fim      = 117              # até «RESULTADO LÍQUIDO DO PERÍODO»
 
+[[leitura.secao]]
+inicio = "RECEITA OPERACIONAL BRUTA"
+grupo  = "Receita Operacional Bruta"
+
+[[leitura.secao]]
+inicio = "CUSTOS COM MATERIAIS E SERVIÇOS HOSPITALARES"
+grupo  = "Custos Hospitalares"
+
+[[leitura.secao]]
+inicio = "DESPESAS COM PESSOAL"
+grupo  = "Despesas com Empregados"
+
+[[leitura.secao]]
+inicio = "ENCARGOS SOCIAIS E TRABALHISTAS"
+grupo  = "Encargos Sociais"
+
+[[leitura.secao]]
+inicio = "DESPESAS GERAIS, OPERACIONAIS E ADMINISTRATIVAS"
+grupo  = "Despesas Administrativas"
+
+[[leitura.secao]]
+inicio = "OUTRAS DESPESAS OPERACIONAIS"
+grupo  = "Outras Despesas Operacionais"
+
+[[leitura.secao]]
+inicio = "RESULTADO OPERACIONAL ANTES FINANCEIRO"
+grupo  = "Resultado Operacional antes Financeiro"
+
+[[leitura.secao]]
+inicio = "8. RECEITAS FINANCEIRAS E DEDUÇÕES"
+grupo  = "Receitas Financeiras e Deduções"
+
+[[leitura.secao]]
+inicio = "RECEITAS FINANCEIRAS E DEDUÇÕES"
+grupo  = "Receitas Financeiras e Deduções"
+
+[[leitura.secao]]
+inicio = "9. DESPESAS FINANCEIRAS"
+grupo  = "Despesas Financeiras"
+
+[[leitura.secao]]
+inicio = "DESPESAS FINANCEIRAS"
+grupo  = "Despesas Financeiras"
+
+[[leitura.secao]]
+inicio = "10. RESULTADO FINANCEIRO"
+grupo  = "Resultado Financeiro"
+
+[[leitura.secao]]
+inicio = "RESULTADO FINANCEIRO"
+grupo  = "Resultado Financeiro"
+
+[[leitura.secao]]
+inicio = "11. OUTROS RESULTADOS NÃO-OPERACIONAIS / AJUSTES"
+grupo  = "Outros Resultados Não-Operacionais / Ajustes"
+
+[[leitura.secao]]
+inicio = "OUTROS RESULTADOS NÃO-OPERACIONAIS / AJUSTES"
+grupo  = "Outros Resultados Não-Operacionais / Ajustes"
+
+[[leitura.secao]]
+inicio = "RESULTADO LÍQUIDO DO PERÍODO"
+grupo  = "Resultado Líquido do Período"
+
 [analise]
-tipo             = "serie"
-perfil           = "dre"
-sentido          = "maior"
-medida_principal = "Valor"
-dimensoes        = ["Grupo", "Conta"]
-top = 20
-# linhas da DRE (nomes dos blocos, sem acento/caixa) usadas nos indicadores
-receita              = "Receita operacional bruta"
-resultado_operacional = "Resultado operacional antes financeiro"
-resultado            = "Resultado líquido do período"
+tipo                  = "serie"
+perfil                = "dre"
+sentido               = "maior"
+medida_principal      = "Valor"
+dimensoes             = ["Grupo", "Conta"]
+top                   = 20
+# linhas da DRE usadas nos indicadores
+receita               = "Receita Operacional Bruta"
+resultado_operacional = "Resultado Operacional antes Financeiro"
+resultado             = "Resultado Líquido do Período"
 
 [[coluna]]
 canonico = "grupo"

@@ -1,27 +1,63 @@
 # =============================================================================
-# MODELO — Faturamento HUNF (receita por convênio × mês)
+# MODELO — Faturamento HUNF (receita por grupo e convênio × mês)
 # =============================================================================
-# Aba «FATURAMENTO» do workbook HUNF: um convênio por linha e um mês por coluna. O leitor
-# `matriz.py` despivota para uma linha por convênio × mês; a linha «TOTAL MÊS» é guardada para a
-# conferência (soma dos convênios × total da planilha). Base a partir de jan/2024.
-# Guia: DOCS/13_financeiro_hunf.md
+# Aba «FATURAMENTO» do workbook HUNF: um convênio por linha (linhas 2–18) e um mês por coluna.
+# O leitor `matriz.py` despivota para uma linha por convênio × mês e classifica cada convênio
+# no seu grupo operacional (conforme o quadro-resumo da própria planilha nas linhas 23–32).
+# A linha «TOTAL MÊS» (linha 19) é guardada para a conferência (soma dos convênios × total da
+# planilha). Base a partir de jan/2024. Guia: DOCS/13_financeiro_hunf.md
 # -----------------------------------------------------------------------------
 
-nome = "Faturamento HUNF"
+nome  = "Faturamento HUNF"
 pasta = "HUNF"
-aba = "FATURAMENTO"           # página (aba real) deste relatório
+aba   = "FATURAMENTO"         # página (aba real) deste relatório
 ordem = 1                     # ordem da página (aba) no seletor
 
 [leitura]
 formato       = "matriz_mensal"
 coluna_rotulo = 0                 # coluna A: nome do convênio
 rotulo_conta  = "Convênio"
+rotulo_grupo  = "Grupo"
 rotulo_valor  = "Faturamento"
-agrupamento   = "nenhum"          # cada linha é um convênio; não há grupos
+agrupamento   = "mapa"            # agrupa cada convênio no seu bloco operacional
+grupo_padrao  = "Outros Convênios"
 a_partir_de   = "2024-01"
 pular         = ["TOTAL", "MEDIA", "MÉDIA"]
 linha_inicio  = 2
 linha_fim     = 19
+
+[[leitura.grupo]]
+nome  = "Unimed Nova Friburgo (054)"
+itens = ["UNIMED NOVA FRIBURGO", "UNIMED NOVA FRIBURGO PA/SADT"]
+
+[[leitura.grupo]]
+nome  = "Oncologia / Centro Infusional (054)"
+itens = ["UNIMED NOVA FRIBURGO ONCOLOGIA", "CENTRO INFUSIONAL TERESÓP"]
+
+[[leitura.grupo]]
+nome  = "Unimed Intercâmbio (Federação)"
+itens = ["UNIMED FEDERAÇÃO", "UNIMED FEDERAÇÃO PA/SADT", "UNIMED FEDERAÇÃO ONCOLOGIA", "UNIMED INTERCÂMBIO"]
+
+[[leitura.grupo]]
+nome  = "Unimed Nacional"
+itens = ["UNIMED NACIONAL"]
+
+[[leitura.grupo]]
+nome  = "Outros Convênios"
+itens = [
+    "AMIL ASSISTENCIA ME",
+    "BRADESCO SAÚDE S.A.",
+    "HOSPITAL DE CANTAGALO - LA",
+    "PORTO SEGURO SEGURO SAUDE",
+    "MUTUA",
+    "CAMPERJ",
+    "GS - PLANO GLOBAL DE SAÚDE",
+    "PAC/CARDIOLOGIA",
+]
+
+[[leitura.grupo]]
+nome  = "Particular"
+itens = ["PARTICULAR"]
 
 [[leitura.referencia]]
 rotulo = "TOTAL MÊS"
@@ -32,12 +68,18 @@ tipo             = "serie"
 perfil           = "faturamento"
 sentido          = "maior"        # para receita, subir é bom
 medida_principal = "Faturamento"
-dimensoes        = ["Convênio"]
-top = 20
+dimensoes        = ["Grupo", "Convênio"]
+top              = 20
 
 [[analise.conferencia]]
 total  = "Total mês (planilha)"
 partes = ["__soma__"]             # soma dos convênios
+
+[[coluna]]
+canonico = "grupo"
+rotulo   = "Grupo"
+tipo     = "categorico"
+papel    = "dimensao"
 
 [[coluna]]
 canonico = "convenio"

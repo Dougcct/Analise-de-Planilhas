@@ -40,7 +40,8 @@ editar o modelo, sem tocar no código:
 - "negrito"    — a linha é cabeçalho/subtotal de grupo quando a célula do rótulo está em NEGRITO; texto
                  normal é conta. É o sinal mais preciso quando a planilha marca os grupos em negrito
                  (ex.: a DRE HUNF — EPI/IMPOSTOS estão em CAIXA ALTA mas NÃO em negrito, logo são conta);
-- "secoes"     — os blocos são declarados em `[[leitura.secao]]` (o mais robusto: segue a planilha).
+- "secoes"     — os blocos são declarados em `[[leitura.secao]]` (o mais robusto: segue a planilha);
+- "mapa"       — cada conta/convênio é associada ao seu grupo por `[[leitura.grupo]]` (ex.: FATURAMENTO).
 
 Subtotais/cabeçalhos nunca entram como dados (não contam em dobro): viram a coluna de grupo e são
 guardados em `meta.extras["subtotais"]` para a conferência «soma das contas × total da planilha».
@@ -182,6 +183,9 @@ def ler(dados: bytes, nome_arquivo: str, aba: str, cfg: dict) -> tuple[pd.DataFr
     grupos_pref = [str(p).upper() for p in cfg.get("grupos_prefixos", [])]
     forcadas = {chave_texto(x) for x in cfg.get("contas", [])}
     secoes = {chave_texto(s["inicio"]): s for s in cfg.get("secao", [])}
+    mapa_grupos = {chave_texto(it): str(g["nome"])
+                   for g in cfg.get("grupo", []) for it in g.get("itens", [])}
+    grupo_padrao = str(cfg.get("grupo_padrao", "Outros"))
     refs_cfg = {chave_texto(r["rotulo"]): (i, r) for i, r in enumerate(cfg.get("referencia", []))}
     ini = int(cfg.get("linha_inicio", i_cab + 2))     # padrão: logo abaixo do cabeçalho
     fim = int(cfg.get("linha_fim", len(linhas)))
@@ -234,7 +238,7 @@ def ler(dados: bytes, nome_arquivo: str, aba: str, cfg: dict) -> tuple[pd.DataFr
             break
         label = r[col_rot] if col_rot < len(r) else None
         if not isinstance(label, str) or not label.strip():
-            if comecou and modo == "nenhum":
+            if comecou and modo in ("nenhum", "mapa"):
                 break                                  # fim do bloco contíguo
             continue
         label = label.strip()
@@ -273,6 +277,16 @@ def ler(dados: bytes, nome_arquivo: str, aba: str, cfg: dict) -> tuple[pd.DataFr
                 n_pulos += 1
                 continue
             emitir(registros, label, valores(r, True), nlin)
+            comecou = True
+            continue
+
+        if modo == "mapa":
+            if any(t in label.upper() for t in pular):
+                n_pulos += 1
+                continue
+            grupo_atual = mapa_grupos.get(k, grupo_padrao)
+            conta = _RE_CODIGO.sub("", label).strip() if limpar_codigo else label
+            emitir(registros, conta, valores(r, True), nlin)
             comecou = True
             continue
 
