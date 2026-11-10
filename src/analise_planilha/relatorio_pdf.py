@@ -19,7 +19,7 @@ import pandas as pd
 
 from . import __version__, config, graficos
 from .modelos import Analise
-from .relatorio_html import _ambiente, _bloco
+from .relatorio_html import _ambiente, _aplicar_config_exec_kpis, _bloco, _chave_kpi, _destaques, _secoes
 
 TIPOS = ("executivo", "gerencial", "analitico", "auditoria")
 
@@ -144,9 +144,13 @@ def _barras(df: pd.DataFrame, formatos: dict, n: int = 5, cor: str = "var(--marc
     return graficos.barras(itens, cor=cor, moeda=moeda)
 
 
-def _kpis_ctx(analise: Analise) -> list[dict]:
-    return [{"rotulo": k.rotulo, "valor": k.valor, "detalhe": k.detalhe, "sentido": k.sentido}
-            for k in (analise.kpis or [])]
+def _kpis_ctx(analise: Analise, config_exec: dict | None = None) -> list[dict]:
+    todos = [{
+        "rotulo": k.rotulo, "valor": k.valor, "detalhe": k.detalhe, "nota": k.detalhe,
+        "sentido": k.sentido, "chave": _chave_kpi(k.rotulo),
+        "destaque": i == 0, "span": 2 if i == 0 else 1, "oculto": False,
+    } for i, k in enumerate(analise.kpis or [])]
+    return [k for k in _aplicar_config_exec_kpis(todos, config_exec, modo_editavel=False) if not k.get("oculto")]
 
 
 def _metas_ctx(analise: Analise) -> list[dict]:
@@ -155,20 +159,29 @@ def _metas_ctx(analise: Analise) -> list[dict]:
 
 
 # ---- contexto e render -------------------------------------------------------------------------
-def _contexto(analise: Analise, titulo: str, subtitulo: str, tipo: str) -> dict:
+def _contexto(analise: Analise, titulo: str, subtitulo: str, tipo: str,
+              config_exec: dict | None = None) -> dict:
     preset = PRESETS[tipo]
+    secoes_brutas = _secoes(analise)
+    destaques = _destaques(secoes_brutas, config_exec)
+    mostrar_metas = bool(config_exec.get("mostrar_metas", True)) if isinstance(config_exec, dict) else True
+    titulo_exec = (str(config_exec.get("titulo")).strip()
+                   if isinstance(config_exec, dict) and config_exec.get("titulo") else "Painel executivo")
+    per_txt = next((v for r, v in (analise.filtros_desc or []) if r == "Período"), "Todo o período")
     ctx: dict = {
         "tipo": tipo, "titulo": titulo, "subtitulo": subtitulo, "versao": __version__,
         "gerado_em": _dt.datetime.now().strftime("%d/%m/%Y %H:%M"),
         "paisagem": preset["paisagem"], "compacto": preset["compacto"],
-        "kpis": _kpis_ctx(analise), "achados": list(analise.achados or []),
+        "titulo_exec": titulo_exec, "periodo_exec": f"{per_txt} · {analise.linhas} registro(s)",
+        "kpis": _kpis_ctx(analise, config_exec), "destaques": destaques,
+        "medidor": graficos.medidor(analise.metas) if mostrar_metas else None,
+        "achados": list(analise.achados or []),
         "resumo": analise.resumo or "", "metas": _metas_ctx(analise),
         "alertas": [{"nivel": a.nivel, "texto": a.texto} for a in (analise.alertas or [])],
         "filtros": list(analise.filtros_desc or []), "arquivos": list(analise.arquivos or []),
         "paineis": [],
     }
     if tipo == "executivo":
-        ctx["medidor"] = graficos.medidor(analise.metas)                     # gauges das metas
         ctx["ofensores"] = _top_ofensores(analise, preset["ofensores"], preset["top"])
         p_of = (_paineis_por_titulo(analise, preset["ofensores"]) or [None])[0]
         ctx["ofensores_barra"] = _barras(p_of.tabela, p_of.formatos, preset["top"], "var(--s1)") if p_of else None
@@ -199,16 +212,18 @@ def _contexto(analise: Analise, titulo: str, subtitulo: str, tipo: str) -> dict:
     return ctx
 
 
-def montar_html(analise: Analise, titulo: str, tipo: str, subtitulo: str = "") -> str:
+def montar_html(analise: Analise, titulo: str, tipo: str, subtitulo: str = "", *,
+                config_exec: dict | None = None) -> str:
     if tipo not in PRESETS:
         raise ValueError(f"tipo inválido: {tipo!r}. Use um de {TIPOS}.")
-    ctx = _contexto(analise, titulo, subtitulo, tipo)
+    ctx = _contexto(analise, titulo, subtitulo, tipo, config_exec=config_exec)
     return _ambiente().get_template(PRESETS[tipo]["template"]).render(a=ctx)
 
 
-def montar_pdf_bytes(analise: Analise, titulo: str, tipo: str, subtitulo: str = "") -> bytes | None:
+def montar_pdf_bytes(analise: Analise, titulo: str, tipo: str, subtitulo: str = "", *,
+                     config_exec: dict | None = None) -> bytes | None:
     """Bytes do PDF do `tipo` (para servir direto na web), ou None se o WeasyPrint não estiver disponível."""
-    html = montar_html(analise, titulo, tipo, subtitulo)
+    html = montar_html(analise, titulo, tipo, subtitulo, config_exec=config_exec)
     try:
         from weasyprint import HTML
     except Exception:
@@ -217,12 +232,12 @@ def montar_pdf_bytes(analise: Analise, titulo: str, tipo: str, subtitulo: str = 
 
 
 def gerar(analise: Analise, titulo: str, tipo: str, destino: Path, subtitulo: str = "",
-          fmt: str = "auto") -> tuple[Path, str]:
+          fmt: str = "auto", *, config_exec: dict | None = None) -> tuple[Path, str]:
     """Gera o relatório do `tipo` em `destino` (sem extensão). `fmt`: 'pdf', 'html' ou 'auto'
     (pdf se o WeasyPrint existir, senão html). Devolve (caminho, formato_gerado)."""
     destino = Path(destino)
     destino.parent.mkdir(parents=True, exist_ok=True)
-    html = montar_html(analise, titulo, tipo, subtitulo)
+    html = montar_html(analise, titulo, tipo, subtitulo, config_exec=config_exec)
     quer_pdf = fmt == "pdf" or (fmt == "auto" and pdf_disponivel())
     if quer_pdf:
         try:

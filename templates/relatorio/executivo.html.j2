@@ -2,9 +2,8 @@
 {% import "relatorio/_componentes.html.j2" as c %}
 {% block corpo %}
 {{ c.cabecalho(a) }}
-{{ c.kpis(a.kpis) }}
+{{ c.painel_executivo(a) }}
 {% if a.resumo %}<p class="lead">{{ a.resumo }}</p>{% endif %}
-{% if a.medidor %}<section class="painel"><h2>Metas do gestor</h2>{{ a.medidor }}</section>{% endif %}
 <section class="painel"><h2>Principais variações e achados</h2>{{ c.achados(a.achados[:6]) }}</section>
 {% if a.ofensores_barra or a.ofensores %}{{ c.bloco("Top ofensores", a.ofensores_barra, a.ofensores) }}{% endif %}
 {% if a.fig_composicao %}<section class="painel"><h2>Composição</h2>{{ a.fig_composicao }}</section>{% endif %}

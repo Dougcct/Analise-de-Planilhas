@@ -41,8 +41,28 @@
     background:var(--marca-clara); border-left:4px solid var(--marca); border-radius:8px; padding:10px 13px; }
   p.desc{ color:var(--ink-2); font-size:12px; margin:0 0 8px; }
 
+  /* ---- Painel executivo (presente em todos os modelos) ---- */
+  section.exec{ border:1.5px solid var(--marca); border-radius:12px; padding:0; overflow:hidden;
+    margin:0 0 16px; background:var(--surface); box-shadow:0 1px 3px rgba(11,11,11,.05); }
+  .exec-cab{ display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:6px 14px;
+    padding:10px 16px; background:linear-gradient(100deg, var(--marca), var(--marca-escura)); color:#fff; }
+  .exec-cab h2{ font-size:{{ '14px' if a.compacto else '15.5px' }}; margin:0; color:#fff; letter-spacing:.2px; }
+  .exec-cab h2::before{ content:"▦"; width:auto; height:auto; background:none; margin-right:6px; opacity:.9; }
+  .exec-per{ font-size:11.5px; color:rgba(255,255,255,.92); font-weight:600; }
+  .exec-corpo{ padding:12px 16px 14px; }
+  .exec-metas{ margin-top:12px; }
+  .exec-metas h3, .exec-fig h3{ margin:0 0 8px; color:var(--ink); font-size:13px; }
+  .exec-graficos{ display:grid; grid-template-columns:repeat(12, minmax(0,1fr)); gap:12px; margin-top:12px; }
+  .exec-fig{ grid-column:span 6; min-width:0; background:var(--surface-2); border:1px solid var(--border);
+    border-radius:10px; padding:10px 12px; }
+  .exec-fig[data-larg="3"]{ grid-column:span 3; }
+  .exec-fig[data-larg="4"]{ grid-column:span 4; }
+  .exec-fig[data-larg="6"]{ grid-column:span 6; }
+  .exec-fig[data-larg="8"]{ grid-column:span 8; }
+  .exec-fig[data-larg="12"]{ grid-column:1 / -1; }
+
   /* ---- KPIs (cartões fortes, 1º = herói) ---- */
-  .kpis{ display:grid; grid-template-columns:repeat(auto-fit, minmax(150px,1fr)); gap:12px; margin:4px 0 18px; }
+  .kpis{ display:grid; grid-template-columns:repeat(auto-fit, minmax(150px,1fr)); gap:12px; margin:4px 0 6px; }
   .kpi{ border:1px solid var(--border); border-top:4px solid var(--s1); border-radius:10px;
     padding:11px 14px; background:var(--surface); }
   .kpi:nth-child(2){ border-top-color:var(--s3); } .kpi:nth-child(3){ border-top-color:var(--s4); }

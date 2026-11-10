@@ -1114,11 +1114,15 @@ def modelo_relatorio(slug: str, request: Request, tipo: str = "executivo", s: Se
     _audit(s, escopo, "baixar_modelo", f"web:{slug}:{tipo}")
     s.commit()
     analise = servico.analisar(ds, f)
-    pdf = relatorio_pdf.montar_pdf_bytes(analise, rel.nome, tipo)
+    cfg_exec = _ler_json_dict(rel.config_exec)
+    edicao = _ler_json_dict(rel.versao_editada)
+    if isinstance(edicao, dict) and isinstance(edicao.get("config_exec"), dict):
+        cfg_exec = edicao["config_exec"]
+    pdf = relatorio_pdf.montar_pdf_bytes(analise, rel.nome, tipo, config_exec=cfg_exec)
     if pdf is not None:
         return Response(content=pdf, media_type="application/pdf",
                         headers={"Content-Disposition": f'inline; filename="{slug}_{tipo}.pdf"'})
-    return HTMLResponse(relatorio_pdf.montar_html(analise, rel.nome, tipo))   # sem WeasyPrint: HTML
+    return HTMLResponse(relatorio_pdf.montar_html(analise, rel.nome, tipo, config_exec=cfg_exec))   # sem WeasyPrint: HTML
 
 
 @router.get("/r/{slug}/dados.csv")

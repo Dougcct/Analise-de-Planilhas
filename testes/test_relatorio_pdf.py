@@ -41,6 +41,7 @@ def test_quatro_tipos_renderizam():
         html = relatorio_pdf.montar_html(an, "Custos HUNF", tipo)
         assert "<html" in html and "Custos HUNF" in html
         assert tipo in html.lower()
+        assert "Painel executivo" in html and "Resultado" in html and "Margem" in html
 
 
 def test_executivo_tem_kpis_gauge_e_barras():
