@@ -24,7 +24,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
-from analise_planilha import __version__, relatorio_html, relatorio_pdf, servico
+from analise_planilha import __version__, feedback, relatorio_html, relatorio_pdf, servico
 from analise_planilha import config as _cfg
 from analise_planilha.cerebro import layout as _cl
 from analise_planilha.cerebro import papeis as _cp
@@ -1068,6 +1068,17 @@ def conteudo_relatorio(slug: str, request: Request, s: Session = Depends(_sessao
     rel = RepoRelatorios(s, escopo).obter(slug)
     if rel is None:
         return HTMLResponse("<p>Relatório não encontrado.</p>", status_code=404)
+    # Pesquisa de feedback (NPS): dashboard de layout FIXO, calculado do CSV cru (não passa pelo motor).
+    # Sem dado pessoal (só agregados), então não se aplica anonimização. Ver `feedback.py`.
+    linhas_fb = srv.feedback_linhas(s, rel)
+    if linhas_fb is not None:
+        _audit(s, escopo, "abrir_relatorio", f"web:{slug}")
+        s.commit()
+        cfg = _ler_json_dict(rel.config_exec) or {}
+        aten = request.query_params.get("atendimentos") or cfg.get("atendimentos")
+        editavel = escopo.pode_setor(rel.centro_custo_id) and _pode(escopo, GESTOR, ADM)
+        return HTMLResponse(feedback.render_html(feedback.calcular(linhas_fb), feedback.periodo(linhas_fb),
+                                                 aten, fragmento=True, editavel=editavel, slug=slug))
     ds = srv._dataset_do_relatorio(s, rel)
     f = _ler_filtros_query(request, ds)
     if not escopo.pode_setor(rel.centro_custo_id):
@@ -1105,6 +1116,21 @@ def modelo_relatorio(slug: str, request: Request, tipo: str = "executivo", s: Se
     rel = RepoRelatorios(s, escopo).obter(slug)
     if rel is None:
         return HTMLResponse("<p>Relatório não encontrado.</p>", status_code=404)
+    # Feedback (NPS): PDF do dashboard de layout fixo (ignora `tipo`); WeasyPrint no servidor/Docker.
+    linhas_fb = srv.feedback_linhas(s, rel)
+    if linhas_fb is not None:
+        _audit(s, escopo, "baixar_modelo", f"web:{slug}:feedback")
+        s.commit()
+        cfg = _ler_json_dict(rel.config_exec) or {}
+        aten = request.query_params.get("atendimentos") or cfg.get("atendimentos")
+        full = feedback.render_html(feedback.calcular(linhas_fb), feedback.periodo(linhas_fb), aten)
+        try:
+            import weasyprint
+            pdf_fb = weasyprint.HTML(string=full).write_pdf()
+            return Response(content=pdf_fb, media_type="application/pdf",
+                            headers={"Content-Disposition": f'inline; filename="{slug}_feedback.pdf"'})
+        except Exception:
+            return HTMLResponse(full)   # sem WeasyPrint (dev): devolve o HTML para imprimir/salvar
     ds = srv._dataset_do_relatorio(s, rel)
     f = _ler_filtros_query(request, ds)
     if not escopo.pode_setor(rel.centro_custo_id):
@@ -1215,6 +1241,29 @@ def sumario_markdown(slug: str, request: Request, s: Session = Depends(_sessao))
         media_type="text/markdown; charset=utf-8",
         headers={"Content-Disposition": f"inline; filename*=utf-8''{quote(nome)}"},
     )
+
+
+@router.post("/r/{slug}/feedback/atendimentos")
+def salvar_atendimentos_feedback(slug: str, request: Request, atendimentos: str = Form(""),
+                                 s: Session = Depends(_sessao)):
+    """Guarda o "TOTAL DE ATENDIMENTOS" do dashboard de feedback (único dado que não vem do CSV), que o
+    gestor/ADM da Diretoria preenche à mão na tela. Persistido em `config_exec` (preserva as outras chaves)."""
+    escopo = _escopo(request, s)
+    if escopo is None or escopo.precisa_trocar_senha or not _pode(escopo, GESTOR, ADM):
+        return HTMLResponse("<p>Acesso restrito a gestores.</p>", status_code=403)
+    rel = RepoRelatorios(s, escopo).obter_proprio(slug)
+    if rel is None:
+        return HTMLResponse("<p>Relatório não encontrado.</p>", status_code=404)
+    cfg = _ler_json_dict(rel.config_exec) or {}
+    valor = "".join(ch for ch in (atendimentos or "") if ch.isdigit())
+    if valor:
+        cfg["atendimentos"] = int(valor)
+    else:
+        cfg.pop("atendimentos", None)                 # campo vazio: volta a mostrar «—»
+    rel.config_exec = json.dumps(cfg, ensure_ascii=False) if cfg else None
+    _audit(s, escopo, "editar_feedback_atendimentos", slug)
+    s.commit()
+    return RedirectResponse(f"/web/r/{slug}", status_code=303)
 
 
 @router.post("/r/{slug}/painel-executivo")
@@ -1934,6 +1983,14 @@ def enviar_previa_conteudo(carga_id: int, request: Request, s: Session = Depends
         carga, rel = _carga_previa(s, escopo, carga_id)
     except _Erro:
         return HTMLResponse("<p>Prévia não encontrada.</p>", status_code=404)
+    # Pesquisa de feedback (NPS): mostra já o dashboard de layout fixo na prévia (não o relatório genérico).
+    linhas_fb = srv.feedback_linhas_carga(carga)
+    if linhas_fb is not None:
+        cfg = _ler_json_dict(rel.config_exec) or {}
+        aten = request.query_params.get("atendimentos") or cfg.get("atendimentos")
+        editavel = escopo.pode_setor(rel.centro_custo_id) and _pode(escopo, GESTOR, ADM)
+        return HTMLResponse(feedback.render_html(feedback.calcular(linhas_fb), feedback.periodo(linhas_fb),
+                                                 aten, fragmento=True, editavel=editavel, slug=rel.slug))
     ds = srv._dataset_da_carga(carga, srv._modelo_do(rel), s)
     f = _ler_filtros_query(request, ds)
     dono = escopo.pode_setor(rel.centro_custo_id)

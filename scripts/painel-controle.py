@@ -4,6 +4,7 @@ Painel de Controle — Analise de Planilhas
 Interface unica (PyQt6, estilo vidro) para operar o projeto no dia a dia:
 
   - Reiniciar Docker : derruba e sobe TUDO (db + api) e confirma que o site respondeu.
+  - Reconstruir Docker: recompila a imagem (up -d --build) — use depois de mudar o codigo.
   - Subir para o Git : add + commit + push nos dois remotos (origin + publico).
   - Ferramentas      : abrir o site, abrir a pasta do projeto e a pasta de saida;
                        rodar os testes (pytest), o lint (ruff), ver os logs do Docker
@@ -287,6 +288,35 @@ def trabalho_docker(log) -> tuple[bool, str]:
     return False, "Containers no ar, mas o site nao respondeu 200."
 
 
+def trabalho_docker_rebuild(log) -> tuple[bool, str]:
+    """RECONSTROI a imagem (recompila o codigo de src/ e servidor/) e sobe tudo. Use este quando mudou
+    codigo — o 'Reiniciar Docker' sobe a imagem como esta (codigo antigo)."""
+    log("Derrubando todos os containers...", "step")
+    rodar_comando(["docker", "compose", "down"], log)
+
+    log("Reconstruindo a imagem e subindo (docker compose up -d --build)...", "step")
+    log("Isso recompila o codigo (pode demorar na 1a vez).", "info")
+    rc = rodar_comando(["docker", "compose", "up", "-d", "--build"], log)
+    if rc != 0:
+        log("docker compose up --build falhou.", "error")
+        return False, "Falha ao reconstruir/subir os containers."
+
+    log("Estado dos containers:", "step")
+    rodar_comando(["docker", "compose", "ps"], log)
+
+    log("Aguardando o site responder em /web/login ...", "step")
+    for tentativa in range(1, 31):
+        status = site_responde()
+        if status == 200:
+            log(f"Site respondeu 200 (tentativa {tentativa}).", "ok")
+            return True, "Reconstruido e no ar — site respondeu 200."
+        log(f"Ainda subindo... (tentativa {tentativa}/30, status={status})", "out")
+        time.sleep(2)
+
+    log("O site nao respondeu 200 a tempo. Veja: docker compose logs api", "error")
+    return False, "Reconstruido, mas o site nao respondeu 200."
+
+
 def fabricar_trabalho_git(descricao: str):
     def trabalho_git(log) -> tuple[bool, str]:
         versao = ler_versao()
@@ -507,7 +537,8 @@ class Painel(QWidget):
         ld.setSpacing(10)
         td = QLabel("🐳  Docker")
         td.setObjectName("cardTitulo")
-        dd = QLabel("Derruba e sobe tudo (db + api) e confirma que o site respondeu 200.")
+        dd = QLabel("Reiniciar: sobe a imagem como esta. Reconstruir: recompila o codigo "
+                    "(use depois de mudar src/ ou servidor/).")
         dd.setObjectName("cardDesc")
         dd.setWordWrap(True)
         self.btn_docker = QPushButton("Reiniciar Docker")
@@ -515,10 +546,17 @@ class Painel(QWidget):
         self.btn_docker.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_docker.setMinimumHeight(48)
         self.btn_docker.clicked.connect(self.ao_reiniciar_docker)
+        self.btn_docker_rebuild = QPushButton("🔁  Reconstruir (rebuild)")
+        self.btn_docker_rebuild.setObjectName("btnGhost")
+        self.btn_docker_rebuild.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_docker_rebuild.setMinimumHeight(40)
+        self.btn_docker_rebuild.setToolTip("docker compose up -d --build — recompila a imagem")
+        self.btn_docker_rebuild.clicked.connect(self.ao_reconstruir_docker)
         ld.addWidget(td)
         ld.addWidget(dd)
         ld.addStretch(1)
         ld.addWidget(self.btn_docker)
+        ld.addWidget(self.btn_docker_rebuild)
 
         # Cartao Git
         cg = Cartao()
@@ -740,7 +778,7 @@ class Painel(QWidget):
 
     def _travar(self, travado: bool, estado: str = ""):
         # Botoes que disparam tarefas em segundo plano (os atalhos de abrir ficam sempre ativos).
-        for b in (self.btn_docker, self.btn_git, self.btn_atualizar, self.ed_commit,
+        for b in (self.btn_docker, self.btn_docker_rebuild, self.btn_git, self.btn_atualizar, self.ed_commit,
                   self.btn_sync_modelos, self.btn_testes, self.btn_lint, self.btn_logs, self.btn_parar):
             b.setEnabled(not travado)
         if estado:
@@ -765,6 +803,10 @@ class Painel(QWidget):
     def ao_reiniciar_docker(self):
         self.registrar("Reiniciando o Docker (tudo)…", "step")
         self._iniciar(trabalho_docker, "Reiniciando o Docker…")
+
+    def ao_reconstruir_docker(self):
+        self.registrar("Reconstruindo a imagem do Docker (recompila o codigo)…", "step")
+        self._iniciar(trabalho_docker_rebuild, "Reconstruindo o Docker…")
 
     def ao_subir_git(self):
         desc = self.ed_commit.text().strip()

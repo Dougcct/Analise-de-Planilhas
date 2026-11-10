@@ -20,7 +20,7 @@ from fastapi.responses import FileResponse, RedirectResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from analise_planilha import __version__, servico
+from analise_planilha import __version__, feedback, servico
 from analise_planilha.modelo import carregar_modelo
 
 from . import aprendizado, bd, dados_demo, seed
@@ -151,6 +151,36 @@ def _dataset_do_relatorio(s: Session, rel: Relatorio):
     cargas = list(s.scalars(select(Carga).where(Carga.relatorio_id == rel.id, Carga.status == PUBLICADA)
                             .order_by(Carga.publicado_em, Carga.id)))   # ordem de publicação: a última vence em versões
     return _dataset_consolidado(cargas, modelo, s) if cargas else _dataset_demo(rel, modelo)
+
+
+def _linhas_feedback(cargas: list[Carga]) -> list[dict] | None:
+    """Linhas CRUAS do(s) CSV(s) de feedback, concatenadas — ou None se não for pesquisa de feedback.
+    Lê o arquivo bruto direto (NÃO passa pelo motor, que renomearia/decodificaria as colunas): o
+    dashboard de feedback tem layout fixo próprio."""
+    if not cargas:
+        return None
+    linhas: list[dict] = []
+    for c in cargas:
+        caminho = CARGAS_DIR / c.arquivo_uuid
+        if not caminho.is_file():
+            continue
+        rows = feedback.ler_csv(caminho.read_bytes())
+        if not rows or not feedback.e_feedback(rows[0].keys()):
+            return None                 # alguma carga não é feedback: trata como relatório normal
+        linhas.extend(rows)
+    return linhas or None
+
+
+def feedback_linhas(s: Session, rel: Relatorio) -> list[dict] | None:
+    """Linhas de feedback das cargas PUBLICADAS do relatório (tela final)."""
+    cargas = list(s.scalars(select(Carga).where(Carga.relatorio_id == rel.id, Carga.status == PUBLICADA)
+                            .order_by(Carga.publicado_em, Carga.id)))
+    return _linhas_feedback(cargas)
+
+
+def feedback_linhas_carga(carga: Carga) -> list[dict] | None:
+    """Linhas de feedback de UMA carga (usado na prévia, antes de publicar)."""
+    return _linhas_feedback([carga])
 
 
 def acesso_vigente(s: Session, usuario_id: int, relatorio_id: int) -> AcessoTemporario | None:

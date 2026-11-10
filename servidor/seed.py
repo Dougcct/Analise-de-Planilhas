@@ -14,6 +14,7 @@ CENTROS = [
     ("ATD", "Central de Atendimentos"),
     ("FIN", "Financeiro (HUNF)"),
     ("FAT", "Faturamento / Contas"),
+    ("DIR", "Diretoria"),
 ]
 
 # usuários de demonstração (precisa_trocar_senha=False para a demo fluir)
@@ -24,6 +25,7 @@ DEMO = [
     ("gestor.fin", "Gestor Financeiro", "senha123", GESTOR, "FIN"),
     ("user.fin", "Usuário Financeiro", "senha123", USUARIO, "FIN"),
     ("gestor.fat", "Gestor Faturamento", "senha123", GESTOR, "FAT"),
+    ("gestor.dir", "Gestor Diretoria", "senha123", GESTOR, "DIR"),
 ]
 
 # relatórios no padrão real: (slug, nome, setor, modelo em dominio/modelos)
