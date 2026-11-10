@@ -5,21 +5,21 @@
     body { font-family: Calibri, 'Segoe UI', Arial, sans-serif; color:#222; margin:0; }
     .pg { page-break-after: always; position: relative; }
     .pg:last-child { page-break-after: auto; }
-    h1 { text-align:center; font-size:22px; margin:0 0 14px; }
+    h1 { text-align:center; font-size:21px; margin:0 0 10px; }
     .totais { font-weight:700; font-size:13px; margin:2px 0; }
-    .pergunta { font-size:15px; font-weight:700; margin:16px 0 4px; }
-    .grid { display:flex; gap:28px; align-items:center; margin-top:10px; }
-    .col-leg { flex:1 1 55%; }
-    .col-chart { flex:1 1 45%; text-align:center; }
-    .escala { font-weight:700; font-size:13px; margin-bottom:8px; }
-    .leg-row { display:flex; align-items:center; gap:10px; margin:7px 0; font-size:13px; }
-    .sw { width:16px; height:16px; border-radius:3px; display:inline-block; flex:0 0 auto; }
-    .leg-rot { flex:1 1 auto; font-weight:600; }
-    .leg-tot { width:90px; font-weight:700; }
-    .leg-pct { width:48px; text-align:center; color:#fff; font-weight:700; border-radius:3px; padding:2px 0; }
-    .donut { width:280px; height:280px; }
-    .chart-titulo { font-size:13px; font-weight:700; margin-bottom:6px; }
-    .rodape { margin-top:22px; font-size:11px; color:#444; line-height:1.5; }
+    .pergunta { font-size:15px; font-weight:700; margin:12px 0 2px; }
+    .grid { display:flex; gap:40px; align-items:center; justify-content:center; margin-top:6px; }
+    .col-leg { flex:0 1 auto; max-width:440px; }
+    .col-chart { flex:0 0 auto; text-align:center; }
+    .escala { font-weight:700; font-size:13px; margin-bottom:6px; }
+    .leg-row { display:flex; align-items:center; gap:12px; margin:8px 0; font-size:13px; }
+    .sw { width:15px; height:15px; border-radius:3px; display:inline-block; flex:0 0 auto; }
+    .leg-rot { min-width:220px; font-weight:600; }
+    .leg-tot { width:82px; font-weight:700; text-align:right; }
+    .leg-pct { width:46px; text-align:center; color:#fff; font-weight:700; border-radius:3px; padding:2px 0; }
+    .donut { width:230px; height:230px; }
+    .chart-titulo { font-size:13px; font-weight:700; margin-bottom:6px; max-width:300px; }
+    .rodape { margin-top:16px; font-size:11px; color:#444; line-height:1.45; }
     .rodape p { margin:4px 0; }
     .pg-tab { page: tabela; page-break-after:auto; }
     .tab-head { display:flex; justify-content:space-between; font-weight:700; font-size:14px; margin-bottom:10px; }
@@ -37,7 +37,7 @@
   <div class="pergunta">1. Qual a probabilidade de recomendação do nosso Hospital a amigos ou familiares que necessitem de atendimento?</div>
   <div class="grid">
     <div class="col-leg"><div class="escala">ESCALA:</div><div class="leg-row"><span class="sw" style="background:#ff0000"></span><span class="leg-rot">0-6 = CLIENTES DETRATORES</span><span class="leg-tot">TOTAL: 5</span><span class="leg-pct" style="background:#ff0000">3%</span></div><div class="leg-row"><span class="sw" style="background:#2e75b6"></span><span class="leg-rot">7-8 = CLIENTES NEUTROS</span><span class="leg-tot">TOTAL: 26</span><span class="leg-pct" style="background:#2e75b6">14%</span></div><div class="leg-row"><span class="sw" style="background:#00b050"></span><span class="leg-rot">9-10 = CLIENTES PROMOTORES</span><span class="leg-tot">TOTAL: 155</span><span class="leg-pct" style="background:#00b050">82%</span></div><div class="leg-row"><span class="sw" style="background:#d9d9d9"></span><span class="leg-rot">SEM RESPOSTA</span><span class="leg-tot">TOTAL: 2</span><span class="leg-pct" style="background:#d9d9d9">1%</span></div></div>
-    <div class="col-chart"><div class="chart-titulo">Qual a probabilidade de recomendação do nosso Hospital a amigos ou familiares que necessitem de atendimento?</div><svg viewBox="0 0 42 42" class="donut"><circle cx="21" cy="21" r="15.915" fill="#fff" stroke="#f2f2f2" stroke-width="10"></circle><circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#ff0000" stroke-width="10" stroke-dasharray="2.660 97.340" stroke-dashoffset="25.000"></circle><circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#2e75b6" stroke-width="10" stroke-dasharray="13.830 86.170" stroke-dashoffset="22.340"></circle><circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#00b050" stroke-width="10" stroke-dasharray="82.447 17.553" stroke-dashoffset="8.511"></circle><circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#d9d9d9" stroke-width="10" stroke-dasharray="1.064 98.936" stroke-dashoffset="-73.936"></circle></svg></div>
+    <div class="col-chart"><div class="chart-titulo">Qual a probabilidade de recomendação do nosso Hospital a amigos ou familiares que necessitem de atendimento?</div><svg viewBox="0 0 42 42" class="donut"><circle cx="21" cy="21" r="15.915" fill="#fff" stroke="#f2f2f2" stroke-width="10"></circle><circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#ff0000" stroke-width="10" stroke-dasharray="2.660 97.340" stroke-dashoffset="25.000"></circle><circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#2e75b6" stroke-width="10" stroke-dasharray="13.830 86.170" stroke-dashoffset="22.340"></circle><circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#00b050" stroke-width="10" stroke-dasharray="82.447 17.553" stroke-dashoffset="8.511"></circle><circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#d9d9d9" stroke-width="10" stroke-dasharray="1.064 98.936" stroke-dashoffset="-73.936"></circle><text x="30.01" y="7.88" text-anchor="middle" dominant-baseline="central" font-size="3.4" font-weight="700" fill="#fff">14%</text><text x="13.59" y="35.08" text-anchor="middle" dominant-baseline="central" font-size="3.4" font-weight="700" fill="#fff">82%</text></svg></div>
   </div>
   <div class="rodape"><p><b>Clientes DETRATORES</b> aqueles que tiveram experiências ruins e não tiveram suas expectativas atendidas e, portanto, podem falar mal da empresa para seus amigos.</p><p><b>Clientes NEUTROS ou passivos</b> aqueles que tiveram experiências parciais, no caso de uma recomendação eles o fariam com ressalvas. São grandes as chances de eles migrarem para a concorrência pois não estão “fidelizados”.</p><p><b>Clientes PROMOTORES</b> aqueles que tiveram uma boa experiência e se tornam leais à empresa. Também costumam interagir com a marca e recomenda-la para os conhecidos.</p></div>
 </section>
@@ -45,14 +45,14 @@
   <div class="pergunta">2. Como avalia o tempo de espera para seu atendimento?</div>
   <div class="grid">
     <div class="col-leg"><div class="leg-row"><span class="sw" style="background:#ff0000"></span><span class="leg-rot">RUIM</span><span class="leg-tot">TOTAL: 8</span><span class="leg-pct" style="background:#ff0000">4%</span></div><div class="leg-row"><span class="sw" style="background:#ffc000"></span><span class="leg-rot">REGULAR</span><span class="leg-tot">TOTAL: 12</span><span class="leg-pct" style="background:#ffc000">6%</span></div><div class="leg-row"><span class="sw" style="background:#00b0f0"></span><span class="leg-rot">BOM</span><span class="leg-tot">TOTAL: 131</span><span class="leg-pct" style="background:#00b0f0">70%</span></div><div class="leg-row"><span class="sw" style="background:#00b050"></span><span class="leg-rot">ÓTIMO</span><span class="leg-tot">TOTAL: 35</span><span class="leg-pct" style="background:#00b050">19%</span></div></div>
-    <div class="col-chart"><div class="chart-titulo">Como avalia o tempo de espera para seu atendimento?</div><svg viewBox="0 0 42 42" class="donut"><circle cx="21" cy="21" r="15.915" fill="#fff" stroke="#f2f2f2" stroke-width="10"></circle><circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#ff0000" stroke-width="10" stroke-dasharray="4.255 95.745" stroke-dashoffset="25.000"></circle><circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#ffc000" stroke-width="10" stroke-dasharray="6.383 93.617" stroke-dashoffset="20.745"></circle><circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#00b0f0" stroke-width="10" stroke-dasharray="69.681 30.319" stroke-dashoffset="14.362"></circle><circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#00b050" stroke-width="10" stroke-dasharray="18.617 81.383" stroke-dashoffset="-55.319"></circle></svg></div>
+    <div class="col-chart"><div class="chart-titulo">Como avalia o tempo de espera para seu atendimento?</div><svg viewBox="0 0 42 42" class="donut"><circle cx="21" cy="21" r="15.915" fill="#fff" stroke="#f2f2f2" stroke-width="10"></circle><circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#ff0000" stroke-width="10" stroke-dasharray="4.255 95.745" stroke-dashoffset="25.000"></circle><circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#ffc000" stroke-width="10" stroke-dasharray="6.383 93.617" stroke-dashoffset="20.745"></circle><circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#00b0f0" stroke-width="10" stroke-dasharray="69.681 30.319" stroke-dashoffset="14.362"></circle><circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#00b050" stroke-width="10" stroke-dasharray="18.617 81.383" stroke-dashoffset="-55.319"></circle><text x="23.12" y="5.23" text-anchor="middle" dominant-baseline="central" font-size="3.4" font-weight="700" fill="#fff">4%</text><text x="28.18" y="6.80" text-anchor="middle" dominant-baseline="central" font-size="3.4" font-weight="700" fill="#222">6%</text><text x="25.46" y="36.28" text-anchor="middle" dominant-baseline="central" font-size="3.4" font-weight="700" fill="#fff">70%</text><text x="11.35" y="8.35" text-anchor="middle" dominant-baseline="central" font-size="3.4" font-weight="700" fill="#fff">19%</text></svg></div>
   </div>
 </section>
 <section class="pg">
   <div class="pergunta">3. O serviço atendeu suas expectativas?</div>
   <div class="grid">
     <div class="col-leg"><div class="leg-row"><span class="sw" style="background:#00b050"></span><span class="leg-rot">SIM</span><span class="leg-tot">TOTAL: 183</span><span class="leg-pct" style="background:#00b050">97%</span></div><div class="leg-row"><span class="sw" style="background:#ff0000"></span><span class="leg-rot">NÃO</span><span class="leg-tot">TOTAL: 3</span><span class="leg-pct" style="background:#ff0000">2%</span></div></div>
-    <div class="col-chart"><div class="chart-titulo">O serviço atendeu suas expectativas?</div><svg viewBox="0 0 42 42" class="donut"><circle cx="21" cy="21" r="15.915" fill="#fff" stroke="#f2f2f2" stroke-width="10"></circle><circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#00b050" stroke-width="10" stroke-dasharray="97.340 2.660" stroke-dashoffset="25.000"></circle><circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#ff0000" stroke-width="10" stroke-dasharray="1.596 98.404" stroke-dashoffset="-72.340"></circle></svg></div>
+    <div class="col-chart"><div class="chart-titulo">O serviço atendeu suas expectativas?</div><svg viewBox="0 0 42 42" class="donut"><circle cx="21" cy="21" r="15.915" fill="#fff" stroke="#f2f2f2" stroke-width="10"></circle><circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#00b050" stroke-width="10" stroke-dasharray="97.340 2.660" stroke-dashoffset="25.000"></circle><circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#ff0000" stroke-width="10" stroke-dasharray="1.596 98.404" stroke-dashoffset="-72.340"></circle><text x="22.33" y="36.86" text-anchor="middle" dominant-baseline="central" font-size="3.4" font-weight="700" fill="#fff">97%</text></svg></div>
   </div>
 </section>
 <section class="pg pg-tab">

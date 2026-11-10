@@ -13,7 +13,13 @@ from __future__ import annotations
 import csv
 import html
 import io
+import math
 from collections import Counter
+
+# Identidade do "modelo" de feedback (opção selecionável no seletor "Modelo de análise" da web).
+# Não é um .toml — é tratado como um tipo próprio: quem escolhe este slug ganha o dashboard fixo.
+SLUG = "feedback_nps"
+NOME = "Feedback / NPS (pesquisa de pacientes)"
 
 # --- Colunas esperadas no CSV (nomes exatos do export da pesquisa) ---
 COL_ESCALA = "Escala de Recomendação"
@@ -192,21 +198,40 @@ def calcular(rows: list[dict]) -> dict:
 
 # --- Render HTML ----------------------------------------------------------
 
+def _texto_contraste(cor_hex: str) -> str:
+    """Preto sobre fatia clara, branco sobre fatia escura — para o rótulo de % ficar legível."""
+    h = cor_hex.lstrip("#")
+    r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+    return "#222" if (0.299 * r + 0.587 * g + 0.114 * b) > 150 else "#fff"
+
+
 def _donut(segmentos: list[tuple[int, str]], total: int) -> str:
-    """SVG de rosca; segmentos = [(valor, cor)]. r=15.915 => circunferência=100 (fração = %)."""
-    partes = []
-    offset = 25.0  # começa no topo (12h)
+    """SVG de rosca com o % escrito em cada fatia (como no PDF). r=15.915 => circunferência=100 (fração=%).
+    As fatias começam no topo (12h) e seguem no sentido horário."""
+    partes, rotulos = [], []
+    offset = 25.0
+    cum = 0.0  # fração acumulada (0..1) a partir do topo
     for valor, cor in segmentos:
-        frac = (valor / total * 100) if total else 0
+        frac = (valor / total * 100) if total else 0      # 0..100
         partes.append(
             f'<circle cx="21" cy="21" r="15.915" fill="transparent" stroke="{cor}" '
             f'stroke-width="10" stroke-dasharray="{frac:.3f} {100 - frac:.3f}" '
             f'stroke-dashoffset="{offset:.3f}"></circle>'
         )
         offset -= frac
+        f = frac / 100.0
+        if round(frac) >= 4:                               # evita rótulo minúsculo sobreposto
+            ang = 2 * math.pi * (cum + f / 2)              # meio da fatia
+            lx = 21 + 15.915 * math.sin(ang)
+            ly = 21 - 15.915 * math.cos(ang)
+            rotulos.append(
+                f'<text x="{lx:.2f}" y="{ly:.2f}" text-anchor="middle" dominant-baseline="central" '
+                f'font-size="3.4" font-weight="700" fill="{_texto_contraste(cor)}">{round(frac)}%</text>'
+            )
+        cum += f
     return ('<svg viewBox="0 0 42 42" class="donut">'
             '<circle cx="21" cy="21" r="15.915" fill="#fff" stroke="#f2f2f2" stroke-width="10"></circle>'
-            f'{"".join(partes)}</svg>')
+            f'{"".join(partes)}{"".join(rotulos)}</svg>')
 
 
 def _legenda(itens: list[tuple[str, str, int, int]]) -> str:
@@ -245,21 +270,21 @@ CSS = """
     body { font-family: Calibri, 'Segoe UI', Arial, sans-serif; color:#222; margin:0; }
     .pg { page-break-after: always; position: relative; }
     .pg:last-child { page-break-after: auto; }
-    h1 { text-align:center; font-size:22px; margin:0 0 14px; }
+    h1 { text-align:center; font-size:21px; margin:0 0 10px; }
     .totais { font-weight:700; font-size:13px; margin:2px 0; }
-    .pergunta { font-size:15px; font-weight:700; margin:16px 0 4px; }
-    .grid { display:flex; gap:28px; align-items:center; margin-top:10px; }
-    .col-leg { flex:1 1 55%; }
-    .col-chart { flex:1 1 45%; text-align:center; }
-    .escala { font-weight:700; font-size:13px; margin-bottom:8px; }
-    .leg-row { display:flex; align-items:center; gap:10px; margin:7px 0; font-size:13px; }
-    .sw { width:16px; height:16px; border-radius:3px; display:inline-block; flex:0 0 auto; }
-    .leg-rot { flex:1 1 auto; font-weight:600; }
-    .leg-tot { width:90px; font-weight:700; }
-    .leg-pct { width:48px; text-align:center; color:#fff; font-weight:700; border-radius:3px; padding:2px 0; }
-    .donut { width:280px; height:280px; }
-    .chart-titulo { font-size:13px; font-weight:700; margin-bottom:6px; }
-    .rodape { margin-top:22px; font-size:11px; color:#444; line-height:1.5; }
+    .pergunta { font-size:15px; font-weight:700; margin:12px 0 2px; }
+    .grid { display:flex; gap:40px; align-items:center; justify-content:center; margin-top:6px; }
+    .col-leg { flex:0 1 auto; max-width:440px; }
+    .col-chart { flex:0 0 auto; text-align:center; }
+    .escala { font-weight:700; font-size:13px; margin-bottom:6px; }
+    .leg-row { display:flex; align-items:center; gap:12px; margin:8px 0; font-size:13px; }
+    .sw { width:15px; height:15px; border-radius:3px; display:inline-block; flex:0 0 auto; }
+    .leg-rot { min-width:220px; font-weight:600; }
+    .leg-tot { width:82px; font-weight:700; text-align:right; }
+    .leg-pct { width:46px; text-align:center; color:#fff; font-weight:700; border-radius:3px; padding:2px 0; }
+    .donut { width:230px; height:230px; }
+    .chart-titulo { font-size:13px; font-weight:700; margin-bottom:6px; max-width:300px; }
+    .rodape { margin-top:16px; font-size:11px; color:#444; line-height:1.45; }
     .rodape p { margin:4px 0; }
     .pg-tab { page: tabela; page-break-after:auto; }
     .tab-head { display:flex; justify-content:space-between; font-weight:700; font-size:14px; margin-bottom:10px; }

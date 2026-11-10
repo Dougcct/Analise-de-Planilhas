@@ -153,10 +153,11 @@ def _dataset_do_relatorio(s: Session, rel: Relatorio):
     return _dataset_consolidado(cargas, modelo, s) if cargas else _dataset_demo(rel, modelo)
 
 
-def _linhas_feedback(cargas: list[Carga]) -> list[dict] | None:
+def _linhas_feedback(cargas: list[Carga], forcado: bool = False) -> list[dict] | None:
     """Linhas CRUAS do(s) CSV(s) de feedback, concatenadas — ou None se não for pesquisa de feedback.
     Lê o arquivo bruto direto (NÃO passa pelo motor, que renomearia/decodificaria as colunas): o
-    dashboard de feedback tem layout fixo próprio."""
+    dashboard de feedback tem layout fixo próprio. `forcado` = o usuário escolheu o tipo «Feedback»
+    no seletor de modelo (então rende mesmo que o reconhecimento por colunas fique no limite)."""
     if not cargas:
         return None
     linhas: list[dict] = []
@@ -165,22 +166,31 @@ def _linhas_feedback(cargas: list[Carga]) -> list[dict] | None:
         if not caminho.is_file():
             continue
         rows = feedback.ler_csv(caminho.read_bytes())
-        if not rows or not feedback.e_feedback(rows[0].keys()):
-            return None                 # alguma carga não é feedback: trata como relatório normal
+        if not rows:
+            if forcado:
+                continue
+            return None
+        if not forcado and not feedback.e_feedback(rows[0].keys()):
+            return None                 # não escolheram Feedback e as colunas não batem: relatório normal
         linhas.extend(rows)
     return linhas or None
+
+
+def _e_feedback(rel: Relatorio) -> bool:
+    """O usuário escolheu o tipo «Feedback / NPS» no seletor de modelo deste relatório."""
+    return rel.modelo == feedback.SLUG
 
 
 def feedback_linhas(s: Session, rel: Relatorio) -> list[dict] | None:
     """Linhas de feedback das cargas PUBLICADAS do relatório (tela final)."""
     cargas = list(s.scalars(select(Carga).where(Carga.relatorio_id == rel.id, Carga.status == PUBLICADA)
                             .order_by(Carga.publicado_em, Carga.id)))
-    return _linhas_feedback(cargas)
+    return _linhas_feedback(cargas, forcado=_e_feedback(rel))
 
 
-def feedback_linhas_carga(carga: Carga) -> list[dict] | None:
+def feedback_linhas_carga(carga: Carga, forcado: bool = False) -> list[dict] | None:
     """Linhas de feedback de UMA carga (usado na prévia, antes de publicar)."""
-    return _linhas_feedback([carga])
+    return _linhas_feedback([carga], forcado=forcado)
 
 
 def acesso_vigente(s: Session, usuario_id: int, relatorio_id: int) -> AcessoTemporario | None:

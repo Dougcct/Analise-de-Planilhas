@@ -83,7 +83,7 @@
 </details>
 {% endif %}
 {% set url_conteudo = "/web/r/" ~ slug ~ "/conteudo" %}
-{% if not somente_editada %}
+{% if not somente_editada and not sem_filtros %}
 {% include "web/_filtro_datas.html" %}
 {% endif %}
 <div class="rel-caixa" id="rel-caixa">

@@ -1041,17 +1041,20 @@ def ver_relatorio(slug: str, request: Request, s: Session = Depends(_sessao)):
         return _pagina("erro.html", request, _ctx(request, escopo, s, "relatorios",
                                                    mensagem="Relatório não encontrado."))
     srv = _srv()
+    eh_fb = srv.feedback_linhas(s, rel) is not None    # feedback (NPS): dashboard fixo, sem filtro de data
     datas_filtro = None
-    try:
-        ds = srv._dataset_do_relatorio(s, rel)
-        f = _ler_filtros_query(request, ds)
-        datas_filtro = _info_datas_tela(ds, f)
-    except Exception:
-        pass
+    if not eh_fb:
+        try:
+            ds = srv._dataset_do_relatorio(s, rel)
+            f = _ler_filtros_query(request, ds)
+            datas_filtro = _info_datas_tela(ds, f)
+        except Exception:
+            pass
     qs = request.url.query
     dono = escopo.pode_setor(rel.centro_custo_id)
     return _pagina("relatorio.html", request, _ctx(request, escopo, s, "relatorios",
-                   slug=slug, titulo=rel.nome, pode_compartilhar=(dono and _pode(escopo, GESTOR, ADM)),
+                   slug=slug, titulo=rel.nome, sem_filtros=eh_fb,
+                   pode_compartilhar=(dono and _pode(escopo, GESTOR, ADM)),
                    tem_versao_editada=bool(rel.versao_editada),
                    versao_ativa=("editada" if ((not dono and (ac := srv.acesso_vigente(s, escopo.usuario_id, rel.id)) and getattr(ac, "usar_editada", False)) or request.query_params.get("versao") == "editada") and rel.versao_editada else "original"),
                    modo_editavel=(request.query_params.get("modo") == "editar"),
@@ -1749,21 +1752,23 @@ async def enviar_carga(request: Request, modo: str = Form("novo"),
             s.add(carga)
             s.flush()
             srv.esquecer_dataset(carga.id)               # id reaproveitado (SQLite) não pode herdar cache
-            try:                                         # confirma que o motor LÊ antes da prévia
-                srv._dataset_da_carga(carga, srv._modelo_do(rel), s)
-            except Exception as e:
-                caminho.unlink(missing_ok=True)
-                criados.pop()
-                s.delete(carga)
-                if por_arquivo:                          # o relatório recém-criado não serve p/ nada
-                    s.delete(rel)
-                s.flush()
-                falhas.append(f"{nome_arq} (não deu p/ ler: {type(e).__name__})")
-                continue
-            sug = _auto_modelo(srv, s, rel, carga)        # tema 1: vincula o modelo que mais combina
-            if sug:
-                autodetec.append((rel.nome, sug["nome"]))
-                _audit(s, escopo, "auto_modelo", f"{rel.slug}:{sug['slug']}", f"{round(sug['score'] * 100)}%")
+            # Feedback (NPS) não passa pelo motor nem pelo auto-modelo: tem dashboard próprio e NÃO usa modelo.
+            if srv.feedback_linhas_carga(carga, rel.modelo == feedback.SLUG) is None:
+                try:                                     # confirma que o motor LÊ antes da prévia
+                    srv._dataset_da_carga(carga, srv._modelo_do(rel), s)
+                except Exception as e:
+                    caminho.unlink(missing_ok=True)
+                    criados.pop()
+                    s.delete(carga)
+                    if por_arquivo:                      # o relatório recém-criado não serve p/ nada
+                        s.delete(rel)
+                    s.flush()
+                    falhas.append(f"{nome_arq} (não deu p/ ler: {type(e).__name__})")
+                    continue
+                sug = _auto_modelo(srv, s, rel, carga)    # tema 1: vincula o modelo que mais combina
+                if sug:
+                    autodetec.append((rel.nome, sug["nome"]))
+                    _audit(s, escopo, "auto_modelo", f"{rel.slug}:{sug['slug']}", f"{round(sug['score'] * 100)}%")
             _audit(s, escopo, "enviar_carga", f"{rel.slug}:{carga.id}", carga.hash_sha256)
             if primeiro_cid is None:
                 primeiro_cid = carga.id
@@ -1842,6 +1847,21 @@ def enviar_previa(carga_id: int, request: Request, s: Session = Depends(_sessao)
         if not _pode(escopo, GESTOR, ADM):
             raise _Erro("Acesso restrito a gestores.")
         carga, rel = _carga_previa(s, escopo, carga_id)
+        # Pesquisa de feedback (NPS): dashboard de layout fixo — NÃO passa pelo motor (que a trataria como
+        # série financeira e quebraria). A prévia mostra o próprio dashboard via /conteudo.
+        linhas_fb = srv.feedback_linhas_carga(carga, rel.modelo == feedback.SLUG)
+        if linhas_fb is not None:
+            qs = request.url.query
+            novo = not rel.ativo and not s.scalar(select(Carga).where(Carga.relatorio_id == rel.id,
+                                                                      Carga.status == PUBLICADA))
+            pos, total, prox = _fila_lote(s, escopo, carga)
+            return _pagina("previa.html", request, _ctx(request, escopo, s, "enviar",
+                           carga_id=carga_id, titulo=rel.nome, arquivo=carga.nome_original,
+                           registros=len(linhas_fb), paineis=4, novo=novo,
+                           lote_pos=pos, lote_total=total, tem_proximo=(prox is not None),
+                           modelo_atual=(rel.modelo or ""), modelo_nome="", modelos=modelos_fs.disponiveis(),
+                           agente_atual="", agente_nome="", agentes=[],
+                           entendimento=None, datas_filtro=None, query_conteudo=(f"?{qs}" if qs else "")))
         mod = srv._modelo_do(rel)
         ds = srv._dataset_da_carga(carga, mod, s)
         f = _ler_filtros_query(request, ds)
@@ -1984,7 +2004,7 @@ def enviar_previa_conteudo(carga_id: int, request: Request, s: Session = Depends
     except _Erro:
         return HTMLResponse("<p>Prévia não encontrada.</p>", status_code=404)
     # Pesquisa de feedback (NPS): mostra já o dashboard de layout fixo na prévia (não o relatório genérico).
-    linhas_fb = srv.feedback_linhas_carga(carga)
+    linhas_fb = srv.feedback_linhas_carga(carga, rel.modelo == feedback.SLUG)
     if linhas_fb is not None:
         cfg = _ler_json_dict(rel.config_exec) or {}
         aten = request.query_params.get("atendimentos") or cfg.get("atendimentos")
@@ -2020,7 +2040,9 @@ def enviar_previa_publicar(carga_id: int, request: Request, s: Session = Depends
         carga, rel = _carga_previa(s, escopo, carga_id)
         srv = _srv()
         _pos, _tot, prox = _fila_lote(s, escopo, carga)   # próxima da fila antes de mudar o status
-        ent = srv._dataset_da_carga(carga, srv._modelo_do(rel), s).entendimento
+        # Feedback (NPS): não passa pelo motor; nada de aprendizado de colunas.
+        ent = None if srv.feedback_linhas_carga(carga, rel.modelo == feedback.SLUG) is not None \
+            else srv._dataset_da_carga(carga, srv._modelo_do(rel), s).entendimento
         for ant in s.scalars(select(Carga).where(Carga.relatorio_id == rel.id, Carga.status == PUBLICADA,
                                                  Carga.nome_original == carga.nome_original)):
             ant.status = SUBSTITUIDA                      # só a versão anterior DESTA planilha vira backup;
@@ -2030,7 +2052,7 @@ def enviar_previa_publicar(carga_id: int, request: Request, s: Session = Depends
         rel.ativo = True                                 # se era novo (oculto), aparece agora
         _audit(s, escopo, "publicar_carga", f"{rel.slug}:{carga.id}")
         # o que a prévia mostrou (com as correções) vira conhecimento do sistema
-        aprendeu = aprendizado.aprender(s, ent, ent.contexto if ent else "", escopo.usuario_id)
+        aprendeu = aprendizado.aprender(s, ent, ent.contexto if ent else "", escopo.usuario_id) if ent else 0
         if aprendeu:
             _audit(s, escopo, "aprender_colunas", rel.slug, f"{aprendeu} regra(s)")
         s.commit()
@@ -2242,8 +2264,9 @@ def admin_centro_excluir(cc_id: int, request: Request, s: Session = Depends(_ses
 
 # ====================================================== modelos de análise (ADM) ================
 def _modelos_disponiveis() -> list[dict]:
-    """Modelos escolhíveis num relatório: não bloqueados e que carregam (para os <select>)."""
-    return modelos_fs.disponiveis()
+    """Modelos escolhíveis num relatório: não bloqueados e que carregam (para os <select>).
+    Inclui o tipo especial «Feedback / NPS» (dashboard fixo, não é .toml) como 1ª opção."""
+    return [{"slug": feedback.SLUG, "nome": feedback.NOME}] + modelos_fs.disponiveis()
 
 
 def _uso_dos_modelos(s) -> dict[str, int]:
