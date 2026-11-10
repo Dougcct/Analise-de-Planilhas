@@ -13,7 +13,6 @@ from __future__ import annotations
 import csv
 import html
 import io
-import math
 from collections import Counter
 
 # Identidade do "modelo" de feedback (opção selecionável no seletor "Modelo de análise" da web).
@@ -205,33 +204,31 @@ def _texto_contraste(cor_hex: str) -> str:
     return "#222" if (0.299 * r + 0.587 * g + 0.114 * b) > 150 else "#fff"
 
 
-def _donut(segmentos: list[tuple[int, str]], total: int) -> str:
-    """SVG de rosca com o % escrito em cada fatia (como no PDF). r=15.915 => circunferência=100 (fração=%).
-    As fatias começam no topo (12h) e seguem no sentido horário."""
-    partes, rotulos = [], []
+def _donut(segmentos: list[tuple[int, str, str]], total: int) -> str:
+    """SVG de rosca LIMPA (sem rótulo nas fatias — os % vão nos chips à direita). Cada fatia tem <title>
+    (tooltip ao passar o mouse) e a classe «fatia» p/ o efeito de hover (ver CSS). r=15.915 =>
+    circunferência=100 (fração=%). Começa no topo (12h), sentido horário."""
+    partes = []
     offset = 25.0
-    cum = 0.0  # fração acumulada (0..1) a partir do topo
-    for valor, cor in segmentos:
+    for valor, cor, rotulo in segmentos:
         frac = (valor / total * 100) if total else 0      # 0..100
         partes.append(
-            f'<circle cx="21" cy="21" r="15.915" fill="transparent" stroke="{cor}" '
-            f'stroke-width="10" stroke-dasharray="{frac:.3f} {100 - frac:.3f}" '
-            f'stroke-dashoffset="{offset:.3f}"></circle>'
+            f'<circle class="fatia" cx="21" cy="21" r="15.915" fill="transparent" stroke="{cor}" '
+            f'stroke-width="10" stroke-dasharray="{frac:.3f} {100 - frac:.3f}" stroke-dashoffset="{offset:.3f}">'
+            f'<title>{html.escape(rotulo)}: {valor} ({round(frac)}%)</title></circle>'
         )
         offset -= frac
-        f = frac / 100.0
-        if round(frac) >= 4:                               # evita rótulo minúsculo sobreposto
-            ang = 2 * math.pi * (cum + f / 2)              # meio da fatia
-            lx = 21 + 15.915 * math.sin(ang)
-            ly = 21 - 15.915 * math.cos(ang)
-            rotulos.append(
-                f'<text x="{lx:.2f}" y="{ly:.2f}" text-anchor="middle" dominant-baseline="central" '
-                f'font-size="3.4" font-weight="700" fill="{_texto_contraste(cor)}">{round(frac)}%</text>'
-            )
-        cum += f
     return ('<svg viewBox="0 0 42 42" class="donut">'
             '<circle cx="21" cy="21" r="15.915" fill="#fff" stroke="#f2f2f2" stroke-width="10"></circle>'
-            f'{"".join(partes)}{"".join(rotulos)}</svg>')
+            f'{"".join(partes)}</svg>')
+
+
+def _chips(itens: list[tuple[str, int]]) -> str:
+    """Coluna de chips de % à direita da pizza (um por categoria, na cor dela). itens = [(cor, pct)]."""
+    return "".join(
+        f'<div class="chip" style="background:{cor};color:{_texto_contraste(cor)}">{p}%</div>'
+        for cor, p in itens
+    )
 
 
 def _legenda(itens: list[tuple[str, str, int, int]]) -> str:
@@ -273,16 +270,22 @@ CSS = """
     h1 { text-align:center; font-size:21px; margin:0 0 10px; }
     .totais { font-weight:700; font-size:13px; margin:2px 0; }
     .pergunta { font-size:15px; font-weight:700; margin:12px 0 2px; }
-    .grid { display:flex; gap:40px; align-items:center; justify-content:center; margin-top:6px; }
-    .col-leg { flex:0 1 auto; max-width:440px; }
+    .grid { display:flex; gap:28px; align-items:center; justify-content:center; margin-top:6px; }
+    .col-leg { flex:0 1 auto; max-width:420px; }
     .col-chart { flex:0 0 auto; text-align:center; }
+    .col-pct { flex:0 0 auto; display:flex; flex-direction:column; gap:12px; }
+    .chip { color:#fff; font-weight:700; font-size:13px; padding:4px 16px; border-radius:4px;
+            text-align:center; min-width:56px; box-shadow:0 1px 2px rgba(0,0,0,.18); }
     .escala { font-weight:700; font-size:13px; margin-bottom:6px; }
     .leg-row { display:flex; align-items:center; gap:12px; margin:8px 0; font-size:13px; }
     .sw { width:15px; height:15px; border-radius:3px; display:inline-block; flex:0 0 auto; }
     .leg-rot { min-width:220px; font-weight:600; }
     .leg-tot { width:82px; font-weight:700; text-align:right; }
     .leg-pct { width:46px; text-align:center; color:#fff; font-weight:700; border-radius:3px; padding:2px 0; }
-    .donut { width:230px; height:230px; }
+    .donut { width:240px; height:240px; }
+    .donut .fatia { transition: stroke-width .15s ease, opacity .15s ease; }
+    .donut:hover .fatia { opacity:.55; }
+    .donut .fatia:hover { opacity:1; stroke-width:11.5; cursor:pointer; }
     .chart-titulo { font-size:13px; font-weight:700; margin-bottom:6px; max-width:300px; }
     .rodape { margin-top:16px; font-size:11px; color:#444; line-height:1.45; }
     .rodape p { margin:4px 0; }
@@ -322,29 +325,35 @@ def render_html(d: dict, periodo_txt: str, atendimentos=None, *, fragmento: bool
     slot_aten = _slot_atendimentos(aten, editavel, slug)
     total = d["total"]
 
-    seg_nps = [(d["det"], C_DET), (d["neu"], C_NEU), (d["pro"], C_PRO), (d["sem"], C_SEM)]
+    seg_nps = [(d["det"], C_DET, "Detratores"), (d["neu"], C_NEU, "Neutros"),
+               (d["pro"], C_PRO, "Promotores"), (d["sem"], C_SEM, "Sem resposta")]
     leg_nps = _legenda([
         ("0-6 = CLIENTES DETRATORES", C_DET, d["det"], pct(d["det"], total)),
         ("7-8 = CLIENTES NEUTROS", C_NEU, d["neu"], pct(d["neu"], total)),
         ("9-10 = CLIENTES PROMOTORES", C_PRO, d["pro"], pct(d["pro"], total)),
         ("SEM RESPOSTA", C_SEM, d["sem"], pct(d["sem"], total)),
     ])
+    chips_nps = _chips([(C_DET, pct(d["det"], total)), (C_NEU, pct(d["neu"], total)),
+                        (C_PRO, pct(d["pro"], total)), (C_SEM, pct(d["sem"], total))])
 
     t = d["tempo"]
-    seg_t = [(t.get("ruim", 0), C_DET), (t.get("regular", 0), C_REG),
-             (t.get("bom", 0), C_BOM), (t.get("ótimo", 0), C_PRO)]
+    seg_t = [(t.get("ruim", 0), C_DET, "Ruim"), (t.get("regular", 0), C_REG, "Regular"),
+             (t.get("bom", 0), C_BOM, "Bom"), (t.get("ótimo", 0), C_PRO, "Ótimo")]
     leg_t = _legenda([
         ("RUIM", C_DET, t.get("ruim", 0), pct(t.get("ruim", 0), total)),
         ("REGULAR", C_REG, t.get("regular", 0), pct(t.get("regular", 0), total)),
         ("BOM", C_BOM, t.get("bom", 0), pct(t.get("bom", 0), total)),
         ("ÓTIMO", C_PRO, t.get("ótimo", 0), pct(t.get("ótimo", 0), total)),
     ])
+    chips_t = _chips([(C_DET, pct(t.get("ruim", 0), total)), (C_REG, pct(t.get("regular", 0), total)),
+                      (C_BOM, pct(t.get("bom", 0), total)), (C_PRO, pct(t.get("ótimo", 0), total))])
 
-    seg_e = [(d["exp_sim"], C_PRO), (d["exp_nao"], C_DET)]
+    seg_e = [(d["exp_sim"], C_PRO, "Sim"), (d["exp_nao"], C_DET, "Não")]
     leg_e = _legenda([
         ("SIM", C_PRO, d["exp_sim"], pct(d["exp_sim"], total)),
         ("NÃO", C_DET, d["exp_nao"], pct(d["exp_nao"], total)),
     ])
+    chips_e = _chips([(C_PRO, pct(d["exp_sim"], total)), (C_DET, pct(d["exp_nao"], total))])
 
     linhas_tab = "".join(
         f'<tr><td class="serv">{html.escape(s)}</td>'
@@ -362,6 +371,7 @@ def render_html(d: dict, periodo_txt: str, atendimentos=None, *, fragmento: bool
   <div class="grid">
     <div class="col-leg"><div class="escala">ESCALA:</div>{leg_nps}</div>
     <div class="col-chart"><div class="chart-titulo">{_PERGUNTA1}</div>{_donut(seg_nps, total)}</div>
+    <div class="col-pct">{chips_nps}</div>
   </div>
   {_RODAPE_NPS}
 </section>
@@ -370,6 +380,7 @@ def render_html(d: dict, periodo_txt: str, atendimentos=None, *, fragmento: bool
   <div class="grid">
     <div class="col-leg">{leg_t}</div>
     <div class="col-chart"><div class="chart-titulo">Como avalia o tempo de espera para seu atendimento?</div>{_donut(seg_t, total)}</div>
+    <div class="col-pct">{chips_t}</div>
   </div>
 </section>
 <section class="pg">
@@ -377,6 +388,7 @@ def render_html(d: dict, periodo_txt: str, atendimentos=None, *, fragmento: bool
   <div class="grid">
     <div class="col-leg">{leg_e}</div>
     <div class="col-chart"><div class="chart-titulo">O serviço atendeu suas expectativas?</div>{_donut(seg_e, total)}</div>
+    <div class="col-pct">{chips_e}</div>
   </div>
 </section>
 <section class="pg pg-tab">
