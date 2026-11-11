@@ -10,11 +10,17 @@ ver o resultado. Automatiza puxar dados que hoje saem por export manual (complem
 
 | Peça | Arquivo | Papel |
 |---|---|---|
-| Motor (só leitura) | `automacao/mv.py` | `testar(conf)`, `executar(conf, sql)`; **guarda** `validar_select` (só `SELECT`/`WITH`); driver `oracledb` **thin** (sem Oracle Client), importado preguiçosamente |
+| Motor (só leitura) | `automacao/mv.py` | `testar(conf)`, `executar(conf, sql)`; **guarda** `validar_select` (só `SELECT`/`WITH`); driver `oracledb` em **modo thick** (Oracle Instant Client na imagem), importado preguiçosamente |
 | Conexões | tabela `conexoes_mv` (`servidor/modelos_bd.py`) | um registro por **ambiente** (`teste` \| `producao`): host, porta, service name, usuário, senha. Fonte ÚNICA (migra junto com o sistema) |
 | Rotas (ADM) | `servidor/web.py` | `GET /web/admin/consulta-sql`; `POST …/conexao` (salvar), `…/testar` (JSON ok+log), `…/executar` (JSON colunas/linhas) |
 | Tela | `templates/web/consulta_sql.html` | cards de conexão + testar; seletor Teste/Produção; editor SQL com **realce offline** (sem CDN); Executar / **F8**; tabela de resultados |
 | Atalho | `scripts/painel-controle.py` | botão **«Consulta SQL (MV)»** abre a tela no navegador |
+
+**Driver — modo thick (Oracle Instant Client):** o modo *thin* (padrão) recusa contas cujo verificador
+de senha é antigo/não suportado (erro `DPY-3015: password verifier type … is not supported … in thin
+mode`, ex.: `0x939`). Por isso a imagem traz o **Instant Client Basic Light** (Dockerfile) e `mv._init_thick()`
+liga o modo thick antes de conectar — aceita qualquer verificador. Sem o client (dev/CI), o driver cai
+em thin automaticamente. A pasta das libs vem em `ORACLE_CLIENT_LIB_DIR` (definida no Dockerfile).
 
 **Segurança / LGPD:**
 - **Só leitura:** `validar_select` bloqueia INSERT/UPDATE/DELETE/DDL, 2º comando (`;`), `SELECT … INTO`,

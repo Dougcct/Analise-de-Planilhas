@@ -16,6 +16,25 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         fonts-dejavu-core \
     && rm -rf /var/lib/apt/lists/*
 
+# Oracle Instant Client (modo THICK do oracledb) — autentica contas do MV cujo verificador de senha
+# o modo thin recusa (erro DPY-3015). "Basic Light" é a variante menor. A conexão só é usada na rede
+# local (tela ADM «Consulta SQL»). libaio = dependência nativa do client.
+ENV ORACLE_CLIENT_LIB_DIR=/opt/oracle/instantclient
+RUN apt-get update && apt-get install -y --no-install-recommends wget unzip ca-certificates \
+    && (apt-get install -y --no-install-recommends libaio1t64 \
+        || apt-get install -y --no-install-recommends libaio1) \
+    && ( [ -e /usr/lib/x86_64-linux-gnu/libaio.so.1 ] \
+        || ln -s libaio.so.1t64 /usr/lib/x86_64-linux-gnu/libaio.so.1 ) \
+    && wget -q https://download.oracle.com/otn_software/linux/instantclient/instantclient-basiclite-linuxx64.zip \
+         -O /tmp/instantclient.zip \
+    && mkdir -p /opt/oracle \
+    && unzip -q /tmp/instantclient.zip -d /opt/oracle \
+    && ln -s /opt/oracle/instantclient_* "$ORACLE_CLIENT_LIB_DIR" \
+    && echo "$ORACLE_CLIENT_LIB_DIR" > /etc/ld.so.conf.d/oracle-instantclient.conf && ldconfig \
+    && rm /tmp/instantclient.zip \
+    && apt-get purge -y wget unzip && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
+
 # 1) dependências primeiro (camada reaproveitada enquanto o requirements não muda)
 COPY servidor/requirements.txt servidor/requirements.txt
 RUN pip install -r servidor/requirements.txt

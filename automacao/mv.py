@@ -11,6 +11,7 @@ rodarem mesmo onde o driver não está instalado.
 """
 from __future__ import annotations
 
+import os
 import re
 import time
 
@@ -56,6 +57,29 @@ def validar_select(sql: str) -> str:
     return limpo
 
 
+_thick_tentado = False
+
+
+def _init_thick() -> None:
+    """Liga o modo *thick* do oracledb (uma vez por processo) se o Oracle Instant Client existir.
+
+    O modo *thin* (padrão) recusa contas cujo verificador de senha é antigo/não suportado — erro
+    `DPY-3015: password verifier type ... is not supported ... in thin mode`. O modo thick, que usa
+    o Instant Client, aceita qualquer verificador. Se o client não estiver presente (dev/CI), nada
+    acontece e o driver segue em thin. `ORACLE_CLIENT_LIB_DIR` aponta a pasta das libs (no container
+    é definida no Dockerfile); vazio = o driver procura pelo caminho padrão do sistema (ldconfig)."""
+    global _thick_tentado
+    if _thick_tentado:
+        return
+    _thick_tentado = True
+    try:
+        import oracledb
+        lib = (os.environ.get("ORACLE_CLIENT_LIB_DIR") or "").strip() or None
+        oracledb.init_oracle_client(lib_dir=lib)
+    except Exception:
+        pass            # client ausente (segue thin) ou já inicializado antes
+
+
 def _dsn(conf: dict) -> str:
     host = (conf.get("host") or "").strip()
     porta = int(conf.get("porta") or 1521)
@@ -67,6 +91,7 @@ def _dsn(conf: dict) -> str:
 
 def _conectar(conf: dict):
     import oracledb  # preguiçoso: só quando realmente conecta
+    _init_thick()    # usa o Instant Client se houver (aceita verificadores que o thin recusa)
     return oracledb.connect(user=(conf.get("usuario") or "").strip(),
                             password=conf.get("senha") or "", dsn=_dsn(conf))
 

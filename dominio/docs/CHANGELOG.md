@@ -2,6 +2,14 @@
 
 Formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · [SemVer](https://semver.org/lang/pt-BR/)
 
+## [3.1.1] — 2026-11-11
+
+### Corrigido
+- **Consulta SQL ao MV — autenticação (DPY-3015).** Contas do Oracle com verificador de senha antigo/não
+  suportado (ex.: `0x939`) falhavam no modo *thin* do `oracledb`. A imagem passa a trazer o **Oracle
+  Instant Client** (Basic Light) e `mv._init_thick()` liga o **modo thick** antes de conectar, aceitando
+  qualquer verificador; sem o client (dev/CI) o driver cai em thin automaticamente. Doc [21](21_banco_mv_e_migracao.md).
+
 ## [3.1.0] — 2026-11-11
 
 Novo tipo de dashboard (Manifestações/Ouvidoria), redesenho do Feedback, Consulta SQL ao banco do MV e
