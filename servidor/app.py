@@ -20,7 +20,7 @@ from fastapi.responses import FileResponse, RedirectResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from analise_planilha import __version__, feedback, servico
+from analise_planilha import __version__, dashboards, feedback, servico
 from analise_planilha.modelo import carregar_modelo
 
 from . import aprendizado, bd, dados_demo, seed
@@ -153,20 +153,22 @@ def _dataset_do_relatorio(s: Session, rel: Relatorio):
     return _dataset_consolidado(cargas, modelo, s) if cargas else _dataset_demo(rel, modelo)
 
 
-def _linhas_feedback(cargas: list[Carga], forcado: bool = False) -> list[dict] | None:
-    """Linhas CRUAS do(s) CSV(s) de feedback, concatenadas — ou None se não for pesquisa de feedback.
-    Lê o arquivo bruto direto (NÃO passa pelo motor, que renomearia/decodificaria as colunas): o
-    dashboard de feedback tem layout fixo próprio. `forcado` = o usuário escolheu o tipo «Feedback»
-    no seletor de modelo (então rende mesmo que o reconhecimento por colunas fique no limite)."""
+def _dashboard_de_cargas(cargas: list[Carga], modelo_slug: str | None):
+    """(módulo de dashboard, linhas cruas) se as cargas são de um tipo de layout FIXO (feedback,
+    manifestações…); senão None. Lê o CSV bruto direto (NÃO passa pelo motor, que renomearia as colunas).
+    `modelo_slug` = tipo escolhido no seletor de modelo: se for um dashboard, FORÇA esse tipo (rende
+    mesmo que o reconhecimento por colunas fique no limite). Ver `analise_planilha/dashboards.py`."""
     if not cargas:
         return None
+    modulo = dashboards.por_slug(modelo_slug)   # None se o modelo escolhido não é um dashboard
+    forcado = modulo is not None
     linhas: list[dict] = []
     for c in cargas:
         caminho = CARGAS_DIR / c.arquivo_uuid
         if not caminho.is_file():
             continue
         if not (c.nome_original or "").lower().endswith((".csv", ".txt")):
-            return None                 # feedback é sempre CSV; xlsx/outros não são feedback
+            return None                 # dashboards fixos são sempre CSV; xlsx/outros = relatório normal
         try:
             rows = feedback.ler_csv(caminho.read_bytes())
         except Exception:
@@ -177,27 +179,24 @@ def _linhas_feedback(cargas: list[Carga], forcado: bool = False) -> list[dict] |
             if forcado:
                 continue
             return None
-        if not forcado and not feedback.e_feedback(rows[0].keys()):
-            return None                 # não escolheram Feedback e as colunas não batem: relatório normal
+        if modulo is None:
+            modulo = dashboards.reconhecer(rows[0].keys())
+            if modulo is None:
+                return None             # não escolheram tipo e as colunas não batem: relatório normal
         linhas.extend(rows)
-    return linhas or None
+    return (modulo, linhas) if (modulo and linhas) else None
 
 
-def _e_feedback(rel: Relatorio) -> bool:
-    """O usuário escolheu o tipo «Feedback / NPS» no seletor de modelo deste relatório."""
-    return rel.modelo == feedback.SLUG
-
-
-def feedback_linhas(s: Session, rel: Relatorio) -> list[dict] | None:
-    """Linhas de feedback das cargas PUBLICADAS do relatório (tela final)."""
+def dashboard_do_relatorio(s: Session, rel: Relatorio):
+    """(módulo, linhas) das cargas PUBLICADAS do relatório, se for um dashboard fixo; senão None."""
     cargas = list(s.scalars(select(Carga).where(Carga.relatorio_id == rel.id, Carga.status == PUBLICADA)
                             .order_by(Carga.publicado_em, Carga.id)))
-    return _linhas_feedback(cargas, forcado=_e_feedback(rel))
+    return _dashboard_de_cargas(cargas, rel.modelo)
 
 
-def feedback_linhas_carga(carga: Carga, forcado: bool = False) -> list[dict] | None:
-    """Linhas de feedback de UMA carga (usado na prévia, antes de publicar)."""
-    return _linhas_feedback([carga], forcado=forcado)
+def dashboard_da_carga(carga: Carga, modelo_slug: str | None):
+    """(módulo, linhas) de UMA carga (usado na prévia, antes de publicar)."""
+    return _dashboard_de_cargas([carga], modelo_slug)
 
 
 def acesso_vigente(s: Session, usuario_id: int, relatorio_id: int) -> AcessoTemporario | None:

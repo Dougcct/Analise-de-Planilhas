@@ -18,10 +18,12 @@ def test_reconhece_feedback_pelas_colunas():
 def test_total_atendimentos_editavel_vira_campo():
     rows = feedback.ler_csv(_csv('A,,9,bom,sim,Concierge,2026-09-14 10:00:00'))
     d = feedback.calcular(rows)
-    # sem edição: mostra o valor cru
-    assert "SETEMBRO DE 2026: 4428" in feedback.render_html(d, "SETEMBRO DE 2026", 4428)
-    # editável e vazio: vira input para o usuário preencher à mão, apontando para a rota de salvar
-    editavel = feedback.render_html(d, "SETEMBRO DE 2026", None, fragmento=True, editavel=True, slug="feedback-nps")
+    # sem edição: mostra o valor cru no cabeçalho
+    html = feedback.render_html(d, "SETEMBRO DE 2026", 4428)
+    assert "4428" in html
+    assert "Setembro de 2026" in html          # período em caixa de título no subtítulo
+    # editável e vazio: vira input apontando para a rota de salvar
+    editavel = feedback.render_html(d, "SETEMBRO DE 2026", None, editavel=True, slug="feedback-nps")
     assert 'id="fb-aten"' in editavel
     assert "/web/r/feedback-nps/feedback/atendimentos" in editavel
 
@@ -82,9 +84,12 @@ def test_ler_csv_robusto_nao_quebra():
     assert not (r and feedback.e_feedback(r[0].keys()))
 
 
-def test_render_html_tem_as_quatro_paginas():
+def test_render_html_tem_graficos_e_tabela_completa():
     rows = feedback.ler_csv(_csv('A,,9,bom,sim,Concierge,2026-09-14 10:00:00'))
     html = feedback.render_html(feedback.calcular(rows), feedback.periodo(rows), 4428)
-    assert html.count('class="pg') == 4
-    assert "NPS (Net Promoter Score)" in html
-    assert "TOTAL DE ATENDIMENTOS EM SETEMBRO DE 2026: 4428" in html
+    for cid in ("npsChart", "esperaChart", "expectativasChart"):
+        assert cid in html                      # os 3 gráficos Chart.js
+    assert "Total de Pesquisas" in html
+    # catálogo FIXO de 30 serviços na tabela
+    for s in feedback.CATALOGO_SERVICOS:
+        assert s in html

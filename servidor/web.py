@@ -24,7 +24,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
-from analise_planilha import __version__, feedback, relatorio_html, relatorio_pdf, servico
+from analise_planilha import __version__, dashboards, relatorio_html, relatorio_pdf, servico
 from analise_planilha import config as _cfg
 from analise_planilha.cerebro import layout as _cl
 from analise_planilha.cerebro import papeis as _cp
@@ -1041,9 +1041,9 @@ def ver_relatorio(slug: str, request: Request, s: Session = Depends(_sessao)):
         return _pagina("erro.html", request, _ctx(request, escopo, s, "relatorios",
                                                    mensagem="Relatório não encontrado."))
     srv = _srv()
-    eh_fb = srv.feedback_linhas(s, rel) is not None    # feedback (NPS): dashboard fixo, sem filtro de data
+    eh_dash = srv.dashboard_do_relatorio(s, rel) is not None   # dashboard fixo: sem filtro de data
     datas_filtro = None
-    if not eh_fb:
+    if not eh_dash:
         try:
             ds = srv._dataset_do_relatorio(s, rel)
             f = _ler_filtros_query(request, ds)
@@ -1053,7 +1053,7 @@ def ver_relatorio(slug: str, request: Request, s: Session = Depends(_sessao)):
     qs = request.url.query
     dono = escopo.pode_setor(rel.centro_custo_id)
     return _pagina("relatorio.html", request, _ctx(request, escopo, s, "relatorios",
-                   slug=slug, titulo=rel.nome, sem_filtros=eh_fb,
+                   slug=slug, titulo=rel.nome, sem_filtros=eh_dash,
                    pode_compartilhar=(dono and _pode(escopo, GESTOR, ADM)),
                    tem_versao_editada=bool(rel.versao_editada),
                    versao_ativa=("editada" if ((not dono and (ac := srv.acesso_vigente(s, escopo.usuario_id, rel.id)) and getattr(ac, "usar_editada", False)) or request.query_params.get("versao") == "editada") and rel.versao_editada else "original"),
@@ -1071,17 +1071,18 @@ def conteudo_relatorio(slug: str, request: Request, s: Session = Depends(_sessao
     rel = RepoRelatorios(s, escopo).obter(slug)
     if rel is None:
         return HTMLResponse("<p>Relatório não encontrado.</p>", status_code=404)
-    # Pesquisa de feedback (NPS): dashboard de layout FIXO, calculado do CSV cru (não passa pelo motor).
-    # Sem dado pessoal (só agregados), então não se aplica anonimização. Ver `feedback.py`.
-    linhas_fb = srv.feedback_linhas(s, rel)
-    if linhas_fb is not None:
+    # Dashboard de layout FIXO (feedback, manifestações…): calculado do CSV cru, sem passar pelo motor.
+    # Ver `analise_planilha/dashboards.py`. (LGPD: manifestações exibe dados pessoais — não compartilhar.)
+    dash = srv.dashboard_do_relatorio(s, rel)
+    if dash is not None:
+        modulo, linhas = dash
         _audit(s, escopo, "abrir_relatorio", f"web:{slug}")
         s.commit()
         cfg = _ler_json_dict(rel.config_exec) or {}
-        aten = request.query_params.get("atendimentos") or cfg.get("atendimentos")
+        if request.query_params.get("atendimentos"):
+            cfg = {**cfg, "atendimentos": request.query_params["atendimentos"]}
         editavel = escopo.pode_setor(rel.centro_custo_id) and _pode(escopo, GESTOR, ADM)
-        return HTMLResponse(feedback.render_html(feedback.calcular(linhas_fb), feedback.periodo(linhas_fb),
-                                                 aten, fragmento=True, editavel=editavel, slug=slug))
+        return HTMLResponse(modulo.gerar_html(linhas, editavel=editavel, slug=slug, config=cfg))
     ds = srv._dataset_do_relatorio(s, rel)
     f = _ler_filtros_query(request, ds)
     if not escopo.pode_setor(rel.centro_custo_id):
@@ -1119,19 +1120,21 @@ def modelo_relatorio(slug: str, request: Request, tipo: str = "executivo", s: Se
     rel = RepoRelatorios(s, escopo).obter(slug)
     if rel is None:
         return HTMLResponse("<p>Relatório não encontrado.</p>", status_code=404)
-    # Feedback (NPS): PDF do dashboard de layout fixo (ignora `tipo`); WeasyPrint no servidor/Docker.
-    linhas_fb = srv.feedback_linhas(s, rel)
-    if linhas_fb is not None:
-        _audit(s, escopo, "baixar_modelo", f"web:{slug}:feedback")
+    # Dashboard de layout fixo: PDF do próprio dashboard (ignora `tipo`); WeasyPrint no servidor/Docker.
+    dash = srv.dashboard_do_relatorio(s, rel)
+    if dash is not None:
+        modulo, linhas = dash
+        _audit(s, escopo, "baixar_modelo", f"web:{slug}:{modulo.SLUG}")
         s.commit()
         cfg = _ler_json_dict(rel.config_exec) or {}
-        aten = request.query_params.get("atendimentos") or cfg.get("atendimentos")
-        full = feedback.render_html(feedback.calcular(linhas_fb), feedback.periodo(linhas_fb), aten)
+        if request.query_params.get("atendimentos"):
+            cfg = {**cfg, "atendimentos": request.query_params["atendimentos"]}
+        full = modulo.gerar_html(linhas, config=cfg)
         try:
             import weasyprint
-            pdf_fb = weasyprint.HTML(string=full).write_pdf()
-            return Response(content=pdf_fb, media_type="application/pdf",
-                            headers={"Content-Disposition": f'inline; filename="{slug}_feedback.pdf"'})
+            pdf_dash = weasyprint.HTML(string=full).write_pdf()
+            return Response(content=pdf_dash, media_type="application/pdf",
+                            headers={"Content-Disposition": f'inline; filename="{slug}_{modulo.SLUG}.pdf"'})
         except Exception:
             return HTMLResponse(full)   # sem WeasyPrint (dev): devolve o HTML para imprimir/salvar
     ds = srv._dataset_do_relatorio(s, rel)
@@ -1752,8 +1755,8 @@ async def enviar_carga(request: Request, modo: str = Form("novo"),
             s.add(carga)
             s.flush()
             srv.esquecer_dataset(carga.id)               # id reaproveitado (SQLite) não pode herdar cache
-            # Feedback (NPS) não passa pelo motor nem pelo auto-modelo: tem dashboard próprio e NÃO usa modelo.
-            if srv.feedback_linhas_carga(carga, rel.modelo == feedback.SLUG) is None:
+            # Dashboard de layout fixo não passa pelo motor nem pelo auto-modelo: tem render próprio.
+            if srv.dashboard_da_carga(carga, rel.modelo) is None:
                 try:                                     # confirma que o motor LÊ antes da prévia
                     srv._dataset_da_carga(carga, srv._modelo_do(rel), s)
                 except Exception as e:
@@ -1847,17 +1850,18 @@ def enviar_previa(carga_id: int, request: Request, s: Session = Depends(_sessao)
         if not _pode(escopo, GESTOR, ADM):
             raise _Erro("Acesso restrito a gestores.")
         carga, rel = _carga_previa(s, escopo, carga_id)
-        # Pesquisa de feedback (NPS): dashboard de layout fixo — NÃO passa pelo motor (que a trataria como
+        # Dashboard de layout fixo (feedback, manifestações…): NÃO passa pelo motor (que a trataria como
         # série financeira e quebraria). A prévia mostra o próprio dashboard via /conteudo.
-        linhas_fb = srv.feedback_linhas_carga(carga, rel.modelo == feedback.SLUG)
-        if linhas_fb is not None:
+        dash = srv.dashboard_da_carga(carga, rel.modelo)
+        if dash is not None:
+            _modulo, linhas_dash = dash
             qs = request.url.query
             novo = not rel.ativo and not s.scalar(select(Carga).where(Carga.relatorio_id == rel.id,
                                                                       Carga.status == PUBLICADA))
             pos, total, prox = _fila_lote(s, escopo, carga)
             return _pagina("previa.html", request, _ctx(request, escopo, s, "enviar",
                            carga_id=carga_id, titulo=rel.nome, arquivo=carga.nome_original,
-                           registros=len(linhas_fb), paineis=4, novo=novo,
+                           registros=len(linhas_dash), paineis=1, novo=novo,
                            lote_pos=pos, lote_total=total, tem_proximo=(prox is not None),
                            modelo_atual=(rel.modelo or ""), modelo_nome="", modelos=modelos_fs.disponiveis(),
                            agente_atual="", agente_nome="", agentes=[],
@@ -2003,14 +2007,15 @@ def enviar_previa_conteudo(carga_id: int, request: Request, s: Session = Depends
         carga, rel = _carga_previa(s, escopo, carga_id)
     except _Erro:
         return HTMLResponse("<p>Prévia não encontrada.</p>", status_code=404)
-    # Pesquisa de feedback (NPS): mostra já o dashboard de layout fixo na prévia (não o relatório genérico).
-    linhas_fb = srv.feedback_linhas_carga(carga, rel.modelo == feedback.SLUG)
-    if linhas_fb is not None:
+    # Dashboard de layout fixo: mostra já o próprio dashboard na prévia (não o relatório genérico).
+    dash = srv.dashboard_da_carga(carga, rel.modelo)
+    if dash is not None:
+        modulo, linhas_dash = dash
         cfg = _ler_json_dict(rel.config_exec) or {}
-        aten = request.query_params.get("atendimentos") or cfg.get("atendimentos")
+        if request.query_params.get("atendimentos"):
+            cfg = {**cfg, "atendimentos": request.query_params["atendimentos"]}
         editavel = escopo.pode_setor(rel.centro_custo_id) and _pode(escopo, GESTOR, ADM)
-        return HTMLResponse(feedback.render_html(feedback.calcular(linhas_fb), feedback.periodo(linhas_fb),
-                                                 aten, fragmento=True, editavel=editavel, slug=rel.slug))
+        return HTMLResponse(modulo.gerar_html(linhas_dash, editavel=editavel, slug=rel.slug, config=cfg))
     ds = srv._dataset_da_carga(carga, srv._modelo_do(rel), s)
     f = _ler_filtros_query(request, ds)
     dono = escopo.pode_setor(rel.centro_custo_id)
@@ -2040,8 +2045,8 @@ def enviar_previa_publicar(carga_id: int, request: Request, s: Session = Depends
         carga, rel = _carga_previa(s, escopo, carga_id)
         srv = _srv()
         _pos, _tot, prox = _fila_lote(s, escopo, carga)   # próxima da fila antes de mudar o status
-        # Feedback (NPS): não passa pelo motor; nada de aprendizado de colunas.
-        ent = None if srv.feedback_linhas_carga(carga, rel.modelo == feedback.SLUG) is not None \
+        # Dashboard de layout fixo: não passa pelo motor; nada de aprendizado de colunas.
+        ent = None if srv.dashboard_da_carga(carga, rel.modelo) is not None \
             else srv._dataset_da_carga(carga, srv._modelo_do(rel), s).entendimento
         for ant in s.scalars(select(Carga).where(Carga.relatorio_id == rel.id, Carga.status == PUBLICADA,
                                                  Carga.nome_original == carga.nome_original)):
@@ -2265,8 +2270,8 @@ def admin_centro_excluir(cc_id: int, request: Request, s: Session = Depends(_ses
 # ====================================================== modelos de análise (ADM) ================
 def _modelos_disponiveis() -> list[dict]:
     """Modelos escolhíveis num relatório: não bloqueados e que carregam (para os <select>).
-    Inclui o tipo especial «Feedback / NPS» (dashboard fixo, não é .toml) como 1ª opção."""
-    return [{"slug": feedback.SLUG, "nome": feedback.NOME}] + modelos_fs.disponiveis()
+    Inclui os tipos de dashboard FIXO (Feedback/NPS, Manifestações…) antes dos modelos .toml."""
+    return dashboards.modelos_selecionaveis() + modelos_fs.disponiveis()
 
 
 def _uso_dos_modelos(s) -> dict[str, int]:

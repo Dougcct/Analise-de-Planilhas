@@ -442,10 +442,27 @@ def _paineis_itens(df, c: _Ctx, meses, base) -> tuple[list[Painel], list[str]]:
     chaves = [x for x in (c.G, c.I) if x]
     est = _estatisticas(df, chaves, c, meses, base)
     sec = c.itens.capitalize()
-    paineis.append(Painel(sec, f"{TOP_ITENS} maiores {c.itens} no período",
-                          graficos.barras([{"nome": r[c.I], "v": r["Total"], "g": r[c.G] if c.G else ""}
-                                           for _, r in est.head(TOP_ITENS).iterrows()],
-                                          campo_valor="v", moeda=True, detalhe="g"), meia=True))
+
+    def _barras_maiores(linhas):
+        return graficos.barras([{"nome": r[c.I], "v": r["Total"], "g": r[c.G] if c.G else ""}
+                                for _, r in linhas.iterrows()], campo_valor="v", moeda=True, detalhe="g")
+
+    if c.perfil == "dre":
+        # DRE: receita (positiva) e despesa (negativa) não se misturam no mesmo ranking — dois painéis
+        # separados, cada um já na ordem de magnitude (est vem ordenado por |Total|). Ver chamado «separar
+        # receita da despesa».
+        receitas = est[est["Total"] > 0].head(TOP_ITENS)
+        despesas = est[est["Total"] < 0].head(TOP_ITENS)
+        if not receitas.empty:
+            paineis.append(Painel(sec, "Maiores receitas no período", _barras_maiores(receitas), meia=True))
+        if not despesas.empty:
+            paineis.append(Painel(sec, "Maiores despesas no período", _barras_maiores(despesas), meia=True))
+        if receitas.empty and despesas.empty:
+            paineis.append(Painel(sec, f"{TOP_ITENS} maiores {c.itens} no período",
+                                  _barras_maiores(est.head(TOP_ITENS)), meia=True))
+    else:
+        paineis.append(Painel(sec, f"{TOP_ITENS} maiores {c.itens} no período",
+                              _barras_maiores(est.head(TOP_ITENS)), meia=True))
     # Pareto: quantas contas fazem 80% do total (na DRE receitas e despesas não se somam: não se aplica)
     tot = est["Total"].abs().sum() if c.perfil != "dre" else 0
     if tot:

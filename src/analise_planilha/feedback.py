@@ -1,12 +1,12 @@
-"""Dashboard de Feedback / NPS de pacientes (modelo fixo da Diretoria) — LÓGICA PURA.
+"""Dashboard de Feedback / NPS de pacientes (modelo da Diretoria) — LÓGICA PURA.
 
-Reproduz o layout do "Modelo feedback_.pdf" (4 páginas: NPS, Tempo de espera, Expectativas e
-tabela por serviço) a partir do CSV cru da pesquisa. O layout é FIXO; só os números mudam, e são
-calculados aqui para serem conferidos ("vamos ir testando").
+Calcula as métricas da pesquisa de satisfação a partir do CSV cru (NPS, tempo de espera, expectativas
+e tabela por serviço) e renderiza um dashboard institucional (tema escuro, Tailwind + Chart.js). O
+desenho é FIXO; só os números mudam, calculados aqui.
 
-Este módulo é motor (sem UI, sem FastAPI): recebe linhas já lidas (lista de dicts) e devolve
-métricas e o HTML pronto. Quem lê o arquivo e renderiza o PDF é o chamador (CLI em
-`scripts/gerar_feedback_nps.py` ou o servidor web).
+Este módulo é motor (sem UI, sem FastAPI): recebe linhas já lidas (lista de dicts) e devolve métricas e
+o HTML pronto. Quem lê o arquivo e renderiza o PDF é o chamador (CLI `scripts/gerar_feedback_nps.py` ou
+o servidor web). Ver [dominio/docs/20].
 """
 from __future__ import annotations
 
@@ -33,15 +33,7 @@ COLUNAS_ASSINATURA = (COL_ESCALA, COL_TEMPO, COL_EXPECT, COL_SERVICO)
 MESES_PT = ["", "JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO",
             "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"]
 
-# Cores exatas extraídas do modelo (export do Excel) ---------------------------------
-C_DET = "#ff0000"   # detratores / ruim / não
-C_NEU = "#2e75b6"   # neutros
-C_PRO = "#00b050"   # promotores / ótimo / sim
-C_SEM = "#d9d9d9"   # sem resposta
-C_REG = "#ffc000"   # regular (tempo)
-C_BOM = "#00b0f0"   # bom (tempo)
-
-# Catálogo FIXO de serviços da página 4 (ordem e grafia do modelo) ----------
+# Catálogo FIXO de serviços da tabela (ordem e grafia do modelo) ----------
 CATALOGO_SERVICOS = [
     "Atendimento Recepção Adulto",
     "Atendimento Recepção Infantil",
@@ -196,215 +188,235 @@ def calcular(rows: list[dict]) -> dict:
     }
 
 
-# --- Render HTML ----------------------------------------------------------
-
-def _texto_contraste(cor_hex: str) -> str:
-    """Preto sobre fatia clara, branco sobre fatia escura — para o rótulo de % ficar legível."""
-    h = cor_hex.lstrip("#")
-    r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
-    return "#222" if (0.299 * r + 0.587 * g + 0.114 * b) > 150 else "#fff"
-
-
-def _donut(segmentos: list[tuple[int, str, str]], total: int) -> str:
-    """SVG de rosca LIMPA (sem rótulo nas fatias — os % vão nos chips à direita). Cada fatia tem <title>
-    (tooltip ao passar o mouse) e a classe «fatia» p/ o efeito de hover (ver CSS). r=15.915 =>
-    circunferência=100 (fração=%). Começa no topo (12h), sentido horário."""
-    partes = []
-    offset = 25.0
-    for valor, cor, rotulo in segmentos:
-        frac = (valor / total * 100) if total else 0      # 0..100
-        partes.append(
-            f'<circle class="fatia" cx="21" cy="21" r="15.915" fill="transparent" stroke="{cor}" '
-            f'stroke-width="10" stroke-dasharray="{frac:.3f} {100 - frac:.3f}" stroke-dashoffset="{offset:.3f}">'
-            f'<title>{html.escape(rotulo)}: {valor} ({round(frac)}%)</title></circle>'
-        )
-        offset -= frac
-    return ('<svg viewBox="0 0 42 42" class="donut">'
-            '<circle cx="21" cy="21" r="15.915" fill="#fff" stroke="#f2f2f2" stroke-width="10"></circle>'
-            f'{"".join(partes)}</svg>')
-
-
-def _chips(itens: list[tuple[str, int]]) -> str:
-    """Coluna de chips de % à direita da pizza (um por categoria, na cor dela). itens = [(cor, pct)]."""
-    return "".join(
-        f'<div class="chip" style="background:{cor};color:{_texto_contraste(cor)}">{p}%</div>'
-        for cor, p in itens
-    )
-
-
-def _legenda(itens: list[tuple[str, str, int, int]]) -> str:
-    linhas = []
-    for rotulo, cor, tot, p in itens:
-        linhas.append(
-            '<div class="leg-row">'
-            f'<span class="sw" style="background:{cor}"></span>'
-            f'<span class="leg-rot">{html.escape(rotulo)}</span>'
-            f'<span class="leg-tot">TOTAL: {tot}</span>'
-            f'<span class="leg-pct" style="background:{cor}">{p}%</span>'
-            '</div>'
-        )
-    return "".join(linhas)
-
-
-_RODAPE_NPS = (
-    '<div class="rodape">'
-    '<p><b>Clientes DETRATORES</b> aqueles que tiveram experiências ruins e não tiveram suas '
-    'expectativas atendidas e, portanto, podem falar mal da empresa para seus amigos.</p>'
-    '<p><b>Clientes NEUTROS ou passivos</b> aqueles que tiveram experiências parciais, no caso de '
-    'uma recomendação eles o fariam com ressalvas. São grandes as chances de eles migrarem para a '
-    'concorrência pois não estão “fidelizados”.</p>'
-    '<p><b>Clientes PROMOTORES</b> aqueles que tiveram uma boa experiência e se tornam leais à '
-    'empresa. Também costumam interagir com a marca e recomenda-la para os conhecidos.</p>'
-    '</div>'
-)
+# --- Render HTML (design institucional: tema escuro, Tailwind + Chart.js) --------------------------
 
 _PERGUNTA1 = ("Qual a probabilidade de recomendação do nosso Hospital a amigos "
               "ou familiares que necessitem de atendimento?")
 
-CSS = """
-    @page { size: A4 landscape; margin: 14mm 16mm; }
-    @page tabela { size: A4 portrait; margin: 16mm; }
-    * { box-sizing: border-box; }
-    body { font-family: Calibri, 'Segoe UI', Arial, sans-serif; color:#222; margin:0; }
-    .pg { page-break-after: always; position: relative; }
-    .pg:last-child { page-break-after: auto; }
-    h1 { text-align:center; font-size:21px; margin:0 0 10px; }
-    .totais { font-weight:700; font-size:13px; margin:2px 0; }
-    .pergunta { font-size:15px; font-weight:700; margin:12px 0 2px; }
-    .grid { display:flex; gap:28px; align-items:center; justify-content:center; margin-top:6px; }
-    .col-leg { flex:0 1 auto; max-width:420px; }
-    .col-chart { flex:0 0 auto; text-align:center; }
-    .col-pct { flex:0 0 auto; display:flex; flex-direction:column; gap:12px; }
-    .chip { color:#fff; font-weight:700; font-size:13px; padding:4px 16px; border-radius:4px;
-            text-align:center; min-width:56px; box-shadow:0 1px 2px rgba(0,0,0,.18); }
-    .escala { font-weight:700; font-size:13px; margin-bottom:6px; }
-    .leg-row { display:flex; align-items:center; gap:12px; margin:8px 0; font-size:13px; }
-    .sw { width:15px; height:15px; border-radius:3px; display:inline-block; flex:0 0 auto; }
-    .leg-rot { min-width:220px; font-weight:600; }
-    .leg-tot { width:82px; font-weight:700; text-align:right; }
-    .leg-pct { width:46px; text-align:center; color:#fff; font-weight:700; border-radius:3px; padding:2px 0; }
-    .donut { width:240px; height:240px; }
-    .donut .fatia { transition: stroke-width .15s ease, opacity .15s ease; }
-    .donut:hover .fatia { opacity:.55; }
-    .donut .fatia:hover { opacity:1; stroke-width:11.5; cursor:pointer; }
-    .chart-titulo { font-size:13px; font-weight:700; margin-bottom:6px; max-width:300px; }
-    .rodape { margin-top:16px; font-size:11px; color:#444; line-height:1.45; }
-    .rodape p { margin:4px 0; }
-    .pg-tab { page: tabela; page-break-after:auto; }
-    .tab-head { display:flex; justify-content:space-between; font-weight:700; font-size:14px; margin-bottom:10px; }
-    table.serv { width:100%; border-collapse:collapse; font-size:12px; }
-    table.serv th, table.serv td { border:1px solid #bbb; padding:5px 8px; }
-    table.serv th { background:#d9d9d9; }
-    table.serv td.num { text-align:center; width:70px; }
-    table.serv thead th { text-align:center; }
-    table.serv thead th.sv { text-align:left; }
-"""
+_PARAGRAFOS_NPS = (
+    '<p><strong class="text-rose-400">Clientes DETRATORES (0-6):</strong> Aqueles que tiveram '
+    'experiências ruins e não tiveram suas expectativas atendidas e, portanto, podem falar mal da '
+    'empresa para seus amigos.</p>'
+    '<p><strong class="text-amber-400">Clientes NEUTROS (7-8):</strong> Ou passivos, aqueles que '
+    'tiveram experiências parciais, no caso de uma recomendação eles o fariam com ressalvas. São '
+    'grandes as chances de eles migrarem para a concorrência pois não estão "fidelizados".</p>'
+    '<p><strong class="text-emerald-400">Clientes PROMOTORES (9-10):</strong> Aqueles que tiveram '
+    'uma boa experiência e se tornam leais à empresa. Também costumam interagir com a marca e '
+    'recomendá-la para os conhecidos.</p>'
+)
+
+
+def _card(valor: int, rotulo: str, p: int, borda: str, tam: str = "text-lg") -> str:
+    """Cartão de número embaixo das roscas (ex.: «131 Bom (70%)»)."""
+    return (f'<div class="bg-slate-900 rounded py-3 border-b-2 {borda}">'
+            f'<span class="block text-white {tam} font-bold">{valor}</span> {html.escape(rotulo)} ({p}%)</div>')
 
 
 def _slot_atendimentos(aten_val: str, editavel: bool, slug: str) -> str:
-    """O "TOTAL DE ATENDIMENTOS" não vem do CSV. Fora de edição mostra o valor (ou «—»); na tela, para
-    quem pode editar, vira um campinho que o usuário preenche à mão e salva (persiste por relatório)."""
+    """Valor do 'Total de Atendimentos' (NÃO vem do CSV). Fora de edição mostra o número (ou «—»);
+    para quem pode editar, vira um campo que o usuário preenche e salva (persiste por relatório)."""
     if not editavel:
-        return html.escape(aten_val)
+        return f'<span class="block text-3xl font-bold text-sky-400">{html.escape(aten_val)}</span>'
     v = "" if aten_val in ("—", "", None) else html.escape(str(aten_val))
     js = ("fetch('/web/r/SLUG/feedback/atendimentos',{method:'POST',"
           "headers:{'Content-Type':'application/x-www-form-urlencoded'},"
           "body:'atendimentos='+encodeURIComponent(document.getElementById('fb-aten').value)})"
           ".then(function(){location.reload()})").replace("SLUG", slug)
-    return ('<span class="aten-edit" style="display:inline-flex;gap:6px;align-items:center">'
-            f'<input id="fb-aten" type="number" min="0" value="{v}" placeholder="informar" '
-            'style="width:110px;padding:1px 4px">'
-            f'<button type="button" onclick="{js}" style="cursor:pointer">salvar</button></span>')
+    return ('<span class="flex items-center gap-1 justify-end">'
+            f'<input id="fb-aten" type="number" min="0" value="{v}" placeholder="0" '
+            'class="w-20 bg-slate-800 border border-slate-600 rounded text-2xl font-bold text-sky-400 '
+            'text-right px-1 focus:outline-none focus:border-sky-400">'
+            f'<button type="button" onclick="{js}" '
+            'class="text-[10px] bg-sky-600 hover:bg-sky-500 text-white rounded px-2 py-1">salvar</button></span>')
+
+
+# Documento base (tokens @@NOME@@ são substituídos com os dados — @@ nunca aparece em HTML/JS/Tailwind).
+_TEMPLATE = """<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback - Análise de Planilhas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-200 p-4 md:p-8 antialiased">
+    <div class="max-w-7xl mx-auto space-y-8">
+
+        <header class="flex flex-col md:flex-row justify-between items-center gap-4 bg-slate-800 p-6 rounded-lg border border-slate-700 shadow-md border-t-4 border-t-emerald-500">
+            <div>
+                <h1 class="text-2xl font-bold text-white tracking-tight">Feedback — Análise de Planilhas</h1>
+                <p class="text-sm text-slate-400 mt-1">Relatório Institucional de NPS | @@PERIODO_SUB@@</p>
+            </div>
+            <div class="flex gap-3">
+                <div class="text-right bg-slate-900 px-6 py-3 rounded border border-slate-700">
+                    <span class="block text-3xl font-bold text-emerald-400">@@TOTAL@@</span>
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total de Pesquisas</span>
+                </div>
+                <div class="text-right bg-slate-900 px-6 py-3 rounded border border-slate-700">
+                    @@ATEND_SLOT@@
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Atendimentos · @@PERIODO_SUB@@</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="bg-slate-800 p-6 md:p-8 rounded-lg border border-slate-700 shadow-md">
+            <h3 class="text-lg font-semibold text-white mb-6">1. @@PERGUNTA1@@</h3>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
+                <div class="space-y-4 text-sm leading-relaxed text-slate-300 lg:col-span-1">@@PARAGRAFOS_NPS@@</div>
+                <div class="relative h-72 w-full lg:col-span-2"><canvas id="npsChart"></canvas></div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-slate-800 p-6 md:p-8 rounded-lg border border-slate-700 shadow-md flex flex-col">
+                <h3 class="text-lg font-semibold text-white mb-6">2. Como avalia o tempo de espera para seu atendimento?</h3>
+                <div class="relative h-64 w-full flex-grow flex justify-center items-center"><canvas id="esperaChart"></canvas></div>
+                <div class="mt-6 grid grid-cols-4 gap-2 text-center text-xs font-medium">@@CARDS_TEMPO@@</div>
+            </div>
+            <div class="bg-slate-800 p-6 md:p-8 rounded-lg border border-slate-700 shadow-md flex flex-col">
+                <h3 class="text-lg font-semibold text-white mb-6">3. O serviço atendeu suas expectativas?</h3>
+                <div class="relative h-64 w-full flex-grow flex justify-center items-center"><canvas id="expectativasChart"></canvas></div>
+                <div class="mt-6 grid grid-cols-2 gap-4 text-center text-xs font-medium">@@CARDS_EXP@@</div>
+            </div>
+        </div>
+
+        <div class="bg-slate-800 rounded-lg border border-slate-700 shadow-md overflow-hidden">
+            <div class="p-6 border-b border-slate-700 bg-slate-800/50">
+                <h3 class="text-lg font-semibold text-white">Atingiu as Expectativas? (Total: @@TOTAL@@)</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-900 text-slate-300 text-xs uppercase tracking-wider">
+                            <th class="p-4 font-semibold border-b border-slate-700">Serviço / Setor</th>
+                            <th class="p-4 font-semibold text-center w-32 border-b border-l border-slate-700">SIM</th>
+                            <th class="p-4 font-semibold text-center w-32 border-b border-l border-slate-700">NÃO</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm text-slate-300">@@TABLE_ROWS@@</tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            if (typeof Chart === "undefined") return;   // CDN bloqueada: tabela/cartões ainda funcionam
+            Chart.defaults.font.family = "'Inter', sans-serif";
+            Chart.defaults.color = '#94a3b8';
+            Chart.defaults.plugins.tooltip.backgroundColor = '#1e293b';
+            Chart.defaults.plugins.tooltip.titleColor = '#f8fafc';
+            Chart.defaults.plugins.tooltip.borderColor = '#334155';
+            Chart.defaults.plugins.tooltip.borderWidth = 1;
+            const colors = { emerald: '#10b981', blue: '#3b82f6', amber: '#f59e0b', rose: '#f43f5e', gray: '#64748b' };
+
+            new Chart(document.getElementById('npsChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Detratores', 'Neutros', 'Promotores', 'Sem Resposta'],
+                    datasets: [{ label: 'Pacientes', data: @@NPS_DATA@@,
+                        backgroundColor: [colors.rose, colors.amber, colors.emerald, colors.gray],
+                        borderRadius: 4, barPercentage: 0.6 }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, animation: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, grid: { color: '#334155' } }, x: { grid: { display: false } } }
+                }
+            });
+
+            new Chart(document.getElementById('esperaChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: @@TEMPO_LABELS@@,
+                    datasets: [{ data: @@TEMPO_DATA@@,
+                        backgroundColor: [colors.rose, colors.amber, colors.blue, colors.emerald],
+                        borderWidth: 2, borderColor: '#1e293b', hoverOffset: 4 }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, animation: false, cutout: '70%',
+                    plugins: { legend: { position: 'right', labels: { boxWidth: 12, padding: 15 } } }
+                }
+            });
+
+            new Chart(document.getElementById('expectativasChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: @@EXP_LABELS@@,
+                    datasets: [{ data: @@EXP_DATA@@,
+                        backgroundColor: [colors.emerald, colors.rose],
+                        borderWidth: 2, borderColor: '#1e293b', hoverOffset: 4 }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, animation: false, cutout: '70%',
+                    plugins: { legend: { position: 'right', labels: { boxWidth: 12, padding: 15 } } }
+                }
+            });
+        });
+    </script>
+</body>
+</html>"""
 
 
 def render_html(d: dict, periodo_txt: str, atendimentos=None, *, fragmento: bool = False,
                 editavel: bool = False, slug: str = "") -> str:
-    """Monta o HTML do dashboard. `fragmento=True` devolve só o miolo (sem <html>/<style>),
-    para embutir na casca web; padrão devolve página completa (para o PDF). Com `editavel`, o total de
-    atendimentos (único dado fora do CSV) vira um campo que o usuário preenche na tela."""
+    """Monta o dashboard (tema escuro, Tailwind + Chart.js) com os números do CSV. Devolve SEMPRE um
+    documento HTML completo — serve para a casca web (iframe) e para o PDF via Chrome (que executa o
+    Chart.js). No WeasyPrint os gráficos não renderizam (sem JS), mas cartões e tabela sim.
+    `fragmento` é mantido por compatibilidade; `editavel` transforma o Total de Atendimentos num campo."""
+    _ = fragmento   # mantido por compatibilidade de assinatura (o documento é sempre completo)
     aten = f"{atendimentos}" if atendimentos not in (None, "") else "—"
-    slot_aten = _slot_atendimentos(aten, editavel, slug)
     total = d["total"]
+    det, neu, pro, sem = d["det"], d["neu"], d["pro"], d["sem"]
+    tp = d["tempo"]
+    ruim, regular, bom, otimo = tp.get("ruim", 0), tp.get("regular", 0), tp.get("bom", 0), tp.get("ótimo", 0)
+    sim, nao = d["exp_sim"], d["exp_nao"]
 
-    seg_nps = [(d["det"], C_DET, "Detratores"), (d["neu"], C_NEU, "Neutros"),
-               (d["pro"], C_PRO, "Promotores"), (d["sem"], C_SEM, "Sem resposta")]
-    leg_nps = _legenda([
-        ("0-6 = CLIENTES DETRATORES", C_DET, d["det"], pct(d["det"], total)),
-        ("7-8 = CLIENTES NEUTROS", C_NEU, d["neu"], pct(d["neu"], total)),
-        ("9-10 = CLIENTES PROMOTORES", C_PRO, d["pro"], pct(d["pro"], total)),
-        ("SEM RESPOSTA", C_SEM, d["sem"], pct(d["sem"], total)),
-    ])
-    chips_nps = _chips([(C_DET, pct(d["det"], total)), (C_NEU, pct(d["neu"], total)),
-                        (C_PRO, pct(d["pro"], total)), (C_SEM, pct(d["sem"], total))])
+    cards_tempo = (_card(ruim, "Ruim", pct(ruim, total), "border-rose-500")
+                   + _card(regular, "Regular", pct(regular, total), "border-amber-500")
+                   + _card(bom, "Bom", pct(bom, total), "border-blue-500")
+                   + _card(otimo, "Ótimo", pct(otimo, total), "border-emerald-500"))
+    cards_exp = (_card(sim, "Sim", pct(sim, total), "border-emerald-500", "text-xl")
+                 + _card(nao, "Não", pct(nao, total), "border-rose-500", "text-xl"))
 
-    t = d["tempo"]
-    seg_t = [(t.get("ruim", 0), C_DET, "Ruim"), (t.get("regular", 0), C_REG, "Regular"),
-             (t.get("bom", 0), C_BOM, "Bom"), (t.get("ótimo", 0), C_PRO, "Ótimo")]
-    leg_t = _legenda([
-        ("RUIM", C_DET, t.get("ruim", 0), pct(t.get("ruim", 0), total)),
-        ("REGULAR", C_REG, t.get("regular", 0), pct(t.get("regular", 0), total)),
-        ("BOM", C_BOM, t.get("bom", 0), pct(t.get("bom", 0), total)),
-        ("ÓTIMO", C_PRO, t.get("ótimo", 0), pct(t.get("ótimo", 0), total)),
-    ])
-    chips_t = _chips([(C_DET, pct(t.get("ruim", 0), total)), (C_REG, pct(t.get("regular", 0), total)),
-                      (C_BOM, pct(t.get("bom", 0), total)), (C_PRO, pct(t.get("ótimo", 0), total))])
+    linhas = []
+    for i, s in enumerate(CATALOGO_SERVICOS):
+        s_sim, s_nao = d["serv"][s]["sim"], d["serv"][s]["nao"]
+        bg = "bg-slate-900/40 " if i % 2 else ""
+        c_sim = "text-emerald-400 font-medium" if s_sim else "text-slate-500"
+        c_nao = "text-rose-400 font-medium" if s_nao else "text-slate-500"
+        linhas.append(
+            f'<tr class="{bg}hover:bg-slate-700/50 transition-colors">'
+            f'<td class="p-4 border-b border-slate-700/50">{html.escape(s)}</td>'
+            f'<td class="p-4 text-center {c_sim} border-l border-b border-slate-700/50">{s_sim}</td>'
+            f'<td class="p-4 text-center {c_nao} border-l border-b border-slate-700/50">{s_nao}</td></tr>'
+        )
 
-    seg_e = [(d["exp_sim"], C_PRO, "Sim"), (d["exp_nao"], C_DET, "Não")]
-    leg_e = _legenda([
-        ("SIM", C_PRO, d["exp_sim"], pct(d["exp_sim"], total)),
-        ("NÃO", C_DET, d["exp_nao"], pct(d["exp_nao"], total)),
-    ])
-    chips_e = _chips([(C_PRO, pct(d["exp_sim"], total)), (C_DET, pct(d["exp_nao"], total))])
-
-    linhas_tab = "".join(
-        f'<tr><td class="serv">{html.escape(s)}</td>'
-        f'<td class="num">{d["serv"][s]["sim"]}</td>'
-        f'<td class="num">{d["serv"][s]["nao"]}</td></tr>'
-        for s in CATALOGO_SERVICOS
-    )
-
-    corpo = f"""
-<section class="pg">
-  <h1>NPS (Net Promoter Score)</h1>
-  <div class="totais">TOTAL DE ATENDIMENTOS EM {periodo_txt}: {slot_aten}</div>
-  <div class="totais">TOTAL DE PESQUISAS APURADAS EM {periodo_txt}: {total}</div>
-  <div class="pergunta">1. {_PERGUNTA1}</div>
-  <div class="grid">
-    <div class="col-leg"><div class="escala">ESCALA:</div>{leg_nps}</div>
-    <div class="col-chart"><div class="chart-titulo">{_PERGUNTA1}</div>{_donut(seg_nps, total)}</div>
-    <div class="col-pct">{chips_nps}</div>
-  </div>
-  {_RODAPE_NPS}
-</section>
-<section class="pg">
-  <div class="pergunta">2. Como avalia o tempo de espera para seu atendimento?</div>
-  <div class="grid">
-    <div class="col-leg">{leg_t}</div>
-    <div class="col-chart"><div class="chart-titulo">Como avalia o tempo de espera para seu atendimento?</div>{_donut(seg_t, total)}</div>
-    <div class="col-pct">{chips_t}</div>
-  </div>
-</section>
-<section class="pg">
-  <div class="pergunta">3. O serviço atendeu suas expectativas?</div>
-  <div class="grid">
-    <div class="col-leg">{leg_e}</div>
-    <div class="col-chart"><div class="chart-titulo">O serviço atendeu suas expectativas?</div>{_donut(seg_e, total)}</div>
-    <div class="col-pct">{chips_e}</div>
-  </div>
-</section>
-<section class="pg pg-tab">
-  <div class="tab-head"><span>Total de Pesquisas: {total}</span><span>Atingiu as Expectativas?</span></div>
-  <table class="serv">
-    <thead><tr><th class="sv">Serviço</th><th>SIM</th><th>NÃO</th></tr></thead>
-    <tbody>{linhas_tab}</tbody>
-  </table>
-</section>"""
-
-    if fragmento:
-        return f'<style>{CSS}</style><div class="feedback-nps">{corpo}</div>'
-    return (f'<!doctype html><html lang="pt-br"><head><meta charset="utf-8">'
-            f'<title>Feedback NPS — {periodo_txt}</title><style>{CSS}</style></head>'
-            f'<body>{corpo}</body></html>')
+    subs = {
+        "@@PERIODO_SUB@@": html.escape(periodo_txt.capitalize()),
+        "@@TOTAL@@": str(total),
+        "@@ATEND_SLOT@@": _slot_atendimentos(aten, editavel, slug),
+        "@@PERGUNTA1@@": html.escape(_PERGUNTA1),
+        "@@PARAGRAFOS_NPS@@": _PARAGRAFOS_NPS,
+        "@@CARDS_TEMPO@@": cards_tempo,
+        "@@CARDS_EXP@@": cards_exp,
+        "@@TABLE_ROWS@@": "".join(linhas),
+        "@@NPS_DATA@@": f"[{det}, {neu}, {pro}, {sem}]",
+        "@@TEMPO_LABELS@@": (f"['Ruim ({pct(ruim, total)}%)', 'Regular ({pct(regular, total)}%)', "
+                             f"'Bom ({pct(bom, total)}%)', 'Ótimo ({pct(otimo, total)}%)']"),
+        "@@TEMPO_DATA@@": f"[{ruim}, {regular}, {bom}, {otimo}]",
+        "@@EXP_LABELS@@": f"['Sim ({pct(sim, total)}%)', 'Não ({pct(nao, total)}%)']",
+        "@@EXP_DATA@@": f"[{sim}, {nao}]",
+    }
+    doc = _TEMPLATE
+    for k, v in subs.items():
+        doc = doc.replace(k, v)
+    return doc
 
 
 def dashboard(dados: bytes | str, atendimentos=None, *, fragmento: bool = False) -> tuple[str, dict]:
@@ -412,3 +424,14 @@ def dashboard(dados: bytes | str, atendimentos=None, *, fragmento: bool = False)
     rows = ler_csv(dados)
     d = calcular(rows)
     return render_html(d, periodo(rows), atendimentos, fragmento=fragmento), d
+
+
+# --- Interface uniforme do registro de dashboards (ver `dashboards.py`) --------------------------
+def reconhece(colunas) -> bool:
+    return e_feedback(colunas)
+
+
+def gerar_html(linhas: list[dict], *, editavel: bool = False, slug: str = "", config=None) -> str:
+    """Monta o dashboard a partir das linhas já lidas. O Total de Atendimentos vem do `config_exec`."""
+    aten = (config or {}).get("atendimentos")
+    return render_html(calcular(linhas), periodo(linhas), aten, editavel=editavel, slug=slug)

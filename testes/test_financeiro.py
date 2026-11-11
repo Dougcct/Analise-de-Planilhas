@@ -212,6 +212,24 @@ def test_dre_demonstrativo_margem_e_sinal(tmp_path):
     assert "Receita Particular" not in set(despesas.tabela["Conta"])
 
 
+def test_dre_maiores_receitas_e_despesas_separadas(tmp_path):
+    """Chamado «separar a receita da despesa»: o ranking «20 maiores contas» (que misturava receita
+    positiva e despesa negativa) vira dois painéis separados no perfil DRE."""
+    p = tmp_path / "dre.toml"
+    p.write_text(MODELO_DRE, encoding="utf-8")
+    ds = servico.carregar(_xlsx({"DRE": DRE}), "d.xlsx", modelo=carregar_modelo(p))
+    a = servico.analisar(ds, metas_cfg={})
+    titulos = {pn.titulo for pn in a.paineis}
+    assert "Maiores receitas no período" in titulos
+    assert "Maiores despesas no período" in titulos
+    assert "20 maiores contas no período" not in titulos          # não existe mais o ranking misturado
+    rec = next(pn for pn in a.paineis if pn.titulo == "Maiores receitas no período")
+    desp = next(pn for pn in a.paineis if pn.titulo == "Maiores despesas no período")
+    assert "Receita Particular" in str(rec.figura) and "Medicamentos" not in str(rec.figura)
+    assert "Medicamentos" in str(desp.figura) and "EPI" in str(desp.figura)
+    assert "Receita Particular" not in str(desp.figura)
+
+
 def test_versoes_da_mesma_planilha_nao_somam_em_dobro(tmp_path, modelo_custos):
     dados = _xlsx({"CUSTOS": CUSTOS})
     antigo, novo = tmp_path / "DADOS.xlsx", tmp_path / "DADOS HUNF.xlsx"
