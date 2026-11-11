@@ -143,6 +143,19 @@ class ConexaoMV(Base):
     atualizado_em: Mapped[dt.datetime | None] = mapped_column(DateTime)
 
 
+class ConsultaMV(Base):
+    """Consulta SELECT salva da tela «Consulta SQL (MV)» — para re-rodar sem reescrever. Guarda o nome,
+    o ambiente padrão (teste | producao) e o SQL. Só ADM usa; fica no banco (migra junto). LGPD: o SQL
+    pode conter filtro sensível, mas não contém dado de paciente; o resultado não é guardado aqui."""
+    __tablename__ = "consultas_mv"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    nome: Mapped[str] = mapped_column(String(160), unique=True, index=True)
+    ambiente: Mapped[str] = mapped_column(String(16), default="teste")           # ambiente sugerido
+    sql: Mapped[str] = mapped_column(Text, default="")
+    criado_por: Mapped[int | None] = mapped_column(ForeignKey("usuarios.id", ondelete="SET NULL"))
+    atualizado_em: Mapped[dt.datetime | None] = mapped_column(DateTime)
+
+
 class Pasta(Base):
     """Pasta de organização (estilo coleção do Metabase). Pertence a um setor (herda a permissão) e pode
     aninhar em outra pasta do mesmo setor (`pai_id` nulo = topo do setor). Só o ADM cria/edita."""

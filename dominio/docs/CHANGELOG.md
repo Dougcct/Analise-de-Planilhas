@@ -2,6 +2,20 @@
 
 Formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · [SemVer](https://semver.org/lang/pt-BR/)
 
+## [3.2.0] — 2026-11-11
+
+Ponte do banco do MV para os relatórios: o que sai da Consulta SQL vira relatório do sistema.
+
+### Adicionado
+- **Enviar resultado do MV para um relatório** (tela «Consulta SQL (MV)»): o SELECT é re-executado no
+  banco, o resultado vira CSV e cria uma **carga** — relatório novo (setor + modelo) ou atualizando um
+  existente — caindo na mesma prévia/publicação das planilhas. Substitui o export manual. Rota
+  `POST …/enviar`, helper `_gravar_uma_carga`.
+- **Consultas salvas** (tabela `consultas_mv`): guardar um SELECT + ambiente com nome para re-rodar com
+  um clique («Carregar»); rotas `…/salvar` (upsert pelo nome, com a guarda `validar_select`) e `…/excluir`.
+- **Relatório vivo / atualização agendada** — desenhado para o futuro (doc [21](21_banco_mv_e_migracao.md) §2.C): o relatório
+  lembra a consulta e se atualiza sozinho (sob demanda ou por horário). Ainda **não** implementado.
+
 ## [3.1.1] — 2026-11-11
 
 ### Corrigido

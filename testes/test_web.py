@@ -1109,3 +1109,46 @@ def test_web_conversor_formato_invalido(web):
                  data={"titulo": "x"}, follow_redirects=False)
     assert r.status_code == 303 and "erro=" in r.headers["location"]
 
+
+# ---------- Consulta SQL (MV): consultas salvas (B) e ponte p/ relatório (A) ----------
+def test_mv_consulta_salvar_listar_excluir(web):
+    adm = _cli("admin", "admin123")
+    # salvar
+    r = adm.post("/web/admin/consulta-sql/salvar",
+                 data={"nome": "Internações teste", "ambiente": "teste", "sql": "SELECT 1 FROM DUAL"},
+                 follow_redirects=False)
+    assert r.status_code == 303 and "ok=" in r.headers["location"]
+    pg = adm.get("/web/admin/consulta-sql").text
+    assert "Internações teste" in pg and "Consultas salvas" in pg
+    # SQL que altera dados não pode ser salvo
+    r = adm.post("/web/admin/consulta-sql/salvar",
+                 data={"nome": "perigosa", "ambiente": "teste", "sql": "DELETE FROM X"},
+                 follow_redirects=False)
+    assert r.status_code == 303 and "erro=" in r.headers["location"]
+    assert "perigosa" not in adm.get("/web/admin/consulta-sql").text
+    # excluir a válida: descobre o id pelo próprio value do form de exclusão
+    import re
+    pg = adm.get("/web/admin/consulta-sql").text
+    ids = re.findall(r'name="id" value="(\d+)"', pg)
+    assert ids
+    r = adm.post("/web/admin/consulta-sql/excluir", data={"id": ids[-1]}, follow_redirects=False)
+    assert r.status_code == 303
+
+
+def test_mv_salvar_e_enviar_exigem_adm(web):
+    gestor = _cli("gestor.fin", "senha123")
+    for rota, dados in (("/web/admin/consulta-sql/salvar", {"nome": "x", "sql": "SELECT 1 FROM DUAL"}),
+                        ("/web/admin/consulta-sql/enviar", {"ambiente": "teste", "sql": "SELECT 1 FROM DUAL"})):
+        r = gestor.post(rota, data=dados, follow_redirects=False)
+        assert r.status_code == 200 and "restrito" in r.text.lower()   # página de erro, não executa
+
+
+def test_mv_enviar_sem_conexao_falha_gentil(web):
+    adm = _cli("admin", "admin123")
+    # ambiente não configurado → erro amigável, sem 500
+    r = adm.post("/web/admin/consulta-sql/enviar",
+                 data={"ambiente": "producao", "sql": "SELECT 1 FROM DUAL",
+                       "modo": "novo", "nome": "Teste MV", "centro_custo_id": "1"},
+                 follow_redirects=False)
+    assert r.status_code == 303 and "erro=" in r.headers["location"]
+

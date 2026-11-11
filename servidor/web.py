@@ -46,6 +46,7 @@ from .modelos_bd import (
     CentroCusto,
     ConexaoMV,
     ConhecimentoColuna,
+    ConsultaMV,
     Pasta,
     PedidoSenha,
     Relatorio,
@@ -586,8 +587,14 @@ def consulta_sql(request: Request, s: Session = Depends(_sessao)):
                   "tem_senha": bool(amb in conns and conns[amb].senha),
                   "configurado": bool(amb in conns and conns[amb].host and conns[amb].servico)}
                  for amb in mv.AMBIENTES]
+    salvas = [{"id": q.id, "nome": q.nome, "ambiente": q.ambiente, "sql": q.sql}
+              for q in s.scalars(select(ConsultaMV).order_by(ConsultaMV.nome))]
+    centros = [{"id": c.id, "codigo": c.codigo, "nome": c.nome}
+               for c in s.scalars(select(CentroCusto).where(CentroCusto.ativo.is_(True)).order_by(CentroCusto.nome))]
+    rels = [{"slug": r.slug, "nome": r.nome} for r in _relatorios_proprios(s, escopo)]
     return _pagina("consulta_sql.html", request, _ctx(request, escopo, s, "admin-consulta-sql",
-                   ambientes=ambientes, limite=mv.LIMITE_LINHAS))
+                   ambientes=ambientes, limite=mv.LIMITE_LINHAS, salvas=salvas,
+                   centros=centros, modelos=_modelos_disponiveis(), relatorios=rels))
 
 
 @router.post("/admin/consulta-sql/conexao")
@@ -662,6 +669,151 @@ async def consulta_sql_executar(request: Request, s: Session = Depends(_sessao))
     _audit(s, escopo, "mv_consulta", f"{ambiente}:{res['n']}linhas")   # não loga o SQL (pode ter filtro sensível)
     s.commit()
     return JSONResponse(res)
+
+
+@router.post("/admin/consulta-sql/salvar")
+def consulta_sql_salvar(request: Request, nome: str = Form(...), ambiente: str = Form("teste"),
+                        sql: str = Form(""), s: Session = Depends(_sessao)):
+    """Salva (ou sobrescreve, pelo nome) uma consulta SELECT para re-rodar depois — a query B."""
+    from automacao import mv
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    if not _pode(escopo, ADM):
+        return _pagina("erro.html", request, _ctx(request, escopo, s, "admin",
+                                                   mensagem="Acesso restrito ao administrador."))
+    nome = (nome or "").strip()
+    if not nome:
+        return _redir("/web/admin/consulta-sql", erro="Dê um nome à consulta.")
+    try:                                         # só guarda se for um SELECT válido (mesma guarda da execução)
+        mv.validar_select(sql)
+    except mv.ErroConsulta as e:
+        return _redir("/web/admin/consulta-sql", erro=f"Não salvei: {e}")
+    amb = ambiente if ambiente in mv.AMBIENTES else "teste"
+    q = s.scalar(select(ConsultaMV).where(ConsultaMV.nome == nome))
+    if q is None:
+        q = ConsultaMV(nome=nome, criado_por=escopo.usuario_id)
+        s.add(q)
+    q.ambiente, q.sql, q.atualizado_em = amb, sql, utcnow()
+    _audit(s, escopo, "mv_consulta_salvar", nome)
+    s.commit()
+    return _redir("/web/admin/consulta-sql", ok=f"Consulta «{nome}» salva.")
+
+
+@router.post("/admin/consulta-sql/excluir")
+def consulta_sql_excluir(request: Request, id: str = Form(...), s: Session = Depends(_sessao)):
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    if not _pode(escopo, ADM):
+        return _pagina("erro.html", request, _ctx(request, escopo, s, "admin",
+                                                   mensagem="Acesso restrito ao administrador."))
+    q = s.get(ConsultaMV, int(id)) if id.isdigit() else None
+    if q is not None:
+        _audit(s, escopo, "mv_consulta_excluir", q.nome)
+        s.delete(q)
+        s.commit()
+    return _redir("/web/admin/consulta-sql", ok="Consulta excluída.")
+
+
+def _gravar_uma_carga(s, escopo, srv, rel, nome_arq: str, conteudo: bytes):
+    """Grava UMA carga (RASCUNHO) ligada a `rel` a partir de bytes já prontos (ex.: resultado do MV
+    virado CSV) e confirma que o motor lê. Espelho, para um arquivo só, do miolo de `enviar_carga`;
+    levanta _Erro se não der para ler (e limpa o que criou). O chamador faz commit/rollback."""
+    nome_uuid = uuid.uuid4().hex + Path(nome_arq).suffix.lower()
+    srv.CARGAS_DIR.mkdir(parents=True, exist_ok=True)
+    caminho = srv.CARGAS_DIR / nome_uuid
+    caminho.write_bytes(conteudo)
+    carga = Carga(relatorio_id=rel.id, centro_custo_id=rel.centro_custo_id, enviado_por=escopo.usuario_id,
+                  nome_original=nome_arq, hash_sha256=hashlib.sha256(conteudo).hexdigest(),
+                  arquivo_uuid=nome_uuid, tamanho=len(conteudo), status=RASCUNHO, lote=uuid.uuid4().hex)
+    s.add(carga)
+    s.flush()
+    srv.esquecer_dataset(carga.id)
+    if srv.dashboard_da_carga(carga, rel.modelo) is None:   # layout fixo tem render próprio; senão o motor lê
+        try:
+            srv._dataset_da_carga(carga, srv._modelo_do(rel), s)
+        except Exception as e:
+            caminho.unlink(missing_ok=True)
+            s.delete(carga)
+            s.flush()
+            raise _Erro(f"o motor não conseguiu ler o resultado ({type(e).__name__}).")
+        _auto_modelo(srv, s, rel, carga)                    # vincula o modelo que mais combina
+    _audit(s, escopo, "enviar_carga", f"{rel.slug}:{carga.id}", carga.hash_sha256)
+    return carga
+
+
+@router.post("/admin/consulta-sql/enviar")
+async def consulta_sql_enviar(request: Request, ambiente: str = Form(...), sql: str = Form(""),
+                              modo: str = Form("novo"), centro_custo_id: str = Form(""),
+                              modelo: str = Form(""), nome: str = Form(""), slug: str = Form(""),
+                              limite: str = Form(""), s: Session = Depends(_sessao)):
+    """A ponte MV → relatório: re-roda o SELECT no banco, vira CSV e cria uma carga (novo relatório ou
+    atualizando um existente), caindo na MESMA prévia/publicação das planilhas enviadas. Só ADM."""
+    import csv
+    import io
+
+    from automacao import mv
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    if not _pode(escopo, ADM):
+        return _pagina("erro.html", request, _ctx(request, escopo, s, "admin",
+                                                   mensagem="Acesso restrito ao administrador."))
+    srv = _srv()
+    try:
+        c = s.scalar(select(ConexaoMV).where(ConexaoMV.ambiente == ambiente))
+        if c is None or not c.host:
+            raise _Erro(f"Ambiente «{ambiente}» não configurado.")
+        lim = int(limite) if limite.strip().isdigit() else 5000   # p/ relatório, teto maior que a tela
+        try:                                         # re-executa no servidor (dado fresco; não confia no cliente)
+            res = mv.executar(_conf_mv(c), sql, limite=lim)
+        except mv.ErroConsulta as e:
+            raise _Erro(str(e))
+        except ModuleNotFoundError:
+            raise _Erro("Driver oracledb não instalado no servidor (reconstrua a imagem).")
+        except Exception as e:                       # rede/credencial/SQL do Oracle
+            raise _Erro(f"{type(e).__name__}: {e}")
+        if not res["colunas"]:
+            raise _Erro("A consulta não devolveu colunas.")
+
+        buf = io.StringIO(newline="")                # resultado → CSV (o motor lê utf-8-sig)
+        w = csv.writer(buf)
+        w.writerow(res["colunas"])
+        for lin in res["linhas"]:
+            w.writerow(["" if v is None else v for v in lin])
+        conteudo = buf.getvalue().encode("utf-8-sig")
+        if len(conteudo) > validacao.MAX_BYTES:
+            raise _Erro("Resultado grande demais — refine a consulta ou reduza o limite de linhas.")
+
+        if modo == "atualizar":                      # alimenta um relatório que já existe
+            rel = RepoRelatorios(s, escopo).obter_proprio(slug)
+            if rel is None:
+                raise _Erro("Escolha um relatório para atualizar.")
+        else:                                        # cria um relatório novo no setor escolhido
+            cc = int(centro_custo_id) if centro_custo_id.strip().isdigit() else None
+            if cc is None or s.get(CentroCusto, cc) is None:
+                raise _Erro("Escolha o setor do relatório.")
+            nm = (nome or "").strip()
+            if not nm or not srv._slugificar(nm):
+                raise _Erro("Dê um nome ao relatório.")
+            nm, novo_slug = _slug_unico(s, srv, nm)
+            rel = Relatorio(slug=novo_slug, nome=nm, centro_custo_id=cc, pasta_id=None,
+                            modelo=(modelo or None), ativo=False)   # nasce oculto até publicar
+            s.add(rel)
+            s.flush()
+            _audit(s, escopo, "criar_relatorio", novo_slug)
+
+        nome_arq = f"{rel.slug}-mv-{utcnow().strftime('%Y%m%d-%H%M')}.csv"
+        carga = _gravar_uma_carga(s, escopo, srv, rel, nome_arq, conteudo)
+        _audit(s, escopo, "mv_enviar_relatorio", f"{rel.slug}:{res['n']}linhas")
+        s.commit()
+    except _Erro as e:
+        s.rollback()
+        return _redir("/web/admin/consulta-sql", erro=str(e))
+    aviso = " (resultado maior foi cortado no limite)" if res["truncado"] else ""
+    return _redir(f"/web/enviar/previa/{carga.id}",
+                  ok=f"{res['n']} linha(s) do MV enviadas como «{rel.nome}» — revise e publique.{aviso}")
 
 
 @router.get("/minhas-sugestoes", response_class=HTMLResponse)

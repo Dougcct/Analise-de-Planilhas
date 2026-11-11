@@ -100,9 +100,103 @@ que alteram dados são bloqueados. Uso restrito ao administrador, na rede local.
   <div class="mv-exec">
     <button type="button" class="btn" id="btn-exec" onclick="executar()">▶ Executar</button>
     <span class="mv-dica">ou <b>F8</b> · máximo {{ limite }} linhas</span>
+    <span style="flex:1"></span>
+    <button type="button" class="btn-sec" onclick="abrirSalvar()">💾 Salvar consulta</button>
+    <button type="button" class="btn-sec" onclick="document.getElementById('painel-enviar').scrollIntoView({behavior:'smooth'})">📤 Enviar para relatório</button>
   </div>
 
   <div class="mv-result" id="result"></div>
+</div>
+
+<!-- B) Consultas salvas -->
+<div class="mv-cartao" style="margin-top:14px">
+  <h3 style="margin:0 0 10px;font-size:14px">Consultas salvas</h3>
+  <form method="post" action="/web/admin/consulta-sql/salvar" onsubmit="return preSalvar(this)"
+        style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+    <input name="nome" id="salvar-nome" placeholder="Nome da consulta (ex.: Internações do mês)"
+           style="flex:1;min-width:220px;padding:6px 10px;border:1px solid var(--borda);border-radius:8px;background:var(--fundo);color:var(--texto)">
+    <input type="hidden" name="sql"><input type="hidden" name="ambiente">
+    <button type="submit" class="btn">Salvar consulta atual</button>
+  </form>
+  {% if salvas %}
+  <div class="tab-scroll" style="max-height:30vh">
+    <table class="mv-tab" style="width:100%">
+      <thead><tr><th>Nome</th><th>Ambiente</th><th style="width:150px"></th></tr></thead>
+      <tbody>
+      {% for q in salvas %}
+        <tr>
+          <td style="white-space:normal">{{ q.nome }}</td>
+          <td>{{ 'Produção' if q.ambiente == 'producao' else 'Teste' }}</td>
+          <td style="white-space:nowrap">
+            <button type="button" class="btn-sec" onclick="carregar({{ q.id }})">Carregar</button>
+            <form method="post" action="/web/admin/consulta-sql/excluir" style="display:inline"
+                  onsubmit="return confirm('Excluir a consulta «{{ q.nome|e }}»?')">
+              <input type="hidden" name="id" value="{{ q.id }}">
+              <button type="submit" class="btn-sec" title="Excluir">✕</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="mv-dica">Nenhuma consulta salva ainda. Escreva um SELECT acima e clique em «Salvar consulta atual».</p>
+  {% endif %}
+</div>
+
+<!-- A) Enviar resultado para um relatório -->
+<div class="mv-cartao" style="margin-top:14px" id="painel-enviar">
+  <h3 style="margin:0 0 4px;font-size:14px">Enviar resultado para um relatório</h3>
+  <p class="mv-dica" style="margin:0 0 10px">O SELECT é re-executado no banco e o resultado vira uma carga —
+    cai na mesma prévia/publicação das planilhas. Substitui o export manual do MV.</p>
+  <form method="post" action="/web/admin/consulta-sql/enviar" onsubmit="return preEnviar(this)"
+        style="display:grid;gap:12px">
+    <input type="hidden" name="ambiente"><input type="hidden" name="sql">
+    <div class="mv-amb" style="gap:14px">
+      <label><input type="radio" name="modo" value="novo" checked onchange="trocaModo()"> Novo relatório</label>
+      <label><input type="radio" name="modo" value="atualizar" onchange="trocaModo()"> Atualizar um existente</label>
+    </div>
+
+    <div id="bloco-novo" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div style="grid-column:1/3">
+        <label class="mv-dica">Nome do relatório</label>
+        <input name="nome" placeholder="Ex.: Internações — novembro"
+               style="width:100%;padding:6px 10px;border:1px solid var(--borda);border-radius:8px;background:var(--fundo);color:var(--texto)">
+      </div>
+      <div>
+        <label class="mv-dica">Setor</label>
+        <select name="centro_custo_id" style="width:100%;padding:7px 10px;border:1px solid var(--borda);border-radius:8px;background:var(--fundo);color:var(--texto)">
+          <option value="">— escolha —</option>
+          {% for c in centros %}<option value="{{ c.id }}">{{ c.nome }}</option>{% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="mv-dica">Modelo (opcional)</label>
+        <select name="modelo" style="width:100%;padding:7px 10px;border:1px solid var(--borda);border-radius:8px;background:var(--fundo);color:var(--texto)">
+          <option value="">Detectar automaticamente</option>
+          {% for m in modelos %}<option value="{{ m.slug }}">{{ m.nome }}</option>{% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div id="bloco-atualizar" style="display:none">
+      <label class="mv-dica">Relatório a atualizar</label>
+      <select name="slug" style="width:100%;padding:7px 10px;border:1px solid var(--borda);border-radius:8px;background:var(--fundo);color:var(--texto)">
+        <option value="">— escolha —</option>
+        {% for r in relatorios %}<option value="{{ r.slug }}">{{ r.nome }}</option>{% endfor %}
+      </select>
+    </div>
+
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <label class="mv-dica">Máx. de linhas
+        <input name="limite" value="5000" inputmode="numeric"
+               style="width:90px;padding:6px 8px;border:1px solid var(--borda);border-radius:8px;background:var(--fundo);color:var(--texto)">
+      </label>
+      <span style="flex:1"></span>
+      <button type="submit" class="btn">📤 Enviar para o relatório</button>
+    </div>
+  </form>
 </div>
 
 <script>
@@ -171,6 +265,42 @@ que alteram dados são bloqueados. Uso restrito ao administrador, na rede local.
       .then(function(d){ res.innerHTML = d.erro ? '<div class="mv-erro">'+escapar(d.erro)+'</div>' : tabela(d); })
       .catch(function(){ res.innerHTML = '<div class="mv-erro">Erro ao chamar o servidor.</div>'; })
       .finally(function(){ btn.disabled = false; });
+  };
+
+  var SALVAS = {{ salvas|tojson }};
+  function ambAtual(){ var a = document.querySelector('input[name=amb]:checked'); return a ? a.value : 'teste'; }
+
+  window.abrirSalvar = function(){
+    var n = document.getElementById('salvar-nome');
+    n.scrollIntoView({behavior:'smooth'}); n.focus();
+  };
+  window.preSalvar = function(form){
+    if(!form.nome.value.trim()){ form.nome.focus(); return false; }
+    form.sql.value = ta.value; form.ambiente.value = ambAtual(); return true;
+  };
+  window.carregar = function(id){
+    var q = SALVAS.filter(function(x){ return x.id === id; })[0];
+    if(!q) return;
+    ta.value = q.sql;
+    var r = document.querySelector('input[name=amb][value="'+q.ambiente+'"]');
+    if(r && !r.disabled){ r.checked = true; trocaAmb(); }
+    pintar();
+    document.querySelector('.editor-wrap').scrollIntoView({behavior:'smooth'});
+  };
+  window.trocaModo = function(){
+    var novo = document.querySelector('input[name=modo]:checked').value === 'novo';
+    document.getElementById('bloco-novo').style.display = novo ? 'grid' : 'none';
+    document.getElementById('bloco-atualizar').style.display = novo ? 'none' : 'block';
+  };
+  window.preEnviar = function(form){
+    if(!ta.value.trim()){ alert('Escreva um SELECT antes de enviar.'); return false; }
+    form.ambiente.value = ambAtual(); form.sql.value = ta.value;
+    var modo = form.modo.value;
+    if(modo === 'novo'){
+      if(!form.nome.value.trim()){ alert('Dê um nome ao relatório.'); return false; }
+      if(!form.centro_custo_id.value){ alert('Escolha o setor.'); return false; }
+    } else if(!form.slug.value){ alert('Escolha o relatório a atualizar.'); return false; }
+    return true;
   };
 
   function escapar(t){ return (t==null?'':String(t)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
