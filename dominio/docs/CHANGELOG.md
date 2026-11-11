@@ -2,6 +2,14 @@
 
 Formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · [SemVer](https://semver.org/lang/pt-BR/)
 
+## [3.2.4] — 2026-11-11
+
+### Corrigido
+- **Editor de SQL da Consulta MV — última letra espaçada / seleção deslocada.** A fonte de código ligava
+  glifos (ligaturas de `Cascadia Code`/`Fira Code`): o textarea (texto contínuo) ligava e o `<pre>` (tokens
+  em `<span>`) não, divergindo as larguras. Agora o editor usa fonte sem ligaturas (`Consolas`) e desliga
+  `font-variant-ligatures`/`font-kerning` nas duas camadas.
+
 ## [3.2.3] — 2026-11-11
 
 ### Corrigido
