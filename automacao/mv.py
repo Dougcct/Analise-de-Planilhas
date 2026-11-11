@@ -19,6 +19,14 @@ AMBIENTES = ("teste", "producao")
 ROTULO = {"teste": "Teste", "producao": "Produção"}
 LIMITE_LINHAS = 500          # teto de linhas devolvidas à tela (a consulta é envelopada com ROWNUM)
 
+# Formato de data/idioma da SESSÃO Oracle. Sem isto, o padrão do banco costuma ser `DD-MON-RR` (mês por
+# EXTENSO) e uma data como `01/11/2026` quebra com ORA-01843 ("mês inválido"). Fixamos pt-BR para bater
+# com o jeito que o MV/analistas escrevem datas. Sobrescreva com a variável de ambiente MV_NLS_SESSAO.
+NLS_SESSAO = os.environ.get("MV_NLS_SESSAO") or (
+    "nls_date_format='DD/MM/YYYY' "
+    "nls_timestamp_format='DD/MM/YYYY HH24:MI:SS' "
+    "nls_date_language='PORTUGUESE'")
+
 # Palavras que NÃO podem aparecer numa consulta de leitura (como palavra inteira).
 _PROIBIDAS = (
     "insert", "update", "delete", "merge", "drop", "alter", "create", "truncate",
@@ -92,8 +100,15 @@ def _dsn(conf: dict) -> str:
 def _conectar(conf: dict):
     import oracledb  # preguiçoso: só quando realmente conecta
     _init_thick()    # usa o Instant Client se houver (aceita verificadores que o thin recusa)
-    return oracledb.connect(user=(conf.get("usuario") or "").strip(),
-                            password=conf.get("senha") or "", dsn=_dsn(conf))
+    con = oracledb.connect(user=(conf.get("usuario") or "").strip(),
+                           password=conf.get("senha") or "", dsn=_dsn(conf))
+    if NLS_SESSAO.strip():                        # data/idioma previsíveis (evita ORA-01843)
+        try:
+            with con.cursor() as cur:
+                cur.execute("alter session set " + NLS_SESSAO)
+        except Exception:
+            pass                                 # se o banco recusar algum NLS, segue com o padrão dele
+    return con
 
 
 def testar(conf: dict) -> tuple[bool, str]:

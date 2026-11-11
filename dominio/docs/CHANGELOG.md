@@ -2,6 +2,13 @@
 
 Formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · [SemVer](https://semver.org/lang/pt-BR/)
 
+## [3.2.1] — 2026-11-11
+
+### Corrigido
+- **Consulta SQL ao MV — datas (ORA-01843 «not a valid month»).** No modo thick a sessão herdava um
+  `NLS_DATE_FORMAT` genérico (mês por extenso), então `01/11/2026` quebrava. Toda conexão passa a fixar
+  NLS pt-BR (`DD/MM/YYYY`, idioma Português) — ajustável por `MV_NLS_SESSAO`. Doc [21](21_banco_mv_e_migracao.md).
+
 ## [3.2.0] — 2026-11-11
 
 Ponte do banco do MV para os relatórios: o que sai da Consulta SQL vira relatório do sistema.

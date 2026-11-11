@@ -23,6 +23,12 @@ mode`, ex.: `0x939`). Por isso a imagem traz o **Instant Client Basic Light** (D
 liga o modo thick antes de conectar — aceita qualquer verificador. Sem o client (dev/CI), o driver cai
 em thin automaticamente. A pasta das libs vem em `ORACLE_CLIENT_LIB_DIR` (definida no Dockerfile).
 
+**Data/idioma da sessão (NLS):** toda conexão fixa `NLS_DATE_FORMAT='DD/MM/YYYY'` + idioma Português
+(`NLS_SESSAO` em `mv.py`, ajustável pela variável `MV_NLS_SESSAO`). Sem isso, o padrão do banco costuma
+esperar o mês por extenso e uma data como `01/11/2026` quebra com **ORA-01843** («not a valid month»).
+Mesmo assim, em consulta é mais seguro ser explícito: `TO_DATE('01/11/2026','DD/MM/YYYY')` ou o literal
+ANSI `DATE '2026-11-01'`.
+
 **Segurança / LGPD:**
 - **Só leitura:** `validar_select` bloqueia INSERT/UPDATE/DELETE/DDL, 2º comando (`;`), `SELECT … INTO`,
   `FOR UPDATE`; a consulta é envelopada com `ROWNUM <=` (teto de linhas) e **nunca** faz commit.
