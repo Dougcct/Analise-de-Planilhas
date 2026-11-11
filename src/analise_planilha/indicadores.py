@@ -116,15 +116,46 @@ def quebra(df: pd.DataFrame, dim: str, spec: Especificacao, tipo_medida, top: in
     return tab.reset_index(drop=True)
 
 
+# Granularidade da evolução no tempo — escolhida pelo período coberto pelos dados, para um extrato curto
+# não virar "uma barra de novembro". ≤ 31 dias → diário; ≤ ~3 anos → mensal; mais que isso → anual.
+# (31 e não mais: acima de ~1 mês a comparação "período vs anterior" e os achados fazem mais sentido mensais.)
+_PERIODO_NOME = {"D": "Dia", "M": "Mês", "Y": "Ano"}                     # cabeçalho da coluna
+_PERIODO_TITULO = {"D": "Volume diário", "M": "Volume mensal", "Y": "Volume anual"}
+_PERIODO_SUB = {"D": "Por dia", "M": "Por mês", "Y": "Por ano"}
+_PERIODO_PLURAL = {"D": "dias", "M": "meses", "Y": "anos"}
+
+
+def _granularidade(datas: pd.Series) -> str:
+    val = pd.to_datetime(datas, errors="coerce").dropna()
+    if val.empty:
+        return "M"
+    span = (val.max() - val.min()).days
+    if span <= 31:
+        return "D"
+    if span <= 1100:
+        return "M"
+    return "Y"
+
+
+def _rotulo_periodo(per, freq: str) -> str:
+    if freq == "D":
+        return f"{per.day:02d}/{per.month:02d}"
+    if freq == "Y":
+        return str(per.year)
+    return f"{_MESES[per.month - 1]}/{str(per.year)[2:]}"
+
+
 def _mensal(df: pd.DataFrame, spec: Especificacao, tipo_medida) -> pd.DataFrame:
+    """Evolução no tempo. A 1ª coluna (Dia/Mês/Ano) tem nome conforme a granularidade escolhida."""
     if not spec.data_base or spec.data_base not in df.columns:
         return pd.DataFrame()
     datas = pd.to_datetime(df[spec.data_base], errors="coerce")
-    meses = datas.dt.to_period("M")
+    freq = _granularidade(datas)
+    col = _PERIODO_NOME[freq]
     total = len(df)
     linhas = []
-    for per, g in df.groupby(meses, dropna=True):
-        linhas.append({"Mês": f"{_MESES[per.month - 1]}/{str(per.year)[2:]}", "_ordem": str(per),
+    for per, g in df.groupby(datas.dt.to_period(freq), dropna=True):
+        linhas.append({col: _rotulo_periodo(per, freq), "_ordem": str(per),
                        **_metricas_grupo(g, spec, total, tipo_medida)})
     return pd.DataFrame(linhas).sort_values("_ordem").drop(columns="_ordem").reset_index(drop=True) if linhas else pd.DataFrame()
 
@@ -249,7 +280,8 @@ def _causa_raiz(df: pd.DataFrame, spec: Especificacao, tipo_medida) -> list[str]
     dims = [d for d in spec.dimensoes if d in df.columns and df[d].nunique() > 1]
     if not dims:
         return []
-    per = pd.to_datetime(df[spec.data_base], errors="coerce").dt.to_period("M")
+    datas = pd.to_datetime(df[spec.data_base], errors="coerce")
+    per = datas.dt.to_period(_granularidade(datas))
     meses = sorted(p for p in per.dropna().unique())
     if len(meses) < 2:
         return []
@@ -446,13 +478,15 @@ def achados(df: pd.DataFrame, spec: Especificacao, tipo_medida, problemas: pd.Da
                        f"({fmt_int(r['Registros'])} registros).")
 
     if len(mensal) >= 2:
+        col = mensal.columns[0]                       # "Dia" | "Mês" | "Ano" (granularidade adaptativa)
         a, b = mensal.iloc[-2], mensal.iloc[-1]
         var = (b["Registros"] - a["Registros"]) / a["Registros"] if a["Registros"] else None
         if var is not None:
             ultima = pd.to_datetime(df[spec.data_base], errors="coerce").max()
-            parcial = ultima.day < ultima.days_in_month - 3
-            out.append(f"Volume em {b['Mês']}: {fmt_int(b['Registros'])} registros "
-                       f"({'+' if var >= 0 else ''}{fmt_pct(var)} em relação a {a['Mês']})"
+            freq = _granularidade(pd.to_datetime(df[spec.data_base], errors="coerce"))
+            parcial = freq == "M" and ultima.day < ultima.days_in_month - 3   # só o mês pode estar "incompleto"
+            out.append(f"Volume em {b[col]}: {fmt_int(b['Registros'])} registros "
+                       f"({'+' if var >= 0 else ''}{fmt_pct(var)} em relação a {a[col]})"
                        + (f" — mês incompleto: dados até {ultima:%d/%m}." if parcial else "."))
     out += _causa_raiz(df, spec, tipo_medida)
     _, nota_abc = _abc(df, spec, tipo_medida)
@@ -557,24 +591,26 @@ def gerar_paineis(df: pd.DataFrame, spec: Especificacao, esquema: Esquema, probl
     paineis: list[Painel] = []
 
     if not mensal.empty:
-        meses = list(mensal["Mês"])
+        freq = _granularidade(pd.to_datetime(df[spec.data_base], errors="coerce")) if spec.data_base in df.columns else "M"
+        meses = list(mensal[mensal.columns[0]])       # 1ª coluna = Dia/Mês/Ano
         hist = [float(x) for x in mensal["Registros"]]
         prev = previsao.prever(hist, n=3) if len(hist) >= previsao.MIN_PONTOS else None
         if prev and spec.data_base in df.columns:
-            ult = pd.to_datetime(df[spec.data_base], errors="coerce").dropna().max().to_period("M")
+            ult = pd.to_datetime(df[spec.data_base], errors="coerce").dropna().max().to_period(freq)
             futuros = [ult + k for k in range(1, len(prev["projecao"]) + 1)]
-            meses_all = meses + [f"{_MESES[p.month - 1]}/{str(p.year)[2:]}" for p in futuros]
+            meses_all = meses + [_rotulo_periodo(p, freq) for p in futuros]
             serie_hist = hist + [0.0] * len(prev["projecao"])
             serie_proj = [0.0] * len(hist) + prev["projecao"]
             fig = graficos.colunas(meses_all, [("Registros", serie_hist, "var(--s1)"),
                                                ("Projeção", serie_proj, "var(--s7)")],
                                    tendencia=prev["tendencia"] + prev["projecao"])
-            desc_vm = "Linha pontilhada = tendência; colunas claras ao fim = projeção dos próximos meses (estimativa)."
+            desc_vm = (f"Linha pontilhada = tendência; colunas claras ao fim = projeção dos próximos "
+                       f"{_PERIODO_PLURAL[freq]} (estimativa).")
         else:
             fig = graficos.colunas(meses, [("Registros", hist, "var(--s1)")])
             desc_vm = ""
-        paineis.append(Painel("Volume mensal", f"Por mês ({spec.data_base.lower()})", fig, mensal,
-                              descricao=desc_vm, formatos=fmt_grupo))
+        paineis.append(Painel(_PERIODO_TITULO[freq], f"{_PERIODO_SUB[freq]} ({spec.data_base.lower()})", fig,
+                              mensal, descricao=desc_vm, formatos=fmt_grupo))
 
     comp = _composicao(df, spec)
     if not comp.empty:

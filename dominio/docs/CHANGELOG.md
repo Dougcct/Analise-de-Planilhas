@@ -2,6 +2,15 @@
 
 Formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · [SemVer](https://semver.org/lang/pt-BR/)
 
+## [3.4.0] — 2026-11-11
+
+### Adicionado
+- **Evolução no tempo com granularidade adaptativa** (motor, todos os relatórios genéricos). O painel
+  «Volume» escolhe a granularidade pelo período coberto: **≤ 31 dias → diário** («Volume diário», coluna
+  «Dia»), **≤ ~3 anos → mensal** (como antes), **mais → anual**. Resolve o caso em que um extrato de poucos
+  dias virava uma única barra mensal. Achados, projeção e decomposição de variação seguem a mesma
+  granularidade. (`indicadores._granularidade/_rotulo_periodo`; `financeiro.py` segue mensal por natureza.)
+
 ## [3.3.1] — 2026-11-11
 
 ### Corrigido

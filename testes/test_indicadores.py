@@ -152,7 +152,8 @@ def test_modelo_com_regras_de_negocio(modelo, planilha):
     assert kpi["Em aberto"].valor == "1"
     assert a.metas[0].ok is True                                   # 71,4% ≥ 50%
     paineis = {p.aba for p in a.paineis}
-    assert {"Volume mensal", "Tipo", "Canal", "Cidade", "Tempos", "Cruzamentos", "Recorrência", "Qualidade"} <= paineis
+    # dados de 02–11/03 (9 dias) → evolução DIÁRIA (granularidade adaptativa)
+    assert {"Volume diário", "Tipo", "Canal", "Cidade", "Tempos", "Cruzamentos", "Recorrência", "Qualidade"} <= paineis
     quebra_cidade = next(p for p in a.paineis if p.aba == "Cidade").tabela
     assert {"Registros", "% do total", "Resolvidas na rede"} <= set(quebra_cidade.columns)
     assert any("Resolvidas na rede" in x for x in a.achados)
@@ -237,6 +238,23 @@ def test_causa_raiz_aponta_quem_puxou_a_variacao():
     estavel = df.copy()
     estavel.loc[estavel["Data"] >= dt.datetime(2026, 2, 1), "Valor"] = 100
     assert indicadores._causa_raiz(estavel, spec, MOEDA) == []
+
+
+def test_evolucao_granularidade_adaptativa():
+    """Extrato curto (dias) → evolução DIÁRIA; período longo → MENSAL."""
+    from analise_planilha import indicadores
+    from analise_planilha.especificacao import Especificacao
+    spec = Especificacao(origem="modelo", data_base="Data", dimensoes=["Setor"], rotulo_registros="atend.")
+    # 10 dias dentro de novembro → diário
+    curto = pd.DataFrame({"Data": [dt.datetime(2026, 11, d) for d in range(1, 11)], "Setor": ["X"] * 10})
+    tab_c = indicadores._mensal(curto, spec, None)
+    assert tab_c.columns[0] == "Dia" and len(tab_c) == 10
+    # ~5 meses → mensal
+    longo = pd.DataFrame({"Data": pd.date_range("2026-01-01", periods=150, freq="D"), "Setor": ["X"] * 150})
+    tab_l = indicadores._mensal(longo, spec, None)
+    assert tab_l.columns[0] == "Mês" and 4 <= len(tab_l) <= 6
+    assert indicadores._granularidade(curto["Data"]) == "D"
+    assert indicadores._granularidade(longo["Data"]) == "M"
 
 
 def test_curva_abc_classifica_itens():
