@@ -25,18 +25,30 @@
     border-radius:8px;padding:5px 10px}
 
   .editor-wrap{position:relative;border:1px solid var(--borda);border-radius:10px;overflow:hidden;
-    background:#0f1420;min-height:210px}
+    background:var(--fundo);min-height:210px}
   /* textarea transparente SOBRE o <pre> colorido: os dois precisam ter EXATAMENTE a mesma caixa e a
      mesma régua de texto, senão a seleção desalinha do que aparece. Sem quebra automática (white-space:
      pre) → rola na horizontal e nunca há ponto de quebra divergente. */
   .editor-wrap pre,.editor-wrap textarea{box-sizing:border-box;margin:0;padding:12px 14px;
     font-family:'Cascadia Code','Fira Code',Consolas,'Courier New',monospace;font-size:13.5px;
     line-height:1.55;letter-spacing:normal;tab-size:2;white-space:pre;overflow-wrap:normal;word-break:normal;border:0}
-  .editor-wrap pre{position:absolute;inset:0;pointer-events:none;color:#d6deeb;overflow:hidden}
+  .editor-wrap pre{position:absolute;inset:0;pointer-events:none;color:var(--texto);overflow:hidden}
   .editor-wrap textarea{position:relative;width:100%;height:100%;min-height:210px;background:transparent;
-    color:transparent;caret-color:#e6f0ff;resize:vertical;outline:none;overflow:auto}
-  .t-kw{color:#6aa6ff;font-weight:600}.t-str{color:#9ad18a}.t-num{color:#f2b36b}.t-com{color:#6b7694;font-style:italic}
-  .t-fn{color:#c792ea}
+    color:transparent;caret-color:var(--texto);resize:vertical;outline:none;overflow:auto}
+  /* o texto do textarea é invisível (quem mostra cor é o <pre>). Na seleção, forçamos a cor a seguir
+     transparente, senão o navegador pinta o texto selecionado e ele aparece DUPLICADO (efeito "sombra"). */
+  .editor-wrap textarea::selection{background:rgba(80,140,230,.33);color:transparent}
+  .editor-wrap textarea::-moz-selection{background:rgba(80,140,230,.33);color:transparent}
+
+  /* paleta do realce — tons do tema claro por padrão… */
+  :root{--sql-kw:#2f6fe0;--sql-str:#1a8f4c;--sql-num:#b5660a;--sql-com:#7a8699;--sql-fn:#8a3ffc}
+  /* …e tons mais claros no tema escuro (sobre fundo escuro) */
+  @media (prefers-color-scheme:dark){:root:not([data-tema="light"]){
+    --sql-kw:#6aa6ff;--sql-str:#9ad18a;--sql-num:#f2b36b;--sql-com:#8b98ad;--sql-fn:#c792ea}}
+  :root[data-tema="dark"]{
+    --sql-kw:#6aa6ff;--sql-str:#9ad18a;--sql-num:#f2b36b;--sql-com:#8b98ad;--sql-fn:#c792ea}
+  .t-kw{color:var(--sql-kw);font-weight:600}.t-str{color:var(--sql-str)}.t-num{color:var(--sql-num)}
+  .t-com{color:var(--sql-com);font-style:italic}.t-fn{color:var(--sql-fn)}
 
   .mv-exec{display:flex;gap:10px;align-items:center;margin:10px 0}
   .mv-dica{font-size:12px;color:var(--fraco)}

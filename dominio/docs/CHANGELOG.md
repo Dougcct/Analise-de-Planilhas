@@ -2,6 +2,14 @@
 
 Formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · [SemVer](https://semver.org/lang/pt-BR/)
 
+## [3.2.3] — 2026-11-11
+
+### Corrigido
+- **Editor de SQL da Consulta MV — tema e seleção.** O editor tinha cores fixas (fundo escuro mesmo no
+  tema claro); agora segue as variáveis do tema (`--fundo`/`--texto`) e o realce tem paleta própria para
+  claro e escuro. A seleção deixava uma "sombra" (o texto transparente do textarea era pintado por cima do
+  `<pre>`); `::selection` agora força a cor transparente, removendo a duplicação.
+
 ## [3.2.2] — 2026-11-11
 
 ### Corrigido
