@@ -2,6 +2,28 @@
 
 Formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · [SemVer](https://semver.org/lang/pt-BR/)
 
+## [3.1.0] — 2026-11-11
+
+Novo tipo de dashboard (Manifestações/Ouvidoria), redesenho do Feedback, Consulta SQL ao banco do MV e
+um ajuste no DRE pedido por chamado.
+
+### Adicionado
+- **Consulta SQL ao MV (Oracle)** — tela ADM «Consulta SQL (MV)» (`/web/admin/consulta-sql`): conexões
+  Teste/Produção, testar conexão, editor SQL com realce **offline** e Executar/**F8**, resultados em tabela.
+  Motor `automacao/mv.py` (driver `oracledb` thin; guarda só-leitura: bloqueia DML/DDL, 2º comando, `INTO`,
+  `FOR UPDATE`, limita linhas, nunca faz commit), tabela `conexoes_mv`, atalho no painel. Doc [21](21_banco_mv_e_migracao.md).
+- **Dashboard Manifestações / Ouvidoria** — 2º tipo de layout fixo (setor Diretoria): KPIs por tipo
+  (Elogio/Reclamação/Conduta Ética), rosca e feed detalhado. Selecionável no «Modelo de análise».
+- **Registro de dashboards** (`src/analise_planilha/dashboards.py`) — tipos de layout fixo (feedback,
+  manifestacoes) viram módulos plugáveis com interface uniforme; o servidor não conhece cada um.
+- **Migração da Docker** — mapeada para o futuro (doc 21 + botão «Migrar Docker (planejado)» no painel).
+
+### Alterado
+- **Feedback/NPS** — redesenho (tema escuro, Tailwind + Chart.js): NPS em barras, tempo/expectativas em
+  rosca + cartões, gráficos com hover; Total de Atendimentos editável no cabeçalho.
+- **DRE** (chamado «separar a receita da despesa») — no perfil DRE o painel «20 maiores contas no período»
+  (que misturava receita + e despesa −) virou dois: «Maiores receitas» e «Maiores despesas».
+
 ## [3.0.0] — 2026-11-11
 
 Novo **tipo de relatório Feedback / NPS** para o setor **Diretoria**: reproduz um dashboard de layout

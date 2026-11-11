@@ -127,6 +127,22 @@ class SugestaoMensagem(Base):
     criado_em: Mapped[dt.datetime] = mapped_column(DateTime, default=utcnow, index=True)
 
 
+class ConexaoMV(Base):
+    """Conexão com o banco do MV (Oracle), um registro por AMBIENTE (teste | producao). Guardada no banco
+    (fonte única: migra junto com o sistema; só ADM acessa, tudo na rede local). Usada pela tela ADM
+    «Consulta SQL» (SELECT só-leitura). LGPD: dado real nunca sai da rede; nada aqui é versionado.
+    `senha` em claro no banco — aceitável nesta rede fechada; evoluir p/ cofre se sair da rede."""
+    __tablename__ = "conexoes_mv"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    ambiente: Mapped[str] = mapped_column(String(16), unique=True, index=True)   # teste | producao
+    host: Mapped[str] = mapped_column(String(200), default="")
+    porta: Mapped[int] = mapped_column(Integer, default=1521)
+    servico: Mapped[str] = mapped_column(String(160), default="")                # Oracle service name
+    usuario: Mapped[str] = mapped_column(String(120), default="")
+    senha: Mapped[str] = mapped_column(String(300), default="")
+    atualizado_em: Mapped[dt.datetime | None] = mapped_column(DateTime)
+
+
 class Pasta(Base):
     """Pasta de organização (estilo coleção do Metabase). Pertence a um setor (herda a permissão) e pode
     aninhar em outra pasta do mesmo setor (`pai_id` nulo = topo do setor). Só o ADM cria/edita."""

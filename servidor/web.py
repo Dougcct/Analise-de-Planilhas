@@ -44,6 +44,7 @@ from .modelos_bd import (
     Auditoria,
     Carga,
     CentroCusto,
+    ConexaoMV,
     ConhecimentoColuna,
     Pasta,
     PedidoSenha,
@@ -557,6 +558,110 @@ def sugestao_anexo(msg_id: int, request: Request, s: Session = Depends(_sessao))
         return Response(status_code=404)
     return FileResponse(str(caminho), filename=m.anexo_nome or m.anexo_uuid,
                         media_type="application/octet-stream")
+
+
+# ===================== Consulta SQL ao banco do MV (Oracle) — só ADM =====================
+def _conf_mv(c: ConexaoMV | None) -> dict:
+    if c is None:
+        return {}
+    return {"host": c.host, "porta": c.porta, "servico": c.servico, "usuario": c.usuario, "senha": c.senha}
+
+
+@router.get("/admin/consulta-sql", response_class=HTMLResponse)
+def consulta_sql(request: Request, s: Session = Depends(_sessao)):
+    """Tela ADM: escolher o banco (Teste/Produção), escrever um SELECT e ver o resultado. Rede local."""
+    from automacao import mv
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    if not _pode(escopo, ADM):
+        return _pagina("erro.html", request, _ctx(request, escopo, s, "admin",
+                                                   mensagem="Acesso restrito ao administrador."))
+    conns = {c.ambiente: c for c in s.scalars(select(ConexaoMV))}
+    ambientes = [{"ambiente": amb, "rotulo": mv.ROTULO[amb],
+                  "host": (conns[amb].host if amb in conns else ""),
+                  "porta": (conns[amb].porta if amb in conns else 1521),
+                  "servico": (conns[amb].servico if amb in conns else ""),
+                  "usuario": (conns[amb].usuario if amb in conns else ""),
+                  "tem_senha": bool(amb in conns and conns[amb].senha),
+                  "configurado": bool(amb in conns and conns[amb].host and conns[amb].servico)}
+                 for amb in mv.AMBIENTES]
+    return _pagina("consulta_sql.html", request, _ctx(request, escopo, s, "admin-consulta-sql",
+                   ambientes=ambientes, limite=mv.LIMITE_LINHAS))
+
+
+@router.post("/admin/consulta-sql/conexao")
+def consulta_sql_conexao(request: Request, ambiente: str = Form(...), host: str = Form(""),
+                         porta: str = Form("1521"), servico: str = Form(""), usuario: str = Form(""),
+                         senha: str = Form(""), s: Session = Depends(_sessao)):
+    """Salva a conexão de um ambiente. Senha em branco = mantém a atual (não apaga)."""
+    from automacao import mv
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    if not _pode(escopo, ADM):
+        return _pagina("erro.html", request, _ctx(request, escopo, s, "admin",
+                                                   mensagem="Acesso restrito ao administrador."))
+    if ambiente not in mv.AMBIENTES:
+        return _redir("/web/admin/consulta-sql", erro="Ambiente inválido.")
+    c = s.scalar(select(ConexaoMV).where(ConexaoMV.ambiente == ambiente))
+    if c is None:
+        c = ConexaoMV(ambiente=ambiente)
+        s.add(c)
+    c.host, c.servico, c.usuario = host.strip(), servico.strip(), usuario.strip()
+    c.porta = int(porta) if porta.strip().isdigit() else 1521
+    if senha:                                   # só troca a senha se foi digitada
+        c.senha = senha
+    c.atualizado_em = utcnow()
+    _audit(s, escopo, "mv_conexao", ambiente)
+    s.commit()
+    return _redir("/web/admin/consulta-sql", ok=f"Conexão «{mv.ROTULO[ambiente]}» salva.")
+
+
+@router.post("/admin/consulta-sql/testar")
+def consulta_sql_testar(request: Request, ambiente: str = Form(...), s: Session = Depends(_sessao)):
+    from fastapi.responses import JSONResponse
+
+    from automacao import mv
+    escopo = _escopo(request, s)
+    if escopo is None or escopo.precisa_trocar_senha or not _pode(escopo, ADM):
+        return JSONResponse({"ok": False, "log": "Acesso restrito."}, status_code=403)
+    c = s.scalar(select(ConexaoMV).where(ConexaoMV.ambiente == ambiente))
+    if c is None or not c.host:
+        return JSONResponse({"ok": False, "log": "Ambiente ainda não configurado."})
+    ok, log = mv.testar(_conf_mv(c))
+    _audit(s, escopo, "mv_testar", f"{ambiente}:{'ok' if ok else 'falha'}")
+    s.commit()
+    return JSONResponse({"ok": ok, "log": log})
+
+
+@router.post("/admin/consulta-sql/executar")
+async def consulta_sql_executar(request: Request, s: Session = Depends(_sessao)):
+    from fastapi.responses import JSONResponse
+
+    from automacao import mv
+    escopo = _escopo(request, s)
+    if escopo is None or escopo.precisa_trocar_senha or not _pode(escopo, ADM):
+        return JSONResponse({"erro": "Acesso restrito."}, status_code=403)
+    try:
+        dados = await request.json()
+    except Exception:
+        return JSONResponse({"erro": "Requisição inválida."}, status_code=400)
+    ambiente, sql = str(dados.get("ambiente") or ""), str(dados.get("sql") or "")
+    c = s.scalar(select(ConexaoMV).where(ConexaoMV.ambiente == ambiente))
+    if c is None or not c.host:
+        return JSONResponse({"erro": f"Ambiente «{ambiente}» não configurado."})
+    try:
+        res = mv.executar(_conf_mv(c), sql)
+    except mv.ErroConsulta as e:
+        return JSONResponse({"erro": str(e)})
+    except ModuleNotFoundError:
+        return JSONResponse({"erro": "Driver oracledb não instalado no servidor (reconstrua a imagem)."})
+    except Exception as e:                       # erro de rede/credencial/SQL do Oracle
+        return JSONResponse({"erro": f"{type(e).__name__}: {e}"})
+    _audit(s, escopo, "mv_consulta", f"{ambiente}:{res['n']}linhas")   # não loga o SQL (pode ter filtro sensível)
+    s.commit()
+    return JSONResponse(res)
 
 
 @router.get("/minhas-sugestoes", response_class=HTMLResponse)

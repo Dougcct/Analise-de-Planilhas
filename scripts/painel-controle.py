@@ -619,7 +619,10 @@ class Painel(QWidget):
                              str(RAIZ))
         self.btn_saida = gbtn("📂  Pasta de saida", lambda: abrir_caminho(PASTA_SAIDA, self.registrar),
                               str(PASTA_SAIDA))
-        for b in (self.btn_site, self.btn_proj, self.btn_saida):
+        self.btn_mv = gbtn("🗄️  Consulta SQL (MV)",
+                           lambda: abrir_url(URL_ABRIR.rstrip("/") + "/admin/consulta-sql", self.registrar),
+                           "Abre a tela ADM de consulta ao banco do MV (Teste/Producao) no navegador")
+        for b in (self.btn_site, self.btn_proj, self.btn_saida, self.btn_mv):
             lin.addWidget(b)
 
         lin.addStretch(1)
@@ -638,7 +641,14 @@ class Painel(QWidget):
         self.btn_parar = gbtn("⏹  Parar Docker",
                               lambda: self._iniciar(trabalho_parar_docker, "Parando o Docker…"),
                               "docker compose down")
-        for b in (self.btn_sync_modelos, self.btn_testes, self.btn_lint, self.btn_logs, self.btn_parar):
+        # Planejado (ainda sem funcao): assistente para migrar a stack Docker para outro servidor —
+        # exportar volumes (banco/cargas/modelos) daqui e importar no destino. Ver docs/21.
+        self.btn_migrar = gbtn("🚚  Migrar Docker (planejado)",
+                               lambda: self.registrar("Migrar Docker: funcao planejada — ver docs/21_banco_mv_e_migracao. "
+                                                      "Exportara os volumes (banco+cargas+modelos) e importara no servidor novo.", "info"),
+                               "Em breve: exportar/importar a stack para outro servidor")
+        self.btn_migrar.setEnabled(True)   # clicavel so para mostrar a nota; a acao real vem depois
+        for b in (self.btn_sync_modelos, self.btn_testes, self.btn_lint, self.btn_logs, self.btn_parar, self.btn_migrar):
             lin.addWidget(b)
 
         lay.addLayout(lin)

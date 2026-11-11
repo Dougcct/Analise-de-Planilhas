@@ -24,6 +24,7 @@ Esta pasta documenta a base para que adaptar a uma planilha nova seja rápido e 
 | [18_seguranca_lgpd_v2.md](18_seguranca_lgpd_v2.md) | **v2 (vigente)** — anonimização no servidor, upload seguro, isolamento, auditoria, checklist |
 | [19_agentes_por_setor.md](19_agentes_por_setor.md) | **Agentes Especialistas por Setor**: Escudo de Entrada de ERP + análise setorial (Faturamento, Custos); roteamento e como plugar um novo |
 | [20_feedback_nps.md](20_feedback_nps.md) | **Dashboard Feedback / NPS** (setor Diretoria): tipo de relatório de layout FIXO alimentado pelo CSV cru da pesquisa de pacientes |
+| [21_banco_mv_e_migracao.md](21_banco_mv_e_migracao.md) | **Consulta SQL ao MV** (Oracle, só leitura, ADM) e o plano de **migração da Docker** para outro servidor |
 | [CHANGELOG.md](CHANGELOG.md) | Histórico de versões (Keep a Changelog) |
 | [ROADMAP.md](ROADMAP.md) | Próximos passos |
 

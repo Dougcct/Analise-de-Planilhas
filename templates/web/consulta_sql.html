@@ -1,0 +1,189 @@
+{% extends "web/base.html" %}
+{% block titulo %}Consulta SQL (MV) — Análise de Planilhas{% endblock %}
+{% block conteudo %}
+<style>
+  .mv-cartao{background:var(--superficie);border:1px solid var(--borda);border-radius:var(--raio);
+    box-shadow:var(--sombra);padding:16px 18px}
+  .mv-conns{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;margin:10px 0 18px}
+  .mv-conns h3{margin:0 0 10px;font-size:14px;display:flex;align-items:center;gap:8px}
+  .mv-conns .campos{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .mv-conns label{font-size:11.5px;color:var(--fraco);display:block;margin-bottom:3px}
+  .mv-conns input{width:100%;padding:6px 9px;border:1px solid var(--borda);border-radius:8px;
+    background:var(--fundo);color:var(--texto);font-size:13px}
+  .mv-conns .linha-acao{display:flex;gap:8px;align-items:center;margin-top:10px}
+  .ponto{width:9px;height:9px;border-radius:50%;display:inline-block;background:#c9ccd4}
+  .ponto.on{background:#28c76f}.ponto.off{background:#e05260}
+  .log-conn{font-size:12px;color:var(--fraco);margin-top:8px;white-space:pre-wrap;min-height:1.2em}
+
+  .mv-barra{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin:4px 0 12px}
+  .mv-amb{display:flex;gap:8px;align-items:center}
+  .mv-amb label{display:flex;gap:6px;align-items:center;font-weight:600;font-size:13px;cursor:pointer;
+    padding:6px 12px;border:1px solid var(--borda);border-radius:999px}
+  .mv-amb input{accent-color:var(--marca)}
+  .mv-amb label.prod{border-color:#e0a23f}
+  .aviso-prod{display:none;font-size:12.5px;color:#b06a00;background:#fff6e6;border:1px solid #f0d9a8;
+    border-radius:8px;padding:5px 10px}
+
+  .editor-wrap{position:relative;border:1px solid var(--borda);border-radius:10px;overflow:hidden;
+    background:#0f1420;min-height:210px}
+  .editor-wrap pre,.editor-wrap textarea{margin:0;padding:12px 14px;font-family:'Cascadia Code','Fira Code',
+    Consolas,'Courier New',monospace;font-size:13.5px;line-height:1.55;tab-size:2;white-space:pre-wrap;
+    word-break:break-word;border:0}
+  .editor-wrap pre{position:absolute;inset:0;pointer-events:none;color:#d6deeb;overflow:auto}
+  .editor-wrap textarea{position:relative;width:100%;height:100%;min-height:210px;background:transparent;
+    color:transparent;caret-color:#e6f0ff;resize:vertical;outline:none;overflow:auto}
+  .t-kw{color:#6aa6ff;font-weight:600}.t-str{color:#9ad18a}.t-num{color:#f2b36b}.t-com{color:#6b7694;font-style:italic}
+  .t-fn{color:#c792ea}
+
+  .mv-exec{display:flex;gap:10px;align-items:center;margin:10px 0}
+  .mv-dica{font-size:12px;color:var(--fraco)}
+  .mv-result{margin-top:12px}
+  .mv-erro{color:#e05260;background:#fdecec;border:1px solid #f4c2c2;border-radius:8px;padding:9px 12px;font-size:13px}
+  .mv-meta{font-size:12.5px;color:var(--fraco);margin-bottom:6px}
+  .tab-scroll{overflow:auto;border:1px solid var(--borda);border-radius:8px;max-height:60vh}
+  table.mv-tab{border-collapse:collapse;font-size:12.5px;width:100%}
+  table.mv-tab th,table.mv-tab td{border:1px solid var(--borda);padding:5px 9px;text-align:left;white-space:nowrap}
+  table.mv-tab th{background:var(--fundo);position:sticky;top:0;z-index:1}
+  table.mv-tab td.nulo{color:#aab;font-style:italic}
+</style>
+
+<h1>Consulta SQL (MV)</h1>
+<p class="apoio">Rode um <b>SELECT</b> direto no banco do MV e veja o resultado aqui. Só leitura — comandos
+que alteram dados são bloqueados. Uso restrito ao administrador, na rede local.</p>
+
+{% if ok %}<div class="aviso ok">{{ ok }}</div>{% endif %}
+{% if erro %}<div class="aviso err">{{ erro }}</div>{% endif %}
+
+<!-- Conexões por ambiente -->
+<div class="mv-conns">
+  {% for a in ambientes %}
+  <form method="post" action="/web/admin/consulta-sql/conexao" class="mv-cartao">
+    <input type="hidden" name="ambiente" value="{{ a.ambiente }}">
+    <h3><span class="ponto {{ 'on' if a.configurado else 'off' }}"></span> {{ a.rotulo }}</h3>
+    <div class="campos">
+      <div style="grid-column:1/3"><label>Host</label><input name="host" value="{{ a.host }}" placeholder="servidor-oracle"></div>
+      <div><label>Porta</label><input name="porta" value="{{ a.porta }}"></div>
+      <div><label>Service name</label><input name="servico" value="{{ a.servico }}" placeholder="ORCL / MVPROD"></div>
+      <div><label>Usuário</label><input name="usuario" value="{{ a.usuario }}"></div>
+      <div><label>Senha</label><input name="senha" type="password" placeholder="{{ '•••••• (mantém)' if a.tem_senha else 'informe' }}"></div>
+    </div>
+    <div class="linha-acao">
+      <button type="submit" class="btn">Salvar</button>
+      <button type="button" class="btn-sec" onclick="testarConn('{{ a.ambiente }}',this)">Testar conexão</button>
+    </div>
+    <div class="log-conn" id="log-{{ a.ambiente }}"></div>
+  </form>
+  {% endfor %}
+</div>
+
+<!-- Editor + execução -->
+<div class="mv-cartao">
+  <div class="mv-barra">
+    <div class="mv-amb">
+      <span class="mv-dica">Executar em:</span>
+      {% for a in ambientes %}
+      <label class="{{ 'prod' if a.ambiente == 'producao' }}">
+        <input type="radio" name="amb" value="{{ a.ambiente }}" {{ 'checked' if loop.first }}
+               onchange="trocaAmb()" {{ 'disabled' if not a.configurado }}>
+        {{ a.rotulo }}{{ ' (não configurado)' if not a.configurado }}
+      </label>
+      {% endfor %}
+    </div>
+    <span class="aviso-prod" id="aviso-prod">⚠ Produção: dados reais de paciente — tome cuidado (LGPD).</span>
+  </div>
+
+  <div class="editor-wrap">
+    <pre id="realce" aria-hidden="true"><code></code></pre>
+    <textarea id="sql" spellcheck="false" placeholder="SELECT ... FROM ... WHERE ...  (F8 para executar)">SELECT 1 FROM DUAL</textarea>
+  </div>
+
+  <div class="mv-exec">
+    <button type="button" class="btn" id="btn-exec" onclick="executar()">▶ Executar</button>
+    <span class="mv-dica">ou <b>F8</b> · máximo {{ limite }} linhas</span>
+  </div>
+
+  <div class="mv-result" id="result"></div>
+</div>
+
+<script>
+(function(){
+  var ta = document.getElementById('sql');
+  var code = document.querySelector('#realce code');
+  var PAL = ("select from where join left right inner outer full cross on using and or not in is null "
+    + "like between group by order having distinct as with union all exists case when then else end asc desc "
+    + "rownum fetch first rows only over partition").split(" ");
+  var FN = ("count sum avg min max nvl nvl2 coalesce decode to_char to_date to_number trunc round sysdate "
+    + "upper lower substr instr length replace listagg row_number rank dense_rank").split(" ");
+  var reKW = new RegExp("\\b(" + PAL.join("|") + ")\\b","gi");
+  var reFN = new RegExp("\\b(" + FN.join("|") + ")\\b","gi");
+
+  function realcar(txt){
+    var esc = txt.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    // comentários e strings primeiro (tokens que "engolem" o resto)
+    esc = esc.replace(/(--[^\n]*|\/\*[\s\S]*?\*\/)/g, function(m){ return "\u0001"+btoaSafe(m)+"\u0001c"; });
+    esc = esc.replace(/('(?:[^']|'')*')/g, function(m){ return "\u0001"+btoaSafe(m)+"\u0001s"; });
+    esc = esc.replace(reFN, '<span class="t-fn">$1</span>');
+    esc = esc.replace(reKW, '<span class="t-kw">$1</span>');
+    esc = esc.replace(/\b(\d+(?:\.\d+)?)\b/g, '<span class="t-num">$1</span>');
+    esc = esc.replace(/\u0001([^\u0001]*)\u0001([cs])/g, function(_,b,t){
+      return '<span class="t-'+(t==="c"?"com":"str")+'">'+atob(b)+'</span>'; });
+    return esc + "\n";
+  }
+  function btoaSafe(s){ return btoa(unescape(encodeURIComponent(s))); }
+
+  function pintar(){ code.innerHTML = realcar(ta.value); code.parentNode.scrollTop = ta.scrollTop;
+                     code.parentNode.scrollLeft = ta.scrollLeft; }
+  ta.addEventListener('input', pintar);
+  ta.addEventListener('scroll', function(){ code.parentNode.scrollTop = ta.scrollTop; code.parentNode.scrollLeft = ta.scrollLeft; });
+  ta.addEventListener('keydown', function(e){
+    if(e.key === "F8"){ e.preventDefault(); executar(); }
+    if(e.key === "Tab"){ e.preventDefault(); var s=ta.selectionStart, en=ta.selectionEnd;
+      ta.value = ta.value.slice(0,s)+"  "+ta.value.slice(en); ta.selectionStart=ta.selectionEnd=s+2; pintar(); }
+  });
+  pintar();
+
+  window.trocaAmb = function(){
+    var amb = document.querySelector('input[name=amb]:checked');
+    document.getElementById('aviso-prod').style.display = (amb && amb.value==='producao') ? 'inline-block' : 'none';
+  };
+  trocaAmb();
+
+  window.testarConn = function(amb, btn){
+    var log = document.getElementById('log-'+amb);
+    log.textContent = "Testando…"; btn.disabled = true;
+    fetch('/web/admin/consulta-sql/testar', {method:'POST',
+        headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:'ambiente='+amb})
+      .then(function(r){return r.json();})
+      .then(function(d){ log.textContent = (d.ok?"✅ ":"❌ ")+d.log; log.style.color = d.ok?"#1f9e57":"#e05260"; })
+      .catch(function(){ log.textContent = "❌ Erro ao chamar o servidor."; log.style.color="#e05260"; })
+      .finally(function(){ btn.disabled = false; });
+  };
+
+  window.executar = function(){
+    var ambEl = document.querySelector('input[name=amb]:checked');
+    var res = document.getElementById('result');
+    if(!ambEl){ res.innerHTML = '<div class="mv-erro">Nenhum ambiente configurado. Preencha e salve uma conexão acima.</div>'; return; }
+    var btn = document.getElementById('btn-exec');
+    btn.disabled = true; res.innerHTML = '<div class="mv-meta">Executando…</div>';
+    fetch('/web/admin/consulta-sql/executar', {method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ambiente: ambEl.value, sql: ta.value})})
+      .then(function(r){return r.json();})
+      .then(function(d){ res.innerHTML = d.erro ? '<div class="mv-erro">'+escapar(d.erro)+'</div>' : tabela(d); })
+      .catch(function(){ res.innerHTML = '<div class="mv-erro">Erro ao chamar o servidor.</div>'; })
+      .finally(function(){ btn.disabled = false; });
+  };
+
+  function escapar(t){ return (t==null?'':String(t)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function tabela(d){
+    if(!d.colunas || !d.colunas.length) return '<div class="mv-meta">Sem colunas.</div>';
+    var meta = d.n + ' linha' + (d.n===1?'':'s') + (d.truncado ? ' (mostrando as primeiras — resultado maior)' : '');
+    var h = '<div class="mv-meta">'+meta+'</div><div class="tab-scroll"><table class="mv-tab"><thead><tr>';
+    d.colunas.forEach(function(c){ h += '<th>'+escapar(c)+'</th>'; });
+    h += '</tr></thead><tbody>';
+    d.linhas.forEach(function(lin){ h += '<tr>'; lin.forEach(function(v){
+      h += v===null ? '<td class="nulo">(nulo)</td>' : '<td>'+escapar(v)+'</td>'; }); h += '</tr>'; });
+    return h + '</tbody></table></div>';
+  }
+})();
+</script>
+{% endblock %}
