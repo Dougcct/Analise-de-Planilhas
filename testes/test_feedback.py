@@ -71,6 +71,17 @@ def test_periodo_do_mes_mais_frequente():
     assert feedback.periodo(rows) == "SETEMBRO DE 2026"
 
 
+def test_ler_csv_robusto_nao_quebra():
+    # CSV normal (não feedback) com campo multilinha entre aspas — não pode estourar e não é feedback
+    rows = feedback.ler_csv('Conta,Obs\n"100","linha1\nlinha2"\n')
+    assert len(rows) == 1
+    assert not feedback.e_feedback(rows[0].keys())
+    # conteúdo binário (ex.: xlsx) — decodifica sem crashar e não é reconhecido como feedback
+    import os
+    r = feedback.ler_csv(os.urandom(256))
+    assert not (r and feedback.e_feedback(r[0].keys()))
+
+
 def test_render_html_tem_as_quatro_paginas():
     rows = feedback.ler_csv(_csv('A,,9,bom,sim,Concierge,2026-09-14 10:00:00'))
     html = feedback.render_html(feedback.calcular(rows), feedback.periodo(rows), 4428)

@@ -102,7 +102,8 @@ def ler_csv(dados: bytes | str) -> list[dict]:
             texto = dados.decode("latin-1", errors="replace")
     else:
         texto = dados
-    return list(csv.DictReader(io.StringIO(texto)))
+    # newline="" como manda a doc do csv (preserva \r\n dentro de campos entre aspas)
+    return list(csv.DictReader(io.StringIO(texto, newline="")))
 
 
 def e_feedback(colunas) -> bool:

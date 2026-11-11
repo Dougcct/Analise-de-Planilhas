@@ -4,9 +4,10 @@ Ordem sugerida, não compromissada. Itens entram no [CHANGELOG](CHANGELOG.md) qu
 
 ## Estado atual
 
-O produto é o **servidor web v2** (FastAPI + Docker): login, controle por setor, envio com prévia,
-relatórios HTML, Painel Executivo editável, chamados e os **Agentes Especialistas por Setor**
-([19](19_agentes_por_setor.md)). O app desktop/.exe foi descontinuado.
+O produto é o **servidor web (v3)** (FastAPI + Docker): login, controle por setor, envio com prévia,
+relatórios HTML, Painel Executivo editável, chamados, os **Agentes Especialistas por Setor**
+([19](19_agentes_por_setor.md)) e o **Dashboard Feedback / NPS** da Diretoria ([20](20_feedback_nps.md)).
+O app desktop/.exe foi descontinuado.
 
 ## Curto prazo
 

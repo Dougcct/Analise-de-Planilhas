@@ -11,7 +11,7 @@ O produto é um **servidor web** (FastAPI + Docker) com login e **controle por s
 planilhas (`xlsx`, `ods`, `csv`), o sistema padroniza os dados e publica um **relatório analítico HTML** no
 navegador — no mesmo desenho do projeto **Garantia de Atendimento e Reembolso**.
 
-**Versão:** 2.0.1 · **Saídas:** HTML (PDF e DOCX previstos)
+**Versão:** 3.0.0 · **Saídas:** HTML (PDF e DOCX previstos)
 
 ---
 
@@ -31,6 +31,9 @@ navegador — no mesmo desenho do projeto **Garantia de Atendimento e Reembolso*
   setor conhecido (ex.: **Faturamento**, **Custos**), um agente limpa o export de ERP bagunçado (acha o
   cabeçalho real, descarta subtotais, blinda códigos, arruma números) e **acrescenta a análise do setor**
   ao relatório (glosa, orçado × realizado, Curva ABC, aging…). Escolha/troca na prévia. [dominio/docs/19](dominio/docs/19_agentes_por_setor.md).
+- **Dashboard Feedback / NPS** (setor **Diretoria**): tipo de relatório de **layout fixo** que reproduz o
+  painel da pesquisa de pacientes (NPS, tempo de espera, expectativas, por serviço) a partir do CSV cru —
+  gráficos de rosca com % e tooltip. Escolha **«Feedback / NPS»** no seletor de modelo. [dominio/docs/20](dominio/docs/20_feedback_nps.md).
 
 Exemplo pronto: **Contas Convênio** (contas hospitalares em blocos — [dominio/docs/12](dominio/docs/12_contas_convenio.md)).
 

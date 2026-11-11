@@ -2,6 +2,33 @@
 
 Formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · [SemVer](https://semver.org/lang/pt-BR/)
 
+## [3.0.0] — 2026-11-11
+
+Novo **tipo de relatório Feedback / NPS** para o setor **Diretoria**: reproduz um dashboard de layout
+FIXO (modelo em PDF da pesquisa de pacientes) alimentado pelo CSV cru, sem passar pelo motor genérico.
+
+### Adicionado (Dashboard Feedback / NPS — [20](20_feedback_nps.md))
+- **Motor:** `src/analise_planilha/feedback.py` (lógica pura) — lê o CSV cru da pesquisa, calcula NPS
+  (Detrator/Neutro/Promotor), tempo de espera, expectativas e a tabela por serviço (catálogo fixo de 30),
+  e renderiza um HTML de 4 páginas com gráficos de rosca (cores do modelo). Reconhecido pelas colunas.
+- **Tipo selecionável:** «Feedback / NPS» aparece no seletor **Modelo de análise** do envio
+  (`feedback.SLUG = "feedback_nps"`); escolhendo-o, o relatório rende o dashboard garantidamente e **não**
+  usa modelo `.toml` nem auto-modelo.
+- **Setor Diretoria** (`DIR`) semeado em `servidor/seed.py` (instalações novas).
+- **Total de Atendimentos** (único dado fora do CSV) é um **campo editável na tela** para gestor/ADM,
+  salvo em `config_exec` (`POST /web/r/{slug}/feedback/atendimentos`).
+- **Visual:** rosca limpa + **chips de %** à direita, **tooltip** e destaque ao passar o mouse (web);
+  filtro de data escondido para esse relatório.
+- **CLI:** `scripts/gerar_feedback_nps.py` (CSV → PDF via Chrome/Edge headless ou WeasyPrint).
+- **Operação:** botão **Reconstruir (rebuild)** no `scripts/painel-controle.py` e `scripts/reconstruir-docker.bat`
+  (`docker compose up -d --build`) — o código é copiado para a imagem, então reiniciar não recompila.
+
+### Corrigido
+- O motor classificava o CSV de feedback como série financeira e quebrava (`KeyError: None`); todas as
+  rotas de exibição (prévia, página, conteúdo e PDF) agora desviam para o dashboard **antes** do motor.
+- Detecção de feedback robusta: só arquivos `.csv`/`.txt` são testados; erro de parse é tratado (não
+  derruba relatórios normais com `.xlsx` ou CSV multilinha); `ler_csv` usa `newline=""`.
+
 ## [2.0.1] — 2026-11-09
 
 Organização do repositório (sem mudança de comportamento do produto), painel de operação e lint.

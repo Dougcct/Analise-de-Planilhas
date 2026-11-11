@@ -165,7 +165,14 @@ def _linhas_feedback(cargas: list[Carga], forcado: bool = False) -> list[dict] |
         caminho = CARGAS_DIR / c.arquivo_uuid
         if not caminho.is_file():
             continue
-        rows = feedback.ler_csv(caminho.read_bytes())
+        if not (c.nome_original or "").lower().endswith((".csv", ".txt")):
+            return None                 # feedback é sempre CSV; xlsx/outros não são feedback
+        try:
+            rows = feedback.ler_csv(caminho.read_bytes())
+        except Exception:
+            if forcado:
+                continue
+            return None                 # não deu p/ ler como CSV: trata como relatório normal
         if not rows:
             if forcado:
                 continue

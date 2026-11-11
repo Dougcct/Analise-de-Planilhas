@@ -1,5 +1,7 @@
 # Dados pessoais (LGPD) — nunca versionar. Tudo vive sob dados/ (relatorios, saida, setores, revisar).
 dados/
+# Material de trabalho da Diretoria (modelo + saídas do Feedback/NPS) — conteúdo interno, fora do git.
+Modelo feedback/
 
 # Configuração local de cada usuário — contém chave de API (ia.toml) e as metas do gestor
 config/ia.toml
