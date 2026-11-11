@@ -2,6 +2,14 @@
 
 Formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · [SemVer](https://semver.org/lang/pt-BR/)
 
+## [3.2.2] — 2026-11-11
+
+### Corrigido
+- **Editor de SQL da Consulta MV — seleção desalinhada.** O `<textarea>` transparente e o `<pre>` do realce
+  quebravam linha em pontos diferentes (`box-sizing` divergente + quebra automática), então selecionar pegava
+  caracteres adiante do mostrado. Agora os dois compartilham a mesma caixa (`border-box`) e **não quebram
+  linha** (rolam na horizontal), eliminando o desalinhamento.
+
 ## [3.2.1] — 2026-11-11
 
 ### Corrigido

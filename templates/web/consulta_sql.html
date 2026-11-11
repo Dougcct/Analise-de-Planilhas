@@ -26,10 +26,13 @@
 
   .editor-wrap{position:relative;border:1px solid var(--borda);border-radius:10px;overflow:hidden;
     background:#0f1420;min-height:210px}
-  .editor-wrap pre,.editor-wrap textarea{margin:0;padding:12px 14px;font-family:'Cascadia Code','Fira Code',
-    Consolas,'Courier New',monospace;font-size:13.5px;line-height:1.55;tab-size:2;white-space:pre-wrap;
-    word-break:break-word;border:0}
-  .editor-wrap pre{position:absolute;inset:0;pointer-events:none;color:#d6deeb;overflow:auto}
+  /* textarea transparente SOBRE o <pre> colorido: os dois precisam ter EXATAMENTE a mesma caixa e a
+     mesma régua de texto, senão a seleção desalinha do que aparece. Sem quebra automática (white-space:
+     pre) → rola na horizontal e nunca há ponto de quebra divergente. */
+  .editor-wrap pre,.editor-wrap textarea{box-sizing:border-box;margin:0;padding:12px 14px;
+    font-family:'Cascadia Code','Fira Code',Consolas,'Courier New',monospace;font-size:13.5px;
+    line-height:1.55;letter-spacing:normal;tab-size:2;white-space:pre;overflow-wrap:normal;word-break:normal;border:0}
+  .editor-wrap pre{position:absolute;inset:0;pointer-events:none;color:#d6deeb;overflow:hidden}
   .editor-wrap textarea{position:relative;width:100%;height:100%;min-height:210px;background:transparent;
     color:transparent;caret-color:#e6f0ff;resize:vertical;outline:none;overflow:auto}
   .t-kw{color:#6aa6ff;font-weight:600}.t-str{color:#9ad18a}.t-num{color:#f2b36b}.t-com{color:#6b7694;font-style:italic}
