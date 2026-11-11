@@ -2,6 +2,17 @@
 
 Formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · [SemVer](https://semver.org/lang/pt-BR/)
 
+## [3.3.0] — 2026-11-11
+
+### Adicionado
+- **Modelo «Atendimento Hospitalar (PA / Internação)»** (`dominio/modelos/atendimento_hospitalar.toml`)
+  para o export de atendimentos do MV (uma linha por atendimento, 39 colunas). Mapeia os nomes técnicos
+  (DT_ATENDIMENTO, NM_CONVENIO…) para rótulos legíveis; entidade = paciente (código, anonimizado);
+  dimensões origem/tipo/especialidade/convênio/prestador/CID/cidade/sexo; tempo de **permanência**
+  (atendimento → alta); taxas de urgência e internação; cruzamentos. **LGPD:** `apenas_mapeadas = true`
+  descarta as colunas identificáveis (nome, carteira, nascimento, profissão, raça/cor, bairro) — 39→23
+  colunas. Substitui a análise genérica que produzia indicadores sem sentido (ex.: «curva ABC de idade»).
+
 ## [3.2.4] — 2026-11-11
 
 ### Corrigido

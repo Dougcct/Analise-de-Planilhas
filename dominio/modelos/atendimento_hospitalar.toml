@@ -1,0 +1,193 @@
+# =============================================================================
+# MODELO — Atendimento Hospitalar (PA / Internação) — export do MV
+# =============================================================================
+# Para o relatório de atendimentos vindo do MV (tela «Consulta SQL (MV)» → Enviar para relatório),
+# layout de UMA linha por atendimento. Cada coluna declara o nome técnico do MV como sinônimo
+# (DT_ATENDIMENTO, NM_CONVENIO…) para o cabeçalho casar. Guia: DOCS/04_modelo_de_cliente.md
+#
+# LGPD: `apenas_mapeadas = true` → só as colunas declaradas aqui entram na base; as diretamente
+# identificáveis (NM_PACIENTE, NR_CARTEIRA, DT_NASCIMENTO, NM_PROFISSAO, NM_RACA_COR, NM_BAIRRO)
+# NÃO são mapeadas de propósito e são descartadas na leitura. A entidade é o CÓDIGO do paciente
+# (CD_PACIENTE), anonimizado pelo motor (contagem de distintos / retorno, nunca o nome).
+# -----------------------------------------------------------------------------
+
+nome  = "Atendimento Hospitalar (PA / Internação)"
+pasta = "Atendimento Hospitalar"
+apenas_mapeadas = true          # descarta colunas não declaradas (LGPD)
+
+[analise]
+entidade          = "paciente"          # CD_PACIENTE: distintos e retorno (reincidência), anonimizado
+entidade_plural   = "pacientes"
+data_base         = "data_atendimento"  # filtro de período e evolução mensal
+estatistica_tempo = "mediana"
+# ordem das quebras no relatório (da mais útil para a gestão para a menos)
+dimensoes = ["origem", "tipo_atendimento", "tipo_internacao", "especialidade", "convenio",
+             "prestador", "cid", "cidade", "sexo", "motivo_alta_pa"]
+
+# ---- colunas ------------------------------------------------------------------
+[[coluna]]
+canonico = "atendimento"
+rotulo = "Atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+obrigatoria = true
+
+[[coluna]]
+canonico = "data_atendimento"
+rotulo = "Data do atendimento"
+tipo = "data"
+sinonimos = ["DT_ATENDIMENTO"]
+obrigatoria = true
+
+[[coluna]]
+canonico = "data_alta"
+rotulo = "Data da alta"
+tipo = "data"
+sinonimos = ["DT_ALTA"]
+opcional = true
+
+[[coluna]]
+canonico = "data_alta_medica"
+rotulo = "Data da alta médica"
+tipo = "data"
+sinonimos = ["DT_ALTA_MEDICA"]
+opcional = true
+
+[[coluna]]
+canonico = "paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+
+[[coluna]]
+canonico = "origem"
+rotulo = "Origem do atendimento"
+tipo = "categorico"
+sinonimos = ["DS_ORI_ATE"]
+
+[[coluna]]
+canonico = "tipo_atendimento"
+rotulo = "Tipo de atendimento"
+tipo = "categorico"
+sinonimos = ["DS_TP_ATENDIMENTO"]
+
+[[coluna]]
+canonico = "tipo_internacao"
+rotulo = "Tipo de internação"
+tipo = "categorico"
+sinonimos = ["DS_TIPO_INTERNACAO"]
+
+[[coluna]]
+canonico = "especialidade"
+rotulo = "Especialidade"
+tipo = "categorico"
+sinonimos = ["DS_ESPECIALID"]
+
+[[coluna]]
+canonico = "convenio"
+rotulo = "Convênio"
+tipo = "categorico"
+sinonimos = ["NM_CONVENIO"]
+
+[[coluna]]
+canonico = "prestador"
+rotulo = "Prestador"
+tipo = "categorico"
+sinonimos = ["NM_PRESTADOR"]
+ignorar_palavras = ["DR", "DRA", "DRS"]
+
+[[coluna]]
+canonico = "cid"
+rotulo = "CID (diagnóstico)"
+tipo = "categorico"
+sinonimos = ["DS_CID"]
+
+[[coluna]]
+canonico = "cidade"
+rotulo = "Cidade"
+tipo = "categorico"
+sinonimos = ["NM_CIDADE"]
+
+[[coluna]]
+canonico = "sexo"
+rotulo = "Sexo"
+tipo = "categorico"
+sinonimos = ["TP_SEXO"]
+aliases = { "F" = "Feminino", "M" = "Masculino", "I" = "Não informado" }
+
+[[coluna]]
+canonico = "idade"
+rotulo = "Idade"
+tipo = "inteiro"
+papel = "texto"                 # só exibição: evita virar medida (nada de "curva ABC de idade")
+sinonimos = ["IDADE"]
+opcional = true
+
+[[coluna]]
+canonico = "leito"
+rotulo = "Leito"
+tipo = "categorico"
+papel = "texto"
+sinonimos = ["DS_LEITO"]
+opcional = true
+
+[[coluna]]
+canonico = "unidade"
+rotulo = "Unidade de internação"
+tipo = "categorico"
+sinonimos = ["CD_UNID_INT"]
+opcional = true
+
+[[coluna]]
+canonico = "motivo_alta_pa"
+rotulo = "Motivo da alta (PA)"
+tipo = "categorico"
+sinonimos = ["MOT_ALTA_PA"]
+opcional = true
+
+[[coluna]]
+canonico = "motivo_alta_int"
+rotulo = "Motivo da alta (internação)"
+tipo = "categorico"
+sinonimos = ["MOT_ALTA_INT"]
+opcional = true
+
+# ---- taxas: % que importa (sentido só orienta os achados) ------------------------
+[[taxa]]
+canonico = "urgencia"
+rotulo = "Urgência / Emergência"
+coluna = "tipo_atendimento"
+valores = ["URGENCIA"]
+sentido = "menor"
+
+[[taxa]]
+canonico = "internacao"
+rotulo = "Internados"
+coluna = "tipo_atendimento"
+valores = ["INTERNADO"]
+sentido = "menor"
+
+# ---- tempo de permanência -------------------------------------------------------
+[[tempo]]
+canonico = "permanencia"
+rotulo = "Permanência (atendimento → alta)"
+inicio = "data_atendimento"
+fim = "data_alta"
+em_aberto = true                # atendimento sem alta = ainda internado / em aberto
+
+# ---- cruzamentos ----------------------------------------------------------------
+[[cruzamento]]
+rotulo = "Atendimentos por especialidade × convênio"
+linhas = "especialidade"
+colunas = "convenio"
+
+[[cruzamento]]
+rotulo = "Origem × tipo de atendimento"
+linhas = "origem"
+colunas = "tipo_atendimento"
+
+# ---- qualidade ------------------------------------------------------------------
+[qualidade]
+duplicidade = ["atendimento"]                       # o nº de atendimento não deve repetir
+grafias_parecidas = ["prestador", "especialidade", "cidade"]
