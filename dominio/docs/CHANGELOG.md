@@ -2,6 +2,17 @@
 
 Formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · [SemVer](https://semver.org/lang/pt-BR/)
 
+## [3.3.1] — 2026-11-11
+
+### Corrigido
+- **Modelo «Atendimento Hospitalar» — painéis sem sentido.** Removidos indicadores que a análise genérica
+  forçava sobre dados de atendimento: (a) **Idade** saiu do modelo (era somada e virava «curva ABC de
+  idade»); (b) **DT_ALTA/DT_ALTA_MEDICA** saíram — o motor cria um «tempo (dias)» entre cada par de datas,
+  o que gerava medianas de permanência em dias sem sentido (≈90% dos atendimentos são do mesmo dia). Agora
+  o relatório é baseado em **contagem** (sem medida numérica): sem soma, sem ABC, sem permanência-em-dias.
+  Permanência real (horas, só internados) fica como evolução futura. A evolução segue **mensal** (motor);
+  para extratos curtos uma granularidade diária/semanal seria melhor — melhoria mapeada.
+
 ## [3.3.0] — 2026-11-11
 
 ### Adicionado

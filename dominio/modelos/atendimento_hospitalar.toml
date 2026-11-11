@@ -39,19 +39,9 @@ tipo = "data"
 sinonimos = ["DT_ATENDIMENTO"]
 obrigatoria = true
 
-[[coluna]]
-canonico = "data_alta"
-rotulo = "Data da alta"
-tipo = "data"
-sinonimos = ["DT_ALTA"]
-opcional = true
-
-[[coluna]]
-canonico = "data_alta_medica"
-rotulo = "Data da alta médica"
-tipo = "data"
-sinonimos = ["DT_ALTA_MEDICA"]
-opcional = true
+# NOTA: DT_ALTA / DT_ALTA_MEDICA NÃO são mapeadas de propósito. O motor cria um "tempo (dias)" entre cada
+# par de colunas de data; com as altas mapeadas, isso gerava medianas de permanência em dias sem sentido
+# (90% mesmo dia). Mantendo só a data do atendimento, não há par de datas e esses painéis somem.
 
 [[coluna]]
 canonico = "paciente"
@@ -117,14 +107,6 @@ sinonimos = ["TP_SEXO"]
 aliases = { "F" = "Feminino", "M" = "Masculino", "I" = "Não informado" }
 
 [[coluna]]
-canonico = "idade"
-rotulo = "Idade"
-tipo = "inteiro"
-papel = "texto"                 # só exibição: evita virar medida (nada de "curva ABC de idade")
-sinonimos = ["IDADE"]
-opcional = true
-
-[[coluna]]
 canonico = "leito"
 rotulo = "Leito"
 tipo = "categorico"
@@ -168,13 +150,10 @@ coluna = "tipo_atendimento"
 valores = ["INTERNADO"]
 sentido = "menor"
 
-# ---- tempo de permanência -------------------------------------------------------
-[[tempo]]
-canonico = "permanencia"
-rotulo = "Permanência (atendimento → alta)"
-inicio = "data_atendimento"
-fim = "data_alta"
-em_aberto = true                # atendimento sem alta = ainda internado / em aberto
+# NOTA: não há tempo de permanência aqui de propósito. Neste extrato ~90% dos atendimentos são do mesmo
+# dia (PA/ambulatório) ou sem alta, então "permanência em dias" dá mediana 0 e engana. Permanência só faz
+# sentido em HORAS e só para INTERNADOS — o que exige a consulta trazer data+hora de entrada e de alta
+# combinadas (hoje a hora vem em coluna separada). Fica como evolução futura.
 
 # ---- cruzamentos ----------------------------------------------------------------
 [[cruzamento]]
