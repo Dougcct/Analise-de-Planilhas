@@ -2,6 +2,45 @@
 
 Formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · [SemVer](https://semver.org/lang/pt-BR/)
 
+## [3.5.0] — 2026-11-12
+
+### Adicionado
+- **Relatório «Custos por Centro de Custo (SoulMV)»** (`custos_centros.py`, ver
+  [docs/22](22_custos_centros_custo.md)). Novo dashboard de layout fixo lido direto do **PDF** hierárquico
+  da SoulMV («Apresentação dos custos dos centros de custos»), que no motor genérico saía «fora de
+  contexto». Por centro de custo: identidade (código + nome), **Custo primário** por grupo (recolhível),
+  **Rateio absorvido** em tabela (recolhível) e **Resumo operacional** com uma coluna por mês incluído.
+  Vários PDFs (um por mês) somam os meses.
+- **Filtros do relatório de custos:** setores em **multisseleção** (busca + chips) e período de/até,
+  instantâneos no navegador. Com **2+ setores**, vira **comparativo** (tabela métricas × centros e gráfico
+  de linhas do Total de Custo por centro).
+- **Conferência automática da leitura** (`conferir`): itens × total do grupo, grupos × total do primário,
+  linhas × subtotal do rateio, subtotais × total absorvido. Se não fechar, a tela mostra um aviso ⚠.
+- Dashboards de layout fixo agora aceitam **PDF** (`FORMATOS`), além de CSV (`servidor/app.py`).
+
+### Alterado
+- **Barra de ações do relatório** (`templates/web/relatorio.html`): igual em todos os relatórios —
+  principais à vista (Editar versão · Imprimir · Tela cheia · Compartilhar) e o resto num menu **«Mais»**
+  (versões, baixar modelo, sumário, gerenciar); ícones, alturas e sombras padronizados. O antigo
+  «Compartilhar com outro setor…» solto virou o botão da barra.
+
+### Desempenho
+- **Leitura de PDF ~58× mais rápida** (pypdfium2, já instalado como dependência do pdfplumber): 7 PDFs em
+  3,2 s (antes 185 s). O parser passou a independer da ordem das seções; equivalência verificada nos
+  7 meses (1.092 centros × mês, 0 diferenças). O pdfplumber fica de reserva quando a conferência falha.
+- **Cache do parse em dois níveis:** em disco, por carga (`<arquivo>.custos_centros_custo.v2.json`, chave =
+  hash SHA-256 + versão do parser; feito já na prévia; sobrevive a reinícios; incremental) e em memória
+  (resultado mesclado, limitado a 24). Abertura depois de reiniciar: ~0,01 s.
+
+### Corrigido
+- **Rateio absorvido com a regra «Convenção»** (Hospitalidade) era descartado na leitura — a linha sumia
+  da tabela embora o subtotal estivesse certo.
+
+### Segurança
+- Excluir/descartar carga agora usa `apagar_arquivo_carga`, que apaga o PDF **e** os derivados (parse em
+  disco e cache em memória). Caminhos do cache restritos ao volume de cargas; a autorização segue nas
+  rotas, antes do cache.
+
 ## [3.4.0] — 2026-11-11
 
 ### Adicionado

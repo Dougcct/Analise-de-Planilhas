@@ -2340,7 +2340,7 @@ def enviar_previa_descartar(carga_id: int, request: Request, voltar: str = Form(
             raise _Erro("Acesso restrito a gestores.")
         carga, rel = _carga_previa(s, escopo, carga_id)
         _pos, _tot, prox = _fila_lote(s, escopo, carga)   # próxima da fila antes de apagar esta
-        (srv.CARGAS_DIR / carga.arquivo_uuid).unlink(missing_ok=True)
+        srv.apagar_arquivo_carga(carga)                     # arquivo + parse em disco + cache
         srv.esquecer_dataset(carga.id)
         s.delete(carga)
         s.flush()
@@ -3139,7 +3139,7 @@ def _relatorio_gerenciavel(s, escopo, slug):
 def _apagar_relatorio(s, srv, rel) -> None:
     """Apaga um relatório e TUDO dele: planilhas (arquivos no disco), cargas e acessos temporários."""
     for c in s.scalars(select(Carga).where(Carga.relatorio_id == rel.id)):
-        (srv.CARGAS_DIR / c.arquivo_uuid).unlink(missing_ok=True)
+        srv.apagar_arquivo_carga(c)                         # arquivo + parse em disco + cache
         srv.esquecer_dataset(c.id)
         s.delete(c)
     for ac in s.scalars(select(AcessoTemporario).where(AcessoTemporario.relatorio_id == rel.id)):
@@ -3314,7 +3314,7 @@ def gestao_carga_descartar(carga_id: int, request: Request, s: Session = Depends
         slug = f"/web/gestao/relatorio/{rel.slug}"
         if carga.status == PUBLICADA:
             raise _Erro("Não dá para descartar a versão publicada. Publique outra antes.")
-        (srv.CARGAS_DIR / carga.arquivo_uuid).unlink(missing_ok=True)
+        srv.apagar_arquivo_carga(carga)                     # arquivo + parse em disco + cache
         srv.esquecer_dataset(carga.id)
         s.delete(carga)
         _audit(s, escopo, "descartar_carga", f"{rel.slug}:{carga_id}")

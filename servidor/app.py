@@ -6,8 +6,11 @@ consomem. A interface é toda web (navegador): não há mais API `/api/v1` nem c
 """
 from __future__ import annotations
 
+import json
 import os
 import sys
+import uuid
+from collections import OrderedDict
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -153,14 +156,190 @@ def _dataset_do_relatorio(s: Session, rel: Relatorio):
     return _dataset_consolidado(cargas, modelo, s) if cargas else _dataset_demo(rel, modelo)
 
 
+# Cache em MEMÓRIA da estrutura já parseada de dashboards de PDF (parsear ~291 páginas por arquivo a
+# cada visita é caro). Chave = (SLUG do módulo, hashes SHA-256 das cargas) → content-addressed: mudou o
+# conteúdo OU o conjunto de arquivos, a chave muda e o cache se invalida sozinho; conjuntos distintos
+# nunca colidem, então não há vazamento entre relatórios. A autorização é feita ANTES (em web.py); o
+# cache só evita recomputar. Nada vai para disco (LGPD) e o número de entradas é limitado.
+_CACHE_PDF: OrderedDict[tuple, dict] = OrderedDict()
+_CACHE_PDF_MAX = 24
+
+
+def _cache_pdf_get(chave: tuple):
+    est = _CACHE_PDF.get(chave)
+    if est is not None:
+        _CACHE_PDF.move_to_end(chave)
+    return est
+
+
+def _cache_pdf_put(chave: tuple, estrutura: dict) -> None:
+    _CACHE_PDF[chave] = estrutura
+    _CACHE_PDF.move_to_end(chave)
+    while len(_CACHE_PDF) > _CACHE_PDF_MAX:
+        _CACHE_PDF.popitem(last=False)   # descarta a entrada mais antiga
+
+
+def _formatos(modulo) -> tuple:
+    """Extensões que o módulo de dashboard lê (default: CSV/TXT; os de PDF declaram FORMATOS)."""
+    return tuple(getattr(modulo, "FORMATOS", (".csv", ".txt")))
+
+
+def _eh_pdf(modulo) -> bool:
+    return ".pdf" in _formatos(modulo)
+
+
+def _reconhecer_pdf(dados: bytes):
+    """Módulo de dashboard em PDF cuja assinatura bate com o arquivo, ou None."""
+    for m in dashboards.TIPOS:
+        if _eh_pdf(m) and getattr(m, "reconhece_pdf", None) and m.reconhece_pdf(dados):
+            return m
+    return None
+
+
+# ---- Cache EM DISCO do parse, por arquivo ----------------------------------------------------------
+# O parse de cada PDF (a parte cara) fica num JSON ao lado do arquivo, no volume de cargas (o mesmo lugar
+# do PDF bruto: fora do git, mesmo controle de acesso). Nome = <arquivo_uuid>.<SLUG>.v<versão>.json e o
+# conteúdo guarda o hash SHA-256 da carga: só é usado se hash e versão do parser baterem. Assim o parse:
+#   - sobrevive a reinícios do Docker;  - é incremental (publicar 1 PDF novo parseia só ele);
+#   - já acontece na PRÉVIA (antes de publicar), então a abertura do relatório já vem pronta.
+# É apagado junto com o PDF (ver `apagar_arquivo_carga`).
+def _nome_seguro(arquivo_uuid: str) -> str:
+    """Só o nome do arquivo (sem diretórios): o caminho nunca sai do volume de cargas."""
+    nome = Path(arquivo_uuid or "").name
+    if not nome or nome in (".", ".."):
+        raise ValueError("arquivo de carga inválido")
+    return nome
+
+
+def _caminho_parse(arquivo_uuid: str, modulo) -> Path:
+    versao = int(getattr(modulo, "VERSAO_PARSER", 1))
+    return CARGAS_DIR / f"{_nome_seguro(arquivo_uuid)}.{modulo.SLUG}.v{versao}.json"
+
+
+def _ler_parse_salvo(c: Carga, modulo):
+    """O parse guardado desta carga, se existir e for desta versão/conteúdo; senão None."""
+    if not c.hash_sha256:
+        return None
+    try:
+        obj = json.loads(_caminho_parse(c.arquivo_uuid, modulo).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    versao = int(getattr(modulo, "VERSAO_PARSER", 1))
+    if not isinstance(obj, dict) or obj.get("hash") != c.hash_sha256 or obj.get("versao") != versao:
+        return None
+    parcial = obj.get("parcial")
+    return parcial if isinstance(parcial, dict) else None
+
+
+def _salvar_parse(c: Carga, modulo, parcial: dict) -> None:
+    """Grava o parse de forma atômica (tmp + replace). Falha de disco não derruba a página."""
+    if not c.hash_sha256:
+        return
+    destino = _caminho_parse(c.arquivo_uuid, modulo)
+    tmp = destino.with_name(f"{destino.name}.{uuid.uuid4().hex}.tmp")
+    try:
+        tmp.write_text(json.dumps({"hash": c.hash_sha256, "versao": int(getattr(modulo, "VERSAO_PARSER", 1)),
+                                   "parcial": parcial}, ensure_ascii=False), encoding="utf-8")
+        os.replace(tmp, destino)
+    except OSError:
+        tmp.unlink(missing_ok=True)
+
+
+def _parse_da_carga(c: Carga, modulo):
+    """Parse de UMA carga: do disco se já existir; senão lê o PDF, parseia e guarda."""
+    salvo = _ler_parse_salvo(c, modulo)
+    if salvo is not None:
+        return salvo
+    dados = (CARGAS_DIR / _nome_seguro(c.arquivo_uuid)).read_bytes()
+    parcial = modulo.ler_arquivo(dados, c.nome_original or "")
+    if parcial:
+        _salvar_parse(c, modulo, parcial)
+    return parcial
+
+
+def _modulo_pelo_parse_salvo(c: Carga):
+    """Reconhece o tipo sem abrir o PDF, se já houver um parse guardado desta carga."""
+    for m in dashboards.TIPOS:
+        if _eh_pdf(m) and _ler_parse_salvo(c, m) is not None:
+            return m
+    return None
+
+
+def apagar_arquivo_carga(c: Carga) -> None:
+    """Apaga o arquivo da carga E tudo o que foi derivado dele (parse em disco e cache em memória).
+    Use sempre esta função ao descartar/excluir uma carga (LGPD: não deixar cópia do dado)."""
+    try:
+        nome = _nome_seguro(c.arquivo_uuid)
+    except ValueError:
+        return
+    (CARGAS_DIR / nome).unlink(missing_ok=True)
+    for derivado in CARGAS_DIR.glob(f"{nome}.*.json"):
+        derivado.unlink(missing_ok=True)
+    if c.hash_sha256:
+        for chave in [k for k in _CACHE_PDF if c.hash_sha256 in k[1]]:
+            _CACHE_PDF.pop(chave, None)
+
+
+def _dashboard_pdf(cargas: list[Carga], modulo):
+    """(módulo, dados) de um dashboard de PDF: parse de cada carga .pdf (do disco ou novo) e mescla.
+    `modulo` pode vir None (sem slug): reconhece pelo parse guardado ou pela assinatura do 1º PDF.
+    Dois níveis de cache: em memória (resultado mesclado) e em disco (parse por arquivo)."""
+    pdfs = [c for c in cargas
+            if (c.nome_original or "").lower().endswith(".pdf") and (CARGAS_DIR / c.arquivo_uuid).is_file()]
+    if not pdfs:
+        return None
+    if modulo is None:
+        modulo = _modulo_pelo_parse_salvo(pdfs[0]) or \
+            _reconhecer_pdf((CARGAS_DIR / _nome_seguro(pdfs[0].arquivo_uuid)).read_bytes())
+        if modulo is None:
+            return None                 # assinatura não bate: trata como relatório normal
+
+    # 1º nível: resultado mesclado em memória (chave = hashes das cargas).
+    hashes = tuple(sorted((c.hash_sha256 or "") for c in pdfs))
+    cacheavel = all(c.hash_sha256 for c in pdfs)
+    if cacheavel:
+        est = _cache_pdf_get((modulo.SLUG, hashes))
+        if est is not None:
+            return (modulo, est)
+
+    # 2º nível: parse por arquivo (disco); só parseia de verdade o que ainda não foi parseado.
+    if hasattr(modulo, "ler_arquivo") and hasattr(modulo, "mesclar"):
+        parciais = []
+        for c in pdfs:
+            try:
+                parciais.append(_parse_da_carga(c, modulo))
+            except Exception:   # noqa: S112 — arquivo ilegível é pulado; os demais seguem
+                continue
+        estrutura = modulo.mesclar(parciais)
+    else:
+        try:
+            estrutura = modulo.ler_arquivos([((CARGAS_DIR / c.arquivo_uuid).read_bytes(), c.nome_original or "")
+                                             for c in pdfs])
+        except Exception:
+            return None
+    if not (estrutura and estrutura.get("centros")):
+        return None
+    if cacheavel:
+        _cache_pdf_put((modulo.SLUG, hashes), estrutura)
+    return (modulo, estrutura)
+
+
 def _dashboard_de_cargas(cargas: list[Carga], modelo_slug: str | None):
-    """(módulo de dashboard, linhas cruas) se as cargas são de um tipo de layout FIXO (feedback,
-    manifestações…); senão None. Lê o CSV bruto direto (NÃO passa pelo motor, que renomearia as colunas).
-    `modelo_slug` = tipo escolhido no seletor de modelo: se for um dashboard, FORÇA esse tipo (rende
-    mesmo que o reconhecimento por colunas fique no limite). Ver `analise_planilha/dashboards.py`."""
+    """(módulo de dashboard, dados) se as cargas são de um tipo de layout FIXO (feedback, manifestações,
+    custos por centro de custo…); senão None. NÃO passa pelo motor (que renomearia as colunas).
+    `modelo_slug` = tipo escolhido no seletor de modelo: se for um dashboard, FORÇA esse tipo.
+    Dashboards de CSV passam `linhas` (lista de dicts); os de PDF passam a estrutura já parseada.
+    Ver `analise_planilha/dashboards.py`."""
     if not cargas:
         return None
     modulo = dashboards.por_slug(modelo_slug)   # None se o modelo escolhido não é um dashboard
+
+    # Caminho PDF: módulo forçado é de PDF, OU (sem slug) alguma carga é .pdf de assinatura conhecida.
+    if (modulo is not None and _eh_pdf(modulo)) or \
+       (modulo is None and any((c.nome_original or "").lower().endswith(".pdf") for c in cargas)):
+        return _dashboard_pdf(cargas, modulo if (modulo and _eh_pdf(modulo)) else None)
+
+    # Caminho CSV (feedback, manifestações).
     forcado = modulo is not None
     linhas: list[dict] = []
     for c in cargas:
@@ -168,7 +347,7 @@ def _dashboard_de_cargas(cargas: list[Carga], modelo_slug: str | None):
         if not caminho.is_file():
             continue
         if not (c.nome_original or "").lower().endswith((".csv", ".txt")):
-            return None                 # dashboards fixos são sempre CSV; xlsx/outros = relatório normal
+            return None                 # dashboards fixos de CSV são sempre CSV; xlsx/outros = relatório normal
         try:
             rows = feedback.ler_csv(caminho.read_bytes())
         except Exception:

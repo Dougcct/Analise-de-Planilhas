@@ -31,6 +31,8 @@ ruff check .                   # lint (line-length 120)
   - `modelo.py` `modelos.py` `especificacao.py` — modelos do cliente (`dominio/modelos/*.toml`)
   - `financeiro.py` `matriz.py` `contas_convenio.py` — relatórios específicos
   - `feedback.py` — Dashboard **Feedback/NPS** (Diretoria): layout FIXO do CSV cru, fora do motor genérico. Ver [dominio/docs/20](dominio/docs/20_feedback_nps.md).
+  - `custos_centros.py` — Dashboard **Custos por Centro de Custo** (SoulMV): layout FIXO lido do **PDF** (parser
+    independente da ordem + conferência; cache em disco por carga). Excluir carga = `apagar_arquivo_carga`. Ver [dominio/docs/22](dominio/docs/22_custos_centros_custo.md).
   - `relatorio_html.py` `graficos.py` `formatacao.py` — saída HTML
   - `ia.py` — Modo I.A (envia só estrutura anonimizada; config em `config/ia.toml`)
   - `cerebro/` — "Cérebro": substitui a dedução por tipo. `conhecimento.py` `papeis.py` `lexico.py`

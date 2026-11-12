@@ -10,10 +10,10 @@ Adicionar um tipo novo = criar o módulo (no molde de `feedback.py`/`manifestaco
 """
 from __future__ import annotations
 
-from . import feedback, manifestacoes
+from . import custos_centros, feedback, manifestacoes
 
 # Ordem importa só para o reconhecimento automático (assinaturas são disjuntas, então não há conflito).
-TIPOS = (feedback, manifestacoes)
+TIPOS = (feedback, manifestacoes, custos_centros)
 
 
 def por_slug(slug: str | None):
