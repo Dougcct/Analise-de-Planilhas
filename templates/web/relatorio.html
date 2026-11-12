@@ -15,25 +15,39 @@
   .btn-destaque-ed:hover{background:var(--marca);color:#fff}
   .btn-destaque-ed.ativo{background:var(--marca);color:#fff}
   .pilula-versao{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:4px 10px;border-radius:999px;background:rgba(0,153,93,0.12);color:var(--marca);font-weight:600;margin-left:8px;vertical-align:middle}
+  /* Barra de ferramentas do relatório: botões agrupados por função */
+  .rel-barra{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin:12px 0 4px;padding:9px 12px;background:var(--superficie-2);border:1px solid var(--borda);border-radius:12px}
+  .rel-grupo{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+  .rel-grupo-rotulo{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--texto-2);margin-right:2px;user-select:none}
+  .rel-sep{width:1px;align-self:stretch;min-height:30px;background:var(--borda);margin:0 3px}
+  .rel-barra .btn-sec{padding:8px 13px;margin:0;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;line-height:1}
+  .rel-barra .btn-sec svg{flex:none}
+  .rel-espaco{flex:1 1 20px}
+  @media (max-width:820px){.rel-sep{display:none}.rel-grupo-rotulo{display:none}}
 </style>
 <a class="voltar" href="/web">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
   Relatórios</a>
-<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
-  <h1>{{ titulo }}{% if versao_ativa == 'editada' %}<span class="pilula-versao">✦ Versão editada</span>{% endif %}</h1>
-  <div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;align-items:center">
-    {% if not somente_editada %}
-      {% if tem_versao_editada %}
-      <a class="btn-sec" id="link-ver-original" href="/web/r/{{ slug }}" style="padding:8px 12px;{{ 'font-weight:700;border-color:var(--marca)' if versao_ativa != 'editada' and not modo_editavel }}">Relatório completo</a>
-      <a class="btn-sec" id="link-ver-editada" href="/web/r/{{ slug }}?versao=editada" style="padding:8px 12px;{{ 'font-weight:700;border-color:var(--marca)' if versao_ativa == 'editada' and not modo_editavel }}">✦ Ver versão editada</a>
-      {% endif %}
-      <button type="button" id="btn-topo-editavel" class="btn-destaque-ed {{ 'ativo' if modo_editavel }}" onclick="abrirVersaoEditavel()">
-        ✦ {{ 'Editando versão' if modo_editavel else ('Editar versão curada' if tem_versao_editada else 'Gerar versão editável') }}
-      </button>
+<h1>{{ titulo }}{% if versao_ativa == 'editada' %}<span class="pilula-versao">✦ Versão editada</span>{% endif %}</h1>
+<div class="rel-barra">
+  {% if not somente_editada %}
+  <div class="rel-grupo">
+    <span class="rel-grupo-rotulo">Versões</span>
+    {% if tem_versao_editada %}
+    <a class="btn-sec" id="link-ver-original" href="/web/r/{{ slug }}" style="{{ 'font-weight:700;border-color:var(--marca)' if versao_ativa != 'editada' and not modo_editavel }}">Relatório completo</a>
+    <a class="btn-sec" id="link-ver-editada" href="/web/r/{{ slug }}?versao=editada" style="{{ 'font-weight:700;border-color:var(--marca)' if versao_ativa == 'editada' and not modo_editavel }}">✦ Ver versão editada</a>
     {% endif %}
-    <button type="button" class="btn-sec btn-cheia" onclick="imprimirRelatorio()" style="padding:8px 14px" title="Imprimir ou salvar como PDF">
+    <button type="button" id="btn-topo-editavel" class="btn-destaque-ed {{ 'ativo' if modo_editavel }}" onclick="abrirVersaoEditavel()">
+      ✦ {{ 'Editando versão' if modo_editavel else ('Editar versão curada' if tem_versao_editada else 'Gerar versão editável') }}
+    </button>
+  </div>
+  <div class="rel-sep"></div>
+  {% endif %}
+  <div class="rel-grupo">
+    <span class="rel-grupo-rotulo">Exportar</span>
+    <button type="button" class="btn-sec btn-cheia" onclick="imprimirRelatorio()" title="Imprimir ou salvar como PDF">
       🖨 Imprimir</button>
-    <select class="btn-sec" style="padding:8px 12px" title="Baixar um modelo pronto (PDF)"
+    <select class="btn-sec" title="Baixar um modelo pronto (PDF)"
             onchange="if(this.value){window.open('/web/r/{{ slug }}/modelo?tipo='+this.value+'{{ ('&'+query_conteudo[1:]) if query_conteudo else '' }}','_blank');this.selectedIndex=0;}">
       <option value="">📄 Baixar modelo…</option>
       <option value="executivo">Executivo (C-Level)</option>
@@ -41,20 +55,26 @@
       <option value="analitico">Analítico (DRE, paisagem)</option>
       <option value="auditoria">Auditoria (atípicos)</option>
     </select>
-    <a class="btn-sec btn-cheia" href="/web/r/{{ slug }}/sumario.md{{ query_conteudo }}" target="_blank" style="padding:8px 14px; text-decoration:none" title="Abrir sumário executivo em Markdown para ata ou e-mail">
+    <a class="btn-sec btn-cheia" href="/web/r/{{ slug }}/sumario.md{{ query_conteudo }}" target="_blank" style="text-decoration:none" title="Abrir sumário executivo em Markdown para ata ou e-mail">
       📋 Sumário (.md)</a>
-    <button type="button" class="btn-sec btn-cheia" onclick="telaCheiaRelatorio()" style="padding:8px 14px">
+  </div>
+  <div class="rel-espaco"></div>
+  <div class="rel-grupo">
+    <button type="button" class="btn-sec btn-cheia" onclick="telaCheiaRelatorio()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="15" height="15"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3" stroke-linecap="round" stroke-linejoin="round"/></svg>
       Tela cheia</button>
     {% if pode_compartilhar %}
-    <a class="btn-sec" href="/web/gestao/relatorio/{{ slug }}" style="padding:8px 14px">
+    <button type="button" class="btn-sec btn-cheia" onclick="abrirPainelCompart()" title="Compartilhar este relatório com outro setor">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="15" height="15"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.6 15.4 6.4M8.6 13.4l6.8 4.2" stroke-linecap="round"/></svg>
+      Compartilhar</button>
+    <a class="btn-sec btn-cheia" href="/web/gestao/relatorio/{{ slug }}">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="15" height="15"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 13a7.9 7.9 0 0 0 0-2l1.5-1.2-1.5-2.6-1.8.6a7.6 7.6 0 0 0-1.7-1l-.3-1.9h-3l-.3 1.9a7.6 7.6 0 0 0-1.7 1l-1.8-.6-1.5 2.6L6.6 11a7.9 7.9 0 0 0 0 2l-1.5 1.2 1.5 2.6 1.8-.6a7.6 7.6 0 0 0-1.7 1l.3 1.9h3l.3-1.9a7.6 7.6 0 0 0 1.7-1l1.8.6 1.5-2.6L19.4 13z" stroke-linejoin="round"/></svg>
       Gerenciar</a>
     {% endif %}
   </div>
 </div>
 {% if pode_compartilhar %}
-<details class="compart">
+<details class="compart" id="painel-compart">
   <summary>
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.6 15.4 6.4M8.6 13.4l6.8 4.2" stroke-linecap="round"/></svg>
     Compartilhar com outro setor…</summary>
@@ -100,6 +120,12 @@
     }else{
       (document.exitFullscreen ? document.exitFullscreen() : document.webkitExitFullscreen && document.webkitExitFullscreen());
     }
+  }
+  function abrirPainelCompart(){
+    var d = document.getElementById('painel-compart');
+    if(!d) return;
+    d.open = true;
+    d.scrollIntoView({behavior:'smooth', block:'center'});
   }
   function imprimirRelatorio(){
     var ifr = document.getElementById('iframe-relatorio');
