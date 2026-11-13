@@ -2,6 +2,36 @@
 
 Formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · [SemVer](https://semver.org/lang/pt-BR/)
 
+## [4.0.0-beta.1] — 2026-11-13
+
+### Adicionado
+- **Etapa 3 — Inteligência de KPIs do CeosGo** ([docs/23](23_kpis_ceosgo.md)):
+  - **Importador e Curador Universal** (`scripts/importar_kpis_ceosgo.py` → `config/kpis_ceosgo.json`):
+    processamento de **683 KPIs únicos** com higienização de encoding/HTML, **122 polaridades corrigidas**
+    automaticamente pelos padrões universais de gestão hospitalar (`<=` para ISCs, lesões por pressão,
+    extubações acidentais, acidentes de trabalho, custos e glosas; preservando exceções positivas como
+    adesão/adequação a bundles e classificação de risco), **88 fórmulas estruturadas** extraídas e
+    **330 variáveis de coleta** marcadas como componentes.
+  - **Módulo no Cérebro** (`src/analise_planilha/cerebro/kpis_ceosgo.py`): reconhecimento de colunas por
+    assinatura normalizada e similaridade de tokens (Dice), busca semântica em títulos e definições
+    oficiais (`analisar_texto`), e cálculo automático de **indicadores derivados** (`calcular_derivados`:
+    `(numerador / denominador) * fator` com proteção contra divisão por zero).
+  - **Agente Assistencial** (`dominio/Agentes/assistencial/`): registrado em `router.py` para planilhas de
+    atendimento, internação, CCIH, centro cirúrgico, PA, enfermagem e oncologia; entrega métricas de
+    atendimento, tempo de permanência (mediana, média, P90, internações > 7 dias), altas após 10h, quebras
+    por setor/especialidade/classificação de risco, painel de **KPIs Derivados (CeosGo)** e glossário de
+    **KPIs Relacionados e Definições (CeosGo)**.
+  - **Tooltips no Relatório HTML** (`relatorio_html.py`, `templates/relatorio.html.j2`): cartões de KPI
+    principais e mini-KPIs exibem ícone discreto `ⓘ` (`no-print`) com o sentido e a definição oficial do
+    CeosGo.
+  - **Testes** (`testes/test_kpis_ceosgo.py`): cobertura com dados 100% sintéticos para curadoria,
+    derivados, análise de texto, integração com `papeis.py`/`metas.py`, `AgenteAssistencial` e tooltips.
+
+### Alterado
+- **`papeis.py` e `metas.py`:** integrados ao catálogo CeosGo respeitando estritamente a prioridade
+  `Correção Humana / Conhecimento > Modelo .toml > Catálogo CeosGo > Léxico > Valores`.
+- **`dominio/Agentes/router.py`:** aceita `pd.Index` diretamente em `colunas` além de listas.
+
 ## [3.5.0] — 2026-11-12
 
 ### Adicionado
