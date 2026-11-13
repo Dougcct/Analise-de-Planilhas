@@ -67,11 +67,13 @@ def listar_info() -> list[dict]:
     saida = []
     for p in sorted(PASTA.glob("*.toml")):
         slug = p.stem
-        info = {"slug": slug, "nome": slug, "versao": 1, "layout": "", "colunas": 0,
+        info = {"slug": slug, "nome": slug, "versao": 1, "layout": "", "colunas": 0, "setor": "",
                 "bloqueado": slug in bloq, "erro": ""}
         try:
             m = carregar_modelo(p)
-            info.update(nome=m.nome, versao=m.versao, layout=m.layout or "plana", colunas=len(m.colunas))
+            setor_m = m.contexto.split("/", 1)[0].strip() if getattr(m, "contexto", "") else ""
+            info.update(nome=m.nome, versao=m.versao, layout=m.layout or "plana",
+                        colunas=len(m.colunas), setor=setor_m)
         except Exception as e:
             info["erro"] = f"{type(e).__name__}: {e}"
         saida.append(info)
@@ -79,8 +81,9 @@ def listar_info() -> list[dict]:
 
 
 def disponiveis() -> list[dict]:
-    """Modelos que PODEM ser escolhidos num relatório (não bloqueados e que carregam). [{slug, nome}]."""
-    return [{"slug": i["slug"], "nome": i["nome"]} for i in listar_info() if not i["bloqueado"] and not i["erro"]]
+    """Modelos que PODEM ser escolhidos num relatório (não bloqueados e que carregam). [{slug, nome, setor}]."""
+    return [{"slug": i["slug"], "nome": i["nome"], "setor": i.get("setor", "")}
+            for i in listar_info() if not i["bloqueado"] and not i["erro"]]
 
 
 def ler_toml(slug: str) -> str:

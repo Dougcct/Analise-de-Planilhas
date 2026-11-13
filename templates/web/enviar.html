@@ -41,22 +41,22 @@
 <div class="aba-conteudo on" id="aba-novo">
   <form method="post" action="/web/enviar" enctype="multipart/form-data" class="linha validar form-up">
     <input type="hidden" name="modo" value="novo">
-    <div class="campos">
+    <div class="campos" data-setor-unico="{{ (centros[0].codigo ~ ' ' ~ centros[0].nome) if centros else '' }}">
       <div><label>Nome do relatório <span class="obrig">*</span></label>
         <input name="nome" required placeholder="ex.: Garantia de Atendimento"></div>
-      <div><label>Modelo de análise</label>
-        <select name="modelo">
-          <option value="">(detectar pela planilha)</option>
-          {% for m in modelos %}<option value="{{ m.slug }}">{{ m.nome }}</option>{% endfor %}
-        </select>
-      </div>
       {% if eh_adm or centros|length > 1 %}
       <div><label>Setor <span class="obrig">*</span></label>
-        <select name="centro_custo_id">
-          {% for c in centros %}<option value="{{ c.id }}" {{ 'selected' if setor_pre == c.id }}>{{ c.codigo }} — {{ c.nome }}</option>{% endfor %}
+        <select name="centro_custo_id" id="sel-setor" onchange="filtrarModelosPorSetor()">
+          {% for c in centros %}<option value="{{ c.id }}" data-nome="{{ c.codigo }} {{ c.nome }}" {{ 'selected' if setor_pre == c.id }}>{{ c.codigo }} — {{ c.nome }}</option>{% endfor %}
         </select>
       </div>
       {% endif %}
+      <div><label>Modelo de análise</label>
+        <select name="modelo" id="sel-modelo">
+          <option value="">(detectar pela planilha)</option>
+          {% for m in modelos %}<option value="{{ m.slug }}" data-setor="{{ m.setor or '' }}">{{ m.nome }}{% if m.setor %} ({{ m.setor }}){% endif %}</option>{% endfor %}
+        </select>
+      </div>
     </div>
     <label style="margin-top:14px">Planilha(s) <span class="obrig">*</span></label>
     <div class="dropzone">
@@ -150,5 +150,30 @@
       xhr.send(new FormData(f));
     });
   });
+
+  function _normSetor(s){
+    return (s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  }
+  function filtrarModelosPorSetor(){
+    var selMod = document.getElementById("sel-modelo");
+    if (!selMod) return;
+    var selSet = document.getElementById("sel-setor");
+    var campos = document.querySelector("#aba-novo .campos");
+    var bruto = selSet ? (selSet.options[selSet.selectedIndex]?.dataset.nome || selSet.options[selSet.selectedIndex]?.text || "")
+                       : (campos ? campos.dataset.setorUnico : "");
+    var alvo = _normSetor(bruto);
+    var opts = Array.from(selMod.options);
+    opts.forEach(function(opt){
+      if (!opt.value) { opt.hidden = false; opt.disabled = false; return; }
+      var ms = _normSetor(opt.dataset.setor);
+      var mostra = !ms || !alvo || alvo.indexOf(ms) !== -1 || ms.indexOf(alvo) !== -1;
+      opt.hidden = !mostra;
+      opt.disabled = !mostra;
+    });
+    if (selMod.selectedIndex >= 0 && selMod.options[selMod.selectedIndex].disabled) {
+      selMod.value = "";
+    }
+  }
+  filtrarModelosPorSetor();
 </script>
 {% endblock %}
