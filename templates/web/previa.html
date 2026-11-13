@@ -59,6 +59,11 @@
   <span class="chip"><b>{{ registros }}</b><span>registro(s)</span></span>
   <span class="chip"><b>{{ paineis }}</b><span>painel(éis)</span></span>
   <span class="chip"><span>{{ 'Novo relatório' if novo else 'Atualização' }}</span></span>
+  {% if ceosgo %}
+  <span class="chip" title="{% if ceosgo.titulos %}KPIs: {{ ceosgo.titulos|join(', ') }}{% endif %}">
+    <b style="color:var(--verde,#15803d)">{{ ceosgo.reconhecidos }}</b><span>KPI(s) CeosGo{% if ceosgo.derivados %} · {{ ceosgo.derivados }} derivado(s){% endif %}</span>
+  </span>
+  {% endif %}
 </div>
 
 <form method="post" action="/web/enviar/previa/{{ carga_id }}/modelo" class="modelo-previa">
@@ -70,7 +75,7 @@
     <option value="" {{ 'selected' if not modelo_atual }}>Sem modelo (detecção automática)</option>
     {% for m in modelos %}<option value="{{ m.slug }}" {{ 'selected' if m.slug == modelo_atual }}>{{ m.nome }}</option>{% endfor %}
   </select>
-  <button type="submit" class="btn-sec" style="margin:0;padding:8px 14px"><span class="giro"></span><span class="rotulo">Aplicar modelo</span></button>
+  <button type="submit" class="btn-pri" style="margin:0;padding:8px 16px"><span class="giro"></span><span class="rotulo">Aplicar modelo</span></button>
   {% if modelo_atual %}<span class="apoio" style="font-size:12.5px">Atual: <b>{{ modelo_nome or modelo_atual }}</b></span>
   {% else %}<span class="apoio" style="font-size:12.5px">Nenhum modelo combinou — usando dedução automática.</span>{% endif %}
 </form>
@@ -90,17 +95,6 @@
   {% if agente_nome %}<span class="apoio" style="font-size:12.5px">Ativo: <b>{{ agente_nome }}</b> — limpa a planilha e acrescenta a análise do setor.</span>
   {% else %}<span class="apoio" style="font-size:12.5px">Sem agente — a planilha segue só a análise genérica.</span>{% endif %}
 </form>
-{% endif %}
-
-{% if ceosgo %}
-<div class="modelo-previa" style="margin-top:8px;padding:10px 14px;border-left:3px solid var(--verde,#16a34a)">
-  <span class="rot-modelo" style="color:var(--verde,#16a34a)">CeosGo</span>
-  <span class="apoio" style="font-size:13px">
-    <b>{{ ceosgo.reconhecidos }}</b> KPI(s) reconhecido(s) nas colunas ·
-    <b>{{ ceosgo.derivados }}</b> indicador(es) derivado(s) calculável(is)
-    {% if ceosgo.titulos %}({{ ceosgo.titulos|join(', ') }}){% endif %}
-  </span>
-</div>
 {% endif %}
 
 {% if lote_total > 1 %}
