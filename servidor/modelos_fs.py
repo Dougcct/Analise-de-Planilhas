@@ -60,6 +60,21 @@ def bloquear(slug: str, bloquear_: bool) -> None:
 
 
 # ---- leitura -----------------------------------------------------------------------------------
+def _setor_inferido(slug: str, contexto: str) -> str:
+    if contexto:
+        return contexto.split("/", 1)[0].strip()
+    s = slug.lower()
+    if "hunf" in s:
+        return "HUNF"
+    if "espaco" in s:
+        return "Espaço"
+    if any(k in s for k in ("garantia", "reembolso", "contas_convenio")):
+        return "Atendimento"
+    if any(k in s for k in ("hospitalar", "cesariana")):
+        return "Assistencial"
+    return ""
+
+
 def listar_info() -> list[dict]:
     """Um dicionário por modelo: slug, nome, versão, layout, nº de colunas, bloqueado (e erro de parse)."""
     PASTA.mkdir(parents=True, exist_ok=True)
@@ -71,7 +86,7 @@ def listar_info() -> list[dict]:
                 "bloqueado": slug in bloq, "erro": ""}
         try:
             m = carregar_modelo(p)
-            setor_m = m.contexto.split("/", 1)[0].strip() if getattr(m, "contexto", "") else ""
+            setor_m = _setor_inferido(slug, getattr(m, "contexto", ""))
             info.update(nome=m.nome, versao=m.versao, layout=m.layout or "plana",
                         colunas=len(m.colunas), setor=setor_m)
         except Exception as e:

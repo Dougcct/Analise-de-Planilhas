@@ -154,25 +154,37 @@
   function _normSetor(s){
     return (s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
   }
+  var _modelosOrig = null;
   function filtrarModelosPorSetor(){
     var selMod = document.getElementById("sel-modelo");
     if (!selMod) return;
+    if (!_modelosOrig) {
+      _modelosOrig = Array.from(selMod.options).map(function(o){
+        return {value: o.value, text: o.text, setor: o.dataset.setor || ""};
+      });
+    }
+    var valorAtual = selMod.value;
     var selSet = document.getElementById("sel-setor");
     var campos = document.querySelector("#aba-novo .campos");
     var bruto = selSet ? (selSet.options[selSet.selectedIndex]?.dataset.nome || selSet.options[selSet.selectedIndex]?.text || "")
                        : (campos ? campos.dataset.setorUnico : "");
     var alvo = _normSetor(bruto);
-    var opts = Array.from(selMod.options);
-    opts.forEach(function(opt){
-      if (!opt.value) { opt.hidden = false; opt.disabled = false; return; }
-      var ms = _normSetor(opt.dataset.setor);
+    selMod.innerHTML = "";
+    _modelosOrig.forEach(function(item){
+      if (!item.value) {
+        selMod.add(new Option(item.text, item.value));
+        return;
+      }
+      var ms = _normSetor(item.setor);
       var mostra = !ms || !alvo || alvo.indexOf(ms) !== -1 || ms.indexOf(alvo) !== -1;
-      opt.hidden = !mostra;
-      opt.disabled = !mostra;
+      if (mostra) {
+        var opt = new Option(item.text, item.value);
+        opt.dataset.setor = item.setor;
+        selMod.add(opt);
+      }
     });
-    if (selMod.selectedIndex >= 0 && selMod.options[selMod.selectedIndex].disabled) {
-      selMod.value = "";
-    }
+    var aindaExiste = Array.from(selMod.options).some(function(o){ return o.value === valorAtual; });
+    selMod.value = aindaExiste ? valorAtual : "";
   }
   filtrarModelosPorSetor();
 </script>
