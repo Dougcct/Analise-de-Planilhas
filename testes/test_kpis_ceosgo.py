@@ -127,3 +127,33 @@ def test_tooltip_ceosgo_no_relatorio_html():
     assert "CeosGo (<=):" in tip
     assert "CÂNULA ENDOTRAQUEAL" in tip
     assert _tooltip_ceosgo("Coluna Totalmente Inexistente XYZ") == ""
+
+
+def test_agente_assistencial_censo_hospitalar_e_kpis_classicos():
+    from Agentes.assistencial.rules import AgenteAssistencial
+
+    cat = kpis_ceosgo.atual()
+    ocup_uti = cat.reconhecer_coluna("TAXA DE OCUPAÇÃO OPERACIONAL UTI ADULTO")
+    assert ocup_uti is not None
+    assert ocup_uti.sentido == ">="
+
+    mort = cat.reconhecer_coluna("TAXA DE MORTALIDADE INSTITUCIONAL")
+    assert mort is not None
+    assert mort.formula is not None
+
+    df = pd.DataFrame({
+        "Setor": ["UTI Adulto", "Clínica Médica"],
+        "Pacientes-dia": [270, 300],
+        "Leitos-dia operacionais": [300, 400],
+        "Saídas": [30, 60],
+        "Óbitos": [3, 2],
+        "Cirurgias realizadas": [18, 22],
+        "Cirurgias canceladas": [2, 3],
+    })
+    ag = AgenteAssistencial()
+    res = ag.analisar(df)
+    texto = " | ".join(res["achados"] + res["alertas"])
+    assert "Taxa de ocupação hospitalar:" in texto
+    assert "Média de permanência (censo):" in texto
+    assert "Taxa de mortalidade hospitalar:" in texto
+    assert "Taxa de cancelamento cirúrgico:" in texto

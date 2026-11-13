@@ -2464,7 +2464,13 @@
         "Internação / Leitos / Permanência"
       ],
       "eh_componente": false,
-      "formula": null,
+      "formula": {
+        "tipo": "razao",
+        "numerador": "Pacientes-dia",
+        "denominador": "Saídas hospitalares",
+        "fator": 1,
+        "origem_extracao": "padrao_hospitalar"
+      },
       "descricao": "MONITORAR E OTIMIZAR O TEMPO MÉDIO QUE OS PACIENTES PERMANECEM INTERNADOS, GARANTINDO EFICIÊNCIA ASSISTENCIAL, QUALIDADE DO CUIDADO E USO ADEQUADO DOS RECURSOS HOSPITALARES,RELACIONA A PERMANÊNCIA DOS PACIENTES COM A OCUPAÇÃO E ROTATIVIDADE DE LEITOS POR MEIO DA QUANTIDADE DE SAÍDAS(Nº TOTAL DE PACIENTES-DIA NO PERIODO / N° DE SAÍDAS NO PERIODOS - NºALTAS+ TRANSFERÊNCIA+ÓBITOS.)"
     },
     {
@@ -9268,7 +9274,13 @@
         "Centro Cirúrgico"
       ],
       "eh_componente": false,
-      "formula": null,
+      "formula": {
+        "tipo": "razao",
+        "numerador": "Óbitos cirúrgicos",
+        "denominador": "Cirurgias realizadas",
+        "fator": 100,
+        "origem_extracao": "padrao_hospitalar"
+      },
       "descricao": "OBJETIVO: ACOMPANHAR O PERCENTUAL DE ÓBITOS OCORRIDO NO PERÍODO DE ATÉ SETE DIAS APÓS O PROCEDIMENTO CIRÚRGICO NAS INSTITUIÇÕES. DEFINIÇÃO:É A RELAÇÃO DO NÚMERO DE ÓBITOS OCORRIDOS EM NO PERÍODO DE ATÉ SETE DIAS APÓS PROCEDIMENTO CIRÚRGICO NO PERÍODO, COMPARADO AO NÚMERO DE PACIENTES SUBMETIDOS A PROCEDIMENTOS CIRÚRGICOS NO PERÍODO, MULTIPLICADO POR 100."
     },
     {
@@ -9336,7 +9348,13 @@
         "Internação / Leitos / Permanência"
       ],
       "eh_componente": false,
-      "formula": null,
+      "formula": {
+        "tipo": "razao",
+        "numerador": "Óbitos após 24h",
+        "denominador": "Saídas hospitalares",
+        "fator": 100,
+        "origem_extracao": "padrao_hospitalar"
+      },
       "descricao": "É A RELAÇÃO DO NÚMERO DE ÓBITOS OCORRIDOS EM UM TEMPO = A 24 H DE INTERNAÇÃO NO PERÍODO, COMPARANDO O NÚMERO DE SAÍDAS HOSPITALARES NO PERÍODO, MULTIPLICADO POR 100."
     },
     {
@@ -9499,10 +9517,10 @@
       "assinatura": "taxadeocupacaooperacionalmaternidade",
       "unidade": "PERCENTUAL",
       "tipo_motor": "percentual",
-      "sentido": "<=",
+      "sentido": ">=",
       "sentido_original": "Quanto menor, melhor (3)",
-      "sentido_corrigido": false,
-      "motivo_correcao": "",
+      "sentido_corrigido": true,
+      "motivo_correcao": "Exceção positiva universal (adesão/adequação/conformidade)",
       "setores": [
         "Internação / Leitos / Permanência"
       ],
@@ -9522,10 +9540,10 @@
       "assinatura": "taxadeocupacaooperacionalutineoped",
       "unidade": "PERCENTUAL",
       "tipo_motor": "percentual",
-      "sentido": "<=",
+      "sentido": ">=",
       "sentido_original": "Quanto menor, melhor (3)",
-      "sentido_corrigido": false,
-      "motivo_correcao": "",
+      "sentido_corrigido": true,
+      "motivo_correcao": "Exceção positiva universal (adesão/adequação/conformidade)",
       "setores": [
         "Internação / Leitos / Permanência"
       ],
@@ -9545,10 +9563,10 @@
       "assinatura": "taxadeocupacaooperacionalutiadulto",
       "unidade": "PERCENTUAL",
       "tipo_motor": "percentual",
-      "sentido": "<=",
+      "sentido": ">=",
       "sentido_original": "Quanto menor, melhor (3)",
-      "sentido_corrigido": false,
-      "motivo_correcao": "",
+      "sentido_corrigido": true,
+      "motivo_correcao": "Exceção positiva universal (adesão/adequação/conformidade)",
       "setores": [
         "Internação / Leitos / Permanência"
       ],
@@ -9576,7 +9594,13 @@
         "Internação / Leitos / Permanência"
       ],
       "eh_componente": false,
-      "formula": null,
+      "formula": {
+        "tipo": "razao",
+        "numerador": "Pacientes-dia",
+        "denominador": "Leitos-dia operacionais",
+        "fator": 100,
+        "origem_extracao": "padrao_hospitalar"
+      },
       "descricao": "AVALIAR O GRAU DE UTILIZAÇÃO DOS LEITOS DISPONÍVEIS NO SETOR DE INTERNAÇÃO, VISANDO OTIMIZAR O USO DA CAPACIDADE INSTALADA E GARANTIR O EQUILÍBRIO ENTRE OFERTA E DEMANDA ASSISTENCIAL.MEDE A PROPORÇÃO DE LEITOS OCUPADOS EM DETERMINADO PERÍODO EM RELAÇÃO AO TOTAL LEITOS DISPONÍVEIS. REFLETE A EFICIÊNCIA OPERACIONAL E AUXILIA NO PLANEJAMENTO DA INTERNAÇÃO E ALTA HOSPITALAR(Nº TOTAL DE PACIENTES- DIA/Nº TOTAL DE LEITOS DISPONÍVEIS POR DIAS NO PERÍODO) X 100"
     },
     {
@@ -10981,7 +11005,13 @@
         "Internação / Leitos / Permanência"
       ],
       "eh_componente": false,
-      "formula": null,
+      "formula": {
+        "tipo": "razao",
+        "numerador": "Pacientes-dia",
+        "denominador": "Leitos-dia operacionais",
+        "fator": 100,
+        "origem_extracao": "padrao_hospitalar"
+      },
       "descricao": ""
     },
     {

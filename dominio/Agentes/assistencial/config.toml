@@ -6,7 +6,10 @@
 
 ids_principais = ["atendimento", "prontuario", "paciente", "cirurgia", "leito"]
 
-valores = ["tempo_permanencia", "pacientes_dia", "leitos_dia", "horas_trabalhadas", "taxa_ocupacao"]
+valores = [
+    "tempo_permanencia", "pacientes_dia", "leitos_dia", "saidas", "obitos",
+    "cirurgias_realizadas", "cirurgias_canceladas", "horas_trabalhadas", "taxa_ocupacao",
+]
 
 codigos = ["prontuario", "cid", "tuss", "crm", "coren"]
 
@@ -27,12 +30,16 @@ tipo_alta         = ["tipo alta", "motivo alta", "desfecho", "situacao alta", "c
 cid               = ["cid", "cid10", "diagnostico", "patologia"]
 procedimento      = ["procedimento", "cirurgia", "ds procedimento", "tuss"]
 
-# medidas / indicadores assistenciais
-tempo_permanencia = ["tempo permanencia", "permanencia", "dias permanencia", "los", "tempo de permanencia"]
-pacientes_dia     = ["pacientes dia", "paciente dia", "pacientes-dia", "paciente-dia"]
-leitos_dia        = ["leitos dia", "leito dia", "leitos operacionais", "leitos-dia"]
-horas_trabalhadas = ["horas trabalhadas", "horas potenciais", "horas nao trabalhadas"]
-taxa_ocupacao     = ["taxa ocupacao", "ocupacao", "taxa de ocupacao"]
+# medidas / indicadores assistenciais e hospitalares
+tempo_permanencia    = ["tempo permanencia", "permanencia", "dias permanencia", "los", "tempo de permanencia"]
+pacientes_dia        = ["pacientes dia", "paciente dia", "pacientes-dia", "paciente-dia", "qt_pac_dia"]
+leitos_dia           = ["leitos dia", "leito dia", "leitos operacionais", "leitos-dia", "leitos dia operacionais", "leitos-dia operacionais", "qt_leitos_dia"]
+saidas               = ["saidas", "saidas hospitalares", "total saidas", "altas e obitos"]
+obitos               = ["obitos", "numero de obitos", "obitos apos 24h", "obitos hospitalares"]
+cirurgias_realizadas = ["cirurgias realizadas", "total cirurgias", "qtd cirurgias"]
+cirurgias_canceladas = ["cirurgias canceladas", "cirurgias suspensas", "cancelamentos cirurgicos"]
+horas_trabalhadas    = ["horas trabalhadas", "horas potenciais", "horas nao trabalhadas"]
+taxa_ocupacao        = ["taxa ocupacao", "ocupacao", "taxa de ocupacao", "tx_ocup"]
 
 # datas
 dt_internacao     = ["dt internacao", "data internacao", "dt admissao", "data admissao", "dt entrada", "data entrada"]

@@ -2083,6 +2083,23 @@ def _entendimento_tela(ent) -> dict | None:
             "papeis": [(p, _cp.ROTULOS[p]) for p in _cp.PAPEIS]}
 
 
+def _ceosgo_previa(ds) -> dict | None:
+    """Resumo de KPIs CeosGo reconhecidos e derivados possíveis para exibir o selo na prévia."""
+    from analise_planilha.cerebro import kpis_ceosgo
+
+    df = getattr(ds, "df", None)
+    if df is None or df.empty:
+        return None
+    cat = kpis_ceosgo.atual()
+    if not len(cat):
+        return None
+    rec = [kpi.titulo for c in df.columns if (kpi := cat.reconhecer_coluna(str(c))) is not None]
+    deriv = [d.kpi.titulo for d in cat.calcular_derivados(df)]
+    if not rec and not deriv:
+        return None
+    return {"reconhecidos": len(rec), "derivados": len(deriv), "titulos": (rec + deriv)[:5]}
+
+
 def _agentes_previa(ds) -> tuple[str, list[dict]]:
     """(nome do agente ativo, lista de candidatos p/ a prévia). Vazio se o pacote Agentes não existir
     ou se um modelo está aplicado (com modelo, o agente não age)."""
@@ -2140,6 +2157,7 @@ def enviar_previa(carga_id: int, request: Request, s: Session = Depends(_sessao)
                    modelo_atual=(rel.modelo or ""), modelo_nome=(mod.nome if mod else ""),
                    modelos=modelos_fs.disponiveis(),
                    agente_atual=(carga.agente or ""), agente_nome=agente_nome, agentes=agentes_disp,
+                   ceosgo=_ceosgo_previa(ds),
                    entendimento=_entendimento_tela(ds.entendimento),
                    datas_filtro=_info_datas_tela(ds, f), query_conteudo=(f"?{qs}" if qs else "")))
 

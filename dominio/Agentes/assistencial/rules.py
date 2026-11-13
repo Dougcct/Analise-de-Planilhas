@@ -36,11 +36,12 @@ class AgenteAssistencial(AgenteBase):
         # 1. Volume de atendimentos e pacientes distintos
         self._resumo_volume(df, achados)
 
-        # 2. Tempo de permanência e giro de leito (alta após 10h)
+        # 2. Tempo de permanência, censo hospitalar e giro de leito (alta após 10h)
         permanencia = self._calcular_permanencia(df)
         if permanencia is not None and not permanencia.empty:
             self._analisar_permanencia(permanencia, achados, alertas)
         self._analisar_alta_10h(df, achados, alertas)
+        self._analisar_censo_hospitalar(df, achados, alertas)
 
         # 3. Quebra por setor / especialidade / classificação de risco
         for col, titulo in (
@@ -113,6 +114,43 @@ class AgenteAssistencial(AgenteBase):
             alertas.append(msg)
         else:
             achados.append(msg)
+
+    def _soma_canonica(self, df: pd.DataFrame, col: str) -> float | None:
+        if col not in df.columns:
+            return None
+        s = _num_ptbr(df[col]).dropna()
+        return float(s.sum()) if not s.empty else None
+
+    def _analisar_censo_hospitalar(self, df: pd.DataFrame, achados: list[str], alertas: list[str]) -> None:
+        pac_dia = self._soma_canonica(df, "pacientes_dia")
+        lei_dia = self._soma_canonica(df, "leitos_dia")
+        saidas = self._soma_canonica(df, "saidas")
+        obitos = self._soma_canonica(df, "obitos")
+        cir_real = self._soma_canonica(df, "cirurgias_realizadas")
+        cir_canc = self._soma_canonica(df, "cirurgias_canceladas")
+
+        if pac_dia is not None and lei_dia and lei_dia > 0:
+            ocup = (pac_dia / lei_dia) * 100.0
+            msg = f"Taxa de ocupação hospitalar: {ocup:.1f}% ({pac_dia:,.0f} pacientes-dia / {lei_dia:,.0f} leitos-dia)."
+            if ocup > 90.0 or ocup < 50.0:
+                alertas.append(msg)
+            else:
+                achados.append(msg)
+
+        if pac_dia is not None and saidas and saidas > 0:
+            achados.append(f"Média de permanência (censo): {pac_dia / saidas:.2f} dia(s) por saída.")
+
+        if obitos is not None and saidas and saidas > 0:
+            mort = (obitos / saidas) * 100.0
+            achados.append(f"Taxa de mortalidade hospitalar: {mort:.2f}% ({obitos:,.0f} óbito(s) em {saidas:,.0f} saída(s)).")
+
+        if cir_canc is not None and cir_real is not None and (cir_real + cir_canc) > 0:
+            tx_canc = (cir_canc / (cir_real + cir_canc)) * 100.0
+            msg_c = f"Taxa de cancelamento cirúrgico: {tx_canc:.1f}% ({cir_canc:,.0f} cancelada(s))."
+            if tx_canc >= 10.0:
+                alertas.append(msg_c)
+            else:
+                achados.append(msg_c)
 
     def _tabela_dimensao(self, df: pd.DataFrame, col: str, perm: pd.Series | None) -> pd.DataFrame | None:
         if col not in df.columns:

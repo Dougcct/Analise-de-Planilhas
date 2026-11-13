@@ -42,8 +42,54 @@ TERMOS_MAIOR_MELHOR_EXCECAO = (
     "adequado", "adequados", "adequadedados", "adequacao", "adesao", "conformidade",
     "acolhimento com classificacao", "classificacao de risco", "higiene das maos",
     "taxa de sucesso", "sobrevida", "eficacia", "satisfacao", "resolutividade",
-    "cirurgia segura",
+    "cirurgia segura", "taxa de ocupacao", "percentual de ocupacao",
 )
+
+# Fórmulas hospitalares clássicas garantidas quando o CSV do CeosGo vier sem texto estruturado
+FORMULAS_CLASSICAS: dict[str, dict] = {
+    "taxa_de_ocupacao": {
+        "tipo": "razao",
+        "numerador": "Pacientes-dia",
+        "denominador": "Leitos-dia operacionais",
+        "fator": 100,
+        "origem_extracao": "padrao_hospitalar",
+    },
+    "taxa_de_ocupacao_por_posto": {
+        "tipo": "razao",
+        "numerador": "Pacientes-dia",
+        "denominador": "Leitos-dia operacionais",
+        "fator": 100,
+        "origem_extracao": "padrao_hospitalar",
+    },
+    "taxa_de_mortalidade_institucional": {
+        "tipo": "razao",
+        "numerador": "Óbitos após 24h",
+        "denominador": "Saídas hospitalares",
+        "fator": 100,
+        "origem_extracao": "padrao_hospitalar",
+    },
+    "taxa_de_mortalidade_cirurgica": {
+        "tipo": "razao",
+        "numerador": "Óbitos cirúrgicos",
+        "denominador": "Cirurgias realizadas",
+        "fator": 100,
+        "origem_extracao": "padrao_hospitalar",
+    },
+    "taxa_de_retorno_ao_pa_em_ate_72h_apos_a_1_atendimento": {
+        "tipo": "razao",
+        "numerador": "Retorno ao PA até 72h",
+        "denominador": "Atendimentos no PA",
+        "fator": 100,
+        "origem_extracao": "padrao_hospitalar",
+    },
+    "media_de_permanencia_por_posto": {
+        "tipo": "razao",
+        "numerador": "Pacientes-dia",
+        "denominador": "Saídas hospitalares",
+        "fator": 1,
+        "origem_extracao": "padrao_hospitalar",
+    },
+}
 
 SETORES_REGRAS: dict[str, tuple[str, ...]] = {
     "CCIH / Segurança do Paciente": (
@@ -225,11 +271,12 @@ def importar(entrada: Path, saida: Path) -> dict:
 
         sentido, corrigido, motivo = classificar_sentido(titulo, sentido_orig)
         setores = classificar_setores(titulo, formula_txt)
-        formula_struct = extrair_formula(formula_txt, unidade)
+        slug = _slugify(titulo)
+        formula_struct = extrair_formula(formula_txt, unidade) or FORMULAS_CLASSICAS.get(slug)
         componente = eh_variavel_componente(titulo, unidade, formula_struct)
 
         catalogo.append({
-            "id": _slugify(titulo),
+            "id": slug,
             "titulo": titulo,
             "assinatura": assinatura,
             "unidade": unidade,

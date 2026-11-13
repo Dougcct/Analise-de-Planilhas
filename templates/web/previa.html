@@ -92,6 +92,17 @@
 </form>
 {% endif %}
 
+{% if ceosgo %}
+<div class="modelo-previa" style="margin-top:8px;padding:10px 14px;border-left:3px solid var(--verde,#16a34a)">
+  <span class="rot-modelo" style="color:var(--verde,#16a34a)">CeosGo</span>
+  <span class="apoio" style="font-size:13px">
+    <b>{{ ceosgo.reconhecidos }}</b> KPI(s) reconhecido(s) nas colunas ·
+    <b>{{ ceosgo.derivados }}</b> indicador(es) derivado(s) calculável(is)
+    {% if ceosgo.titulos %}({{ ceosgo.titulos|join(', ') }}){% endif %}
+  </span>
+</div>
+{% endif %}
+
 {% if lote_total > 1 %}
 <div class="fila">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="3" y="4" width="18" height="4" rx="1"/><rect x="3" y="10" width="18" height="4" rx="1"/><rect x="3" y="16" width="18" height="4" rx="1"/></svg>
