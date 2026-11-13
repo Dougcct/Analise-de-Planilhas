@@ -1,0 +1,216 @@
+{% extends "web/base.html" %}
+{% block titulo %}Busca IA (Text-to-SQL) — Administração{% endblock %}
+{% block conteudo %}
+<style>
+  .ia-card{background:var(--superficie);border:1px solid var(--borda);border-radius:14px;padding:16px 18px;margin-top:14px}
+  .ia-badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .ia-badge{font-size:12px;padding:4px 10px;border-radius:999px;border:1px solid var(--borda);background:var(--fundo)}
+  .ia-badge.ok{border-color:#28c76f;color:#1b8a4b;background:#eafaf1}
+  .ia-badge.warn{border-color:#e0a23f;color:#995c00;background:#fff6e6}
+  .ia-badge.err{border-color:#e05260;color:#b42333;background:#fdecee}
+  .ia-ta{width:100%;padding:10px 12px;border:1px solid var(--borda);border-radius:10px;background:var(--fundo);color:var(--texto);font:inherit;resize:vertical}
+  .ia-sql{font-family:ui-monospace,Consolas,monospace;font-size:13px;line-height:1.5;min-height:150px}
+  .ia-tab-wrap{overflow:auto;max-height:50vh;border:1px solid var(--borda);border-radius:10px;margin-top:10px}
+  .ia-tab{border-collapse:collapse;width:100%;font-size:12.5px}
+  .ia-tab th,.ia-tab td{padding:7px 10px;border-bottom:1px solid var(--borda);text-align:left;vertical-align:top}
+  .ia-tab th{position:sticky;top:0;background:var(--superficie);z-index:1}
+  .ia-dica{font-size:12.5px;color:var(--fraco)}
+</style>
+
+<div class="topo">
+  <div>
+    <h1>Busca IA (Text-to-SQL Offline com RAG MV)</h1>
+    <p class="sub">Converta perguntas em linguagem natural para Oracle SQL somente-leitura usando <code>cerebro_db/</code> (ChromaDB local) — 100% offline, sem nenhuma API externa. Acesso restrito ao <b>ADM</b>.</p>
+    <div class="ia-badges">
+      <span class="ia-badge ok">Somente SELECT (bloqueia DROP/DELETE/UPDATE/INSERT/ALTER/TRUNCATE)</span>
+      <span class="ia-badge ok">Junções implícitas no WHERE (proíbe INNER JOIN)</span>
+      <span class="ia-badge ok">100% Offline (ChromaDB + Montador Oracle local)</span>
+      <span class="ia-badge {{ 'ok' if qtd_md > 0 else 'warn' }}">{{ qtd_md }} arquivo(s) .md em cerebro_db/</span>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+    <form method="post" action="/web/admin/busca-ia/indexar">
+      <button type="submit" class="btn-sec">🔄 Reindexar cérebro (.md + Salvas)</button>
+    </form>
+    <form method="post" action="/web/admin/busca-ia/sincronizar-oracle" style="display:flex;gap:6px;align-items:center">
+      <input type="text" name="tabelas" class="ia-ta" style="width:210px;padding:6px 10px;font-size:12.5px" placeholder="Views extras (ex: v_cst_atendime)">
+      <button type="submit" class="btn-sec">🔌 Sincronizar Oracle</button>
+    </form>
+  </div>
+</div>
+
+<div class="ia-card">
+  <h3 style="margin:0 0 8px;font-size:14px">1. Pergunta em linguagem natural</h3>
+  <textarea id="ia-pergunta" class="ia-ta" rows="3" placeholder="Ex.: Quantas cirurgias canceladas tivemos no mês atual?"></textarea>
+  <div style="display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap">
+    <button type="button" id="btn-gerar" class="btn" onclick="gerarSQL()">✨ Gerar SQL (RAG Top-2 Offline)</button>
+    <span id="ia-status" class="ia-dica"></span>
+  </div>
+</div>
+
+<div class="ia-card" id="box-resultado" style="display:none">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+    <h3 style="margin:0;font-size:14px">2. SQL gerado &amp; validação de segurança</h3>
+    <span id="badge-val" class="ia-badge"></span>
+  </div>
+  <p id="docs-rag" class="ia-dica" style="margin:6px 0 8px"></p>
+  <textarea id="ia-sql" class="ia-ta ia-sql"></textarea>
+  <div style="display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap">
+    <label class="ia-dica">Ambiente Oracle:</label>
+    {% for a in ambientes %}
+      <label style="font-size:13px;display:flex;gap:4px;align-items:center">
+        <input type="radio" name="amb" value="{{ a.ambiente }}" {{ 'checked' if loop.first }} {{ 'disabled' if not a.configurado }}>
+        {{ a.rotulo }}{{ ' (não configurado)' if not a.configurado }}
+      </label>
+    {% endfor %}
+    <span style="flex:1"></span>
+    <button type="button" id="btn-exec" class="btn" onclick="executarSQL()">▶ Executar SELECT validado</button>
+  </div>
+  <div id="ia-dados" style="margin-top:12px"></div>
+</div>
+
+<div class="ia-card">
+  <h3 style="margin:0 0 6px;font-size:14px">Log de Auditoria (Consultas Text-to-SQL)</h3>
+  <p class="ia-dica" style="margin:0 0 8px">Todo pedido de geração e execução fica registrado abaixo para auditoria de segurança.</p>
+  {% if logs %}
+  <div class="ia-tab-wrap">
+    <table class="ia-tab">
+      <thead>
+        <tr>
+          <th>Quando</th>
+          <th>Usuário</th>
+          <th>Pergunta</th>
+          <th>Docs RAG (Top 2)</th>
+          <th>Validação</th>
+          <th>SQL</th>
+          <th>Execução</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for l in logs %}
+        <tr>
+          <td style="white-space:nowrap">{{ l.quando }}</td>
+          <td>{{ l.usuario }}</td>
+          <td style="max-width:240px">{{ l.pergunta }}</td>
+          <td style="max-width:160px">{{ l.docs_rag }}</td>
+          <td>
+            <span class="ia-badge {{ 'ok' if l.status == 'aprovada' else 'err' }}">
+              {{ l.status }}{{ ': ' + l.motivo if l.motivo and l.status != 'aprovada' else '' }}
+            </span>
+          </td>
+          <td style="max-width:300px;font-family:monospace;font-size:11.5px;white-space:pre-wrap">{{ l.sql }}</td>
+          <td style="white-space:nowrap">
+            {% if l.executada %}
+              {{ l.ambiente }} · {{ l.linhas }} linha(s)
+            {% elif l.erro_execucao %}
+              <span class="ia-badge err">{{ l.erro_execucao }}</span>
+            {% else %}
+              <span class="ia-dica">—</span>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="ia-dica">Nenhuma consulta registrada ainda.</p>
+  {% endif %}
+</div>
+
+<script>
+(function(){
+  var logAtualId = null;
+
+  function esc(t){
+    return (t == null ? '' : String(t))
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  window.gerarSQL = function(){
+    var p = document.getElementById('ia-pergunta').value.trim();
+    if(!p){ alert('Escreva uma pergunta primeiro.'); return; }
+    var btn = document.getElementById('btn-gerar');
+    var st = document.getElementById('ia-status');
+    var sqlEl = document.getElementById('ia-sql');
+    var bv = document.getElementById('badge-val');
+    btn.disabled = true;
+    st.textContent = 'Buscando no ChromaDB local e montando SQL…';
+    logAtualId = null;
+    sqlEl.value = '';
+    document.getElementById('docs-rag').textContent = '';
+    document.getElementById('ia-dados').innerHTML = '';
+    document.getElementById('btn-exec').disabled = true;
+    bv.className = 'ia-badge warn';
+    bv.textContent = 'Gerando…';
+
+    fetch('/web/admin/busca-ia/gerar', {
+      method: 'POST',
+      cache: 'no-store',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({pergunta: p})
+    }).then(function(r){ return r.text(); }).then(function(txt){
+      btn.disabled = false;
+      var d;
+      try { d = JSON.parse(txt); } catch (e) {
+        st.textContent = 'Erro no servidor: ' + txt.slice(0, 160);
+        bv.className = 'ia-badge err';
+        bv.textContent = 'ERRO';
+        return;
+      }
+      if(!d.ok){
+        st.textContent = 'Erro: ' + (d.erro || 'falha ao gerar');
+        bv.className = 'ia-badge err';
+        bv.textContent = 'ERRO';
+        return;
+      }
+      st.textContent = 'SQL gerado (' + (d.modelo || 'local-offline-rag') + ') e registrado no log #' + d.log_id + '.';
+      logAtualId = d.log_id;
+      document.getElementById('box-resultado').style.display = 'block';
+      sqlEl.value = d.sql || '';
+      document.getElementById('docs-rag').textContent = 'Docs RAG usados: ' + (d.docs || []).join(', ');
+      bv.className = 'ia-badge ' + (d.valido ? 'ok' : 'err');
+      bv.textContent = d.valido ? 'APROVADA (SELECT seguro)' : ('BLOQUEADA: ' + d.motivo);
+      document.getElementById('btn-exec').disabled = !d.valido;
+      document.getElementById('ia-dados').innerHTML = '';
+    }).catch(function(err){
+      btn.disabled = false;
+      st.textContent = 'Erro de rede: ' + err;
+    });
+  };
+
+  window.executarSQL = function(){
+    var sql = document.getElementById('ia-sql').value.trim();
+    var ambEl = document.querySelector('input[name=amb]:checked');
+    var out = document.getElementById('ia-dados');
+    if(!ambEl){ out.innerHTML = '<div class="ia-badge err">Nenhum ambiente Oracle configurado em Consulta SQL (MV).</div>'; return; }
+    var btn = document.getElementById('btn-exec');
+    btn.disabled = true; out.innerHTML = '<div class="ia-dica">Validando e executando no Oracle…</div>';
+    fetch('/web/admin/busca-ia/executar', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({log_id: logAtualId, sql: sql, ambiente: ambEl.value})
+    }).then(function(r){ return r.json(); }).then(function(d){
+      btn.disabled = false;
+      if(!d.ok){
+        out.innerHTML = '<div class="ia-badge err">' + esc(d.erro || 'Bloqueado/Erro') + '</div>';
+        return;
+      }
+      var h = '<div class="ia-dica">' + d.n + ' linha(s) retornada(s)</div><div class="ia-tab-wrap"><table class="ia-tab"><thead><tr>';
+      (d.colunas || []).forEach(function(c){ h += '<th>' + esc(c) + '</th>'; });
+      h += '</tr></thead><tbody>';
+      (d.linhas || []).forEach(function(lin){
+        h += '<tr>';
+        lin.forEach(function(v){ h += '<td>' + (v === null ? '<span class="ia-dica">(nulo)</span>' : esc(v)) + '</td>'; });
+        h += '</tr>';
+      });
+      h += '</tbody></table></div>';
+      out.innerHTML = h;
+    }).catch(function(err){
+      btn.disabled = false;
+      out.innerHTML = '<div class="ia-badge err">Erro: ' + esc(err) + '</div>';
+    });
+  };
+})();
+</script>
+{% endblock %}

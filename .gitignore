@@ -5,6 +5,7 @@ Modelo feedback/
 
 # Configuração local de cada usuário — contém chave de API (ia.toml) e as metas do gestor
 config/ia.toml
+.chroma_db/
 config/metas.json
 config/atualizacao.toml
 config/servidor.json

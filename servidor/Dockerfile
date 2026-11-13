@@ -46,6 +46,7 @@ COPY servidor/ servidor/
 COPY templates/ templates/
 COPY assets/ assets/
 COPY automacao/ automacao/
+COPY cerebro_db/ cerebro_db/
 COPY config/kpis_ceosgo.json config/kpis_ceosgo.json
 COPY dominio/modelos/ dominio/modelos/
 # cópia-semente FORA do volume: dominio/modelos vira um volume (editável em runtime) e começa vazio,

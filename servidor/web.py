@@ -19,7 +19,7 @@ from pathlib import Path
 from urllib.parse import quote, urlencode
 
 from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
-from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, Response
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
@@ -47,6 +47,7 @@ from .modelos_bd import (
     ConexaoMV,
     ConhecimentoColuna,
     ConsultaMV,
+    LogBuscaIA,
     Pasta,
     PedidoSenha,
     Relatorio,
@@ -819,6 +820,211 @@ async def consulta_sql_enviar(request: Request, ambiente: str = Form(...), sql: 
     aviso = " (resultado maior foi cortado no limite)" if res["truncado"] else ""
     return _redir(f"/web/enviar/previa/{carga.id}",
                   ok=f"{res['n']} linha(s) do MV enviadas como «{rel.nome}» — revise e publique.{aviso}")
+
+
+# ---------------- Busca IA (Text-to-SQL 100% Offline com RAG — ADM) ----------------
+@router.get("/admin/busca-ia", response_class=HTMLResponse)
+def busca_ia_pagina(request: Request, s: Session = Depends(_sessao)):
+    """Tela ADM: pergunta em linguagem natural -> RAG ChromaDB local -> Montador Oracle -> QueryValidator -> Oracle."""
+    from automacao import memory_indexer, mv
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    if not _pode(escopo, ADM):
+        return _pagina("erro.html", request, _ctx(request, escopo, s, "admin",
+                                                   mensagem="Acesso restrito ao administrador."))
+    conns = {c.ambiente: c for c in s.scalars(select(ConexaoMV))}
+    ambientes = [{"ambiente": amb, "rotulo": mv.ROTULO[amb],
+                  "configurado": bool(amb in conns and conns[amb].host and conns[amb].servico)}
+                 for amb in mv.AMBIENTES]
+    pasta_md = memory_indexer.PASTA_MD_PADRAO
+    qtd_md = len(list(pasta_md.rglob("*.md"))) if pasta_md.is_dir() else 0
+    logs = [
+        {
+            "id": r.id,
+            "quando": r.quando.strftime("%d/%m %H:%M") if r.quando else "",
+            "usuario": r.usuario_login,
+            "pergunta": r.pergunta,
+            "docs_rag": r.docs_rag,
+            "sql": r.sql_gerado,
+            "status": r.status_validacao,
+            "motivo": r.motivo_bloqueio,
+            "ambiente": r.ambiente,
+            "executada": r.executada,
+            "linhas": r.linhas,
+            "erro_execucao": r.erro_execucao,
+        }
+        for r in s.scalars(select(LogBuscaIA).order_by(LogBuscaIA.id.desc()).limit(50))
+    ]
+    return _pagina("busca_ia.html", request, _ctx(
+        request, escopo, s, "admin-busca-ia",
+        ambientes=ambientes, qtd_md=qtd_md, logs=logs,
+    ))
+
+
+@router.post("/admin/busca-ia/indexar")
+def busca_ia_indexar(request: Request, s: Session = Depends(_sessao)):
+    from automacao import memory_indexer
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    if not _pode(escopo, ADM):
+        return _pagina("erro.html", request, _ctx(request, escopo, s, "admin",
+                                                   mensagem="Acesso restrito ao administrador."))
+    try:
+        info = memory_indexer.indexar_cerebro()
+        consultas = [
+            {"id": c.id, "nome": c.nome, "ambiente": c.ambiente, "sql": c.sql}
+            for c in s.scalars(select(ConsultaMV))
+        ]
+        qtd_salvas = memory_indexer.indexar_consultas_salvas(consultas)
+        _audit(s, escopo, "busca_ia_indexar", f"{info['arquivos_indexados']}md+{qtd_salvas}salvas")
+        s.commit()
+        return _redir(
+            "/web/admin/busca-ia",
+            ok=f"{info['arquivos_indexados']} arquivo(s) .md e {qtd_salvas} consulta(s) salva(s) indexados no ChromaDB.",
+        )
+    except memory_indexer.ErroIndexacao as e:
+        return _redir("/web/admin/busca-ia", erro=str(e))
+
+
+@router.post("/admin/busca-ia/sincronizar-oracle")
+def busca_ia_sincronizar_oracle(
+    request: Request,
+    ambiente: str = Form("producao"),
+    tabelas: str = Form(""),
+    s: Session = Depends(_sessao),
+):
+    from automacao import memory_indexer, mv
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return redir
+    if not _pode(escopo, ADM):
+        return _pagina("erro.html", request, _ctx(request, escopo, s, "admin",
+                                                   mensagem="Acesso restrito ao administrador."))
+    c = s.scalar(select(ConexaoMV).where(ConexaoMV.ambiente == ambiente))
+    if c is None or not c.host or not c.servico:
+        return _redir("/web/admin/busca-ia", erro=f"Ambiente «{ambiente}» não configurado em Consulta SQL (MV).")
+    try:
+        lista_tab = [t.strip() for t in re.split(r"[\s,;]+", tabelas or "") if t.strip()]
+        sinc = memory_indexer.sincronizar_metadados_oracle(_conf_mv(c), tabelas=lista_tab)
+        info = memory_indexer.indexar_cerebro()
+        consultas = [
+            {"id": cm.id, "nome": cm.nome, "ambiente": cm.ambiente, "sql": cm.sql}
+            for cm in s.scalars(select(ConsultaMV))
+        ]
+        qtd_salvas = memory_indexer.indexar_consultas_salvas(consultas)
+        _audit(s, escopo, "busca_ia_sync_oracle", f"{ambiente}:{sinc['tabelas_sincronizadas']}tabs")
+        s.commit()
+        return _redir(
+            "/web/admin/busca-ia",
+            ok=(
+                f"Sincronizadas {sinc['tabelas_sincronizadas']} view(s)/tabela(s) "
+                f"({sinc['colunas_lidas']} colunas) e reindexados {info['arquivos_indexados']} .md + {qtd_salvas} consultas salvas."
+            ),
+        )
+    except (memory_indexer.ErroIndexacao, mv.ErroConsulta, Exception) as e:
+        return _redir("/web/admin/busca-ia", erro=f"Falha ao sincronizar Oracle: {e}")
+
+
+@router.post("/admin/busca-ia/gerar")
+async def busca_ia_gerar(request: Request, s: Session = Depends(_sessao)):
+    from automacao import memory_indexer, sql_generator
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return JSONResponse({"ok": False, "erro": "Sessão expirada."}, status_code=401)
+    if not _pode(escopo, ADM):
+        return JSONResponse({"ok": False, "erro": "Acesso restrito ao administrador."}, status_code=403)
+    corpo = await request.json()
+    pergunta = (corpo.get("pergunta") or "").strip()
+    if not pergunta:
+        return JSONResponse({"ok": False, "erro": "Informe uma pergunta."}, status_code=400)
+    u = s.get(Usuario, escopo.usuario_id)
+    login_u = u.login if u else str(escopo.usuario_id)
+    try:
+        res = sql_generator.gerar_sql(pergunta)
+        docs_nomes = [str(d.get("arquivo", "")) for d in res.docs_usados]
+        reg = LogBuscaIA(
+            usuario_id=escopo.usuario_id,
+            usuario_login=login_u,
+            pergunta=pergunta,
+            docs_rag=", ".join(docs_nomes),
+            sql_gerado=res.sql,
+            status_validacao="aprovada" if res.validacao.valido else "bloqueada",
+            motivo_bloqueio="" if res.validacao.valido else res.validacao.motivo,
+        )
+        s.add(reg)
+        _audit(s, escopo, "busca_ia_gerar", f"{reg.status_validacao}:{pergunta[:80]}")
+        s.commit()
+        return JSONResponse({
+            "ok": True,
+            "log_id": reg.id,
+            "sql": res.sql,
+            "docs": docs_nomes,
+            "modelo": res.modelo,
+            "valido": res.validacao.valido,
+            "motivo": res.validacao.motivo,
+        })
+    except (sql_generator.ErroGeracaoSQL, memory_indexer.ErroIndexacao) as e:
+        reg = LogBuscaIA(
+            usuario_id=escopo.usuario_id,
+            usuario_login=login_u,
+            pergunta=pergunta,
+            status_validacao="erro",
+            motivo_bloqueio=str(e),
+        )
+        s.add(reg)
+        _audit(s, escopo, "busca_ia_erro", str(e)[:120])
+        s.commit()
+        return JSONResponse({"ok": False, "erro": str(e)}, status_code=400)
+
+
+@router.post("/admin/busca-ia/executar")
+async def busca_ia_executar(request: Request, s: Session = Depends(_sessao)):
+    from automacao import mv, query_validator
+    escopo, redir = _exige_login(request, s)
+    if redir:
+        return JSONResponse({"ok": False, "erro": "Sessão expirada."}, status_code=401)
+    if not _pode(escopo, ADM):
+        return JSONResponse({"ok": False, "erro": "Acesso restrito ao administrador."}, status_code=403)
+    corpo = await request.json()
+    sql = (corpo.get("sql") or "").strip()
+    amb = (corpo.get("ambiente") or "teste").strip()
+    log_id = corpo.get("log_id")
+    reg = s.get(LogBuscaIA, int(log_id)) if log_id else None
+
+    val = query_validator.validar_query(sql)
+    if not val.valido:
+        if reg is not None:
+            reg.sql_gerado = sql
+            reg.status_validacao = "bloqueada"
+            reg.motivo_bloqueio = val.motivo
+            s.commit()
+        _audit(s, escopo, "busca_ia_bloqueio", val.motivo[:120])
+        s.commit()
+        return JSONResponse({"ok": False, "erro": val.motivo}, status_code=400)
+
+    c = s.scalar(select(ConexaoMV).where(ConexaoMV.ambiente == amb))
+    if c is None or not c.host or not c.servico:
+        return JSONResponse({"ok": False, "erro": f"Ambiente «{amb}» não configurado em Consulta SQL (MV)."}, status_code=400)
+    try:
+        res = mv.executar(_conf_mv(c), val.sql_limpo)
+        if reg is not None:
+            reg.sql_gerado = val.sql_limpo
+            reg.ambiente = amb
+            reg.executada = True
+            reg.linhas = int(res.get("n", 0))
+            reg.erro_execucao = ""
+        _audit(s, escopo, "busca_ia_exec", f"{amb}:{res.get('n', 0)}linhas")
+        s.commit()
+        return JSONResponse({"ok": True, **res})
+    except (mv.ErroConsulta, Exception) as e:
+        msg = str(e) if isinstance(e, mv.ErroConsulta) else f"{type(e).__name__}: {e}"
+        if reg is not None:
+            reg.ambiente = amb
+            reg.erro_execucao = msg[:300]
+            s.commit()
+        return JSONResponse({"ok": False, "erro": msg}, status_code=400)
 
 
 @router.get("/minhas-sugestoes", response_class=HTMLResponse)

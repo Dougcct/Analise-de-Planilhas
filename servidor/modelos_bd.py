@@ -243,3 +243,21 @@ class Auditoria(Base):
     alvo: Mapped[str | None] = mapped_column(String(160))
     ip: Mapped[str | None] = mapped_column(String(64))
     detalhes: Mapped[str | None] = mapped_column(Text)
+
+
+class LogBuscaIA(Base):
+    """Log auditável das consultas Text-to-SQL (RAG + Gemini + QueryValidator)."""
+    __tablename__ = "log_busca_ia"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    quando: Mapped[dt.datetime] = mapped_column(DateTime, default=utcnow, index=True)
+    usuario_id: Mapped[int | None] = mapped_column(ForeignKey("usuarios.id"))
+    usuario_login: Mapped[str] = mapped_column(String(80), default="")
+    pergunta: Mapped[str] = mapped_column(Text)
+    docs_rag: Mapped[str] = mapped_column(Text, default="")
+    sql_gerado: Mapped[str] = mapped_column(Text, default="")
+    status_validacao: Mapped[str] = mapped_column(String(24), default="aprovada")  # aprovada | bloqueada | erro
+    motivo_bloqueio: Mapped[str] = mapped_column(Text, default="")
+    ambiente: Mapped[str] = mapped_column(String(16), default="")
+    executada: Mapped[bool] = mapped_column(Boolean, default=False)
+    linhas: Mapped[int] = mapped_column(Integer, default=0)
+    erro_execucao: Mapped[str] = mapped_column(Text, default="")
