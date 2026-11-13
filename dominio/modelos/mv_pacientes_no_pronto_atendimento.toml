@@ -1,0 +1,122 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 579 / USR_PACIENTES_NO_PRONTO_ATENDIMENT)
+nome = "PACIENTES NO PRONTO ATENDIMENTO"
+pasta = "Atendimento Hospitalar"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "hr_alta"
+dimensoes = ["setor_exame", "tipo_exame", "tp_sexo"]
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_exame"
+rotulo = "Código exame"
+tipo = "identificador"
+sinonimos = ["CD_EXAME"]
+[[coluna]]
+canonico = "cd_objeto"
+rotulo = "Código objeto"
+tipo = "identificador"
+sinonimos = ["CD_OBJETO"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "cd_pre_med"
+rotulo = "Código pre médico"
+tipo = "identificador"
+sinonimos = ["CD_PRE_MED"]
+[[coluna]]
+canonico = "cd_setor_exame"
+rotulo = "Código setor exame"
+tipo = "identificador"
+sinonimos = ["CD_SETOR_EXAME"]
+[[coluna]]
+canonico = "diferenca_minutos"
+rotulo = "Diferenca Minutos"
+tipo = "decimal"
+sinonimos = ["DIFERENCA_MINUTOS"]
+[[coluna]]
+canonico = "hr_alta"
+rotulo = "Hora alta"
+tipo = "data_hora"
+sinonimos = ["HR_ALTA"]
+[[coluna]]
+canonico = "hr_atendimento"
+rotulo = "Hora atendimento"
+tipo = "data_hora"
+sinonimos = ["HR_ATENDIMENTO"]
+[[coluna]]
+canonico = "hr_pedido"
+rotulo = "Hora pedido"
+tipo = "data_hora"
+sinonimos = ["HR_PEDIDO"]
+[[coluna]]
+canonico = "h_alta"
+rotulo = "H Alta"
+tipo = "texto_livre"
+sinonimos = ["H_ALTA"]
+[[coluna]]
+canonico = "h_atual"
+rotulo = "H Atual"
+tipo = "texto_livre"
+sinonimos = ["H_ATUAL"]
+[[coluna]]
+canonico = "idade"
+rotulo = "Idade"
+tipo = "decimal"
+sinonimos = ["IDADE"]
+[[coluna]]
+canonico = "liberado"
+rotulo = "Liberado"
+tipo = "texto_livre"
+sinonimos = ["LIBERADO"]
+[[coluna]]
+canonico = "nm_prestador"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "nome_exame"
+rotulo = "Nome exame"
+tipo = "texto_livre"
+sinonimos = ["NOME_EXAME"]
+[[coluna]]
+canonico = "prest"
+rotulo = "Prest"
+tipo = "texto_livre"
+sinonimos = ["PREST"]
+[[coluna]]
+canonico = "setor_exame"
+rotulo = "Setor Exame"
+tipo = "categorico"
+sinonimos = ["SETOR_EXAME"]
+[[coluna]]
+canonico = "sn_realizado"
+rotulo = "Realizado?"
+tipo = "booleano"
+sinonimos = ["SN_REALIZADO"]
+[[coluna]]
+canonico = "tempo_resultado"
+rotulo = "Tempo Resultado"
+tipo = "decimal"
+sinonimos = ["TEMPO_RESULTADO"]
+[[coluna]]
+canonico = "tipo_exame"
+rotulo = "Tipo exame"
+tipo = "categorico"
+sinonimos = ["TIPO_EXAME"]
+[[coluna]]
+canonico = "tp_sexo"
+rotulo = "Tipo sexo"
+tipo = "categorico"
+sinonimos = ["TP_SEXO"]

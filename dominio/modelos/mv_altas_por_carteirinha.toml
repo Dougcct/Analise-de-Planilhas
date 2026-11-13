@@ -1,0 +1,35 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 176 / USR_ALTAS_POR_CARTEIRINHA)
+nome = "ALTAS POR CARTEIRINHA"
+pasta = "Atendimento Hospitalar"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "dt_alta"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "ds_mot_alt"
+rotulo = "Descrição motivo alteração"
+tipo = "texto_livre"
+sinonimos = ["DS_MOT_ALT"]
+[[coluna]]
+canonico = "dt_alta"
+rotulo = "Data alta"
+tipo = "data"
+sinonimos = ["DT_ALTA"]
+[[coluna]]
+canonico = "dt_atendimento"
+rotulo = "Data atendimento"
+tipo = "data"
+sinonimos = ["DT_ATENDIMENTO"]
+[[coluna]]
+canonico = "nm_cidade"
+rotulo = "Nome cidade"
+tipo = "texto_livre"
+sinonimos = ["NM_CIDADE"]

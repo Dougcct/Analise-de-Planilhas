@@ -1,0 +1,80 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 516 / USR_PACIENTES_INTERNADOS)
+nome = "Pacientes Internados"
+pasta = "Atendimento Hospitalar"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "dt_internacao"
+
+[[coluna]]
+canonico = "alta_med"
+rotulo = "Alta Med"
+tipo = "texto_livre"
+sinonimos = ["ALTA_MED"]
+[[coluna]]
+canonico = "cidade"
+rotulo = "Cidade"
+tipo = "texto_livre"
+sinonimos = ["CIDADE"]
+[[coluna]]
+canonico = "ds_leito"
+rotulo = "Descrição leito"
+tipo = "texto_livre"
+sinonimos = ["DS_LEITO"]
+[[coluna]]
+canonico = "ds_unid_int"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "dt_internacao"
+rotulo = "Data internação"
+tipo = "data"
+sinonimos = ["DT_INTERNACAO"]
+[[coluna]]
+canonico = "fone_comercial"
+rotulo = "Fone Comercial"
+tipo = "texto_livre"
+sinonimos = ["FONE_COMERCIAL"]
+[[coluna]]
+canonico = "observacao"
+rotulo = "Observacao"
+tipo = "texto_livre"
+sinonimos = ["OBSERVACAO"]
+[[coluna]]
+canonico = "ramal"
+rotulo = "Ramal"
+tipo = "texto_livre"
+sinonimos = ["RAMAL"]
+[[coluna]]
+canonico = "responsavel"
+rotulo = "Responsavel"
+tipo = "texto_livre"
+sinonimos = ["RESPONSAVEL"]
+[[coluna]]
+canonico = "tel_contato"
+rotulo = "Tel Contato"
+tipo = "texto_livre"
+sinonimos = ["TEL_CONTATO"]
+[[coluna]]
+canonico = "tel_responsavel"
+rotulo = "Tel Responsavel"
+tipo = "texto_livre"
+sinonimos = ["TEL_RESPONSAVEL"]
+[[coluna]]
+canonico = "cd_unid_int"
+rotulo = "Código unidade internação"
+tipo = "identificador"
+sinonimos = ["CD_UNID_INT"]
+[[coluna]]
+canonico = "ds_unid_int_2"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "sn_ativo"
+rotulo = "Ativo?"
+tipo = "booleano"
+sinonimos = ["SN_ATIVO"]

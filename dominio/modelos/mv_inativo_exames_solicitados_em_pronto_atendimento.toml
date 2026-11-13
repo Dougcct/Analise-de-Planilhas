@@ -1,0 +1,89 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 724 / USR_INATIVO_EXAMES_SOLICITADOS_EM_)
+nome = "INATIVO_EXAMES SOLICITADOS EM PRONTO ATENDIMENTO"
+pasta = "Exames e Laboratório"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "atd"
+rotulo = "Atd"
+tipo = "decimal"
+sinonimos = ["ATD"]
+[[coluna]]
+canonico = "exa_lab"
+rotulo = "Exa Lab"
+tipo = "decimal"
+sinonimos = ["EXA_LAB"]
+[[coluna]]
+canonico = "taxa"
+rotulo = "Taxa"
+tipo = "texto_livre"
+sinonimos = ["TAXA"]
+[[coluna]]
+canonico = "qtd"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "taxa_2"
+rotulo = "Taxa"
+tipo = "texto_livre"
+sinonimos = ["TAXA"]
+[[coluna]]
+canonico = "total"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "qtd_2"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "taxa_3"
+rotulo = "Taxa"
+tipo = "texto_livre"
+sinonimos = ["TAXA"]
+[[coluna]]
+canonico = "total_2"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "atd_2"
+rotulo = "Atd"
+tipo = "decimal"
+sinonimos = ["ATD"]
+[[coluna]]
+canonico = "taxa_4"
+rotulo = "Taxa"
+tipo = "texto_livre"
+sinonimos = ["TAXA"]
+[[coluna]]
+canonico = "us"
+rotulo = "Us"
+tipo = "decimal"
+sinonimos = ["US"]
+[[coluna]]
+canonico = "total_3"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "qtd_rx"
+rotulo = "Qtd. rx"
+tipo = "inteiro"
+sinonimos = ["QTD_RX"]
+[[coluna]]
+canonico = "qtd_tc"
+rotulo = "Qtd. tc"
+tipo = "inteiro"
+sinonimos = ["QTD_TC"]
+[[coluna]]
+canonico = "qtd_rm"
+rotulo = "Qtd. rm"
+tipo = "inteiro"
+sinonimos = ["QTD_RM"]

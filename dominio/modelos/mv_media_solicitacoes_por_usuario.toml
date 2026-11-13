@@ -1,0 +1,120 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 323 / USR_MEDIA_SOLICITACOES_POR_USUARIO)
+nome = "MÉDIA SOLICITAÇÕES POR USUARIO"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "dt_revisado"
+
+[[coluna]]
+canonico = "ds_unid_int"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "nm_exa_lab"
+rotulo = "Nome exame laboratório"
+tipo = "texto_livre"
+sinonimos = ["NM_EXA_LAB"]
+[[coluna]]
+canonico = "nm_usuario"
+rotulo = "Nome usuário"
+tipo = "texto_livre"
+sinonimos = ["NM_USUARIO"]
+[[coluna]]
+canonico = "tempo_medio_coleta"
+rotulo = "Tempo Medio Coleta"
+tipo = "texto_livre"
+sinonimos = ["TEMPO_MEDIO_COLETA"]
+[[coluna]]
+canonico = "tempo_medio_confirma"
+rotulo = "Tempo Medio Confirma"
+tipo = "texto_livre"
+sinonimos = ["TEMPO_MEDIO_CONFIRMA"]
+[[coluna]]
+canonico = "tempo_medio_entrega"
+rotulo = "Tempo Medio Entrega"
+tipo = "texto_livre"
+sinonimos = ["TEMPO_MEDIO_ENTREGA"]
+[[coluna]]
+canonico = "tempo_medio_revisado"
+rotulo = "Tempo Medio Revisado"
+tipo = "texto_livre"
+sinonimos = ["TEMPO_MEDIO_REVISADO"]
+[[coluna]]
+canonico = "total"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "cd_unid_int"
+rotulo = "Código unidade internação"
+tipo = "identificador"
+sinonimos = ["CD_UNID_INT"]
+[[coluna]]
+canonico = "ds_unid_int_2"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "cd_exa_lab"
+rotulo = "Código exame laboratório"
+tipo = "identificador"
+sinonimos = ["CD_EXA_LAB"]
+[[coluna]]
+canonico = "nm_exa_lab_2"
+rotulo = "Nome exame laboratório"
+tipo = "texto_livre"
+sinonimos = ["NM_EXA_LAB"]
+[[coluna]]
+canonico = "cd_amostra"
+rotulo = "Código amostra"
+tipo = "identificador"
+sinonimos = ["CD_AMOSTRA"]
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_exa_lab_2"
+rotulo = "Código exame laboratório"
+tipo = "identificador"
+sinonimos = ["CD_EXA_LAB"]
+[[coluna]]
+canonico = "cd_ped_lab"
+rotulo = "Código ped laboratório"
+tipo = "identificador"
+sinonimos = ["CD_PED_LAB"]
+[[coluna]]
+canonico = "dt_revisado"
+rotulo = "Data revisado"
+tipo = "data"
+sinonimos = ["DT_REVISADO"]
+[[coluna]]
+canonico = "hr_coleta_setor"
+rotulo = "Hora coleta setor"
+tipo = "data_hora"
+sinonimos = ["HR_COLETA_SETOR"]
+[[coluna]]
+canonico = "hr_confirma_lab"
+rotulo = "Hora confirma laboratório"
+tipo = "data_hora"
+sinonimos = ["HR_CONFIRMA_LAB"]
+[[coluna]]
+canonico = "hr_ped_lab"
+rotulo = "Hora ped laboratório"
+tipo = "data_hora"
+sinonimos = ["HR_PED_LAB"]
+[[coluna]]
+canonico = "cd_usuario"
+rotulo = "Código usuário"
+tipo = "identificador"
+sinonimos = ["CD_USUARIO"]
+[[coluna]]
+canonico = "nm_usuario_2"
+rotulo = "Nome usuário"
+tipo = "texto_livre"
+sinonimos = ["NM_USUARIO"]

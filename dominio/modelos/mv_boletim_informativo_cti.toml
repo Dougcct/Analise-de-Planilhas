@@ -1,0 +1,30 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 143 / USR_BOLETIM_INFORMATIVO_CTI)
+nome = "BOLETIM INFORMATIVO CTI"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "dt_hr_info"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "dt_hr_info"
+rotulo = "Data hr info"
+tipo = "data"
+sinonimos = ["DT_HR_INFO"]
+[[coluna]]
+canonico = "estado"
+rotulo = "Estado"
+tipo = "texto_livre"
+sinonimos = ["ESTADO"]
+[[coluna]]
+canonico = "nm_prestador"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]

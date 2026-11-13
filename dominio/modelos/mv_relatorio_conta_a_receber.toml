@@ -1,0 +1,151 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 298 / USR_RELATORIO_CONTA_A_RECEBER)
+nome = "RELATÓRIO CONTA A RECEBER"
+pasta = "Faturamento"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "dt_emissao"
+dimensoes = ["tipo_pagamento", "tp_atendimento", "tp_quitacao", "tp_atendimento_2", "tp_recebimento", "tp_atendimento_3"]
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "dt_emissao"
+rotulo = "Data emissao"
+tipo = "data"
+sinonimos = ["DT_EMISSAO"]
+[[coluna]]
+canonico = "dt_vencimento"
+rotulo = "Data vencimento"
+tipo = "data"
+sinonimos = ["DT_VENCIMENTO"]
+[[coluna]]
+canonico = "nm_cliente"
+rotulo = "Nome cliente"
+tipo = "texto_livre"
+sinonimos = ["NM_CLIENTE"]
+[[coluna]]
+canonico = "nr_documento"
+rotulo = "Número documento"
+tipo = "identificador"
+sinonimos = ["NR_DOCUMENTO"]
+[[coluna]]
+canonico = "previsto"
+rotulo = "Previsto"
+tipo = "decimal"
+sinonimos = ["PREVISTO"]
+[[coluna]]
+canonico = "recebido"
+rotulo = "Recebido"
+tipo = "decimal"
+sinonimos = ["RECEBIDO"]
+[[coluna]]
+canonico = "soma_previsto"
+rotulo = "Soma Previsto"
+tipo = "decimal"
+sinonimos = ["SOMA_PREVISTO"]
+[[coluna]]
+canonico = "tipo_pagamento"
+rotulo = "Tipo pagamento"
+tipo = "categorico"
+sinonimos = ["TIPO_PAGAMENTO"]
+[[coluna]]
+canonico = "tp_atendimento"
+rotulo = "Tipo atendimento"
+tipo = "categorico"
+sinonimos = ["TP_ATENDIMENTO"]
+[[coluna]]
+canonico = "tp_quitacao"
+rotulo = "Tipo quitacao"
+tipo = "categorico"
+sinonimos = ["TP_QUITACAO"]
+[[coluna]]
+canonico = "vl_previsto"
+rotulo = "Valor previsto"
+tipo = "moeda"
+sinonimos = ["VL_PREVISTO"]
+[[coluna]]
+canonico = "atendimento"
+rotulo = "Atendimento"
+tipo = "texto_livre"
+sinonimos = ["ATENDIMENTO"]
+[[coluna]]
+canonico = "tp_atendimento_2"
+rotulo = "Tipo atendimento"
+tipo = "categorico"
+sinonimos = ["TP_ATENDIMENTO"]
+[[coluna]]
+canonico = "recebimento"
+rotulo = "Recebimento"
+tipo = "texto_livre"
+sinonimos = ["RECEBIMENTO"]
+[[coluna]]
+canonico = "tp_recebimento"
+rotulo = "Tipo recebimento"
+tipo = "categorico"
+sinonimos = ["TP_RECEBIMENTO"]
+[[coluna]]
+canonico = "total_previsto"
+rotulo = "Total Previsto"
+tipo = "moeda"
+sinonimos = ["TOTAL_PREVISTO"]
+[[coluna]]
+canonico = "total_recebido"
+rotulo = "Total Recebido"
+tipo = "moeda"
+sinonimos = ["TOTAL_RECEBIDO"]
+[[coluna]]
+canonico = "cd_atendimento_2"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "dt_emissao_2"
+rotulo = "Data emissao"
+tipo = "data"
+sinonimos = ["DT_EMISSAO"]
+[[coluna]]
+canonico = "dt_vencimento_2"
+rotulo = "Data vencimento"
+tipo = "data"
+sinonimos = ["DT_VENCIMENTO"]
+[[coluna]]
+canonico = "nm_cliente_2"
+rotulo = "Nome cliente"
+tipo = "texto_livre"
+sinonimos = ["NM_CLIENTE"]
+[[coluna]]
+canonico = "nr_documento_2"
+rotulo = "Número documento"
+tipo = "identificador"
+sinonimos = ["NR_DOCUMENTO"]
+[[coluna]]
+canonico = "soma_previsto_2"
+rotulo = "Soma Previsto"
+tipo = "decimal"
+sinonimos = ["SOMA_PREVISTO"]
+[[coluna]]
+canonico = "tp_atendimento_3"
+rotulo = "Tipo atendimento"
+tipo = "categorico"
+sinonimos = ["TP_ATENDIMENTO"]
+[[coluna]]
+canonico = "tp_quitacao_2"
+rotulo = "Tipo quitacao"
+tipo = "categorico"
+sinonimos = ["TP_QUITACAO"]
+[[coluna]]
+canonico = "vl_previsto_2"
+rotulo = "Valor previsto"
+tipo = "moeda"
+sinonimos = ["VL_PREVISTO"]
+[[coluna]]
+canonico = "total_previsto_2"
+rotulo = "Total Previsto"
+tipo = "moeda"
+sinonimos = ["TOTAL_PREVISTO"]

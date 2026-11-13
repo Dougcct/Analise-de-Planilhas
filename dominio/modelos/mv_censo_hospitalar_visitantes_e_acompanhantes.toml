@@ -1,0 +1,70 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 398 / USR_VISITANTES_E_ACOMPANHANTES)
+nome = "CENSO HOSPITALAR - VISITANTES E ACOMPANHANTES"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "data_entrada"
+
+[[coluna]]
+canonico = "atd"
+rotulo = "Atd"
+tipo = "decimal"
+sinonimos = ["ATD"]
+[[coluna]]
+canonico = "aut"
+rotulo = "Aut"
+tipo = "texto_livre"
+sinonimos = ["AUT"]
+[[coluna]]
+canonico = "data_entrada"
+rotulo = "Data entrada"
+tipo = "data"
+sinonimos = ["DATA_ENTRADA"]
+[[coluna]]
+canonico = "desc_visitante_acompanhante"
+rotulo = "Descrição visitante acompanhante"
+tipo = "texto_livre"
+sinonimos = ["DESC_VISITANTE_ACOMPANHANTE"]
+[[coluna]]
+canonico = "ds_leito"
+rotulo = "Descrição leito"
+tipo = "texto_livre"
+sinonimos = ["DS_LEITO"]
+[[coluna]]
+canonico = "ds_observacoes"
+rotulo = "Descrição observacoes"
+tipo = "texto_livre"
+sinonimos = ["DS_OBSERVACOES"]
+[[coluna]]
+canonico = "ds_unid_int"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "dt_atendimento"
+rotulo = "Data atendimento"
+tipo = "data"
+sinonimos = ["DT_ATENDIMENTO"]
+[[coluna]]
+canonico = "hr_atendimento"
+rotulo = "Hora atendimento"
+tipo = "data_hora"
+sinonimos = ["HR_ATENDIMENTO"]
+[[coluna]]
+canonico = "idade"
+rotulo = "Idade"
+tipo = "texto_livre"
+sinonimos = ["IDADE"]
+[[coluna]]
+canonico = "nasc"
+rotulo = "Nasc"
+tipo = "data"
+sinonimos = ["NASC"]
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "texto_livre"
+sinonimos = ["ORIGINAL"]

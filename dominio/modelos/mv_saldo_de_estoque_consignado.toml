@@ -1,0 +1,69 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 65 / USR_SALDO_DE_ESTOQUE_CONSIGNADO)
+nome = "Saldo de Estoque Consignado"
+pasta = "Farmácia e Suprimentos"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "cd_fornecedor"
+rotulo = "Código fornecedor"
+tipo = "identificador"
+sinonimos = ["CD_FORNECEDOR"]
+[[coluna]]
+canonico = "cd_produto"
+rotulo = "Código produto"
+tipo = "identificador"
+sinonimos = ["CD_PRODUTO"]
+[[coluna]]
+canonico = "ds_produto"
+rotulo = "Descrição produto"
+tipo = "texto_livre"
+sinonimos = ["DS_PRODUTO"]
+[[coluna]]
+canonico = "nm_fornecedor"
+rotulo = "Nome fornecedor"
+tipo = "texto_livre"
+sinonimos = ["NM_FORNECEDOR"]
+[[coluna]]
+canonico = "qtde_ent"
+rotulo = "Qtde Ent"
+tipo = "decimal"
+sinonimos = ["QTDE_ENT"]
+[[coluna]]
+canonico = "qtde_saidas"
+rotulo = "Qtde Saidas"
+tipo = "decimal"
+sinonimos = ["QTDE_SAIDAS"]
+[[coluna]]
+canonico = "qtde_total"
+rotulo = "Qtde Total"
+tipo = "moeda"
+sinonimos = ["QTDE_TOTAL"]
+[[coluna]]
+canonico = "valor_total"
+rotulo = "Valor Total"
+tipo = "moeda"
+sinonimos = ["VALOR_TOTAL"]
+[[coluna]]
+canonico = "val_total_ent"
+rotulo = "Val Total Ent"
+tipo = "moeda"
+sinonimos = ["VAL_TOTAL_ENT"]
+[[coluna]]
+canonico = "val_total_saidas"
+rotulo = "Val Total Saidas"
+tipo = "moeda"
+sinonimos = ["VAL_TOTAL_SAIDAS"]
+[[coluna]]
+canonico = "cd_fornecedor_2"
+rotulo = "Código fornecedor"
+tipo = "identificador"
+sinonimos = ["CD_FORNECEDOR"]
+[[coluna]]
+canonico = "nm_fornecedor_2"
+rotulo = "Nome fornecedor"
+tipo = "texto_livre"
+sinonimos = ["NM_FORNECEDOR"]

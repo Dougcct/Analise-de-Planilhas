@@ -1,0 +1,131 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 295 / USR_CONTAS_A_PAGAR_CENTRO_DE_CUST)
+nome = "CONTAS A PAGAR CENTRO DE CUSTO (1)"
+pasta = "Faturamento"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "dia"
+dimensoes = ["tp_pagamento"]
+
+[[coluna]]
+canonico = "dia"
+rotulo = "Dia"
+tipo = "data"
+sinonimos = ["DIA"]
+[[coluna]]
+canonico = "total_diario"
+rotulo = "Total Diario"
+tipo = "moeda"
+sinonimos = ["TOTAL_DIARIO"]
+[[coluna]]
+canonico = "cd_cen_cus"
+rotulo = "Código centro cus"
+tipo = "identificador"
+sinonimos = ["CD_CEN_CUS"]
+[[coluna]]
+canonico = "cd_con_pag"
+rotulo = "Código con pag"
+tipo = "identificador"
+sinonimos = ["CD_CON_PAG"]
+[[coluna]]
+canonico = "cd_gru_res"
+rotulo = "Código gru res"
+tipo = "identificador"
+sinonimos = ["CD_GRU_RES"]
+[[coluna]]
+canonico = "cd_ratcon_pag"
+rotulo = "Código ratcon pag"
+tipo = "identificador"
+sinonimos = ["CD_RATCON_PAG"]
+[[coluna]]
+canonico = "codigo"
+rotulo = "Codigo"
+tipo = "decimal"
+sinonimos = ["CODIGO"]
+[[coluna]]
+canonico = "descricao"
+rotulo = "Descricao"
+tipo = "texto_livre"
+sinonimos = ["DESCRICAO"]
+[[coluna]]
+canonico = "ds_con_pag"
+rotulo = "Descrição con pag"
+tipo = "texto_livre"
+sinonimos = ["DS_CON_PAG"]
+[[coluna]]
+canonico = "ds_gru_res"
+rotulo = "Descrição gru res"
+tipo = "texto_livre"
+sinonimos = ["DS_GRU_RES"]
+[[coluna]]
+canonico = "ds_hist_p"
+rotulo = "Descrição hist p"
+tipo = "texto_livre"
+sinonimos = ["DS_HIST_P"]
+[[coluna]]
+canonico = "dt_emissao"
+rotulo = "Data emissao"
+tipo = "data"
+sinonimos = ["DT_EMISSAO"]
+[[coluna]]
+canonico = "dt_vencimento"
+rotulo = "Data vencimento"
+tipo = "data"
+sinonimos = ["DT_VENCIMENTO"]
+[[coluna]]
+canonico = "nm_fantasia"
+rotulo = "Nome fantasia"
+tipo = "texto_livre"
+sinonimos = ["NM_FANTASIA"]
+[[coluna]]
+canonico = "nr_documento"
+rotulo = "Número documento"
+tipo = "identificador"
+sinonimos = ["NR_DOCUMENTO"]
+[[coluna]]
+canonico = "nr_parcela"
+rotulo = "Número parcela"
+tipo = "identificador"
+sinonimos = ["NR_PARCELA"]
+[[coluna]]
+canonico = "qtd_itens_con_pag"
+rotulo = "Qtd. itens con pag"
+tipo = "inteiro"
+sinonimos = ["QTD_ITENS_CON_PAG"]
+[[coluna]]
+canonico = "tp_pagamento"
+rotulo = "Tipo pagamento"
+tipo = "categorico"
+sinonimos = ["TP_PAGAMENTO"]
+[[coluna]]
+canonico = "vl_a_pagar"
+rotulo = "Valor a pagar"
+tipo = "moeda"
+sinonimos = ["VL_A_PAGAR"]
+[[coluna]]
+canonico = "vl_bruto"
+rotulo = "Valor bruto"
+tipo = "moeda"
+sinonimos = ["VL_BRUTO"]
+[[coluna]]
+canonico = "vl_rateio"
+rotulo = "Valor rateio"
+tipo = "moeda"
+sinonimos = ["VL_RATEIO"]
+[[coluna]]
+canonico = "cd_gru_res_2"
+rotulo = "Código gru res"
+tipo = "identificador"
+sinonimos = ["CD_GRU_RES"]
+[[coluna]]
+canonico = "ds_gru_res_2"
+rotulo = "Descrição gru res"
+tipo = "texto_livre"
+sinonimos = ["DS_GRU_RES"]
+[[coluna]]
+canonico = "total"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]

@@ -1,0 +1,19 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 665 / USR_MEDICAMENTOS_DE_ALTA_VIGILANCI)
+nome = "Medicamentos de Alta Vigilância"
+pasta = "Farmácia e Suprimentos"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "cd_produto"
+rotulo = "Código produto"
+tipo = "identificador"
+sinonimos = ["CD_PRODUTO"]
+[[coluna]]
+canonico = "ds_produto"
+rotulo = "Descrição produto"
+tipo = "texto_livre"
+sinonimos = ["DS_PRODUTO"]

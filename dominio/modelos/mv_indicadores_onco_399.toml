@@ -1,0 +1,69 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 399 / USR_INDICADORES_EVOONCO)
+nome = "INDICADORES_ONCO"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+
+[[coluna]]
+canonico = "campo"
+rotulo = "Campo"
+tipo = "texto_livre"
+sinonimos = ["CAMPO"]
+[[coluna]]
+canonico = "campo_1"
+rotulo = "Campo 1"
+tipo = "decimal"
+sinonimos = ["CAMPO_1"]
+[[coluna]]
+canonico = "categoria"
+rotulo = "Categoria"
+tipo = "texto_livre"
+sinonimos = ["CATEGORIA"]
+[[coluna]]
+canonico = "categoria_2"
+rotulo = "Categoria"
+tipo = "texto_livre"
+sinonimos = ["CATEGORIA"]
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "ds_produto"
+rotulo = "Descrição produto"
+tipo = "texto_livre"
+sinonimos = ["DS_PRODUTO"]
+[[coluna]]
+canonico = "qt_saida"
+rotulo = "Qtd. saida"
+tipo = "inteiro"
+sinonimos = ["QT_SAIDA"]
+[[coluna]]
+canonico = "valor"
+rotulo = "Valor"
+tipo = "moeda"
+sinonimos = ["VALOR"]
+[[coluna]]
+canonico = "categoria_3"
+rotulo = "Categoria"
+tipo = "texto_livre"
+sinonimos = ["CATEGORIA"]
+[[coluna]]
+canonico = "cd_atendimento_2"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "valor_2"
+rotulo = "Valor"
+tipo = "texto_livre"
+sinonimos = ["VALOR"]

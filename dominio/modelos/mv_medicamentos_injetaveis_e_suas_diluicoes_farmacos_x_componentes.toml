@@ -1,0 +1,29 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 671 / USR_MEDICAMENTOS_INJETAVEIS_E_SUAS)
+nome = "Medicamentos injetáveis e suas diluições (farmácos x componentes)"
+pasta = "Farmácia e Suprimentos"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "cd_tip_presc"
+rotulo = "Código tipo prescrição"
+tipo = "identificador"
+sinonimos = ["CD_TIP_PRESC"]
+[[coluna]]
+canonico = "componente"
+rotulo = "Componente"
+tipo = "texto_livre"
+sinonimos = ["COMPONENTE"]
+[[coluna]]
+canonico = "medicamento"
+rotulo = "Medicamento"
+tipo = "texto_livre"
+sinonimos = ["MEDICAMENTO"]
+[[coluna]]
+canonico = "qt_compon"
+rotulo = "Qtd. compon"
+tipo = "inteiro"
+sinonimos = ["QT_COMPON"]

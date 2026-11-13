@@ -1,0 +1,41 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 282 / USR_SOLICITACAO_POR_USUARIO_)
+nome = "SOLICITAÇÃO POR USUÁRIO"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "dt_solsai_pro"
+dimensoes = ["tp_solsai_pro"]
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_solsai_pro"
+rotulo = "Código solsai procedimento"
+tipo = "identificador"
+sinonimos = ["CD_SOLSAI_PRO"]
+[[coluna]]
+canonico = "cd_usuario"
+rotulo = "Código usuário"
+tipo = "identificador"
+sinonimos = ["CD_USUARIO"]
+[[coluna]]
+canonico = "ds_situacao"
+rotulo = "Descrição situacao"
+tipo = "texto_livre"
+sinonimos = ["DS_SITUAÇÃO"]
+[[coluna]]
+canonico = "dt_solsai_pro"
+rotulo = "Data solsai procedimento"
+tipo = "data"
+sinonimos = ["DT_SOLSAI_PRO"]
+[[coluna]]
+canonico = "tp_solsai_pro"
+rotulo = "Tipo solsai procedimento"
+tipo = "categorico"
+sinonimos = ["TP_SOLSAI_PRO"]

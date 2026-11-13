@@ -1,0 +1,205 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 445 / USR_ATENDIMENTOS_PA_ANAMNESE_NOVO)
+nome = "ATENDIMENTOS PA ANAMNESE NOVO"
+pasta = "Atendimento Hospitalar"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "dt_atendimento"
+
+[[coluna]]
+canonico = "atd"
+rotulo = "Atd"
+tipo = "decimal"
+sinonimos = ["ATD"]
+[[coluna]]
+canonico = "cd_senha"
+rotulo = "Código senha"
+tipo = "identificador"
+sinonimos = ["CD_SENHA"]
+[[coluna]]
+canonico = "dt_atendimento"
+rotulo = "Data atendimento"
+tipo = "data"
+sinonimos = ["DT_ATENDIMENTO"]
+[[coluna]]
+canonico = "idade"
+rotulo = "Idade"
+tipo = "texto_livre"
+sinonimos = ["IDADE"]
+[[coluna]]
+canonico = "inter"
+rotulo = "Inter"
+tipo = "texto_livre"
+sinonimos = ["INTER"]
+[[coluna]]
+canonico = "nasc"
+rotulo = "Nasc"
+tipo = "data"
+sinonimos = ["NASC"]
+[[coluna]]
+canonico = "nm_convenio"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "tempo_atd"
+rotulo = "Tempo Atd"
+tipo = "texto_livre"
+sinonimos = ["TEMPO_ATD"]
+[[coluna]]
+canonico = "cd_pre_med"
+rotulo = "Código pre médico"
+tipo = "identificador"
+sinonimos = ["CD_PRE_MED"]
+[[coluna]]
+canonico = "dh_registro"
+rotulo = "Data/hora registro"
+tipo = "data_hora"
+sinonimos = ["DH_REGISTRO"]
+[[coluna]]
+canonico = "ds_itpre_med"
+rotulo = "Descrição itpre médico"
+tipo = "texto_livre"
+sinonimos = ["DS_ITPRE_MED"]
+[[coluna]]
+canonico = "ds_justificativa"
+rotulo = "Descrição justificativa"
+tipo = "texto_livre"
+sinonimos = ["DS_JUSTIFICATIVA"]
+[[coluna]]
+canonico = "ds_tip_fre"
+rotulo = "Descrição tipo fre"
+tipo = "texto_livre"
+sinonimos = ["DS_TIP_FRE"]
+[[coluna]]
+canonico = "ds_tip_presc"
+rotulo = "Descrição tipo prescrição"
+tipo = "texto_livre"
+sinonimos = ["DS_TIP_PRESC"]
+[[coluna]]
+canonico = "ds_unidade"
+rotulo = "Descrição unidade"
+tipo = "texto_livre"
+sinonimos = ["DS_UNIDADE"]
+[[coluna]]
+canonico = "hr_pre_med"
+rotulo = "Hora pre médico"
+tipo = "data_hora"
+sinonimos = ["HR_PRE_MED"]
+[[coluna]]
+canonico = "nm_prestador"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "qt_itpre_med"
+rotulo = "Qtd. itpre médico"
+tipo = "inteiro"
+sinonimos = ["QT_ITPRE_MED"]
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_documento_clinico"
+rotulo = "Código documento clínico"
+tipo = "identificador"
+sinonimos = ["CD_DOCUMENTO_CLINICO"]
+[[coluna]]
+canonico = "dh_criacao"
+rotulo = "Data/hora criação"
+tipo = "data_hora"
+sinonimos = ["DH_CRIACAO"]
+[[coluna]]
+canonico = "nm_prestador_2"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "valor"
+rotulo = "Valor"
+tipo = "texto_livre"
+sinonimos = ["VALOR"]
+[[coluna]]
+canonico = "cd_atendimento_2"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_documento_clinico_2"
+rotulo = "Código documento clínico"
+tipo = "identificador"
+sinonimos = ["CD_DOCUMENTO_CLINICO"]
+[[coluna]]
+canonico = "dh_criacao_2"
+rotulo = "Data/hora criação"
+tipo = "data_hora"
+sinonimos = ["DH_CRIACAO"]
+[[coluna]]
+canonico = "nm_prestador_3"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "valor_2"
+rotulo = "Valor"
+tipo = "texto_livre"
+sinonimos = ["VALOR"]
+[[coluna]]
+canonico = "cd_atendimento_3"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "ds_obs_alta"
+rotulo = "Descrição observação alta"
+tipo = "texto_livre"
+sinonimos = ["DS_OBS_ALTA"]
+[[coluna]]
+canonico = "ds_tip_res"
+rotulo = "Descrição tipo res"
+tipo = "texto_livre"
+sinonimos = ["DS_TIP_RES"]
+[[coluna]]
+canonico = "dt_alta"
+rotulo = "Data alta"
+tipo = "data"
+sinonimos = ["DT_ALTA"]
+[[coluna]]
+canonico = "hr_alta"
+rotulo = "Hora alta"
+tipo = "data_hora"
+sinonimos = ["HR_ALTA"]
+[[coluna]]
+canonico = "nm_usuario"
+rotulo = "Nome usuário"
+tipo = "texto_livre"
+sinonimos = ["NM_USUARIO"]
+[[coluna]]
+canonico = "cd_documento_clinico_3"
+rotulo = "Código documento clínico"
+tipo = "identificador"
+sinonimos = ["CD_DOCUMENTO_CLINICO"]
+[[coluna]]
+canonico = "dh_criacao_3"
+rotulo = "Data/hora criação"
+tipo = "data_hora"
+sinonimos = ["DH_CRIACAO"]
+[[coluna]]
+canonico = "ds_campo"
+rotulo = "Descrição campo"
+tipo = "texto_livre"
+sinonimos = ["DS_CAMPO"]
+[[coluna]]
+canonico = "nm_prestador_4"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "valor_3"
+rotulo = "Valor"
+tipo = "texto_livre"
+sinonimos = ["VALOR"]

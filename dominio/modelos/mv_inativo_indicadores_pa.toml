@@ -1,0 +1,89 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 723 / USR_INATIVO_INDICADORES_PA)
+nome = "INATIVO_INDICADORES PA"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "atd"
+rotulo = "Atd"
+tipo = "decimal"
+sinonimos = ["ATD"]
+[[coluna]]
+canonico = "friburgo"
+rotulo = "Friburgo"
+tipo = "decimal"
+sinonimos = ["FRIBURGO"]
+[[coluna]]
+canonico = "percent"
+rotulo = "Percent"
+tipo = "texto_livre"
+sinonimos = ["PERCENT"]
+[[coluna]]
+canonico = "atd_2"
+rotulo = "Atd"
+tipo = "decimal"
+sinonimos = ["ATD"]
+[[coluna]]
+canonico = "taxa"
+rotulo = "Taxa"
+tipo = "texto_livre"
+sinonimos = ["TAXA"]
+[[coluna]]
+canonico = "total"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "texto_livre"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "original_2"
+rotulo = "Original"
+tipo = "texto_livre"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "total_2"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "classificacao"
+rotulo = "Classificacao"
+tipo = "texto_livre"
+sinonimos = ["CLASSIFICACAO"]
+[[coluna]]
+canonico = "qtd"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "original_3"
+rotulo = "Original"
+tipo = "texto_livre"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "qtd_2"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "nm_convenio"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "qtd_3"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "total_3"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]

@@ -1,0 +1,96 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 25 / USR_R_CUSTO_RESULTADO_ATEN)
+nome = "R_CUSTO_RESULTADO_ATEN"
+pasta = "Centro Cirúrgico"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "dt_alta"
+dimensoes = ["tp_referencia"]
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cst_total"
+rotulo = "Cst Total"
+tipo = "moeda"
+sinonimos = ["CST_TOTAL"]
+[[coluna]]
+canonico = "cst_unit"
+rotulo = "Cst Unit"
+tipo = "decimal"
+sinonimos = ["CST_UNIT"]
+[[coluna]]
+canonico = "ds_convenio"
+rotulo = "Descrição convênio"
+tipo = "texto_livre"
+sinonimos = ["DS_CONVENIO"]
+[[coluna]]
+canonico = "ds_paciente"
+rotulo = "Descrição paciente"
+tipo = "texto_livre"
+sinonimos = ["DS_PACIENTE"]
+[[coluna]]
+canonico = "ds_referencia"
+rotulo = "Descrição referencia"
+tipo = "texto_livre"
+sinonimos = ["DS_REFERENCIA"]
+[[coluna]]
+canonico = "ds_unidade"
+rotulo = "Descrição unidade"
+tipo = "texto_livre"
+sinonimos = ["DS_UNIDADE"]
+[[coluna]]
+canonico = "dt_alta"
+rotulo = "Data alta"
+tipo = "data"
+sinonimos = ["DT_ALTA"]
+[[coluna]]
+canonico = "dt_atendimento"
+rotulo = "Data atendimento"
+tipo = "data"
+sinonimos = ["DT_ATENDIMENTO"]
+[[coluna]]
+canonico = "item_referencia"
+rotulo = "Item Referencia"
+tipo = "texto_livre"
+sinonimos = ["ITEM_REFERENCIA"]
+[[coluna]]
+canonico = "qt_item"
+rotulo = "Qtd. item"
+tipo = "inteiro"
+sinonimos = ["QT_ITEM"]
+[[coluna]]
+canonico = "rec_total"
+rotulo = "Rec Total"
+tipo = "moeda"
+sinonimos = ["REC_TOTAL"]
+[[coluna]]
+canonico = "rec_unit"
+rotulo = "Rec Unit"
+tipo = "decimal"
+sinonimos = ["REC_UNIT"]
+[[coluna]]
+canonico = "tp_referencia"
+rotulo = "Tipo referencia"
+tipo = "categorico"
+sinonimos = ["TP_REFERENCIA"]
+[[coluna]]
+canonico = "v_resultado"
+rotulo = "V Resultado"
+tipo = "decimal"
+sinonimos = ["V_RESULTADO"]
+[[coluna]]
+canonico = "ds_multi_empresa"
+rotulo = "Descrição multi empresa"
+tipo = "texto_livre"
+sinonimos = ["DS_MULTI_EMPRESA"]
+[[coluna]]
+canonico = "user"
+rotulo = "User"
+tipo = "texto_livre"
+sinonimos = ["USER"]

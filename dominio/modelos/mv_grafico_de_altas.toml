@@ -1,0 +1,19 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 217 / USR_GRAFICO_DE_ALTAS)
+nome = "GRAFICO DE ALTAS"
+pasta = "Atendimento Hospitalar"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "hr_alta"
+rotulo = "Hora alta"
+tipo = "texto_livre"
+sinonimos = ["HR_ALTA"]

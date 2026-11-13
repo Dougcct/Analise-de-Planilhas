@@ -1,0 +1,98 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 169 / USR_QUANTITATIVO_CATETER_VESICAL_D)
+nome = "QUANTITATIVO CATETER VESICAL DE DEMORA"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "dh_criacao"
+dimensoes = ["unid_int", "tp_status", "unid_int_2", "tp_status_2", "unid_int_3"]
+
+[[coluna]]
+canonico = "conformidade"
+rotulo = "Conformidade"
+tipo = "texto_livre"
+sinonimos = ["CONFORMIDADE"]
+[[coluna]]
+canonico = "total"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "unid_int"
+rotulo = "Unid Int"
+tipo = "categorico"
+sinonimos = ["UNID_INT"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "dh_criacao"
+rotulo = "Data/hora criação"
+tipo = "data_hora"
+sinonimos = ["DH_CRIACAO"]
+[[coluna]]
+canonico = "ds_leito"
+rotulo = "Descrição leito"
+tipo = "texto_livre"
+sinonimos = ["DS_LEITO"]
+[[coluna]]
+canonico = "tp_status"
+rotulo = "Tipo status"
+tipo = "categorico"
+sinonimos = ["TP_STATUS"]
+[[coluna]]
+canonico = "unid_int_2"
+rotulo = "Unid Int"
+tipo = "categorico"
+sinonimos = ["UNID_INT"]
+[[coluna]]
+canonico = "valor"
+rotulo = "Valor"
+tipo = "texto_livre"
+sinonimos = ["VALOR"]
+[[coluna]]
+canonico = "campo"
+rotulo = "Campo"
+tipo = "texto_livre"
+sinonimos = ["CAMPO"]
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_paciente_2"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "dh_criacao_2"
+rotulo = "Data/hora criação"
+tipo = "data_hora"
+sinonimos = ["DH_CRIACAO"]
+[[coluna]]
+canonico = "ds_campo"
+rotulo = "Descrição campo"
+tipo = "texto_livre"
+sinonimos = ["DS_CAMPO"]
+[[coluna]]
+canonico = "tp_status_2"
+rotulo = "Tipo status"
+tipo = "categorico"
+sinonimos = ["TP_STATUS"]
+[[coluna]]
+canonico = "unid_int_3"
+rotulo = "Unid Int"
+tipo = "categorico"
+sinonimos = ["UNID_INT"]
+[[coluna]]
+canonico = "valor_2"
+rotulo = "Valor"
+tipo = "texto_livre"
+sinonimos = ["VALOR"]

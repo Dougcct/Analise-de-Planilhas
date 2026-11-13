@@ -1,0 +1,80 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 297 / USR_IMPOSTOS_POR_FORNECEDOR)
+nome = "IMPOSTOS POR FORNECEDOR"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "dt_emissao"
+
+[[coluna]]
+canonico = "cd_fornecedor"
+rotulo = "Código fornecedor"
+tipo = "identificador"
+sinonimos = ["CD_FORNECEDOR"]
+[[coluna]]
+canonico = "ds_con_pag"
+rotulo = "Descrição con pag"
+tipo = "texto_livre"
+sinonimos = ["DS_CON_PAG"]
+[[coluna]]
+canonico = "ds_tip_doc"
+rotulo = "Descrição tipo documento"
+tipo = "texto_livre"
+sinonimos = ["DS_TIP_DOC"]
+[[coluna]]
+canonico = "dt_emissao"
+rotulo = "Data emissao"
+tipo = "data"
+sinonimos = ["DT_EMISSAO"]
+[[coluna]]
+canonico = "dt_lancamento"
+rotulo = "Data lancamento"
+tipo = "data"
+sinonimos = ["DT_LANCAMENTO"]
+[[coluna]]
+canonico = "dt_vencimento"
+rotulo = "Data vencimento"
+tipo = "data"
+sinonimos = ["DT_VENCIMENTO"]
+[[coluna]]
+canonico = "imposto"
+rotulo = "Imposto"
+tipo = "texto_livre"
+sinonimos = ["IMPOSTO"]
+[[coluna]]
+canonico = "nm_fornecedor"
+rotulo = "Nome fornecedor"
+tipo = "texto_livre"
+sinonimos = ["NM_FORNECEDOR"]
+[[coluna]]
+canonico = "nr_documento"
+rotulo = "Número documento"
+tipo = "identificador"
+sinonimos = ["NR_DOCUMENTO"]
+[[coluna]]
+canonico = "nr_serie"
+rotulo = "Número serie"
+tipo = "identificador"
+sinonimos = ["NR_SERIE"]
+[[coluna]]
+canonico = "vl_bruto_conta"
+rotulo = "Valor bruto conta"
+tipo = "moeda"
+sinonimos = ["VL_BRUTO_CONTA"]
+[[coluna]]
+canonico = "vl_duplicata"
+rotulo = "Valor duplicata"
+tipo = "moeda"
+sinonimos = ["VL_DUPLICATA"]
+[[coluna]]
+canonico = "cd_tip_doc"
+rotulo = "Código tipo documento"
+tipo = "identificador"
+sinonimos = ["CD_TIP_DOC"]
+[[coluna]]
+canonico = "nome"
+rotulo = "Nome"
+tipo = "texto_livre"
+sinonimos = ["NOME"]

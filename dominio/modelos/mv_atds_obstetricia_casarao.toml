@@ -1,0 +1,36 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 153 / USR_ATDS_OBSTETRICIA_CASARAO)
+nome = "ATDS OBSTETRICIA CASARAO"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "hr_atendimento"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "hr_atendimento"
+rotulo = "Hora atendimento"
+tipo = "data_hora"
+sinonimos = ["HR_ATENDIMENTO"]
+[[coluna]]
+canonico = "nm_prestador"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "data"
+sinonimos = ["ORIGINAL"]

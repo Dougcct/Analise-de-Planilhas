@@ -1,0 +1,29 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 508 / USR_00_CLASSIFICACAO_ASA)
+nome = "CLASSIFICAÇÃO ASA"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "cd_asa"
+rotulo = "Código asa"
+tipo = "identificador"
+sinonimos = ["CD_ASA"]
+[[coluna]]
+canonico = "ds_asa"
+rotulo = "Descrição asa"
+tipo = "texto_livre"
+sinonimos = ["DS_ASA"]
+[[coluna]]
+canonico = "ds_cen_cir"
+rotulo = "Descrição centro cirurgia"
+tipo = "texto_livre"
+sinonimos = ["DS_CEN_CIR"]
+[[coluna]]
+canonico = "qt"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]

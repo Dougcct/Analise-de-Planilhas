@@ -1,0 +1,176 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 472 / USR_PRODUTIVIDADE_MEDICA_)
+nome = "Produtividade Médica"
+pasta = "Farmácia e Suprimentos"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "fim"
+dimensoes = ["especialidade", "tipo_prioridade"]
+
+[[coluna]]
+canonico = "data"
+rotulo = "Data"
+tipo = "texto_livre"
+sinonimos = ["DATA"]
+[[coluna]]
+canonico = "fim"
+rotulo = "Fim"
+tipo = "data"
+sinonimos = ["FIM"]
+[[coluna]]
+canonico = "ini"
+rotulo = "Ini"
+tipo = "data"
+sinonimos = ["INI"]
+[[coluna]]
+canonico = "alta"
+rotulo = "Alta"
+tipo = "texto_livre"
+sinonimos = ["ALTA"]
+[[coluna]]
+canonico = "atendimento_med_chamada"
+rotulo = "Atendimento Med Chamada"
+tipo = "texto_livre"
+sinonimos = ["ATENDIMENTO_MED_CHAMADA"]
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_multi_empresa"
+rotulo = "Código multi empresa"
+tipo = "identificador"
+sinonimos = ["CD_MULTI_EMPRESA"]
+[[coluna]]
+canonico = "chamada_cadastro"
+rotulo = "Chamada Cadastro"
+tipo = "texto_livre"
+sinonimos = ["CHAMADA_CADASTRO"]
+[[coluna]]
+canonico = "chamada_classificacao"
+rotulo = "Chamada Classificacao"
+tipo = "texto_livre"
+sinonimos = ["CHAMADA_CLASSIFICACAO"]
+[[coluna]]
+canonico = "classificacao_final"
+rotulo = "Classificacao Final"
+tipo = "texto_livre"
+sinonimos = ["CLASSIFICACAO_FINAL"]
+[[coluna]]
+canonico = "classificacao_inicio"
+rotulo = "Classificacao Inicio"
+tipo = "texto_livre"
+sinonimos = ["CLASSIFICACAO_INICIO"]
+[[coluna]]
+canonico = "dt_hr_senha"
+rotulo = "Data hr senha"
+tipo = "data"
+sinonimos = ["DT_HR_SENHA"]
+[[coluna]]
+canonico = "especialidade"
+rotulo = "Especialidade"
+tipo = "categorico"
+sinonimos = ["ESPECIALIDADE"]
+[[coluna]]
+canonico = "espera_atendimento_med"
+rotulo = "Espera Atendimento Med"
+tipo = "texto_livre"
+sinonimos = ["ESPERA_ATENDIMENTO_MED"]
+[[coluna]]
+canonico = "espera_cadastro"
+rotulo = "Espera Cadastro"
+tipo = "texto_livre"
+sinonimos = ["ESPERA_CADASTRO"]
+[[coluna]]
+canonico = "espera_classificacao"
+rotulo = "Espera Classificacao"
+tipo = "texto_livre"
+sinonimos = ["ESPERA_CLASSIFICACAO"]
+[[coluna]]
+canonico = "fim_cadastro"
+rotulo = "Fim Cadastro"
+tipo = "texto_livre"
+sinonimos = ["FIM_CADASTRO"]
+[[coluna]]
+canonico = "idade_paciente"
+rotulo = "Idade Paciente"
+tipo = "texto_livre"
+sinonimos = ["IDADE_PACIENTE"]
+[[coluna]]
+canonico = "limite_classificacao"
+rotulo = "Limite Classificacao"
+tipo = "texto_livre"
+sinonimos = ["LIMITE_CLASSIFICACAO"]
+[[coluna]]
+canonico = "nome_prestador"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NOME_PRESTADOR"]
+[[coluna]]
+canonico = "senha"
+rotulo = "Senha"
+tipo = "texto_livre"
+sinonimos = ["SENHA"]
+[[coluna]]
+canonico = "tempo_atendimento"
+rotulo = "Tempo Atendimento"
+tipo = "texto_livre"
+sinonimos = ["TEMPO_ATENDIMENTO"]
+[[coluna]]
+canonico = "tempo_classificacao"
+rotulo = "Tempo Classificacao"
+tipo = "texto_livre"
+sinonimos = ["TEMPO_CLASSIFICACAO"]
+[[coluna]]
+canonico = "tempo_total_atendimento"
+rotulo = "Tempo Total Atendimento"
+tipo = "texto_livre"
+sinonimos = ["TEMPO_TOTAL_ATENDIMENTO"]
+[[coluna]]
+canonico = "tipo_prioridade"
+rotulo = "Tipo prioridade"
+tipo = "categorico"
+sinonimos = ["TIPO_PRIORIDADE"]
+[[coluna]]
+canonico = "total"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "cd_especialid"
+rotulo = "Código especialidade"
+tipo = "identificador"
+sinonimos = ["CD_ESPECIALID"]
+[[coluna]]
+canonico = "ds_especialid"
+rotulo = "Descrição especialidade"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIALID"]
+[[coluna]]
+canonico = "cd_prestador"
+rotulo = "Código prestador"
+tipo = "identificador"
+sinonimos = ["CD_PRESTADOR"]
+[[coluna]]
+canonico = "nm_prestador"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "nome_prestador_2"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NOME_PRESTADOR"]
+[[coluna]]
+canonico = "total_2"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "ds_multi_empresa"
+rotulo = "Descrição multi empresa"
+tipo = "texto_livre"
+sinonimos = ["DS_MULTI_EMPRESA"]

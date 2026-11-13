@@ -1,0 +1,40 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 99 / USR_QTD_ATDS_URGENCIA_POR_DIA)
+nome = "QTD ATDs URGENCIA POR DIA"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "dt_atendimento"
+
+[[coluna]]
+canonico = "dt_atendimento"
+rotulo = "Data atendimento"
+tipo = "data"
+sinonimos = ["DT_ATENDIMENTO"]
+[[coluna]]
+canonico = "qtd"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "cd_ori_ate"
+rotulo = "Código origem atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ORI_ATE"]
+[[coluna]]
+canonico = "ds_ori_ate"
+rotulo = "Descrição origem atendimento"
+tipo = "texto_livre"
+sinonimos = ["DS_ORI_ATE"]
+[[coluna]]
+canonico = "cd_especialid"
+rotulo = "Código especialidade"
+tipo = "identificador"
+sinonimos = ["CD_ESPECIALID"]
+[[coluna]]
+canonico = "ds_especialid"
+rotulo = "Descrição especialidade"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIALID"]

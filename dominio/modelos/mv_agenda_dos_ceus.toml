@@ -1,0 +1,62 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 610 / USR_AGENDA_DOS__CEUS)
+nome = "AGENDA DOS  CEUS"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "hr_agenda"
+dimensoes = ["status"]
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "hr_agenda"
+rotulo = "Hora agenda"
+tipo = "data_hora"
+sinonimos = ["HR_AGENDA"]
+[[coluna]]
+canonico = "nm_prestador"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "recepcao"
+rotulo = "Recepcao"
+tipo = "texto_livre"
+sinonimos = ["RECEPCAO"]
+[[coluna]]
+canonico = "status"
+rotulo = "Status"
+tipo = "categorico"
+sinonimos = ["STATUS"]
+[[coluna]]
+canonico = "cd_setor"
+rotulo = "Código setor"
+tipo = "identificador"
+sinonimos = ["CD_SETOR"]
+[[coluna]]
+canonico = "nm_setor"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "cd_especialid"
+rotulo = "Código especialidade"
+tipo = "identificador"
+sinonimos = ["CD_ESPECIALID"]
+[[coluna]]
+canonico = "ds_especialid"
+rotulo = "Descrição especialidade"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIALID"]

@@ -1,0 +1,19 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 421 / USR_POSTO_INT)
+nome = "Posto int"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "ds_especialid"
+rotulo = "Descrição especialidade"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIALID"]

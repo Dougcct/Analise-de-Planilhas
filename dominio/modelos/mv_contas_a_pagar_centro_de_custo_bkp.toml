@@ -1,0 +1,106 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 283 / USR_CONTAS_A_PAGAR_CENTRO_DE_CUSTO)
+nome = "CONTAS A PAGAR CENTRO DE CUSTO BKP"
+pasta = "Faturamento"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "dt_emissao"
+dimensoes = ["tp_con_pag", "tp_vencimento"]
+
+[[coluna]]
+canonico = "cd_con_pag"
+rotulo = "Código con pag"
+tipo = "identificador"
+sinonimos = ["CD_CON_PAG"]
+[[coluna]]
+canonico = "cd_fornecedor"
+rotulo = "Código fornecedor"
+tipo = "identificador"
+sinonimos = ["CD_FORNECEDOR"]
+[[coluna]]
+canonico = "cd_reduzido"
+rotulo = "Código reduzido"
+tipo = "identificador"
+sinonimos = ["CD_REDUZIDO"]
+[[coluna]]
+canonico = "cd_servico"
+rotulo = "Código servico"
+tipo = "identificador"
+sinonimos = ["CD_SERVICO"]
+[[coluna]]
+canonico = "cd_tip_doc"
+rotulo = "Código tipo documento"
+tipo = "identificador"
+sinonimos = ["CD_TIP_DOC"]
+[[coluna]]
+canonico = "ds_con_pag"
+rotulo = "Descrição con pag"
+tipo = "texto_livre"
+sinonimos = ["DS_CON_PAG"]
+[[coluna]]
+canonico = "ds_fornecedor"
+rotulo = "Descrição fornecedor"
+tipo = "texto_livre"
+sinonimos = ["DS_FORNECEDOR"]
+[[coluna]]
+canonico = "ds_tip_doc"
+rotulo = "Descrição tipo documento"
+tipo = "texto_livre"
+sinonimos = ["DS_TIP_DOC"]
+[[coluna]]
+canonico = "dt_emissao"
+rotulo = "Data emissao"
+tipo = "data"
+sinonimos = ["DT_EMISSAO"]
+[[coluna]]
+canonico = "dt_lancamento"
+rotulo = "Data lancamento"
+tipo = "data"
+sinonimos = ["DT_LANCAMENTO"]
+[[coluna]]
+canonico = "dt_vencimento"
+rotulo = "Data vencimento"
+tipo = "data"
+sinonimos = ["DT_VENCIMENTO"]
+[[coluna]]
+canonico = "nr_documento"
+rotulo = "Número documento"
+tipo = "identificador"
+sinonimos = ["NR_DOCUMENTO"]
+[[coluna]]
+canonico = "tp_con_pag"
+rotulo = "Tipo con pag"
+tipo = "categorico"
+sinonimos = ["TP_CON_PAG"]
+[[coluna]]
+canonico = "tp_vencimento"
+rotulo = "Tipo vencimento"
+tipo = "categorico"
+sinonimos = ["TP_VENCIMENTO"]
+[[coluna]]
+canonico = "vl_duplicata"
+rotulo = "Valor duplicata"
+tipo = "moeda"
+sinonimos = ["VL_DUPLICATA"]
+[[coluna]]
+canonico = "dia"
+rotulo = "Dia"
+tipo = "data"
+sinonimos = ["DIA"]
+[[coluna]]
+canonico = "total_diario"
+rotulo = "Total Diario"
+tipo = "moeda"
+sinonimos = ["TOTAL_DIARIO"]
+[[coluna]]
+canonico = "cd_item_res"
+rotulo = "Código item res"
+tipo = "identificador"
+sinonimos = ["CD_ITEM_RES"]
+[[coluna]]
+canonico = "ds_item_res"
+rotulo = "Descrição item res"
+tipo = "texto_livre"
+sinonimos = ["DS_ITEM_RES"]

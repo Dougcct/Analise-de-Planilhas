@@ -1,0 +1,60 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 146 / USR_CR_-_PACIENTES_POR_ENFERMEIRO)
+nome = "CR - PACIENTES POR ENFERMEIRO"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "data_atd"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "data_atd"
+rotulo = "Data atendimento"
+tipo = "data"
+sinonimos = ["DATA_ATD"]
+[[coluna]]
+canonico = "ds_classificacao"
+rotulo = "Descrição classificacao"
+tipo = "texto_livre"
+sinonimos = ["DS_CLASSIFICACAO"]
+[[coluna]]
+canonico = "ds_cor"
+rotulo = "Descrição cor"
+tipo = "texto_livre"
+sinonimos = ["DS_COR"]
+[[coluna]]
+canonico = "ds_senha"
+rotulo = "Descrição senha"
+tipo = "texto_livre"
+sinonimos = ["DS_SENHA"]
+[[coluna]]
+canonico = "nm_paciente_abrev"
+rotulo = "Nome paciente abrev"
+tipo = "texto_livre"
+sinonimos = ["NM_PACIENTE_ABREV"]
+[[coluna]]
+canonico = "ti_triagem"
+rotulo = "Ti Triagem"
+tipo = "data"
+sinonimos = ["TI_TRIAGEM"]
+[[coluna]]
+canonico = "us_triagem"
+rotulo = "Us Triagem"
+tipo = "texto_livre"
+sinonimos = ["US_TRIAGEM"]
+[[coluna]]
+canonico = "cd_fila_senha"
+rotulo = "Código fila senha"
+tipo = "identificador"
+sinonimos = ["CD_FILA_SENHA"]
+[[coluna]]
+canonico = "ds_fila"
+rotulo = "Descrição fila"
+tipo = "texto_livre"
+sinonimos = ["DS_FILA"]

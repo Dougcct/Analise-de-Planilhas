@@ -1,0 +1,83 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 657 / USR_TEMPO_PERMANENCIA_MES_UNID_INT)
+nome = "Tempo Permanencia Mensal Unid Int"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "dt_alta"
+dimensoes = ["unidade"]
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "cd_unid_int"
+rotulo = "Código unidade internação"
+tipo = "identificador"
+sinonimos = ["CD_UNID_INT"]
+[[coluna]]
+canonico = "ds_unid_int"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "dt_alta"
+rotulo = "Data alta"
+tipo = "data"
+sinonimos = ["DT_ALTA"]
+[[coluna]]
+canonico = "dt_atendimento"
+rotulo = "Data atendimento"
+tipo = "data"
+sinonimos = ["DT_ATENDIMENTO"]
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "cd_unid_int_2"
+rotulo = "Código unidade internação"
+tipo = "identificador"
+sinonimos = ["CD_UNID_INT"]
+[[coluna]]
+canonico = "ds_unid_int_2"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "cd_atendimento_2"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_paciente_2"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "cd_unidade"
+rotulo = "Código unidade"
+tipo = "identificador"
+sinonimos = ["CD_UNIDADE"]
+[[coluna]]
+canonico = "dias_em_jan"
+rotulo = "Dias em jan"
+tipo = "inteiro"
+sinonimos = ["DIAS_EM_JAN"]
+[[coluna]]
+canonico = "unidade"
+rotulo = "Unidade"
+tipo = "categorico"
+sinonimos = ["UNIDADE"]

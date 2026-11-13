@@ -1,0 +1,137 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 654 / USR_TEMPO_DE_PERMANENCIA_PAC_UNID_)
+nome = "Tempo de Permanencia Pac Unid Int"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "entrada"
+dimensoes = ["unidade", "tp_mov", "unidade_2"]
+
+[[coluna]]
+canonico = "atuais"
+rotulo = "Atuais"
+tipo = "decimal"
+sinonimos = ["ATUAIS"]
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_unidade"
+rotulo = "Código unidade"
+tipo = "identificador"
+sinonimos = ["CD_UNIDADE"]
+[[coluna]]
+canonico = "dias"
+rotulo = "Dias"
+tipo = "decimal"
+sinonimos = ["DIAS"]
+[[coluna]]
+canonico = "horas"
+rotulo = "Horas"
+tipo = "decimal"
+sinonimos = ["HORAS"]
+[[coluna]]
+canonico = "minutos"
+rotulo = "Minutos"
+tipo = "decimal"
+sinonimos = ["MINUTOS"]
+[[coluna]]
+canonico = "segundos"
+rotulo = "Segundos"
+tipo = "decimal"
+sinonimos = ["SEGUNDOS"]
+[[coluna]]
+canonico = "tempo_formatado"
+rotulo = "Tempo Formatado"
+tipo = "texto_livre"
+sinonimos = ["TEMPO_FORMATADO"]
+[[coluna]]
+canonico = "unidade"
+rotulo = "Unidade"
+tipo = "categorico"
+sinonimos = ["UNIDADE"]
+[[coluna]]
+canonico = "cd_unid_int"
+rotulo = "Código unidade internação"
+tipo = "identificador"
+sinonimos = ["CD_UNID_INT"]
+[[coluna]]
+canonico = "ds_unid_int"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "cd_atendimento_2"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "cd_unidade_2"
+rotulo = "Código unidade"
+tipo = "identificador"
+sinonimos = ["CD_UNIDADE"]
+[[coluna]]
+canonico = "dias_2"
+rotulo = "Dias"
+tipo = "decimal"
+sinonimos = ["DIAS"]
+[[coluna]]
+canonico = "entrada"
+rotulo = "Entrada"
+tipo = "data"
+sinonimos = ["ENTRADA"]
+[[coluna]]
+canonico = "horas_2"
+rotulo = "Horas"
+tipo = "decimal"
+sinonimos = ["HORAS"]
+[[coluna]]
+canonico = "minutos_2"
+rotulo = "Minutos"
+tipo = "decimal"
+sinonimos = ["MINUTOS"]
+[[coluna]]
+canonico = "mov"
+rotulo = "Mov"
+tipo = "texto_livre"
+sinonimos = ["MOV"]
+[[coluna]]
+canonico = "saida"
+rotulo = "Saida"
+tipo = "data"
+sinonimos = ["SAIDA"]
+[[coluna]]
+canonico = "segundos_2"
+rotulo = "Segundos"
+tipo = "decimal"
+sinonimos = ["SEGUNDOS"]
+[[coluna]]
+canonico = "tempo_formatado_2"
+rotulo = "Tempo Formatado"
+tipo = "texto_livre"
+sinonimos = ["TEMPO_FORMATADO"]
+[[coluna]]
+canonico = "tp_mov"
+rotulo = "Tipo movimento"
+tipo = "categorico"
+sinonimos = ["TP_MOV"]
+[[coluna]]
+canonico = "unidade_2"
+rotulo = "Unidade"
+tipo = "categorico"
+sinonimos = ["UNIDADE"]
+[[coluna]]
+canonico = "x"
+rotulo = "X"
+tipo = "decimal"
+sinonimos = ["X"]

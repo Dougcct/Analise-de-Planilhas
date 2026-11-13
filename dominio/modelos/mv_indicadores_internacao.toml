@@ -1,0 +1,74 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 191 / USR_INDICADORES_INTERNACAO)
+nome = "INDICADORES INTERNACAO"
+pasta = "Atendimento Hospitalar"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "mes"
+rotulo = "Mes"
+tipo = "texto_livre"
+sinonimos = ["MES"]
+[[coluna]]
+canonico = "qtd"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "mes_2"
+rotulo = "Mes"
+tipo = "texto_livre"
+sinonimos = ["MES"]
+[[coluna]]
+canonico = "qtd_2"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "data"
+rotulo = "Data"
+tipo = "texto_livre"
+sinonimos = ["DATA"]
+[[coluna]]
+canonico = "qt"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "data_2"
+rotulo = "Data"
+tipo = "texto_livre"
+sinonimos = ["DATA"]
+[[coluna]]
+canonico = "qt_2"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "data_3"
+rotulo = "Data"
+tipo = "texto_livre"
+sinonimos = ["DATA"]
+[[coluna]]
+canonico = "qtd_3"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "tp"
+rotulo = "Tp"
+tipo = "texto_livre"
+sinonimos = ["TP"]
+[[coluna]]
+canonico = "cd_sal_cir"
+rotulo = "Código sal cirurgia"
+tipo = "identificador"
+sinonimos = ["CD_SAL_CIR"]
+[[coluna]]
+canonico = "horas_utilizadas"
+rotulo = "Horas Utilizadas"
+tipo = "decimal"
+sinonimos = ["HORAS_UTILIZADAS"]

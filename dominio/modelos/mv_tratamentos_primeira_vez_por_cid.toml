@@ -1,0 +1,35 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 443 / USR_TRATAMENTOS_PRIMEIRA_VEZ_POR_C)
+nome = "TRATAMENTOS PRIMEIRA VEZ POR CID"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+
+[[coluna]]
+canonico = "cid"
+rotulo = "Cid"
+tipo = "texto_livre"
+sinonimos = ["CID"]
+[[coluna]]
+canonico = "qtd"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "cid_2"
+rotulo = "Cid"
+tipo = "texto_livre"
+sinonimos = ["CID"]

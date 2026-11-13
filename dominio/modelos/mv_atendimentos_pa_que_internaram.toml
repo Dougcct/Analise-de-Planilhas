@@ -1,0 +1,50 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 236 / USR_ATENDIMENTOS_PA_QUE_INTERNARAM)
+nome = "ATENDIMENTOS PA QUE INTERNARAM"
+pasta = "Atendimento Hospitalar"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "dt_atendimento"
+
+[[coluna]]
+canonico = "atd_inter"
+rotulo = "Atd Inter"
+tipo = "decimal"
+sinonimos = ["ATD_INTER"]
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_remessa"
+rotulo = "Código remessa"
+tipo = "identificador"
+sinonimos = ["CD_REMESSA"]
+[[coluna]]
+canonico = "cd_senha"
+rotulo = "Código senha"
+tipo = "identificador"
+sinonimos = ["CD_SENHA"]
+[[coluna]]
+canonico = "competencia"
+rotulo = "Competencia"
+tipo = "texto_livre"
+sinonimos = ["COMPETENCIA"]
+[[coluna]]
+canonico = "dt_atendimento"
+rotulo = "Data atendimento"
+tipo = "data"
+sinonimos = ["DT_ATENDIMENTO"]
+[[coluna]]
+canonico = "nm_convenio"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "rn"
+rotulo = "Rn"
+tipo = "decimal"
+sinonimos = ["RN"]

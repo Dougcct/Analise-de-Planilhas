@@ -1,0 +1,29 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 369 / USR_ATENDIMENTOS_COLABORADORES)
+nome = "ATENDIMENTOS_COLABORADORES"
+pasta = "Exames e Laboratório"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "ano_mes"
+rotulo = "Ano Mes"
+tipo = "texto_livre"
+sinonimos = ["ANO_MES"]
+[[coluna]]
+canonico = "cd_usuario"
+rotulo = "Código usuário"
+tipo = "identificador"
+sinonimos = ["CD_USUARIO"]
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "nm_usuario"
+rotulo = "Nome usuário"
+tipo = "texto_livre"
+sinonimos = ["NM_USUARIO"]

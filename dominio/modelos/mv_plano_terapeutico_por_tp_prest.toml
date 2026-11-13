@@ -1,0 +1,55 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 509 / USR_PLANO_TERAPEUTICO_POR_TP_PREST)
+nome = "PLANO TERAPEUTICO POR TP PREST"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "dh_criacao"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_prestador"
+rotulo = "Código prestador"
+tipo = "identificador"
+sinonimos = ["CD_PRESTADOR"]
+[[coluna]]
+canonico = "dh_criacao"
+rotulo = "Data/hora criação"
+tipo = "data_hora"
+sinonimos = ["DH_CRIACAO"]
+[[coluna]]
+canonico = "ds_campo"
+rotulo = "Descrição campo"
+tipo = "texto_livre"
+sinonimos = ["DS_CAMPO"]
+[[coluna]]
+canonico = "ds_enfermaria"
+rotulo = "Descrição enfermaria"
+tipo = "texto_livre"
+sinonimos = ["DS_ENFERMARIA"]
+[[coluna]]
+canonico = "nm_prestador"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "nm_setor"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "prev_int"
+rotulo = "Prev Int"
+tipo = "texto_livre"
+sinonimos = ["PREV_INT"]
+[[coluna]]
+canonico = "rn"
+rotulo = "Rn"
+tipo = "decimal"
+sinonimos = ["RN"]

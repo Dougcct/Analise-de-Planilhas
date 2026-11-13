@@ -1,0 +1,30 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 200 / USR_PACIENTES_LIBERADOS_SEM_CPF)
+nome = "PACIENTES LIBERADOS SEM CPF"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "cd_usuario_permissao"
+rotulo = "Código usuário permissao"
+tipo = "identificador"
+sinonimos = ["CD_USUARIO_PERMISSAO"]
+[[coluna]]
+canonico = "ds_motivo"
+rotulo = "Descrição motivo"
+tipo = "texto_livre"
+sinonimos = ["DS_MOTIVO"]
+[[coluna]]
+canonico = "nm_usuario"
+rotulo = "Nome usuário"
+tipo = "texto_livre"
+sinonimos = ["NM_USUARIO"]

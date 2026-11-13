@@ -1,0 +1,183 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 543 / USR_EXAMES_DE_RAIO-X_SOLICITADOS)
+nome = "EXAMES DE RAIO-X SOLICITADOS"
+pasta = "Atendimento Hospitalar"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "dt_coleta"
+dimensoes = ["tp_atendimento", "tp_atendimento_2"]
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_exa_rx"
+rotulo = "Código exame rx"
+tipo = "identificador"
+sinonimos = ["CD_EXA_RX"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "cd_ped_rx"
+rotulo = "Código ped rx"
+tipo = "identificador"
+sinonimos = ["CD_PED_RX"]
+[[coluna]]
+canonico = "cd_setor"
+rotulo = "Código setor"
+tipo = "identificador"
+sinonimos = ["CD_SETOR"]
+[[coluna]]
+canonico = "cd_unid_int"
+rotulo = "Código unidade internação"
+tipo = "identificador"
+sinonimos = ["CD_UNID_INT"]
+[[coluna]]
+canonico = "ds_exa_rx"
+rotulo = "Descrição exame rx"
+tipo = "texto_livre"
+sinonimos = ["DS_EXA_RX"]
+[[coluna]]
+canonico = "ds_leito"
+rotulo = "Descrição leito"
+tipo = "texto_livre"
+sinonimos = ["DS_LEITO"]
+[[coluna]]
+canonico = "ds_unid_int"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "dt_coleta"
+rotulo = "Data coleta"
+tipo = "data"
+sinonimos = ["DT_COLETA"]
+[[coluna]]
+canonico = "dt_pedido"
+rotulo = "Data pedido"
+tipo = "data"
+sinonimos = ["DT_PEDIDO"]
+[[coluna]]
+canonico = "hr_pedido"
+rotulo = "Hora pedido"
+tipo = "data_hora"
+sinonimos = ["HR_PEDIDO"]
+[[coluna]]
+canonico = "nm_setor"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "nm_set_exa"
+rotulo = "Nome set exame"
+tipo = "texto_livre"
+sinonimos = ["NM_SET_EXA"]
+[[coluna]]
+canonico = "sn_realizado"
+rotulo = "Realizado?"
+tipo = "booleano"
+sinonimos = ["SN_REALIZADO"]
+[[coluna]]
+canonico = "tp_atendimento"
+rotulo = "Tipo atendimento"
+tipo = "categorico"
+sinonimos = ["TP_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_unid_int_2"
+rotulo = "Código unidade internação"
+tipo = "identificador"
+sinonimos = ["CD_UNID_INT"]
+[[coluna]]
+canonico = "ds_unid_int_2"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "cd_atendimento_2"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_exa_rx_2"
+rotulo = "Código exame rx"
+tipo = "identificador"
+sinonimos = ["CD_EXA_RX"]
+[[coluna]]
+canonico = "cd_paciente_2"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "cd_ped_rx_2"
+rotulo = "Código ped rx"
+tipo = "identificador"
+sinonimos = ["CD_PED_RX"]
+[[coluna]]
+canonico = "cd_setor_2"
+rotulo = "Código setor"
+tipo = "identificador"
+sinonimos = ["CD_SETOR"]
+[[coluna]]
+canonico = "cd_unid_int_3"
+rotulo = "Código unidade internação"
+tipo = "identificador"
+sinonimos = ["CD_UNID_INT"]
+[[coluna]]
+canonico = "ds_exa_rx_2"
+rotulo = "Descrição exame rx"
+tipo = "texto_livre"
+sinonimos = ["DS_EXA_RX"]
+[[coluna]]
+canonico = "ds_leito_2"
+rotulo = "Descrição leito"
+tipo = "texto_livre"
+sinonimos = ["DS_LEITO"]
+[[coluna]]
+canonico = "ds_unid_int_3"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "dt_coleta_2"
+rotulo = "Data coleta"
+tipo = "data"
+sinonimos = ["DT_COLETA"]
+[[coluna]]
+canonico = "dt_pedido_2"
+rotulo = "Data pedido"
+tipo = "data"
+sinonimos = ["DT_PEDIDO"]
+[[coluna]]
+canonico = "hr_pedido_2"
+rotulo = "Hora pedido"
+tipo = "data_hora"
+sinonimos = ["HR_PEDIDO"]
+[[coluna]]
+canonico = "nm_setor_2"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "nm_set_exa_2"
+rotulo = "Nome set exame"
+tipo = "texto_livre"
+sinonimos = ["NM_SET_EXA"]
+[[coluna]]
+canonico = "sn_realizado_2"
+rotulo = "Realizado?"
+tipo = "booleano"
+sinonimos = ["SN_REALIZADO"]
+[[coluna]]
+canonico = "tp_atendimento_2"
+rotulo = "Tipo atendimento"
+tipo = "categorico"
+sinonimos = ["TP_ATENDIMENTO"]

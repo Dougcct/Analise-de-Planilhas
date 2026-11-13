@@ -1,0 +1,40 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 157 / USR_QUATITATIVO_DE_PARTOS)
+nome = "INATIVO (QUANTITATIVO DE PARTOS)"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+dimensoes = ["tipo_parto"]
+
+[[coluna]]
+canonico = "cd_pro_fat"
+rotulo = "Código procedimento faturamento"
+tipo = "identificador"
+sinonimos = ["CD_PRO_FAT"]
+[[coluna]]
+canonico = "percentual"
+rotulo = "Percentual"
+tipo = "decimal"
+sinonimos = ["PERCENTUAL"]
+[[coluna]]
+canonico = "qtd"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "tipo_parto"
+rotulo = "Tipo parto"
+tipo = "categorico"
+sinonimos = ["TIPO_PARTO"]
+[[coluna]]
+canonico = "total"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "qtd_2"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]

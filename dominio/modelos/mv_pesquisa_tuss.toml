@@ -1,0 +1,34 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 224 / USR_PESQUISA_TUSS)
+nome = "PESQUISA TUSS"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "cd_produto"
+rotulo = "Código produto"
+tipo = "identificador"
+sinonimos = ["CD_PRODUTO"]
+[[coluna]]
+canonico = "cd_pro_fat"
+rotulo = "Código procedimento faturamento"
+tipo = "identificador"
+sinonimos = ["CD_PRO_FAT"]
+[[coluna]]
+canonico = "cd_tuss"
+rotulo = "Código tuss"
+tipo = "identificador"
+sinonimos = ["CD_TUSS"]
+[[coluna]]
+canonico = "decricao_produto"
+rotulo = "Decricao Produto"
+tipo = "texto_livre"
+sinonimos = ["DECRICAO_PRODUTO"]
+[[coluna]]
+canonico = "descricao_tuss"
+rotulo = "Descricao Tuss"
+tipo = "texto_livre"
+sinonimos = ["DESCRICAO_TUSS"]

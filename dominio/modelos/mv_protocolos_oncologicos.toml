@@ -1,0 +1,60 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 538 / USR_PROTOCOLOS_ONCOLOGICOS)
+nome = "PROTOCOLOS ONCOLÓGICOS"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+dimensoes = ["tp_contagem"]
+
+[[coluna]]
+canonico = "cd_protocolo"
+rotulo = "Código protocolo"
+tipo = "identificador"
+sinonimos = ["CD_PROTOCOLO"]
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "texto_livre"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "original_2"
+rotulo = "Original"
+tipo = "texto_livre"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "ds_protocolo"
+rotulo = "Descrição protocolo"
+tipo = "texto_livre"
+sinonimos = ["DS_PROTOCOLO"]
+[[coluna]]
+canonico = "intervalo_dias"
+rotulo = "Intervalo Dias"
+tipo = "decimal"
+sinonimos = ["INTERVALO_DIAS"]
+[[coluna]]
+canonico = "qt_ciclo"
+rotulo = "Qtd. ciclo"
+tipo = "inteiro"
+sinonimos = ["QT_CICLO"]
+[[coluna]]
+canonico = "sn_ativo"
+rotulo = "Ativo?"
+tipo = "booleano"
+sinonimos = ["SN_ATIVO"]
+[[coluna]]
+canonico = "tp_contagem"
+rotulo = "Tipo contagem"
+tipo = "categorico"
+sinonimos = ["TP_CONTAGEM"]
+[[coluna]]
+canonico = "codigo"
+rotulo = "Codigo"
+tipo = "decimal"
+sinonimos = ["CODIGO"]
+[[coluna]]
+canonico = "sn_ativo_2"
+rotulo = "Ativo?"
+tipo = "booleano"
+sinonimos = ["SN_ATIVO"]

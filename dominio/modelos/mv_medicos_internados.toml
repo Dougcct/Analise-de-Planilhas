@@ -1,0 +1,41 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 675 / USR_MEDICOS_INTERNADOS)
+nome = "MEDICOS INTERNADOS"
+pasta = "Farmácia e Suprimentos"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "data_alta"
+dimensoes = ["leito", "status"]
+
+[[coluna]]
+canonico = "data_alta"
+rotulo = "Data alta"
+tipo = "data"
+sinonimos = ["DATA_ALTA"]
+[[coluna]]
+canonico = "leito"
+rotulo = "Leito"
+tipo = "categorico"
+sinonimos = ["LEITO"]
+[[coluna]]
+canonico = "motivo_alta"
+rotulo = "Motivo Alta"
+tipo = "texto_livre"
+sinonimos = ["MOTIVO_ALTA"]
+[[coluna]]
+canonico = "nome"
+rotulo = "Nome"
+tipo = "texto_livre"
+sinonimos = ["NOME"]
+[[coluna]]
+canonico = "posto"
+rotulo = "Posto"
+tipo = "texto_livre"
+sinonimos = ["POSTO"]
+[[coluna]]
+canonico = "status"
+rotulo = "Status"
+tipo = "categorico"
+sinonimos = ["STATUS"]

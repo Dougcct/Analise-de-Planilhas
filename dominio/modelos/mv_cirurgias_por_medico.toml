@@ -1,0 +1,74 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 119 / USR_CIRURGIAS_POR_MEDICO)
+nome = "CIRURGIAS POR MEDICO"
+pasta = "Farmácia e Suprimentos"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "cd_pro_fat"
+rotulo = "Código procedimento faturamento"
+tipo = "identificador"
+sinonimos = ["CD_PRO_FAT"]
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "ds_pro_fat"
+rotulo = "Descrição procedimento faturamento"
+tipo = "texto_livre"
+sinonimos = ["DS_PRO_FAT"]
+[[coluna]]
+canonico = "nm_prestador"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "original_2"
+rotulo = "Original"
+tipo = "texto_livre"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "cd_prestador"
+rotulo = "Código prestador"
+tipo = "identificador"
+sinonimos = ["CD_PRESTADOR"]
+[[coluna]]
+canonico = "nm_prestador_2"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "cd_pro_fat_2"
+rotulo = "Código procedimento faturamento"
+tipo = "identificador"
+sinonimos = ["CD_PRO_FAT"]
+[[coluna]]
+canonico = "ds_cen_cir"
+rotulo = "Descrição centro cirurgia"
+tipo = "texto_livre"
+sinonimos = ["DS_CEN_CIR"]
+[[coluna]]
+canonico = "ds_cirurgia"
+rotulo = "Descrição cirurgia"
+tipo = "texto_livre"
+sinonimos = ["DS_CIRURGIA"]
+[[coluna]]
+canonico = "mes"
+rotulo = "Mes"
+tipo = "texto_livre"
+sinonimos = ["MES"]
+[[coluna]]
+canonico = "nm_prestador_3"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "qtd"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]

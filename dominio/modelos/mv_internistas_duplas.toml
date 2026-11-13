@@ -1,0 +1,76 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 725 / USR_INTERNISTAS_DUPLAS)
+nome = "internistas_duplas"
+pasta = "Atendimento Hospitalar"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "dih"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "cd_prestador"
+rotulo = "Código prestador"
+tipo = "identificador"
+sinonimos = ["CD_PRESTADOR"]
+[[coluna]]
+canonico = "cd_prestador_principal"
+rotulo = "Código prestador principal"
+tipo = "identificador"
+sinonimos = ["CD_PRESTADOR_PRINCIPAL"]
+[[coluna]]
+canonico = "cd_prestador_secudario"
+rotulo = "Código prestador secudario"
+tipo = "identificador"
+sinonimos = ["CD_PRESTADOR_SECUDARIO"]
+[[coluna]]
+canonico = "dih"
+rotulo = "Dih"
+tipo = "data"
+sinonimos = ["DIH"]
+[[coluna]]
+canonico = "ds_leito"
+rotulo = "Descrição leito"
+tipo = "texto_livre"
+sinonimos = ["DS_LEITO"]
+[[coluna]]
+canonico = "ds_unid_int"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "dupla"
+rotulo = "Dupla"
+tipo = "texto_livre"
+sinonimos = ["DUPLA"]
+[[coluna]]
+canonico = "hr_int"
+rotulo = "Hora internação"
+tipo = "texto_livre"
+sinonimos = ["HR_INT"]
+[[coluna]]
+canonico = "idade"
+rotulo = "Idade"
+tipo = "texto_livre"
+sinonimos = ["IDADE"]
+[[coluna]]
+canonico = "nm_assitente"
+rotulo = "Nome assitente"
+tipo = "texto_livre"
+sinonimos = ["NM_ASSITENTE"]
+[[coluna]]
+canonico = "nm_prestador"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]

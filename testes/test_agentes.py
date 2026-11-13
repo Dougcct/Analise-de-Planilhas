@@ -193,7 +193,10 @@ def test_router_contexto_vence_densidade():
 def test_router_candidatos_marca_automatico():
     cols = ["Centro de Custo", "Conta Contabil", "Competencia", "Orcado", "Realizado"]
     cands = agentes.candidatos(colunas=cols)
-    assert {c["chave"] for c in cands} == {"custos", "faturamento", "assistencial"}
+    assert {c["chave"] for c in cands} == {
+        "custos", "faturamento", "assistencial",
+        "centrocirurgico", "farmaciaesuprimentos", "exameselaboratorio",
+    }
     auto = [c for c in cands if c["auto"]]
     assert len(auto) == 1 and auto[0]["chave"] == "custos"
     # ordenado por score desc: o automático vem primeiro
@@ -216,3 +219,43 @@ def test_servico_forcar_e_desligar_agente():
     ds = servico.carregar(csv, "c.csv", agente=servico.AGENTE_NENHUM)
     assert ds.agente is None
     assert not any("Agente" in d for d in ds.meta.diagnostico)
+
+
+def test_novos_agentes_mv():
+    from Agentes.centro_cirurgico import AgenteCentroCirurgico
+    from Agentes.exames_laboratorio import AgenteExamesLaboratorio
+    from Agentes.farmacia_suprimentos import AgenteFarmaciaSuprimentos
+
+    df_cir = pd.DataFrame({
+        "CD_AVISO_CIRURGIA": ["1", "2", "3"],
+        "DS_CIRURGIA": ["Apendicectomia", "Colecistectomia", "Hérnia"],
+        "DS_ESPECIALID": ["Cirurgia Geral", "Cirurgia Geral", "Cirurgia Geral"],
+        "DS_MOT_CANC": ["", "Falta de jejum", ""],
+    })
+    ag_cir = agentes.resolver(colunas=df_cir.columns)
+    assert isinstance(ag_cir, AgenteCentroCirurgico)
+    out_cir = ag_cir.analisar(df_cir)
+    assert out_cir["alertas"] and "Motivos de cancelamento" in out_cir["paineis"]
+
+    df_farm = pd.DataFrame({
+        "CD_PRODUTO": ["10", "20"],
+        "DS_PRODUTO": ["Dipirona", "Soro"],
+        "NM_FORNECEDOR": ["Forn A", "Forn B"],
+        "QTD": [5, 10],
+        "TOTAL": [900.0, 100.0],
+    })
+    ag_farm = agentes.resolver(colunas=df_farm.columns)
+    assert isinstance(ag_farm, AgenteFarmaciaSuprimentos)
+    out_farm = ag_farm.analisar(df_farm)
+    assert out_farm["alertas"] and "Curva ABC — Principais itens/produtos" in out_farm["paineis"]
+
+    df_exa = pd.DataFrame({
+        "CD_EXA_LAB": ["100", "200"],
+        "NM_EXA_LAB": ["Hemograma", "PCR"],
+        "NM_SETOR": ["PA", "UTI"],
+        "QTD": [12, 8],
+    })
+    ag_exa = agentes.resolver(colunas=df_exa.columns)
+    assert isinstance(ag_exa, AgenteExamesLaboratorio)
+    out_exa = ag_exa.analisar(df_exa)
+    assert "Exames mais solicitados" in out_exa["paineis"]

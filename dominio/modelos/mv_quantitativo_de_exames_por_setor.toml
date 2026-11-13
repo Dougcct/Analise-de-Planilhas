@@ -1,0 +1,24 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 284 / USR_QUANTITATIVO_DE_EXAMES_POR_SET)
+nome = "QUANTITATIVO DE EXAMES POR SETOR"
+pasta = "Exames e Laboratório"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "nm_setor"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "qtde"
+rotulo = "Qtde"
+tipo = "decimal"
+sinonimos = ["QTDE"]
+[[coluna]]
+canonico = "total_cd_exa_lab"
+rotulo = "Total Cd Exa Lab"
+tipo = "moeda"
+sinonimos = ["TOTAL_CD_EXA_LAB"]

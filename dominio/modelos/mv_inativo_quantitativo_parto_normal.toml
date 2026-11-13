@@ -1,0 +1,50 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 255 / USR_QUANTIDADE_PARTO_NORMAL)
+nome = "INATIVO (QUANTITATIVO PARTO NORMAL)"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "dt_parto"
+
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "original_2"
+rotulo = "Original"
+tipo = "texto_livre"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "dt_parto"
+rotulo = "Data parto"
+tipo = "data"
+sinonimos = ["DT_PARTO"]
+[[coluna]]
+canonico = "original_3"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "original_4"
+rotulo = "Original"
+tipo = "texto_livre"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "cd_atendimento_2"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "dt_parto_2"
+rotulo = "Data parto"
+tipo = "data"
+sinonimos = ["DT_PARTO"]

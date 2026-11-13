@@ -1,0 +1,30 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 358 / USR_QTD_MVTO_FARMACIA)
+nome = "QTD MVTO Farmacia"
+pasta = "Farmácia e Suprimentos"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "data_saida"
+
+[[coluna]]
+canonico = "cd_usuario"
+rotulo = "Código usuário"
+tipo = "identificador"
+sinonimos = ["CD_USUARIO"]
+[[coluna]]
+canonico = "data_saida"
+rotulo = "Data saida"
+tipo = "data"
+sinonimos = ["DATA_SAIDA"]
+[[coluna]]
+canonico = "ds_tp_mvto_estoque"
+rotulo = "Descrição tp mvto estoque"
+tipo = "texto_livre"
+sinonimos = ["DS_TP_MVTO_ESTOQUE"]
+[[coluna]]
+canonico = "qtd"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]

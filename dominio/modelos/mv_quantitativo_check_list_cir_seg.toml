@@ -1,0 +1,19 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 337 / USR_QUANTITATIVO_CHECK_LIST_CIR_SE)
+nome = "QUANTITATIVO CHECK LIST CIR SEG"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "mes"
+rotulo = "Mês"
+tipo = "texto_livre"
+sinonimos = ["MÊS"]
+[[coluna]]
+canonico = "qtd"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]

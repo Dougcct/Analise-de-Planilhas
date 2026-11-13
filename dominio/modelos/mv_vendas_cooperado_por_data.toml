@@ -1,0 +1,86 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 154 / USR_VENDAS_COOPERADO_POR_DATA)
+nome = "VENDAS COOPERADO POR DATA"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "hr_mvto_estoque"
+dimensoes = ["tipo_mov"]
+
+[[coluna]]
+canonico = "cd_estoque"
+rotulo = "Código estoque"
+tipo = "identificador"
+sinonimos = ["CD_ESTOQUE"]
+[[coluna]]
+canonico = "cd_mvto_estoque"
+rotulo = "Código mvto estoque"
+tipo = "identificador"
+sinonimos = ["CD_MVTO_ESTOQUE"]
+[[coluna]]
+canonico = "cd_produto"
+rotulo = "Código produto"
+tipo = "identificador"
+sinonimos = ["CD_PRODUTO"]
+[[coluna]]
+canonico = "cd_setor"
+rotulo = "Código setor"
+tipo = "identificador"
+sinonimos = ["CD_SETOR"]
+[[coluna]]
+canonico = "ds_produto"
+rotulo = "Descrição produto"
+tipo = "texto_livre"
+sinonimos = ["DS_PRODUTO"]
+[[coluna]]
+canonico = "ds_unidade"
+rotulo = "Descrição unidade"
+tipo = "texto_livre"
+sinonimos = ["DS_UNIDADE"]
+[[coluna]]
+canonico = "hr_mvto_estoque"
+rotulo = "Hora mvto estoque"
+tipo = "data_hora"
+sinonimos = ["HR_MVTO_ESTOQUE"]
+[[coluna]]
+canonico = "medico_req"
+rotulo = "Medico Req"
+tipo = "texto_livre"
+sinonimos = ["MEDICO_REQ"]
+[[coluna]]
+canonico = "qt_movimentacao"
+rotulo = "Qtd. movimentacao"
+tipo = "inteiro"
+sinonimos = ["QT_MOVIMENTACAO"]
+[[coluna]]
+canonico = "sn_consolidada"
+rotulo = "Consolidada?"
+tipo = "booleano"
+sinonimos = ["SN_CONSOLIDADA"]
+[[coluna]]
+canonico = "tipo_mov"
+rotulo = "Tipo movimento"
+tipo = "categorico"
+sinonimos = ["TIPO_MOV"]
+[[coluna]]
+canonico = "total_cmedio_35"
+rotulo = "Total Cmedio 35"
+tipo = "moeda"
+sinonimos = ["TOTAL_CMEDIO_35"]
+[[coluna]]
+canonico = "total_cmedio_normal"
+rotulo = "Total Cmedio Normal"
+tipo = "moeda"
+sinonimos = ["TOTAL_CMEDIO_NORMAL"]
+[[coluna]]
+canonico = "total"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "total_medio"
+rotulo = "Total Medio"
+tipo = "moeda"
+sinonimos = ["TOTAL_MEDIO"]

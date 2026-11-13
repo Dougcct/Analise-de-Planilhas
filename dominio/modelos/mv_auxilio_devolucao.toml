@@ -1,0 +1,55 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 113 / USR_AUXILIO_DEVOLUCAO)
+nome = "AUXILIO DEVOLUÇÃO"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "hr_solsai_pro"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_estoque"
+rotulo = "Código estoque"
+tipo = "identificador"
+sinonimos = ["CD_ESTOQUE"]
+[[coluna]]
+canonico = "cd_produto"
+rotulo = "Código produto"
+tipo = "identificador"
+sinonimos = ["CD_PRODUTO"]
+[[coluna]]
+canonico = "cd_setor"
+rotulo = "Código setor"
+tipo = "identificador"
+sinonimos = ["CD_SETOR"]
+[[coluna]]
+canonico = "cd_unid_int"
+rotulo = "Código unidade internação"
+tipo = "identificador"
+sinonimos = ["CD_UNID_INT"]
+[[coluna]]
+canonico = "ds_produto"
+rotulo = "Descrição produto"
+tipo = "texto_livre"
+sinonimos = ["DS_PRODUTO"]
+[[coluna]]
+canonico = "hr_solsai_pro"
+rotulo = "Hora solsai procedimento"
+tipo = "data_hora"
+sinonimos = ["HR_SOLSAI_PRO"]
+[[coluna]]
+canonico = "qt_atendida"
+rotulo = "Qtd. atendida"
+tipo = "inteiro"
+sinonimos = ["QT_ATENDIDA"]
+[[coluna]]
+canonico = "solic"
+rotulo = "Solic"
+tipo = "decimal"
+sinonimos = ["SOLIC"]

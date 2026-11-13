@@ -1,0 +1,45 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 73 / USR_ENTRADA_E_SAIDA_ACOMPANHANTES)
+nome = "ENTRADA E SAIDA ACOMPANHANTES"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "data_entrada"
+
+[[coluna]]
+canonico = "data_entrada"
+rotulo = "Data entrada"
+tipo = "data"
+sinonimos = ["DATA_ENTRADA"]
+[[coluna]]
+canonico = "hora"
+rotulo = "Hora"
+tipo = "texto_livre"
+sinonimos = ["HORA"]
+[[coluna]]
+canonico = "total"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "coluna"
+rotulo = "Coluna"
+tipo = "texto_livre"
+sinonimos = ["Coluna"]
+[[coluna]]
+canonico = "data_saida"
+rotulo = "Data saida"
+tipo = "data"
+sinonimos = ["DATA_SAIDA"]
+[[coluna]]
+canonico = "hora_2"
+rotulo = "Hora"
+tipo = "texto_livre"
+sinonimos = ["HORA"]
+[[coluna]]
+canonico = "total_2"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]

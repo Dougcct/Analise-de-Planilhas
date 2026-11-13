@@ -1,0 +1,19 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 403 / USR_IDENTIFICACAO_FORMULA_INFANTIL)
+nome = "IDENTIFICAÇÃO FORMULA INFANTIL"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "ds_leito"
+rotulo = "Descrição leito"
+tipo = "texto_livre"
+sinonimos = ["DS_LEITO"]

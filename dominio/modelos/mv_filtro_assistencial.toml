@@ -1,0 +1,66 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 468 / USR_FILTRO_ASSISTENCIAL)
+nome = "FILTRO ASSISTENCIAL"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "dt_alta"
+dimensoes = ["tp_sexo"]
+
+[[coluna]]
+canonico = "cd_unid_int"
+rotulo = "Código unidade internação"
+tipo = "identificador"
+sinonimos = ["CD_UNID_INT"]
+[[coluna]]
+canonico = "ds_unid_int"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "ds_cid"
+rotulo = "Descrição cid"
+tipo = "texto_livre"
+sinonimos = ["DS_CID"]
+[[coluna]]
+canonico = "ds_tp_atendimento"
+rotulo = "Descrição tp atendimento"
+tipo = "texto_livre"
+sinonimos = ["DS_TP_ATENDIMENTO"]
+[[coluna]]
+canonico = "ds_unid_int_2"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "dt_alta"
+rotulo = "Data alta"
+tipo = "data"
+sinonimos = ["DT_ALTA"]
+[[coluna]]
+canonico = "dt_atendimento"
+rotulo = "Data atendimento"
+tipo = "data"
+sinonimos = ["DT_ATENDIMENTO"]
+[[coluna]]
+canonico = "idade"
+rotulo = "Idade"
+tipo = "decimal"
+sinonimos = ["IDADE"]
+[[coluna]]
+canonico = "nm_cidade"
+rotulo = "Nome cidade"
+tipo = "texto_livre"
+sinonimos = ["NM_CIDADE"]
+[[coluna]]
+canonico = "tp_sexo"
+rotulo = "Tipo sexo"
+tipo = "categorico"
+sinonimos = ["TP_SEXO"]

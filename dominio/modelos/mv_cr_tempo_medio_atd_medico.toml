@@ -1,0 +1,104 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 253 / USR_CR_-_TEMPO_MEDIO_ATENDIMENTO_M)
+nome = "CR - TEMPO MEDIO ATD MEDICO"
+pasta = "Farmácia e Suprimentos"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "dia_sem"
+rotulo = "Dia Sem"
+tipo = "texto_livre"
+sinonimos = ["DIA_SEM"]
+[[coluna]]
+canonico = "ds_classificacao"
+rotulo = "Descrição classificacao"
+tipo = "texto_livre"
+sinonimos = ["DS_CLASSIFICACAO"]
+[[coluna]]
+canonico = "ds_cor"
+rotulo = "Descrição cor"
+tipo = "texto_livre"
+sinonimos = ["DS_COR"]
+[[coluna]]
+canonico = "media_recep_medico"
+rotulo = "Media Recep Medico"
+tipo = "texto_livre"
+sinonimos = ["MEDIA_RECEP_MEDICO"]
+[[coluna]]
+canonico = "media_totem_alta"
+rotulo = "Media Totem Alta"
+tipo = "texto_livre"
+sinonimos = ["MEDIA_TOTEM_ALTA"]
+[[coluna]]
+canonico = "qtd"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "dia_sem_2"
+rotulo = "Dia Sem"
+tipo = "texto_livre"
+sinonimos = ["DIA_SEM"]
+[[coluna]]
+canonico = "media_recep_medico_2"
+rotulo = "Media Recep Medico"
+tipo = "texto_livre"
+sinonimos = ["MEDIA_RECEP_MEDICO"]
+[[coluna]]
+canonico = "media_totem_alta_2"
+rotulo = "Media Totem Alta"
+tipo = "texto_livre"
+sinonimos = ["MEDIA_TOTEM_ALTA"]
+[[coluna]]
+canonico = "nm_usuario"
+rotulo = "Nome usuário"
+tipo = "texto_livre"
+sinonimos = ["NM_USUARIO"]
+[[coluna]]
+canonico = "qtd_2"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "dia_sem_3"
+rotulo = "Dia Sem"
+tipo = "texto_livre"
+sinonimos = ["DIA_SEM"]
+[[coluna]]
+canonico = "media_recep_medico_3"
+rotulo = "Media Recep Medico"
+tipo = "texto_livre"
+sinonimos = ["MEDIA_RECEP_MEDICO"]
+[[coluna]]
+canonico = "media_totem_alta_3"
+rotulo = "Media Totem Alta"
+tipo = "texto_livre"
+sinonimos = ["MEDIA_TOTEM_ALTA"]
+[[coluna]]
+canonico = "qtd_3"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "cd_especialid"
+rotulo = "Código especialidade"
+tipo = "identificador"
+sinonimos = ["CD_ESPECIALID"]
+[[coluna]]
+canonico = "ds_especialid"
+rotulo = "Descrição especialidade"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIALID"]
+[[coluna]]
+canonico = "cd_cor_referencia"
+rotulo = "Código cor referencia"
+tipo = "identificador"
+sinonimos = ["CD_COR_REFERENCIA"]
+[[coluna]]
+canonico = "nm_cor"
+rotulo = "Nome cor"
+tipo = "texto_livre"
+sinonimos = ["NM_COR"]

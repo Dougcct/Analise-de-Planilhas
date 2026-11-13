@@ -1,0 +1,44 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 492 / USR_ATENDIMENTOS_PA_POR_PERIODO)
+nome = "ATENDIMENTOS PA POR PERIODO FAIXA ETARIA"
+pasta = "Atendimento Hospitalar"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "cd_especialid"
+rotulo = "Código especialidade"
+tipo = "identificador"
+sinonimos = ["CD_ESPECIALID"]
+[[coluna]]
+canonico = "ds_especialid"
+rotulo = "Descrição especialidade"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIALID"]
+[[coluna]]
+canonico = "cd_ori_ate"
+rotulo = "Código origem atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ORI_ATE"]
+[[coluna]]
+canonico = "ds_ori_ate"
+rotulo = "Descrição origem atendimento"
+tipo = "texto_livre"
+sinonimos = ["DS_ORI_ATE"]
+[[coluna]]
+canonico = "ds_especialid_2"
+rotulo = "Descrição especialidade"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIALID"]
+[[coluna]]
+canonico = "faixa_etaria"
+rotulo = "Faixa Etaria"
+tipo = "texto_livre"
+sinonimos = ["FAIXA_ETARIA"]
+[[coluna]]
+canonico = "qtd"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]

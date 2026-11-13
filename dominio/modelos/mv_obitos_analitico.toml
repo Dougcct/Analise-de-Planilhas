@@ -1,0 +1,106 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 536 / USR_OBITOS_ANALITICO)
+nome = "OBITOS ANALITICO"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "dt_int"
+dimensoes = ["sexo", "sexo_2"]
+
+[[coluna]]
+canonico = "atd"
+rotulo = "Atd"
+tipo = "decimal"
+sinonimos = ["ATD"]
+[[coluna]]
+canonico = "dt_int"
+rotulo = "Data internação"
+tipo = "data"
+sinonimos = ["DT_INT"]
+[[coluna]]
+canonico = "dt_nasc"
+rotulo = "Data nascimento"
+tipo = "data"
+sinonimos = ["DT_NASC"]
+[[coluna]]
+canonico = "dt_obito"
+rotulo = "Data obito"
+tipo = "data"
+sinonimos = ["DT_OBITO"]
+[[coluna]]
+canonico = "hr_int"
+rotulo = "Hora internação"
+tipo = "texto_livre"
+sinonimos = ["HR_INT"]
+[[coluna]]
+canonico = "hr_obito"
+rotulo = "Hora obito"
+tipo = "texto_livre"
+sinonimos = ["HR_OBITO"]
+[[coluna]]
+canonico = "idade"
+rotulo = "Idade"
+tipo = "decimal"
+sinonimos = ["IDADE"]
+[[coluna]]
+canonico = "per_int"
+rotulo = "Per Int"
+tipo = "decimal"
+sinonimos = ["PER_INT"]
+[[coluna]]
+canonico = "sexo"
+rotulo = "Sexo"
+tipo = "categorico"
+sinonimos = ["SEXO"]
+[[coluna]]
+canonico = "uni_int"
+rotulo = "Uni Int"
+tipo = "texto_livre"
+sinonimos = ["UNI_INT"]
+[[coluna]]
+canonico = "atd_2"
+rotulo = "Atd"
+tipo = "decimal"
+sinonimos = ["ATD"]
+[[coluna]]
+canonico = "dt_atd"
+rotulo = "Data atendimento"
+tipo = "data"
+sinonimos = ["DT_ATD"]
+[[coluna]]
+canonico = "dt_nasc_2"
+rotulo = "Data nascimento"
+tipo = "data"
+sinonimos = ["DT_NASC"]
+[[coluna]]
+canonico = "dt_obito_2"
+rotulo = "Data obito"
+tipo = "data"
+sinonimos = ["DT_OBITO"]
+[[coluna]]
+canonico = "hr_atd"
+rotulo = "Hora atendimento"
+tipo = "texto_livre"
+sinonimos = ["HR_ATD"]
+[[coluna]]
+canonico = "hr_obito_2"
+rotulo = "Hora obito"
+tipo = "texto_livre"
+sinonimos = ["HR_OBITO"]
+[[coluna]]
+canonico = "idade_2"
+rotulo = "Idade"
+tipo = "decimal"
+sinonimos = ["IDADE"]
+[[coluna]]
+canonico = "per_int_2"
+rotulo = "Per Int"
+tipo = "decimal"
+sinonimos = ["PER_INT"]
+[[coluna]]
+canonico = "sexo_2"
+rotulo = "Sexo"
+tipo = "categorico"
+sinonimos = ["SEXO"]

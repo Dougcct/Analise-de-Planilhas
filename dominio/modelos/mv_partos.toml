@@ -1,0 +1,126 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 535 / USR_PARTOS)
+nome = "PARTOS"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "dt_parto"
+dimensoes = ["tipo_parto"]
+
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "nm_setor"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "original_2"
+rotulo = "Original"
+tipo = "texto_livre"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "dt_parto"
+rotulo = "Data parto"
+tipo = "data"
+sinonimos = ["DT_PARTO"]
+[[coluna]]
+canonico = "nm_setor_2"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "tp"
+rotulo = "Tp"
+tipo = "decimal"
+sinonimos = ["TP"]
+[[coluna]]
+canonico = "original_3"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "nm_setor_3"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "original_4"
+rotulo = "Original"
+tipo = "texto_livre"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "cd_atendimento_2"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "dt_parto_2"
+rotulo = "Data parto"
+tipo = "data"
+sinonimos = ["DT_PARTO"]
+[[coluna]]
+canonico = "nm_setor_4"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "tp_2"
+rotulo = "Tp"
+tipo = "decimal"
+sinonimos = ["TP"]
+[[coluna]]
+canonico = "percentual"
+rotulo = "Percentual"
+tipo = "decimal"
+sinonimos = ["PERCENTUAL"]
+[[coluna]]
+canonico = "qtd"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "tipo_parto"
+rotulo = "Tipo parto"
+tipo = "categorico"
+sinonimos = ["TIPO_PARTO"]
+[[coluna]]
+canonico = "total"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "cd_setor"
+rotulo = "Código setor"
+tipo = "identificador"
+sinonimos = ["CD_SETOR"]
+[[coluna]]
+canonico = "nm_setor_5"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "original_5"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "nm_setor_6"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "original_6"
+rotulo = "Original"
+tipo = "texto_livre"
+sinonimos = ["ORIGINAL"]

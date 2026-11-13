@@ -1,0 +1,136 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 7 / USR_PORT_VISIT_AOMP)
+nome = "port_visit_aomp"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "data_entrada"
+dimensoes = ["descricao_tipo_parentesco", "descricao_tipo_acomodacao", "descricao_tipo_internacao"]
+
+[[coluna]]
+canonico = "atendimento_do_paciente"
+rotulo = "Atendimento Do Paciente"
+tipo = "inteiro"
+sinonimos = ["ATENDIMENTO_DO_PACIENTE"]
+[[coluna]]
+canonico = "nome_unidade_internacao"
+rotulo = "Nome unidade internação"
+tipo = "texto_livre"
+sinonimos = ["NOME_UNIDADE_INTERNACAO"]
+[[coluna]]
+canonico = "nome_do_paciente"
+rotulo = "Nome do paciente"
+tipo = "texto_livre"
+sinonimos = ["NOME_DO_PACIENTE"]
+[[coluna]]
+canonico = "codigo_visitante_acompanh"
+rotulo = "Codigo Visitante Acompanh"
+tipo = "inteiro"
+sinonimos = ["CODIGO_VISITANTE_ACOMPANH"]
+[[coluna]]
+canonico = "data_entrada"
+rotulo = "Data entrada"
+tipo = "data"
+sinonimos = ["DATA_ENTRADA"]
+[[coluna]]
+canonico = "hora_entrada"
+rotulo = "Hora entrada"
+tipo = "data_hora"
+sinonimos = ["HORA_ENTRADA"]
+[[coluna]]
+canonico = "usuario_entrada"
+rotulo = "Usuario Entrada"
+tipo = "texto_livre"
+sinonimos = ["USUARIO_ENTRADA"]
+[[coluna]]
+canonico = "data_alta"
+rotulo = "Data alta"
+tipo = "data"
+sinonimos = ["DATA_ALTA"]
+[[coluna]]
+canonico = "hora_saida"
+rotulo = "Hora saida"
+tipo = "texto_livre"
+sinonimos = ["HORA_SAIDA"]
+[[coluna]]
+canonico = "usuario_saida"
+rotulo = "Usuario Saida"
+tipo = "texto_livre"
+sinonimos = ["USUARIO_SAIDA"]
+[[coluna]]
+canonico = "nome_visitante_acompanhan"
+rotulo = "Nome visitante acompanhan"
+tipo = "texto_livre"
+sinonimos = ["NOME_VISITANTE_ACOMPANHAN"]
+[[coluna]]
+canonico = "descricao_documento"
+rotulo = "Descricao Documento"
+tipo = "texto_livre"
+sinonimos = ["DESCRICAO_DOCUMENTO"]
+[[coluna]]
+canonico = "numero_documento"
+rotulo = "Numero Documento"
+tipo = "texto_livre"
+sinonimos = ["NUMERO_DOCUMENTO"]
+[[coluna]]
+canonico = "descricao_tipo_parentesco"
+rotulo = "Descricao Tipo Parentesco"
+tipo = "categorico"
+sinonimos = ["DESCRICAO_TIPO_PARENTESCO"]
+[[coluna]]
+canonico = "nome_autorizador"
+rotulo = "Nome autorizador"
+tipo = "texto_livre"
+sinonimos = ["NOME_AUTORIZADOR"]
+[[coluna]]
+canonico = "numero_ramal"
+rotulo = "Numero Ramal"
+tipo = "inteiro"
+sinonimos = ["NUMERO_RAMAL"]
+[[coluna]]
+canonico = "data_atendimento"
+rotulo = "Data atendimento"
+tipo = "data"
+sinonimos = ["DATA_ATENDIMENTO"]
+[[coluna]]
+canonico = "hora_atendimento"
+rotulo = "Hora atendimento"
+tipo = "data_hora"
+sinonimos = ["HORA_ATENDIMENTO"]
+[[coluna]]
+canonico = "descricao_tipo_acomodacao"
+rotulo = "Descricao Tipo Acomodacao"
+tipo = "categorico"
+sinonimos = ["DESCRICAO_TIPO_ACOMODACAO"]
+[[coluna]]
+canonico = "descricao_tipo_internacao"
+rotulo = "Descricao Tipo Internacao"
+tipo = "categorico"
+sinonimos = ["DESCRICAO_TIPO_INTERNACAO"]
+[[coluna]]
+canonico = "nome_resumido_leito"
+rotulo = "Nome resumido leito"
+tipo = "texto_livre"
+sinonimos = ["NOME_RESUMIDO_LEITO"]
+[[coluna]]
+canonico = "data_de_nascimento"
+rotulo = "Data de nascimento"
+tipo = "data"
+sinonimos = ["DATA_DE_NASCIMENTO"]
+[[coluna]]
+canonico = "visitante_acompanhante"
+rotulo = "Visitante Acompanhante"
+tipo = "texto_livre"
+sinonimos = ["VISITANTE_ACOMPANHANTE"]
+[[coluna]]
+canonico = "data_saida"
+rotulo = "Data saida"
+tipo = "data"
+sinonimos = ["DATA_SAIDA"]
+[[coluna]]
+canonico = "select_user_from_dual"
+rotulo = "Select User From Dual"
+tipo = "texto_livre"
+sinonimos = ["select_user_from_dual"]

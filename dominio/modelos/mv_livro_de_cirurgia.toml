@@ -1,0 +1,172 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 574 / USR_LIVRO_DE_CIRURGIA)
+nome = "LIVRO DE CIRURGIA"
+pasta = "Centro Cirúrgico"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "dt_entrada"
+dimensoes = ["lista_prestador", "tp_cirurgia", "tp_classif_psih", "tp_sexo", "tipo"]
+
+[[coluna]]
+canonico = "cd_asa"
+rotulo = "Código asa"
+tipo = "identificador"
+sinonimos = ["CD_ASA"]
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_aviso_cirurgia"
+rotulo = "Código aviso cirurgia"
+tipo = "identificador"
+sinonimos = ["CD_AVISO_CIRURGIA"]
+[[coluna]]
+canonico = "cd_cen_cir"
+rotulo = "Código centro cirurgia"
+tipo = "identificador"
+sinonimos = ["CD_CEN_CIR"]
+[[coluna]]
+canonico = "cd_especialid"
+rotulo = "Código especialidade"
+tipo = "identificador"
+sinonimos = ["CD_ESPECIALID"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "cd_prestador"
+rotulo = "Código prestador"
+tipo = "identificador"
+sinonimos = ["CD_PRESTADOR"]
+[[coluna]]
+canonico = "cd_pro_fat"
+rotulo = "Código procedimento faturamento"
+tipo = "identificador"
+sinonimos = ["CD_PRO_FAT"]
+[[coluna]]
+canonico = "ds_cen_cir"
+rotulo = "Descrição centro cirurgia"
+tipo = "texto_livre"
+sinonimos = ["DS_CEN_CIR"]
+[[coluna]]
+canonico = "ds_cirurgia"
+rotulo = "Descrição cirurgia"
+tipo = "texto_livre"
+sinonimos = ["DS_CIRURGIA"]
+[[coluna]]
+canonico = "ds_especialid"
+rotulo = "Descrição especialidade"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIALID"]
+[[coluna]]
+canonico = "ds_obs_aviso"
+rotulo = "Descrição observação aviso"
+tipo = "texto_livre"
+sinonimos = ["DS_OBS_AVISO"]
+[[coluna]]
+canonico = "ds_sal_cir"
+rotulo = "Descrição sal cirurgia"
+tipo = "texto_livre"
+sinonimos = ["DS_SAL_CIR"]
+[[coluna]]
+canonico = "dt_entrada"
+rotulo = "Data entrada"
+tipo = "data"
+sinonimos = ["DT_ENTRADA"]
+[[coluna]]
+canonico = "idade"
+rotulo = "Idade"
+tipo = "decimal"
+sinonimos = ["IDADE"]
+[[coluna]]
+canonico = "lista_cirurgia"
+rotulo = "Lista Cirurgia"
+tipo = "texto_livre"
+sinonimos = ["LISTA_CIRURGIA"]
+[[coluna]]
+canonico = "lista_prestador"
+rotulo = "Lista Prestador"
+tipo = "categorico"
+sinonimos = ["LISTA_PRESTADOR"]
+[[coluna]]
+canonico = "nm_convenio"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "nm_prestador"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "qt"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "tempo_cirurgia_min"
+rotulo = "Tempo Cirurgia Min"
+tipo = "decimal"
+sinonimos = ["TEMPO_CIRURGIA_MIN"]
+[[coluna]]
+canonico = "tp_cirurgia"
+rotulo = "Tipo cirurgia"
+tipo = "categorico"
+sinonimos = ["TP_CIRURGIA"]
+[[coluna]]
+canonico = "tp_classif_psih"
+rotulo = "Tipo classif psih"
+tipo = "categorico"
+sinonimos = ["TP_CLASSIF_PSIH"]
+[[coluna]]
+canonico = "tp_sexo"
+rotulo = "Tipo sexo"
+tipo = "categorico"
+sinonimos = ["TP_SEXO"]
+[[coluna]]
+canonico = "cd_prestador_2"
+rotulo = "Código prestador"
+tipo = "identificador"
+sinonimos = ["CD_PRESTADOR"]
+[[coluna]]
+canonico = "nm_prestador_2"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "cd_cen_cir_2"
+rotulo = "Código centro cirurgia"
+tipo = "identificador"
+sinonimos = ["CD_CEN_CIR"]
+[[coluna]]
+canonico = "ds_cen_cir_2"
+rotulo = "Descrição centro cirurgia"
+tipo = "texto_livre"
+sinonimos = ["DS_CEN_CIR"]
+[[coluna]]
+canonico = "cd_especialid_2"
+rotulo = "Código especialidade"
+tipo = "identificador"
+sinonimos = ["CD_ESPECIALID"]
+[[coluna]]
+canonico = "ds_especialid_2"
+rotulo = "Descrição especialidade"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIALID"]
+[[coluna]]
+canonico = "cd_tipo"
+rotulo = "Código tipo"
+tipo = "identificador"
+sinonimos = ["CD_TIPO"]
+[[coluna]]
+canonico = "tipo"
+rotulo = "Tipo"
+tipo = "categorico"
+sinonimos = ["TIPO"]

@@ -1,0 +1,70 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 207 / USR_COMPETENCIA_DAS_CONTAS)
+nome = "COMPETENCIA DAS CONTAS INTERNADOS"
+pasta = "Faturamento"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "dt_atendimento"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_remessa"
+rotulo = "Código remessa"
+tipo = "identificador"
+sinonimos = ["CD_REMESSA"]
+[[coluna]]
+canonico = "competencia"
+rotulo = "Competencia"
+tipo = "texto_livre"
+sinonimos = ["COMPETENCIA"]
+[[coluna]]
+canonico = "dias_com_alta"
+rotulo = "Dias com alta"
+tipo = "inteiro"
+sinonimos = ["DIAS_COM_ALTA"]
+[[coluna]]
+canonico = "ds_ori_ate"
+rotulo = "Descrição origem atendimento"
+tipo = "texto_livre"
+sinonimos = ["DS_ORI_ATE"]
+[[coluna]]
+canonico = "dt_atendimento"
+rotulo = "Data atendimento"
+tipo = "data"
+sinonimos = ["DT_ATENDIMENTO"]
+[[coluna]]
+canonico = "nm_convenio"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "vl_total_conta"
+rotulo = "Valor total conta"
+tipo = "moeda"
+sinonimos = ["VL_TOTAL_CONTA"]
+[[coluna]]
+canonico = "cd_convenio"
+rotulo = "Código convênio"
+tipo = "identificador"
+sinonimos = ["CD_CONVENIO"]
+[[coluna]]
+canonico = "nm_convenio_2"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "cd_ori_ate"
+rotulo = "Código origem atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ORI_ATE"]
+[[coluna]]
+canonico = "ds_ori_ate_2"
+rotulo = "Descrição origem atendimento"
+tipo = "texto_livre"
+sinonimos = ["DS_ORI_ATE"]

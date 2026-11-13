@@ -1,0 +1,65 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 677 / USR_INTERACAO_MEDICAMENTOSA)
+nome = "INTERAÇÃO MEDICAMENTOSA"
+pasta = "Farmácia e Suprimentos"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+dimensoes = ["tp_gravidade"]
+
+[[coluna]]
+canonico = "cd_gravidade"
+rotulo = "Código gravidade"
+tipo = "identificador"
+sinonimos = ["CD_GRAVIDADE"]
+[[coluna]]
+canonico = "cd_substancia_a"
+rotulo = "Código substancia a"
+tipo = "identificador"
+sinonimos = ["CD_SUBSTANCIA_A"]
+[[coluna]]
+canonico = "cd_substancia_b"
+rotulo = "Código substancia b"
+tipo = "identificador"
+sinonimos = ["CD_SUBSTANCIA_B"]
+[[coluna]]
+canonico = "ds_aviso"
+rotulo = "Descrição aviso"
+tipo = "texto_livre"
+sinonimos = ["DS_AVISO"]
+[[coluna]]
+canonico = "geral"
+rotulo = "Geral"
+tipo = "texto_livre"
+sinonimos = ["GERAL"]
+[[coluna]]
+canonico = "gravidade"
+rotulo = "Gravidade"
+tipo = "texto_livre"
+sinonimos = ["GRAVIDADE"]
+[[coluna]]
+canonico = "suba"
+rotulo = "Suba"
+tipo = "texto_livre"
+sinonimos = ["SUBA"]
+[[coluna]]
+canonico = "subb"
+rotulo = "Subb"
+tipo = "texto_livre"
+sinonimos = ["SUBB"]
+[[coluna]]
+canonico = "tp_gravidade"
+rotulo = "Tipo gravidade"
+tipo = "categorico"
+sinonimos = ["TP_GRAVIDADE"]
+[[coluna]]
+canonico = "cd_gravidade_2"
+rotulo = "Código gravidade"
+tipo = "identificador"
+sinonimos = ["CD_GRAVIDADE"]
+[[coluna]]
+canonico = "gravidade_2"
+rotulo = "Gravidade"
+tipo = "texto_livre"
+sinonimos = ["GRAVIDADE"]

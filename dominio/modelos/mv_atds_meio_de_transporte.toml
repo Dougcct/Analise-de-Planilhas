@@ -1,0 +1,25 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 196 / USR_ATDS_MEIO_DE_TRANSPORTE)
+nome = "ATDS MEIO DE TRANSPORTE"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "dt_atendimento"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "ds_meio_transporte"
+rotulo = "Descrição meio transporte"
+tipo = "texto_livre"
+sinonimos = ["DS_MEIO_TRANSPORTE"]
+[[coluna]]
+canonico = "dt_atendimento"
+rotulo = "Data atendimento"
+tipo = "data"
+sinonimos = ["DT_ATENDIMENTO"]

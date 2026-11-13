@@ -1,0 +1,86 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 388 / USR_ATENDIMENTOS_POR_FILTROS)
+nome = "ATENDIMENTOS POR FILTROS ANALÍTICO"
+pasta = "Atendimento Hospitalar"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "data_atendimento"
+dimensoes = ["convenio", "especialidade", "origem", "tipo_atendimento"]
+
+[[coluna]]
+canonico = "atd"
+rotulo = "Atd"
+tipo = "decimal"
+sinonimos = ["ATD"]
+[[coluna]]
+canonico = "convenio"
+rotulo = "Convenio"
+tipo = "categorico"
+sinonimos = ["CONVENIO"]
+[[coluna]]
+canonico = "data_atendimento"
+rotulo = "Data atendimento"
+tipo = "data"
+sinonimos = ["DATA_ATENDIMENTO"]
+[[coluna]]
+canonico = "especialidade"
+rotulo = "Especialidade"
+tipo = "categorico"
+sinonimos = ["ESPECIALIDADE"]
+[[coluna]]
+canonico = "medico"
+rotulo = "Medico"
+tipo = "texto_livre"
+sinonimos = ["MEDICO"]
+[[coluna]]
+canonico = "origem"
+rotulo = "Origem"
+tipo = "categorico"
+sinonimos = ["ORIGEM"]
+[[coluna]]
+canonico = "tipo_atendimento"
+rotulo = "Tipo atendimento"
+tipo = "categorico"
+sinonimos = ["TIPO_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_convenio"
+rotulo = "Código convênio"
+tipo = "identificador"
+sinonimos = ["CD_CONVENIO"]
+[[coluna]]
+canonico = "nm_convenio"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "cd_ori_ate"
+rotulo = "Código origem atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ORI_ATE"]
+[[coluna]]
+canonico = "ds_ori_ate"
+rotulo = "Descrição origem atendimento"
+tipo = "texto_livre"
+sinonimos = ["DS_ORI_ATE"]
+[[coluna]]
+canonico = "cd_servico"
+rotulo = "Código servico"
+tipo = "identificador"
+sinonimos = ["CD_SERVICO"]
+[[coluna]]
+canonico = "ds_servico"
+rotulo = "Descrição servico"
+tipo = "texto_livre"
+sinonimos = ["DS_SERVICO"]
+[[coluna]]
+canonico = "cd_prestador"
+rotulo = "Código prestador"
+tipo = "identificador"
+sinonimos = ["CD_PRESTADOR"]
+[[coluna]]
+canonico = "nm_prestador"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]

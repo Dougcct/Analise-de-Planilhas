@@ -1,0 +1,59 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 85 / USR_ATDS_DIURNO_E_NOTURNO)
+nome = "ATDS DIURNO E NOTURNO SINTETICO"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "ds_especialid"
+rotulo = "Descrição especialidade"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIALID"]
+[[coluna]]
+canonico = "ds_ori_ate"
+rotulo = "Descrição origem atendimento"
+tipo = "texto_livre"
+sinonimos = ["DS_ORI_ATE"]
+[[coluna]]
+canonico = "qtd"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "ds_especialid_2"
+rotulo = "Descrição especialidade"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIALID"]
+[[coluna]]
+canonico = "ds_ori_ate_2"
+rotulo = "Descrição origem atendimento"
+tipo = "texto_livre"
+sinonimos = ["DS_ORI_ATE"]
+[[coluna]]
+canonico = "qtd_2"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "cd_ori_ate"
+rotulo = "Código origem atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ORI_ATE"]
+[[coluna]]
+canonico = "ds_ori_ate_3"
+rotulo = "Descrição origem atendimento"
+tipo = "texto_livre"
+sinonimos = ["DS_ORI_ATE"]
+[[coluna]]
+canonico = "cd_especialid"
+rotulo = "Código especialidade"
+tipo = "identificador"
+sinonimos = ["CD_ESPECIALID"]
+[[coluna]]
+canonico = "ds_especialid_3"
+rotulo = "Descrição especialidade"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIALID"]

@@ -1,0 +1,113 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 595 / USR_EVOLUCAO_ONCOLOGIA)
+nome = "evolução oncologia"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "dh_criacao"
+dimensoes = ["tipo_tratamento", "tipo", "tipo_caso", "tipo_2", "tipo_tratamento_2"]
+
+[[coluna]]
+canonico = "saida"
+rotulo = "Saida"
+tipo = "texto_livre"
+sinonimos = ["SAIDA"]
+[[coluna]]
+canonico = "tipo_tratamento"
+rotulo = "Tipo tratamento"
+tipo = "categorico"
+sinonimos = ["TIPO_TRATAMENTO"]
+[[coluna]]
+canonico = "total"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_documento_clinico"
+rotulo = "Código documento clínico"
+tipo = "identificador"
+sinonimos = ["CD_DOCUMENTO_CLINICO"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "dh_criacao"
+rotulo = "Data/hora criação"
+tipo = "data_hora"
+sinonimos = ["DH_CRIACAO"]
+[[coluna]]
+canonico = "ds_campo_1"
+rotulo = "Descrição campo 1"
+tipo = "texto_livre"
+sinonimos = ["DS_CAMPO_1"]
+[[coluna]]
+canonico = "ds_campo_2"
+rotulo = "Descrição campo 2"
+tipo = "texto_livre"
+sinonimos = ["DS_CAMPO_2"]
+[[coluna]]
+canonico = "saida_2"
+rotulo = "Saida"
+tipo = "texto_livre"
+sinonimos = ["SAIDA"]
+[[coluna]]
+canonico = "cd_atendimento_2"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_documento_clinico_2"
+rotulo = "Código documento clínico"
+tipo = "identificador"
+sinonimos = ["CD_DOCUMENTO_CLINICO"]
+[[coluna]]
+canonico = "cd_paciente_2"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "dh_criacao_2"
+rotulo = "Data/hora criação"
+tipo = "data_hora"
+sinonimos = ["DH_CRIACAO"]
+[[coluna]]
+canonico = "tipo"
+rotulo = "Tipo"
+tipo = "categorico"
+sinonimos = ["TIPO"]
+[[coluna]]
+canonico = "tipo_caso"
+rotulo = "Tipo caso"
+tipo = "categorico"
+sinonimos = ["TIPO_CASO"]
+[[coluna]]
+canonico = "qtd"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "tipo_2"
+rotulo = "Tipo"
+tipo = "categorico"
+sinonimos = ["TIPO"]
+[[coluna]]
+canonico = "tipo_tratamento_2"
+rotulo = "Tipo tratamento"
+tipo = "categorico"
+sinonimos = ["TIPO_TRATAMENTO"]
+[[coluna]]
+canonico = "total_2"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]

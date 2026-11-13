@@ -1,0 +1,49 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 495 / USR_00_TESTE)
+nome = "00 CIRURGIAS CANCELADAS POR MÉDICO/MOTIVO DE CANCELAMENTO"
+pasta = "Centro Cirúrgico"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "cd_prestador"
+rotulo = "Código prestador"
+tipo = "identificador"
+sinonimos = ["CD_PRESTADOR"]
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "ds_mot_canc"
+rotulo = "Descrição motivo canc"
+tipo = "texto_livre"
+sinonimos = ["DS_MOT_CANC"]
+[[coluna]]
+canonico = "nm_prestador"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "cd_prestador_2"
+rotulo = "Código prestador"
+tipo = "identificador"
+sinonimos = ["CD_PRESTADOR"]
+[[coluna]]
+canonico = "nm_prestador_2"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "original_2"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "ds_mot_canc_2"
+rotulo = "Descrição motivo canc"
+tipo = "texto_livre"
+sinonimos = ["DS_MOT_CANC"]

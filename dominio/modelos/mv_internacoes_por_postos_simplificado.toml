@@ -1,0 +1,249 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 499 / USR_FAIXA_ETARIA)
+nome = "INTERNAÇÕES POR POSTOS SIMPLIFICADO"
+pasta = "Atendimento Hospitalar"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "faixa_etaria"
+rotulo = "Faixa Etaria"
+tipo = "texto_livre"
+sinonimos = ["FAIXA_ETARIA"]
+[[coluna]]
+canonico = "nm_setor"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "original_2"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "faixa_etaria_2"
+rotulo = "Faixa Etaria"
+tipo = "texto_livre"
+sinonimos = ["FAIXA_ETARIA"]
+[[coluna]]
+canonico = "nm_setor_2"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "original_3"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "faixa_etaria_3"
+rotulo = "Faixa Etaria"
+tipo = "texto_livre"
+sinonimos = ["FAIXA_ETARIA"]
+[[coluna]]
+canonico = "nm_setor_3"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "original_4"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "faixa_etaria_4"
+rotulo = "Faixa Etaria"
+tipo = "texto_livre"
+sinonimos = ["FAIXA_ETARIA"]
+[[coluna]]
+canonico = "nm_setor_4"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "original_5"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "faixa_etaria_5"
+rotulo = "Faixa Etaria"
+tipo = "texto_livre"
+sinonimos = ["FAIXA_ETARIA"]
+[[coluna]]
+canonico = "nm_setor_5"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "original_6"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "faixa_etaria_6"
+rotulo = "Faixa Etaria"
+tipo = "texto_livre"
+sinonimos = ["FAIXA_ETARIA"]
+[[coluna]]
+canonico = "nm_setor_6"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "original_7"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "faixa_etaria_7"
+rotulo = "Faixa Etaria"
+tipo = "texto_livre"
+sinonimos = ["FAIXA_ETARIA"]
+[[coluna]]
+canonico = "nm_setor_7"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "original_8"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "faixa_etaria_8"
+rotulo = "Faixa Etaria"
+tipo = "texto_livre"
+sinonimos = ["FAIXA_ETARIA"]
+[[coluna]]
+canonico = "nm_setor_8"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "original_9"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "faixa_etaria_9"
+rotulo = "Faixa Etaria"
+tipo = "texto_livre"
+sinonimos = ["FAIXA_ETARIA"]
+[[coluna]]
+canonico = "nm_setor_9"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "original_10"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "faixa_etaria_10"
+rotulo = "Faixa Etaria"
+tipo = "texto_livre"
+sinonimos = ["FAIXA_ETARIA"]
+[[coluna]]
+canonico = "nm_setor_10"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "original_11"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "faixa_etaria_11"
+rotulo = "Faixa Etaria"
+tipo = "texto_livre"
+sinonimos = ["FAIXA_ETARIA"]
+[[coluna]]
+canonico = "nm_setor_11"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "original_12"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "faixa_etaria_12"
+rotulo = "Faixa Etaria"
+tipo = "texto_livre"
+sinonimos = ["FAIXA_ETARIA"]
+[[coluna]]
+canonico = "nm_setor_12"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "original_13"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "nm_setor_13"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "original_14"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "nm_setor_14"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "original_15"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "nm_setor_15"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "original_16"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "nm_setor_16"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "original_17"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "nm_setor_17"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "original_18"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "nm_setor_18"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]

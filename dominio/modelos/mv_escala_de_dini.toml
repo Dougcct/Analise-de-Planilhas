@@ -1,0 +1,145 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 653 / USR_ESCALA_DE_DINI)
+nome = "ESCALA DE DINI"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "dh_avaliacao"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "dh_avaliacao"
+rotulo = "Data/hora avaliação"
+tipo = "data_hora"
+sinonimos = ["DH_AVALIACAO"]
+[[coluna]]
+canonico = "ds_unid_int"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "resultado_risco"
+rotulo = "Resultado Risco"
+tipo = "texto_livre"
+sinonimos = ["RESULTADO_RISCO"]
+[[coluna]]
+canonico = "vl_resultado"
+rotulo = "Valor resultado"
+tipo = "moeda"
+sinonimos = ["VL_RESULTADO"]
+[[coluna]]
+canonico = "cd_atendimento_2"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "dh_avaliacao_2"
+rotulo = "Data/hora avaliação"
+tipo = "data_hora"
+sinonimos = ["DH_AVALIACAO"]
+[[coluna]]
+canonico = "ds_unid_int_2"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "resultado_risco_2"
+rotulo = "Resultado Risco"
+tipo = "texto_livre"
+sinonimos = ["RESULTADO_RISCO"]
+[[coluna]]
+canonico = "vl_resultado_2"
+rotulo = "Valor resultado"
+tipo = "moeda"
+sinonimos = ["VL_RESULTADO"]
+[[coluna]]
+canonico = "cd_atendimento_3"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "dh_avaliacao_3"
+rotulo = "Data/hora avaliação"
+tipo = "data_hora"
+sinonimos = ["DH_AVALIACAO"]
+[[coluna]]
+canonico = "ds_unid_int_3"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "resultado_risco_3"
+rotulo = "Resultado Risco"
+tipo = "texto_livre"
+sinonimos = ["RESULTADO_RISCO"]
+[[coluna]]
+canonico = "vl_resultado_3"
+rotulo = "Valor resultado"
+tipo = "moeda"
+sinonimos = ["VL_RESULTADO"]
+[[coluna]]
+canonico = "cd_atendimento_4"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "dh_avaliacao_4"
+rotulo = "Data/hora avaliação"
+tipo = "data_hora"
+sinonimos = ["DH_AVALIACAO"]
+[[coluna]]
+canonico = "ds_unid_int_4"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "resultado_risco_4"
+rotulo = "Resultado Risco"
+tipo = "texto_livre"
+sinonimos = ["RESULTADO_RISCO"]
+[[coluna]]
+canonico = "vl_resultado_4"
+rotulo = "Valor resultado"
+tipo = "moeda"
+sinonimos = ["VL_RESULTADO"]
+[[coluna]]
+canonico = "cd_setor"
+rotulo = "Código setor"
+tipo = "identificador"
+sinonimos = ["CD_SETOR"]
+[[coluna]]
+canonico = "nm_setor"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "cd_atendimento_5"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "dh_avaliacao_5"
+rotulo = "Data/hora avaliação"
+tipo = "data_hora"
+sinonimos = ["DH_AVALIACAO"]
+[[coluna]]
+canonico = "ds_unid_int_5"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "resultado_risco_5"
+rotulo = "Resultado Risco"
+tipo = "texto_livre"
+sinonimos = ["RESULTADO_RISCO"]
+[[coluna]]
+canonico = "vl_resultado_5"
+rotulo = "Valor resultado"
+tipo = "moeda"
+sinonimos = ["VL_RESULTADO"]

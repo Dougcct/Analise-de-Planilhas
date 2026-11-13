@@ -1,0 +1,114 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 24 / USR_R_CUSTO_RESULTADO_CONS)
+nome = "R_CUSTO_RESULTADO_CONS"
+pasta = "Faturamento"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "user"
+rotulo = "User"
+tipo = "texto_livre"
+sinonimos = ["USER"]
+[[coluna]]
+canonico = "ds_multi_empresa"
+rotulo = "Descrição multi empresa"
+tipo = "texto_livre"
+sinonimos = ["DS_MULTI_EMPRESA"]
+[[coluna]]
+canonico = "competencia"
+rotulo = "Competencia"
+tipo = "texto_livre"
+sinonimos = ["COMPETENCIA"]
+[[coluna]]
+canonico = "cst_fixo"
+rotulo = "Cst Fixo"
+tipo = "decimal"
+sinonimos = ["CST_FIXO"]
+[[coluna]]
+canonico = "cst_variavel"
+rotulo = "Cst Variavel"
+tipo = "decimal"
+sinonimos = ["CST_VARIAVEL"]
+[[coluna]]
+canonico = "descricao"
+rotulo = "Descricao"
+tipo = "texto_livre"
+sinonimos = ["DESCRICAO"]
+[[coluna]]
+canonico = "diaria"
+rotulo = "Diaria"
+tipo = "decimal"
+sinonimos = ["DIARIA"]
+[[coluna]]
+canonico = "margem"
+rotulo = "Margem"
+tipo = "decimal"
+sinonimos = ["MARGEM"]
+[[coluna]]
+canonico = "ponto_equilibrio"
+rotulo = "Ponto Equilibrio"
+tipo = "decimal"
+sinonimos = ["PONTO_EQUILIBRIO"]
+[[coluna]]
+canonico = "qt_diaria"
+rotulo = "Qtd. diaria"
+tipo = "inteiro"
+sinonimos = ["QT_DIARIA"]
+[[coluna]]
+canonico = "qt_atendimento"
+rotulo = "Qtd. atendimento"
+tipo = "inteiro"
+sinonimos = ["QT_ATENDIMENTO"]
+[[coluna]]
+canonico = "qt_procedimento"
+rotulo = "Qtd. procedimento"
+tipo = "inteiro"
+sinonimos = ["QT_PROCEDIMENTO"]
+[[coluna]]
+canonico = "rent"
+rotulo = "Rent"
+tipo = "texto_livre"
+sinonimos = ["RENT"]
+[[coluna]]
+canonico = "resultado"
+rotulo = "Resultado"
+tipo = "decimal"
+sinonimos = ["RESULTADO"]
+[[coluna]]
+canonico = "total"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "vl_diaria"
+rotulo = "Valor diaria"
+tipo = "moeda"
+sinonimos = ["VL_DIARIA"]
+[[coluna]]
+canonico = "vl_honorario"
+rotulo = "Valor honorario"
+tipo = "moeda"
+sinonimos = ["VL_HONORARIO"]
+[[coluna]]
+canonico = "vl_procedimento"
+rotulo = "Valor procedimento"
+tipo = "moeda"
+sinonimos = ["VL_PROCEDIMENTO"]
+[[coluna]]
+canonico = "vl_produto"
+rotulo = "Valor produto"
+tipo = "moeda"
+sinonimos = ["VL_PRODUTO"]
+[[coluna]]
+canonico = "vl_receita"
+rotulo = "Valor receita"
+tipo = "moeda"
+sinonimos = ["VL_RECEITA"]
+[[coluna]]
+canonico = "vl_terceiro"
+rotulo = "Valor terceiro"
+tipo = "moeda"
+sinonimos = ["VL_TERCEIRO"]

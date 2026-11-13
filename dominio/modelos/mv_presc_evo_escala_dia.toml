@@ -1,0 +1,65 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 251 / USR_PRESC/EVO/ESCALA_DIA)
+nome = "PRESC/EVO/ESCALA DIA"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "dt_doc"
+
+[[coluna]]
+canonico = "cd_tipo_documento"
+rotulo = "Código tipo documento"
+tipo = "identificador"
+sinonimos = ["CD_TIPO_DOCUMENTO"]
+[[coluna]]
+canonico = "dt_doc"
+rotulo = "Data documento"
+tipo = "data"
+sinonimos = ["DT_DOC"]
+[[coluna]]
+canonico = "evolucao"
+rotulo = "Evolucao"
+tipo = "texto_livre"
+sinonimos = ["EVOLUCAO"]
+[[coluna]]
+canonico = "cd_unid_int"
+rotulo = "Código unidade internação"
+tipo = "identificador"
+sinonimos = ["CD_UNID_INT"]
+[[coluna]]
+canonico = "ds_unid_int"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "cd_tipo_documento_2"
+rotulo = "Código tipo documento"
+tipo = "identificador"
+sinonimos = ["CD_TIPO_DOCUMENTO"]
+[[coluna]]
+canonico = "dt_doc_2"
+rotulo = "Data documento"
+tipo = "data"
+sinonimos = ["DT_DOC"]
+[[coluna]]
+canonico = "prescricao"
+rotulo = "Prescricao"
+tipo = "texto_livre"
+sinonimos = ["PRESCRICAO"]
+[[coluna]]
+canonico = "cd_tipo_documento_3"
+rotulo = "Código tipo documento"
+tipo = "identificador"
+sinonimos = ["CD_TIPO_DOCUMENTO"]
+[[coluna]]
+canonico = "dt_doc_3"
+rotulo = "Data documento"
+tipo = "data"
+sinonimos = ["DT_DOC"]
+[[coluna]]
+canonico = "fugulim"
+rotulo = "Fugulim"
+tipo = "texto_livre"
+sinonimos = ["FUGULIM"]

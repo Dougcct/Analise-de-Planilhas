@@ -1,0 +1,81 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 166 / USR_GUIA_TISS_ONCOLOGIA)
+nome = "Guia Tiss Oncologia"
+pasta = "Faturamento"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "dt_autorizacao"
+dimensoes = ["n_guia_prestador", "sexo"]
+
+[[coluna]]
+canonico = "altura"
+rotulo = "Altura"
+tipo = "decimal"
+sinonimos = ["ALTURA"]
+[[coluna]]
+canonico = "ds_email"
+rotulo = "Descrição email"
+tipo = "texto_livre"
+sinonimos = ["DS_EMAIL"]
+[[coluna]]
+canonico = "dt_autorizacao"
+rotulo = "Data autorizacao"
+tipo = "data"
+sinonimos = ["DT_AUTORIZACAO"]
+[[coluna]]
+canonico = "idade"
+rotulo = "Idade"
+tipo = "texto_livre"
+sinonimos = ["IDADE"]
+[[coluna]]
+canonico = "nm_prof_solici"
+rotulo = "Nome prof solici"
+tipo = "texto_livre"
+sinonimos = ["NM_PROF_SOLICI"]
+[[coluna]]
+canonico = "nr_fone_comercial"
+rotulo = "Número fone comercial"
+tipo = "identificador"
+sinonimos = ["NR_FONE_COMERCIAL"]
+[[coluna]]
+canonico = "nr_registro_ans"
+rotulo = "Número registro ans"
+tipo = "identificador"
+sinonimos = ["NR_REGISTRO_ANS"]
+[[coluna]]
+canonico = "n_guia_atr_operadora"
+rotulo = "N Guia Atr Operadora"
+tipo = "texto_livre"
+sinonimos = ["N_GUIA_ATR_OPERADORA"]
+[[coluna]]
+canonico = "n_guia_prestador"
+rotulo = "N Guia Prestador"
+tipo = "categorico"
+sinonimos = ["N_GUIA_PRESTADOR"]
+[[coluna]]
+canonico = "n_guia_referenciada"
+rotulo = "N Guia Referenciada"
+tipo = "texto_livre"
+sinonimos = ["N_GUIA_REFERENCIADA"]
+[[coluna]]
+canonico = "peso"
+rotulo = "Peso"
+tipo = "decimal"
+sinonimos = ["PESO"]
+[[coluna]]
+canonico = "senha"
+rotulo = "Senha"
+tipo = "texto_livre"
+sinonimos = ["SENHA"]
+[[coluna]]
+canonico = "sexo"
+rotulo = "Sexo"
+tipo = "categorico"
+sinonimos = ["SEXO"]
+[[coluna]]
+canonico = "sup_corporal"
+rotulo = "Sup Corporal"
+tipo = "texto_livre"
+sinonimos = ["SUP_CORPORAL"]

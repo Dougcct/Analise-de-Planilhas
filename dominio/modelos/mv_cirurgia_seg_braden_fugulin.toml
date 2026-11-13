@@ -1,0 +1,56 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 569 / USR_CIRURGIA_SEG_BRADEN_FUGULIN)
+nome = "CIRURGIA_SEG_BRADEN_FUGULIN"
+pasta = "Centro Cirúrgico"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "dt_alta_medica"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "dt_alta_medica"
+rotulo = "Data alta médica"
+tipo = "data"
+sinonimos = ["DT_ALTA_MEDICA"]
+[[coluna]]
+canonico = "dt_atendimento"
+rotulo = "Data atendimento"
+tipo = "data"
+sinonimos = ["DT_ATENDIMENTO"]
+[[coluna]]
+canonico = "sem_alta"
+rotulo = "Sem Alta"
+tipo = "texto_livre"
+sinonimos = ["SEM_ALTA"]
+[[coluna]]
+canonico = "tem_braden"
+rotulo = "Tem Braden"
+tipo = "texto_livre"
+sinonimos = ["TEM_BRADEN"]
+[[coluna]]
+canonico = "tem_doc"
+rotulo = "Tem Doc"
+tipo = "texto_livre"
+sinonimos = ["TEM_DOC"]
+[[coluna]]
+canonico = "tem_fugulin"
+rotulo = "Tem Fugulin"
+tipo = "texto_livre"
+sinonimos = ["TEM_FUGULIN"]
+[[coluna]]
+canonico = "tem_morse"
+rotulo = "Tem Morse"
+tipo = "texto_livre"
+sinonimos = ["TEM_MORSE"]

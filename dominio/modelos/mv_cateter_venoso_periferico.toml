@@ -1,0 +1,64 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 549 / USR_CATETER_VENOSO_PERIFERICO)
+nome = "CATETER VENOSO PERIFERICO"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_estoque"
+rotulo = "Código estoque"
+tipo = "identificador"
+sinonimos = ["CD_ESTOQUE"]
+[[coluna]]
+canonico = "cd_produto"
+rotulo = "Código produto"
+tipo = "identificador"
+sinonimos = ["CD_PRODUTO"]
+[[coluna]]
+canonico = "cd_produto_2"
+rotulo = "Código produto"
+tipo = "identificador"
+sinonimos = ["CD_PRODUTO"]
+[[coluna]]
+canonico = "cd_setor"
+rotulo = "Código setor"
+tipo = "identificador"
+sinonimos = ["CD_SETOR"]
+[[coluna]]
+canonico = "consumo"
+rotulo = "Consumo"
+tipo = "decimal"
+sinonimos = ["CONSUMO"]
+[[coluna]]
+canonico = "ds_produto"
+rotulo = "Descrição produto"
+tipo = "texto_livre"
+sinonimos = ["DS_PRODUTO"]
+[[coluna]]
+canonico = "qt_devolvida"
+rotulo = "Qtd. devolvida"
+tipo = "inteiro"
+sinonimos = ["QT_DEVOLVIDA"]
+[[coluna]]
+canonico = "qt_saida"
+rotulo = "Qtd. saida"
+tipo = "inteiro"
+sinonimos = ["QT_SAIDA"]
+[[coluna]]
+canonico = "soma_geral"
+rotulo = "Soma Geral"
+tipo = "decimal"
+sinonimos = ["SOMA_GERAL"]
+[[coluna]]
+canonico = "qtd_atendime"
+rotulo = "Qtd. atendime"
+tipo = "inteiro"
+sinonimos = ["QTD_ATENDIME"]

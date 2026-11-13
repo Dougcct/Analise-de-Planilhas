@@ -1,0 +1,19 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 136 / USR_QUANTITATIVO_SUBCUTANEO_E_INFU)
+nome = "QUANTITATIVO SUBCUTANEO E INFUSIONAL"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "recurso"
+rotulo = "Recurso"
+tipo = "texto_livre"
+sinonimos = ["RECURSO"]
+[[coluna]]
+canonico = "total"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]

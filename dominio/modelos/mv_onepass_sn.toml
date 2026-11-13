@@ -1,0 +1,24 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 566 / USR_ONEPAS_S/N)
+nome = "ONEPASS SN"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "cd_usuario"
+rotulo = "Código usuário"
+tipo = "identificador"
+sinonimos = ["CD_USUARIO"]
+[[coluna]]
+canonico = "nm_usuario"
+rotulo = "Nome usuário"
+tipo = "texto_livre"
+sinonimos = ["NM_USUARIO"]
+[[coluna]]
+canonico = "onepass"
+rotulo = "Onepass"
+tipo = "texto_livre"
+sinonimos = ["ONEPASS"]

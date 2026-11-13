@@ -1,0 +1,104 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 699 / USR_TEMPOS_EXAMES)
+nome = "TEMPOS EXAMES"
+pasta = "Exames e Laboratório"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "cd_exa_lab"
+rotulo = "Código exame laboratório"
+tipo = "identificador"
+sinonimos = ["CD_EXA_LAB"]
+[[coluna]]
+canonico = "cod_turno"
+rotulo = "Código turno"
+tipo = "identificador"
+sinonimos = ["COD_TURNO"]
+[[coluna]]
+canonico = "media_tempo_assinado_impresso"
+rotulo = "Media Tempo Assinado Impresso"
+tipo = "decimal"
+sinonimos = ["MEDIA_TEMPO_ASSINADO_IMPRESSO"]
+[[coluna]]
+canonico = "media_tempo_coleta_recepcao"
+rotulo = "Media Tempo Coleta Recepcao"
+tipo = "decimal"
+sinonimos = ["MEDIA_TEMPO_COLETA_RECEPCAO"]
+[[coluna]]
+canonico = "media_tempo_interfac_resultado"
+rotulo = "Media Tempo Interfac Resultado"
+tipo = "decimal"
+sinonimos = ["MEDIA_TEMPO_INTERFAC_RESULTADO"]
+[[coluna]]
+canonico = "media_tempo_pedido_coleta"
+rotulo = "Media Tempo Pedido Coleta"
+tipo = "decimal"
+sinonimos = ["MEDIA_TEMPO_PEDIDO_COLETA"]
+[[coluna]]
+canonico = "media_tempo_pedido_resultado"
+rotulo = "Media Tempo Pedido Resultado"
+tipo = "decimal"
+sinonimos = ["MEDIA_TEMPO_PEDIDO_RESULTADO"]
+[[coluna]]
+canonico = "media_tempo_recepcao_interfac"
+rotulo = "Media Tempo Recepcao Interfac"
+tipo = "decimal"
+sinonimos = ["MEDIA_TEMPO_RECEPCAO_INTERFAC"]
+[[coluna]]
+canonico = "media_tempo_resultado_revisado"
+rotulo = "Media Tempo Resultado Revisado"
+tipo = "decimal"
+sinonimos = ["MEDIA_TEMPO_RESULTADO_REVISADO"]
+[[coluna]]
+canonico = "media_tempo_revisado_assinado"
+rotulo = "Media Tempo Revisado Assinado"
+tipo = "decimal"
+sinonimos = ["MEDIA_TEMPO_REVISADO_ASSINADO"]
+[[coluna]]
+canonico = "nm_exa_lab"
+rotulo = "Nome exame laboratório"
+tipo = "texto_livre"
+sinonimos = ["NM_EXA_LAB"]
+[[coluna]]
+canonico = "nm_setor"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "turno"
+rotulo = "Turno"
+tipo = "texto_livre"
+sinonimos = ["TURNO"]
+[[coluna]]
+canonico = "cd_exa_lab_2"
+rotulo = "Código exame laboratório"
+tipo = "identificador"
+sinonimos = ["CD_EXA_LAB"]
+[[coluna]]
+canonico = "nm_exa_lab_2"
+rotulo = "Nome exame laboratório"
+tipo = "texto_livre"
+sinonimos = ["NM_EXA_LAB"]
+[[coluna]]
+canonico = "cod"
+rotulo = "Cod"
+tipo = "decimal"
+sinonimos = ["COD"]
+[[coluna]]
+canonico = "turno_2"
+rotulo = "Turno"
+tipo = "texto_livre"
+sinonimos = ["TURNO"]
+[[coluna]]
+canonico = "cd_setor"
+rotulo = "Código setor"
+tipo = "identificador"
+sinonimos = ["CD_SETOR"]
+[[coluna]]
+canonico = "nm_setor_2"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]

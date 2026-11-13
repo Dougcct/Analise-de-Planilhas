@@ -1,0 +1,35 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 374 / USR_INTERNACOES_PA_SEM_PRESCRICAO)
+nome = "INTERNACOES_PA_SEM_PRESCRICAO"
+pasta = "Atendimento Hospitalar"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "dt_internacao"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "ds_leito"
+rotulo = "Descrição leito"
+tipo = "texto_livre"
+sinonimos = ["DS_LEITO"]
+[[coluna]]
+canonico = "dt_internacao"
+rotulo = "Data internação"
+tipo = "data"
+sinonimos = ["DT_INTERNACAO"]
+[[coluna]]
+canonico = "hr_internacao"
+rotulo = "Hora internação"
+tipo = "texto_livre"
+sinonimos = ["HR_INTERNACAO"]
+[[coluna]]
+canonico = "tempo_sem_presc"
+rotulo = "Tempo Sem Presc"
+tipo = "decimal"
+sinonimos = ["TEMPO_SEM_PRESC"]

@@ -1,0 +1,55 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 729 / USR_SERVICOS_LANCADOS)
+nome = "RELATÓRIO SERVIÇOS LANÇADOS"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "dt_emissao"
+
+[[coluna]]
+canonico = "cd_fornecedor"
+rotulo = "Código fornecedor"
+tipo = "identificador"
+sinonimos = ["CD_FORNECEDOR"]
+[[coluna]]
+canonico = "cd_servico"
+rotulo = "Código servico"
+tipo = "identificador"
+sinonimos = ["CD_SERVICO"]
+[[coluna]]
+canonico = "ds_fornecedor"
+rotulo = "Descrição fornecedor"
+tipo = "texto_livre"
+sinonimos = ["DS_FORNECEDOR"]
+[[coluna]]
+canonico = "dt_emissao"
+rotulo = "Data emissao"
+tipo = "data"
+sinonimos = ["DT_EMISSAO"]
+[[coluna]]
+canonico = "dt_lancamento"
+rotulo = "Data lancamento"
+tipo = "data"
+sinonimos = ["DT_LANCAMENTO"]
+[[coluna]]
+canonico = "dt_vencimento"
+rotulo = "Data vencimento"
+tipo = "data"
+sinonimos = ["DT_VENCIMENTO"]
+[[coluna]]
+canonico = "nm_servico"
+rotulo = "Nome servico"
+tipo = "texto_livre"
+sinonimos = ["NM_SERVICO"]
+[[coluna]]
+canonico = "nr_cgc_cpf"
+rotulo = "Número CNPJ cpf"
+tipo = "identificador"
+sinonimos = ["NR_CGC_CPF"]
+[[coluna]]
+canonico = "vl_bruto_conta"
+rotulo = "Valor bruto conta"
+tipo = "moeda"
+sinonimos = ["VL_BRUTO_CONTA"]

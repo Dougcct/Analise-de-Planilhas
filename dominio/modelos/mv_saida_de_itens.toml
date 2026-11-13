@@ -1,0 +1,29 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 594 / USR_SAIDA_DE_ITENS)
+nome = "SAIDA_DE_ITENS"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "cd_estoque"
+rotulo = "Código estoque"
+tipo = "identificador"
+sinonimos = ["CD_ESTOQUE"]
+[[coluna]]
+canonico = "cd_produto"
+rotulo = "Código produto"
+tipo = "identificador"
+sinonimos = ["CD_PRODUTO"]
+[[coluna]]
+canonico = "ds_produto"
+rotulo = "Descrição produto"
+tipo = "texto_livre"
+sinonimos = ["DS_PRODUTO"]
+[[coluna]]
+canonico = "qt_total"
+rotulo = "Qtd. total"
+tipo = "inteiro"
+sinonimos = ["QT_TOTAL"]

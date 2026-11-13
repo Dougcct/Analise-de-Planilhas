@@ -1,0 +1,71 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 74 / USR_TESTE_MAPA_CIRURGICO)
+nome = "TESTE MAPA CIRURGICO"
+pasta = "Centro Cirúrgico"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "dt_hora_cir"
+dimensoes = ["tipo_cir"]
+
+[[coluna]]
+canonico = "atd"
+rotulo = "Atd"
+tipo = "decimal"
+sinonimos = ["ATD"]
+[[coluna]]
+canonico = "aviso"
+rotulo = "Aviso"
+tipo = "decimal"
+sinonimos = ["AVISO"]
+[[coluna]]
+canonico = "cirurgiao"
+rotulo = "Cirurgiao"
+tipo = "texto_livre"
+sinonimos = ["CIRURGIAO"]
+[[coluna]]
+canonico = "ds_cirurgia"
+rotulo = "Descrição cirurgia"
+tipo = "texto_livre"
+sinonimos = ["DS_CIRURGIA"]
+[[coluna]]
+canonico = "ds_con_pla"
+rotulo = "Descrição con plano"
+tipo = "texto_livre"
+sinonimos = ["DS_CON_PLA"]
+[[coluna]]
+canonico = "ds_leito"
+rotulo = "Descrição leito"
+tipo = "texto_livre"
+sinonimos = ["DS_LEITO"]
+[[coluna]]
+canonico = "dt_hora_cir"
+rotulo = "Data hora cirurgia"
+tipo = "data"
+sinonimos = ["DT_HORA_CIR"]
+[[coluna]]
+canonico = "nm_convenio"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "prontuario"
+rotulo = "Prontuario"
+tipo = "decimal"
+sinonimos = ["PRONTUARIO"]
+[[coluna]]
+canonico = "sala"
+rotulo = "Sala"
+tipo = "texto_livre"
+sinonimos = ["SALA"]
+[[coluna]]
+canonico = "situacao_ciru"
+rotulo = "Situacao Ciru"
+tipo = "texto_livre"
+sinonimos = ["SITUACAO_CIRU"]
+[[coluna]]
+canonico = "tipo_cir"
+rotulo = "Tipo cirurgia"
+tipo = "categorico"
+sinonimos = ["TIPO_CIR"]

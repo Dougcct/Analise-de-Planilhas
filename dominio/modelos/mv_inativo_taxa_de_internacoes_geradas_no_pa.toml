@@ -1,0 +1,49 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 722 / USR_INATIVO_TAXA_DE_INTERNACOES_GE)
+nome = "INATIVO_TAXA DE INTERNAÇÕES GERADAS NO PA"
+pasta = "Atendimento Hospitalar"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "qtd"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "taxa"
+rotulo = "Taxa"
+tipo = "texto_livre"
+sinonimos = ["TAXA"]
+[[coluna]]
+canonico = "total"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "qtd_2"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "taxa_2"
+rotulo = "Taxa"
+tipo = "texto_livre"
+sinonimos = ["TAXA"]
+[[coluna]]
+canonico = "total_2"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "ds_unid_int"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "qtd_3"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]

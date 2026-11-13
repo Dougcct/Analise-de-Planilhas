@@ -1,0 +1,75 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 72 / USR_ANTIBIOTICOS_DISPENS_NO_CTI)
+nome = "ANTIBIOTICOS DISPENSADOS"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "original_2"
+
+[[coluna]]
+canonico = "ds_tip_presc"
+rotulo = "Descrição tipo prescrição"
+tipo = "texto_livre"
+sinonimos = ["DS_TIP_PRESC"]
+[[coluna]]
+canonico = "ds_unidade"
+rotulo = "Descrição unidade"
+tipo = "texto_livre"
+sinonimos = ["DS_UNIDADE"]
+[[coluna]]
+canonico = "nm_setor"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "original_2"
+rotulo = "Original"
+tipo = "data"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "original_3"
+rotulo = "Original"
+tipo = "data"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "ds_tip_presc_2"
+rotulo = "Descrição tipo prescrição"
+tipo = "texto_livre"
+sinonimos = ["DS_TIP_PRESC"]
+[[coluna]]
+canonico = "ds_unidade_2"
+rotulo = "Descrição unidade"
+tipo = "texto_livre"
+sinonimos = ["DS_UNIDADE"]
+[[coluna]]
+canonico = "original_4"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "original_5"
+rotulo = "Original"
+tipo = "data"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "original_6"
+rotulo = "Original"
+tipo = "data"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "cd_setor"
+rotulo = "Código setor"
+tipo = "identificador"
+sinonimos = ["CD_SETOR"]
+[[coluna]]
+canonico = "nm_setor_2"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]

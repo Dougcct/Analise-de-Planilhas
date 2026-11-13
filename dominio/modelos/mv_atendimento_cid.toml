@@ -1,0 +1,19 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 479 / USR_ATENDIMENTO_CID)
+nome = "ATENDIMENTO CID"
+pasta = "Atendimento Hospitalar"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "cid"
+rotulo = "Cid"
+tipo = "texto_livre"
+sinonimos = ["CID"]
+[[coluna]]
+canonico = "quantidade"
+rotulo = "Quantidade"
+tipo = "decimal"
+sinonimos = ["QUANTIDADE"]

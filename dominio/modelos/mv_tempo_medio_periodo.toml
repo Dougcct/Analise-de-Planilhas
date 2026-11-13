@@ -1,0 +1,25 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 10 / USR_TEMPO_MEDIO_PERIODO)
+nome = "tempo_medio_periodo"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+dimensoes = ["tipo"]
+
+[[coluna]]
+canonico = "tipo"
+rotulo = "Tipo"
+tipo = "categorico"
+sinonimos = ["TIPO"]
+[[coluna]]
+canonico = "media"
+rotulo = "Media"
+tipo = "texto_livre"
+sinonimos = ["MEDIA"]
+[[coluna]]
+canonico = "user"
+rotulo = "User"
+tipo = "texto_livre"
+sinonimos = ["USER"]

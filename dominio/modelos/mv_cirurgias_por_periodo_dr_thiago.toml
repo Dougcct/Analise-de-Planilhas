@@ -1,0 +1,25 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 600 / USR_CIRURGIAS_POR_PERIODO_(DR._THI)
+nome = "Cirurgias por período (Dr. Thiago)"
+pasta = "Centro Cirúrgico"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+dimensoes = ["tipo_cir"]
+
+[[coluna]]
+canonico = "ds_especialid"
+rotulo = "Descrição especialidade"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIALID"]
+[[coluna]]
+canonico = "qtd"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "tipo_cir"
+rotulo = "Tipo cirurgia"
+tipo = "categorico"
+sinonimos = ["TIPO_CIR"]

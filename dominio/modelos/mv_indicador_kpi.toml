@@ -1,0 +1,60 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 333 / USR_INDICADOR_KPI)
+nome = "INDICADOR KPI"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "dt_mvto_estoque"
+
+[[coluna]]
+canonico = "atendimento"
+rotulo = "Atendimento"
+tipo = "decimal"
+sinonimos = ["ATENDIMENTO"]
+[[coluna]]
+canonico = "dt_mvto_estoque"
+rotulo = "Data mvto estoque"
+tipo = "data"
+sinonimos = ["DT_MVTO_ESTOQUE"]
+[[coluna]]
+canonico = "total"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "atendimento_2"
+rotulo = "Atendimento"
+tipo = "decimal"
+sinonimos = ["ATENDIMENTO"]
+[[coluna]]
+canonico = "atendimento_3"
+rotulo = "Atendimento"
+tipo = "decimal"
+sinonimos = ["ATENDIMENTO"]
+[[coluna]]
+canonico = "dt_mvto_estoque_2"
+rotulo = "Data mvto estoque"
+tipo = "data"
+sinonimos = ["DT_MVTO_ESTOQUE"]
+[[coluna]]
+canonico = "atendimento_4"
+rotulo = "Atendimento"
+tipo = "decimal"
+sinonimos = ["ATENDIMENTO"]
+[[coluna]]
+canonico = "avaliacao"
+rotulo = "Avaliacao"
+tipo = "texto_livre"
+sinonimos = ["AVALIACAO"]
+[[coluna]]
+canonico = "classificacao"
+rotulo = "Classificacao"
+tipo = "decimal"
+sinonimos = ["CLASSIFICACAO"]
+[[coluna]]
+canonico = "avaliacao_2"
+rotulo = "Avaliacao"
+tipo = "decimal"
+sinonimos = ["AVALIACAO"]

@@ -1,0 +1,25 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 71 / USR_PC_-_CIRURGIAS_NAO_CONFIRMADAS)
+nome = "PC - CIRURGIAS NAO CONFIRMADAS"
+pasta = "Centro Cirúrgico"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "dt_cirurgia"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_aviso"
+rotulo = "Código aviso"
+tipo = "identificador"
+sinonimos = ["CD_AVISO"]
+[[coluna]]
+canonico = "dt_cirurgia"
+rotulo = "Data cirurgia"
+tipo = "data"
+sinonimos = ["DT_CIRURGIA"]

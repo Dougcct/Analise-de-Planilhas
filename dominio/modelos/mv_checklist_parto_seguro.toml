@@ -1,0 +1,31 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 515 / USR_CHECKLIST_PARTO_SEGURO)
+nome = "CHECKLIST PARTO SEGURO"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "original"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "nm_documento"
+rotulo = "Nome documento"
+tipo = "texto_livre"
+sinonimos = ["NM_DOCUMENTO"]
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "data"
+sinonimos = ["ORIGINAL"]

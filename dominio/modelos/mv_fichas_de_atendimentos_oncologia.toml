@@ -1,0 +1,60 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 598 / USR_FICHAS_DE_ATENDIMENTOS_ONCOLOG)
+nome = "FICHAS DE ATENDIMENTOS ONCOLOGIA"
+pasta = "Atendimento Hospitalar"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+dimensoes = ["tipo", "tipo_descricao"]
+
+[[coluna]]
+canonico = "cd_especialid"
+rotulo = "Código especialidade"
+tipo = "identificador"
+sinonimos = ["CD_ESPECIALID"]
+[[coluna]]
+canonico = "qtd"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "tipo"
+rotulo = "Tipo"
+tipo = "categorico"
+sinonimos = ["TIPO"]
+[[coluna]]
+canonico = "tipo_descricao"
+rotulo = "Tipo descricao"
+tipo = "categorico"
+sinonimos = ["TIPO_DESCRICAO"]
+[[coluna]]
+canonico = "total"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "nm_convenio"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "qtd_2"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "ds_especialid"
+rotulo = "Descrição especialidade"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIALID"]
+[[coluna]]
+canonico = "ds_tipo_internacao"
+rotulo = "Descrição tipo internação"
+tipo = "texto_livre"
+sinonimos = ["DS_TIPO_INTERNACAO"]

@@ -1,0 +1,56 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 188 / USR_INTERNADOS_POR_ESPECIALIDADE)
+nome = "INTERNADOS POR ESPECIALIDADE"
+pasta = "Atendimento Hospitalar"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "dt_atendimento"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "ds_leito"
+rotulo = "Descrição leito"
+tipo = "texto_livre"
+sinonimos = ["DS_LEITO"]
+[[coluna]]
+canonico = "ds_servico"
+rotulo = "Descrição servico"
+tipo = "texto_livre"
+sinonimos = ["DS_SERVICO"]
+[[coluna]]
+canonico = "ds_unid_int"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "dt_atendimento"
+rotulo = "Data atendimento"
+tipo = "data"
+sinonimos = ["DT_ATENDIMENTO"]
+[[coluna]]
+canonico = "nm_prestador"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "cd_servico"
+rotulo = "Código servico"
+tipo = "identificador"
+sinonimos = ["CD_SERVICO"]
+[[coluna]]
+canonico = "ds_servico_2"
+rotulo = "Descrição servico"
+tipo = "texto_livre"
+sinonimos = ["DS_SERVICO"]

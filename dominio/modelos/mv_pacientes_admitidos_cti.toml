@@ -1,0 +1,36 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 180 / USR_PACIENTES_ADMITIDOS_CTI)
+nome = "PACIENTES ADMITIDOS CTI"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "dt_internacao"
+dimensoes = ["unidade"]
+
+[[coluna]]
+canonico = "cd_atd"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATD"]
+[[coluna]]
+canonico = "dt_internacao"
+rotulo = "Data internação"
+tipo = "data"
+sinonimos = ["DT_INTERNACAO"]
+[[coluna]]
+canonico = "dt_reg"
+rotulo = "Data reg"
+tipo = "data"
+sinonimos = ["DT_REG"]
+[[coluna]]
+canonico = "nm_pct"
+rotulo = "Nome pct"
+tipo = "texto_livre"
+sinonimos = ["NM_PCT"]
+[[coluna]]
+canonico = "unidade"
+rotulo = "Unidade"
+tipo = "categorico"
+sinonimos = ["UNIDADE"]

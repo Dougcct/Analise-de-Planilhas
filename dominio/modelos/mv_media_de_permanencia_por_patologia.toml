@@ -1,0 +1,79 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 349 / USR_MEDIA_DE_PERMANENCIA_POR_PATOL)
+nome = "MEDIA DE PERMANENCIA POR PATOLOGIA"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "total"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "total_2"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "qt"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "qt_2"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "qt_3"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "qt_4"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "qt_5"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "qt_6"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "qt_7"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "qt_8"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "qt_9"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "qt_10"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "qt_11"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "qt_12"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]

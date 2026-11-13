@@ -1,0 +1,110 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 320 / USR_CUSTO_PRODUTOS_POR_FORNECEDOR)
+nome = "CUSTO PRODUTOS POR FORNECEDOR"
+pasta = "Farmácia e Suprimentos"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "dt_coleta"
+
+[[coluna]]
+canonico = "cd_coleta"
+rotulo = "Código coleta"
+tipo = "identificador"
+sinonimos = ["CD_COLETA"]
+[[coluna]]
+canonico = "cd_fornecedor"
+rotulo = "Código fornecedor"
+tipo = "identificador"
+sinonimos = ["CD_FORNECEDOR"]
+[[coluna]]
+canonico = "cd_produto"
+rotulo = "Código produto"
+tipo = "identificador"
+sinonimos = ["CD_PRODUTO"]
+[[coluna]]
+canonico = "cd_sol_com"
+rotulo = "Código solicitante com"
+tipo = "identificador"
+sinonimos = ["CD_SOL_COM"]
+[[coluna]]
+canonico = "ds_condicao_pagamento"
+rotulo = "Descrição condicao pagamento"
+tipo = "texto_livre"
+sinonimos = ["DS_CONDICAO_PAGAMENTO"]
+[[coluna]]
+canonico = "ds_produto"
+rotulo = "Descrição produto"
+tipo = "texto_livre"
+sinonimos = ["DS_PRODUTO"]
+[[coluna]]
+canonico = "ds_unidade"
+rotulo = "Descrição unidade"
+tipo = "texto_livre"
+sinonimos = ["DS_UNIDADE"]
+[[coluna]]
+canonico = "dt_coleta"
+rotulo = "Data coleta"
+tipo = "data"
+sinonimos = ["DT_COLETA"]
+[[coluna]]
+canonico = "dt_validade"
+rotulo = "Data validade"
+tipo = "data"
+sinonimos = ["DT_VALIDADE"]
+[[coluna]]
+canonico = "frete"
+rotulo = "Frete"
+tipo = "texto_livre"
+sinonimos = ["FRETE"]
+[[coluna]]
+canonico = "nm_fantasia"
+rotulo = "Nome fantasia"
+tipo = "texto_livre"
+sinonimos = ["NM_FANTASIA"]
+[[coluna]]
+canonico = "nm_fornecedor"
+rotulo = "Nome fornecedor"
+tipo = "texto_livre"
+sinonimos = ["NM_FORNECEDOR"]
+[[coluna]]
+canonico = "nm_setor"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "qt_cotada"
+rotulo = "Qtd. cotada"
+tipo = "inteiro"
+sinonimos = ["QT_COTADA"]
+[[coluna]]
+canonico = "qt_solic"
+rotulo = "Qtd. solic"
+tipo = "inteiro"
+sinonimos = ["QT_SOLIC"]
+[[coluna]]
+canonico = "vl_total"
+rotulo = "Valor total"
+tipo = "moeda"
+sinonimos = ["VL_TOTAL"]
+[[coluna]]
+canonico = "vl_unitario"
+rotulo = "Valor unitario"
+tipo = "moeda"
+sinonimos = ["VL_UNITARIO"]
+[[coluna]]
+canonico = "cd_fornecedor_2"
+rotulo = "Código fornecedor"
+tipo = "identificador"
+sinonimos = ["CD_FORNECEDOR"]
+[[coluna]]
+canonico = "nm_fantasia_2"
+rotulo = "Nome fantasia"
+tipo = "texto_livre"
+sinonimos = ["NM_FANTASIA"]
+[[coluna]]
+canonico = "nm_fornecedor_2"
+rotulo = "Nome fornecedor"
+tipo = "texto_livre"
+sinonimos = ["NM_FORNECEDOR"]

@@ -1,0 +1,59 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 306 / USR_MEDIA_SOLICITACOES_POR_HORA)
+nome = "MÉDIA SOLICITAÇÕES POR HORA"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "nm_exa_lab"
+rotulo = "Nome exame laboratório"
+tipo = "texto_livre"
+sinonimos = ["NM_EXA_LAB"]
+[[coluna]]
+canonico = "tempo_medio_assinado"
+rotulo = "Tempo Medio Assinado"
+tipo = "texto_livre"
+sinonimos = ["TEMPO_MEDIO_ASSINADO"]
+[[coluna]]
+canonico = "tempo_medio_coleta"
+rotulo = "Tempo Medio Coleta"
+tipo = "texto_livre"
+sinonimos = ["TEMPO_MEDIO_COLETA"]
+[[coluna]]
+canonico = "tempo_medio_confirma"
+rotulo = "Tempo Medio Confirma"
+tipo = "texto_livre"
+sinonimos = ["TEMPO_MEDIO_CONFIRMA"]
+[[coluna]]
+canonico = "tempo_medio_entrega"
+rotulo = "Tempo Medio Entrega"
+tipo = "texto_livre"
+sinonimos = ["TEMPO_MEDIO_ENTREGA"]
+[[coluna]]
+canonico = "tempo_medio_revisado"
+rotulo = "Tempo Medio Revisado"
+tipo = "texto_livre"
+sinonimos = ["TEMPO_MEDIO_REVISADO"]
+[[coluna]]
+canonico = "cd_unid_int"
+rotulo = "Código unidade internação"
+tipo = "identificador"
+sinonimos = ["CD_UNID_INT"]
+[[coluna]]
+canonico = "ds_unid_int"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "cd_exa_lab"
+rotulo = "Código exame laboratório"
+tipo = "identificador"
+sinonimos = ["CD_EXA_LAB"]
+[[coluna]]
+canonico = "nm_exa_lab_2"
+rotulo = "Nome exame laboratório"
+tipo = "texto_livre"
+sinonimos = ["NM_EXA_LAB"]

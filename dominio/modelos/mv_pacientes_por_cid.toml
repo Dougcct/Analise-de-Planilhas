@@ -1,0 +1,55 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 280 / USR_PACIENTES_POR_CID)
+nome = "PACIENTES POR CID"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+dimensoes = ["tp_atendimento", "tp_sexo"]
+
+[[coluna]]
+canonico = "cd_cid"
+rotulo = "Código cid"
+tipo = "identificador"
+sinonimos = ["CD_CID"]
+[[coluna]]
+canonico = "ds_cid"
+rotulo = "Descrição cid"
+tipo = "texto_livre"
+sinonimos = ["DS_CID"]
+[[coluna]]
+canonico = "cd_cid_2"
+rotulo = "Código cid"
+tipo = "identificador"
+sinonimos = ["CD_CID"]
+[[coluna]]
+canonico = "ds_cid_2"
+rotulo = "Descrição cid"
+tipo = "texto_livre"
+sinonimos = ["DS_CID"]
+[[coluna]]
+canonico = "idade"
+rotulo = "Idade"
+tipo = "decimal"
+sinonimos = ["IDADE"]
+[[coluna]]
+canonico = "qtd"
+rotulo = "Qtd"
+tipo = "texto_livre"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "raca_cor"
+rotulo = "Raca Cor"
+tipo = "texto_livre"
+sinonimos = ["RACA_COR"]
+[[coluna]]
+canonico = "tp_atendimento"
+rotulo = "Tipo atendimento"
+tipo = "categorico"
+sinonimos = ["TP_ATENDIMENTO"]
+[[coluna]]
+canonico = "tp_sexo"
+rotulo = "Tipo sexo"
+tipo = "categorico"
+sinonimos = ["TP_SEXO"]

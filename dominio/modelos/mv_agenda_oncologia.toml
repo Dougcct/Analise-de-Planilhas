@@ -1,0 +1,47 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 570 / USR_AGENDA_ONCOLOGIA)
+nome = "AGENDA_ONCOLOGIA"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "hr_agenda"
+dimensoes = ["status"]
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "hr_agenda"
+rotulo = "Hora agenda"
+tipo = "data_hora"
+sinonimos = ["HR_AGENDA"]
+[[coluna]]
+canonico = "nm_prestador"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "recepcao"
+rotulo = "Recepcao"
+tipo = "texto_livre"
+sinonimos = ["RECEPCAO"]
+[[coluna]]
+canonico = "rn"
+rotulo = "Rn"
+tipo = "decimal"
+sinonimos = ["RN"]
+[[coluna]]
+canonico = "status"
+rotulo = "Status"
+tipo = "categorico"
+sinonimos = ["STATUS"]

@@ -1,0 +1,96 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 290 / USR_NOTAS_POR_USUARIOS)
+nome = "NOTAS POR USUARIOS"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "dt_entrada"
+dimensoes = ["tp_documento_entrada"]
+
+[[coluna]]
+canonico = "total"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "cd_cfop"
+rotulo = "Código cfop"
+tipo = "identificador"
+sinonimos = ["CD_CFOP"]
+[[coluna]]
+canonico = "cd_ent_pro"
+rotulo = "Código ent procedimento"
+tipo = "identificador"
+sinonimos = ["CD_ENT_PRO"]
+[[coluna]]
+canonico = "cd_estoque"
+rotulo = "Código estoque"
+tipo = "identificador"
+sinonimos = ["CD_ESTOQUE"]
+[[coluna]]
+canonico = "cd_fornecedor"
+rotulo = "Código fornecedor"
+tipo = "identificador"
+sinonimos = ["CD_FORNECEDOR"]
+[[coluna]]
+canonico = "cd_usuario"
+rotulo = "Código usuário"
+tipo = "identificador"
+sinonimos = ["CD_USUARIO"]
+[[coluna]]
+canonico = "ds_estoque"
+rotulo = "Descrição estoque"
+tipo = "texto_livre"
+sinonimos = ["DS_ESTOQUE"]
+[[coluna]]
+canonico = "dt_entrada"
+rotulo = "Data entrada"
+tipo = "data"
+sinonimos = ["DT_ENTRADA"]
+[[coluna]]
+canonico = "nm_fantasia"
+rotulo = "Nome fantasia"
+tipo = "texto_livre"
+sinonimos = ["NM_FANTASIA"]
+[[coluna]]
+canonico = "nr_cfop"
+rotulo = "Número cfop"
+tipo = "identificador"
+sinonimos = ["NR_CFOP"]
+[[coluna]]
+canonico = "tp_documento_entrada"
+rotulo = "Tipo documento entrada"
+tipo = "categorico"
+sinonimos = ["TP_DOCUMENTO_ENTRADA"]
+[[coluna]]
+canonico = "vl_total"
+rotulo = "Valor total"
+tipo = "moeda"
+sinonimos = ["VL_TOTAL"]
+[[coluna]]
+canonico = "total_2"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "cd_tip_doc"
+rotulo = "Código tipo documento"
+tipo = "identificador"
+sinonimos = ["CD_TIP_DOC"]
+[[coluna]]
+canonico = "ds_tip_doc"
+rotulo = "Descrição tipo documento"
+tipo = "texto_livre"
+sinonimos = ["DS_TIP_DOC"]
+[[coluna]]
+canonico = "cd_estoque_2"
+rotulo = "Código estoque"
+tipo = "identificador"
+sinonimos = ["CD_ESTOQUE"]
+[[coluna]]
+canonico = "ds_estoque_2"
+rotulo = "Descrição estoque"
+tipo = "texto_livre"
+sinonimos = ["DS_ESTOQUE"]

@@ -1,0 +1,21 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 409 / USR_PACIENTES_ONCO_PSICO_/_SERV_SO)
+nome = "PACIENTES ONCO PSICO / SERV SOCIAL"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "dh_inicio_agendamento_onc"
+
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "dh_inicio_agendamento_onc"
+rotulo = "Data/hora inicio agendamento onc"
+tipo = "data_hora"
+sinonimos = ["DH_INICIO_AGENDAMENTO_ONC"]

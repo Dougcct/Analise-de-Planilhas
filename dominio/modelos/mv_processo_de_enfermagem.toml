@@ -1,0 +1,62 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 663 / USR_PROCESSO_DE_ENFERMAGEM)
+nome = "Processo de enfermagem"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "data_fechamento_doc"
+dimensoes = ["tipo_doc"]
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "cd_unid_int"
+rotulo = "Código unidade internação"
+tipo = "identificador"
+sinonimos = ["CD_UNID_INT"]
+[[coluna]]
+canonico = "data_fechamento_doc"
+rotulo = "Data fechamento documento"
+tipo = "data"
+sinonimos = ["DATA_FECHAMENTO_DOC"]
+[[coluna]]
+canonico = "ds_unid_int"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "hora"
+rotulo = "Hora"
+tipo = "texto_livre"
+sinonimos = ["HORA"]
+[[coluna]]
+canonico = "nm_usuario"
+rotulo = "Nome usuário"
+tipo = "texto_livre"
+sinonimos = ["NM_USUARIO"]
+[[coluna]]
+canonico = "tipo_doc"
+rotulo = "Tipo documento"
+tipo = "categorico"
+sinonimos = ["TIPO_DOC"]
+[[coluna]]
+canonico = "cd_unid_int_2"
+rotulo = "Código unidade internação"
+tipo = "identificador"
+sinonimos = ["CD_UNID_INT"]
+[[coluna]]
+canonico = "ds_unid_int_2"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]

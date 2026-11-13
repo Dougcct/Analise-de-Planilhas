@@ -1,0 +1,76 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 728 / USR_ALERTAS_NUTRICIONISTAS)
+nome = "REAV PLANO TERAP / TRIAGEM NUTRICIONAL"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "dh_criacao_plano"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "cd_tip_presta"
+rotulo = "Código tipo presta"
+tipo = "identificador"
+sinonimos = ["CD_TIP_PRESTA"]
+[[coluna]]
+canonico = "cd_unid_int"
+rotulo = "Código unidade internação"
+tipo = "identificador"
+sinonimos = ["CD_UNID_INT"]
+[[coluna]]
+canonico = "dh_criacao_plano"
+rotulo = "Data/hora criação plano"
+tipo = "data_hora"
+sinonimos = ["DH_CRIACAO_PLANO"]
+[[coluna]]
+canonico = "dh_criacao_triagem"
+rotulo = "Data/hora criação triagem"
+tipo = "data_hora"
+sinonimos = ["DH_CRIACAO_TRIAGEM"]
+[[coluna]]
+canonico = "dias_doc_912"
+rotulo = "Dias documento 912"
+tipo = "inteiro"
+sinonimos = ["DIAS_DOC_912"]
+[[coluna]]
+canonico = "dias_plano"
+rotulo = "Dias plano"
+tipo = "inteiro"
+sinonimos = ["DIAS_PLANO"]
+[[coluna]]
+canonico = "dias_triagem"
+rotulo = "Dias triagem"
+tipo = "inteiro"
+sinonimos = ["DIAS_TRIAGEM"]
+[[coluna]]
+canonico = "ds_leito"
+rotulo = "Descrição leito"
+tipo = "texto_livre"
+sinonimos = ["DS_LEITO"]
+[[coluna]]
+canonico = "ds_unid_int"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "cd_unid_int_2"
+rotulo = "Código unidade internação"
+tipo = "identificador"
+sinonimos = ["CD_UNID_INT"]
+[[coluna]]
+canonico = "ds_unid_int_2"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]

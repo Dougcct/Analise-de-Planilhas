@@ -1,0 +1,66 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 381 / USR_ALTA_DOS_PACIENTES)
+nome = "Alta dos Pacientes"
+pasta = "Atendimento Hospitalar"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "alta_medica"
+
+[[coluna]]
+canonico = "alta_hospitalar"
+rotulo = "Alta Hospitalar"
+tipo = "texto_livre"
+sinonimos = ["ALTA_HOSPITALAR"]
+[[coluna]]
+canonico = "alta_medica"
+rotulo = "Alta Medica"
+tipo = "data"
+sinonimos = ["ALTA_MEDICA"]
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "cd_unid_int"
+rotulo = "Código unidade internação"
+tipo = "identificador"
+sinonimos = ["CD_UNID_INT"]
+[[coluna]]
+canonico = "ds_leito"
+rotulo = "Descrição leito"
+tipo = "texto_livre"
+sinonimos = ["DS_LEITO"]
+[[coluna]]
+canonico = "ds_unid_int"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "dt_alta"
+rotulo = "Data alta"
+tipo = "data"
+sinonimos = ["DT_ALTA"]
+[[coluna]]
+canonico = "min_alta"
+rotulo = "Min Alta"
+tipo = "decimal"
+sinonimos = ["MIN_ALTA"]
+[[coluna]]
+canonico = "parametro_sn"
+rotulo = "Parametro Sn"
+tipo = "texto_livre"
+sinonimos = ["PARAMETRO_SN"]
+[[coluna]]
+canonico = "valid_presc"
+rotulo = "Valid Presc"
+tipo = "data"
+sinonimos = ["VALID_PRESC"]

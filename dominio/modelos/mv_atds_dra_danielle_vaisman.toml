@@ -1,0 +1,75 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 165 / USR_ATDS_DRA_DANIELLE_VAISMAN)
+nome = "ATDS DRA DANIELLE VAISMAN"
+pasta = "Faturamento"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "dt_atendimento"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_prestador"
+rotulo = "Código prestador"
+tipo = "identificador"
+sinonimos = ["CD_PRESTADOR"]
+[[coluna]]
+canonico = "cd_tipo_internacao"
+rotulo = "Código tipo internação"
+tipo = "identificador"
+sinonimos = ["CD_TIPO_INTERNACAO"]
+[[coluna]]
+canonico = "ds_con_pla"
+rotulo = "Descrição con plano"
+tipo = "texto_livre"
+sinonimos = ["DS_CON_PLA"]
+[[coluna]]
+canonico = "ds_des_ate"
+rotulo = "Descrição des atendimento"
+tipo = "texto_livre"
+sinonimos = ["DS_DES_ATE"]
+[[coluna]]
+canonico = "ds_pro_fat"
+rotulo = "Descrição procedimento faturamento"
+tipo = "texto_livre"
+sinonimos = ["DS_PRO_FAT"]
+[[coluna]]
+canonico = "ds_tipo_internacao"
+rotulo = "Descrição tipo internação"
+tipo = "texto_livre"
+sinonimos = ["DS_TIPO_INTERNACAO"]
+[[coluna]]
+canonico = "dt_atendimento"
+rotulo = "Data atendimento"
+tipo = "data"
+sinonimos = ["DT_ATENDIMENTO"]
+[[coluna]]
+canonico = "hr_atendimento"
+rotulo = "Hora atendimento"
+tipo = "texto_livre"
+sinonimos = ["HR_ATENDIMENTO"]
+[[coluna]]
+canonico = "nm_convenio"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "nm_prestador"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "nr_guia"
+rotulo = "Número guia"
+tipo = "identificador"
+sinonimos = ["NR_GUIA"]
+[[coluna]]
+canonico = "sn_retorno"
+rotulo = "Retorno?"
+tipo = "booleano"
+sinonimos = ["SN_RETORNO"]

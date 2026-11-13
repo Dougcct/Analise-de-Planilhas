@@ -1,0 +1,86 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 738 / USR_CESARIANAS)
+nome = "CESARIANAS"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "data_hora_cirurgia"
+dimensoes = ["tp_cirurgia", "tp_cirurgia_2"]
+
+[[coluna]]
+canonico = "cd_prestador"
+rotulo = "Código prestador"
+tipo = "identificador"
+sinonimos = ["CD_PRESTADOR"]
+[[coluna]]
+canonico = "equipe"
+rotulo = "Equipe"
+tipo = "texto_livre"
+sinonimos = ["EQUIPE"]
+[[coluna]]
+canonico = "nm_prestador"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "qtd"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "tp_cirurgia"
+rotulo = "Tipo cirurgia"
+tipo = "categorico"
+sinonimos = ["TP_CIRURGIA"]
+[[coluna]]
+canonico = "cd_prestador_2"
+rotulo = "Código prestador"
+tipo = "identificador"
+sinonimos = ["CD_PRESTADOR"]
+[[coluna]]
+canonico = "nm_prestador_2"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_aviso_cirurgia"
+rotulo = "Código aviso cirurgia"
+tipo = "identificador"
+sinonimos = ["CD_AVISO_CIRURGIA"]
+[[coluna]]
+canonico = "cd_pro_fat"
+rotulo = "Código procedimento faturamento"
+tipo = "identificador"
+sinonimos = ["CD_PRO_FAT"]
+[[coluna]]
+canonico = "cirurgia"
+rotulo = "Cirurgia"
+tipo = "texto_livre"
+sinonimos = ["CIRURGIA"]
+[[coluna]]
+canonico = "data_hora_cirurgia"
+rotulo = "Data hora cirurgia"
+tipo = "data"
+sinonimos = ["DATA_HORA_CIRURGIA"]
+[[coluna]]
+canonico = "nm_prestador_3"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "qt"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "tp_cirurgia_2"
+rotulo = "Tipo cirurgia"
+tipo = "categorico"
+sinonimos = ["TP_CIRURGIA"]

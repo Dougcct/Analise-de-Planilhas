@@ -1,0 +1,69 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 629 / USR_QUANTIFICACAO_PROCEDIMENTOS_HE)
+nome = "QUANTIFICAÇÃO PROCEDIMENTOS HEMODINÂMICA"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "ds_cirurgia"
+rotulo = "Descrição cirurgia"
+tipo = "texto_livre"
+sinonimos = ["DS_CIRURGIA"]
+[[coluna]]
+canonico = "qtd"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "esp"
+rotulo = "Esp"
+tipo = "texto_livre"
+sinonimos = ["ESP"]
+[[coluna]]
+canonico = "nm_prestador"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "qtd_2"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "nm_convenio"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "qtd_3"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "acima_80"
+rotulo = "Acima 80"
+tipo = "decimal"
+sinonimos = ["ACIMA_80"]
+[[coluna]]
+canonico = "entre_18_44"
+rotulo = "Entre 18 44"
+tipo = "decimal"
+sinonimos = ["ENTRE_18_44"]
+[[coluna]]
+canonico = "entre_45_64"
+rotulo = "Entre 45 64"
+tipo = "decimal"
+sinonimos = ["ENTRE_45_64"]
+[[coluna]]
+canonico = "entre_65_80"
+rotulo = "Entre 65 80"
+tipo = "decimal"
+sinonimos = ["ENTRE_65_80"]
+[[coluna]]
+canonico = "menor_18"
+rotulo = "Menor 18"
+tipo = "decimal"
+sinonimos = ["MENOR_18"]

@@ -1,0 +1,116 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 474 / USR_RELATORIO_PROCESSO_FILA)
+nome = "Relatório Processo FIla"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "fim"
+
+[[coluna]]
+canonico = "data"
+rotulo = "Data"
+tipo = "texto_livre"
+sinonimos = ["DATA"]
+[[coluna]]
+canonico = "fim"
+rotulo = "Fim"
+tipo = "data"
+sinonimos = ["FIM"]
+[[coluna]]
+canonico = "ini"
+rotulo = "Ini"
+tipo = "data"
+sinonimos = ["INI"]
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "cd_triagem_atendimento"
+rotulo = "Código triagem atendimento"
+tipo = "identificador"
+sinonimos = ["CD_TRIAGEM_ATENDIMENTO"]
+[[coluna]]
+canonico = "classificacao"
+rotulo = "Classificacao"
+tipo = "texto_livre"
+sinonimos = ["CLASSIFICACAO"]
+[[coluna]]
+canonico = "diferenca_entre_processo"
+rotulo = "Diferenca Entre Processo"
+tipo = "texto_livre"
+sinonimos = ["DIFERENCA_ENTRE_PROCESSO"]
+[[coluna]]
+canonico = "ds_especialid"
+rotulo = "Descrição especialidade"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIALID"]
+[[coluna]]
+canonico = "ds_fila"
+rotulo = "Descrição fila"
+tipo = "texto_livre"
+sinonimos = ["DS_FILA"]
+[[coluna]]
+canonico = "ds_senha"
+rotulo = "Descrição senha"
+tipo = "texto_livre"
+sinonimos = ["DS_SENHA"]
+[[coluna]]
+canonico = "nm_prestador"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "primeiro_processo"
+rotulo = "Primeiro Processo"
+tipo = "data"
+sinonimos = ["PRIMEIRO_PROCESSO"]
+[[coluna]]
+canonico = "retirada_senha"
+rotulo = "Retirada Senha"
+tipo = "data"
+sinonimos = ["RETIRADA_SENHA"]
+[[coluna]]
+canonico = "ult_processo"
+rotulo = "Ult Processo"
+tipo = "data"
+sinonimos = ["ULT_PROCESSO"]
+[[coluna]]
+canonico = "cd_tipo_tempo_processo"
+rotulo = "Código tipo tempo processo"
+tipo = "identificador"
+sinonimos = ["CD_TIPO_TEMPO_PROCESSO"]
+[[coluna]]
+canonico = "ds_tipo_tempo_processo"
+rotulo = "Descrição tipo tempo processo"
+tipo = "texto_livre"
+sinonimos = ["DS_TIPO_TEMPO_PROCESSO"]
+[[coluna]]
+canonico = "cd_fila_senha"
+rotulo = "Código fila senha"
+tipo = "identificador"
+sinonimos = ["CD_FILA_SENHA"]
+[[coluna]]
+canonico = "ds_fila_2"
+rotulo = "Descrição fila"
+tipo = "texto_livre"
+sinonimos = ["DS_FILA"]
+[[coluna]]
+canonico = "total"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "ds_multi_empresa"
+rotulo = "Descrição multi empresa"
+tipo = "texto_livre"
+sinonimos = ["DS_MULTI_EMPRESA"]

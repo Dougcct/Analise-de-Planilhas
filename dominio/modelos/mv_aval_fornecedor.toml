@@ -1,0 +1,90 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 547 / USR_AVAL_FORNECEDOR)
+nome = "AVAL_FORNECEDOR"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "dt_avaliacao"
+
+[[coluna]]
+canonico = "cd_avaliacao"
+rotulo = "Código avaliação"
+tipo = "identificador"
+sinonimos = ["CD_AVALIACAO"]
+[[coluna]]
+canonico = "cd_estoque"
+rotulo = "Código estoque"
+tipo = "identificador"
+sinonimos = ["CD_ESTOQUE"]
+[[coluna]]
+canonico = "cd_formula"
+rotulo = "Código formula"
+tipo = "identificador"
+sinonimos = ["CD_FORMULA"]
+[[coluna]]
+canonico = "cd_fornecedor"
+rotulo = "Código fornecedor"
+tipo = "identificador"
+sinonimos = ["CD_FORNECEDOR"]
+[[coluna]]
+canonico = "cd_ranking"
+rotulo = "Código ranking"
+tipo = "identificador"
+sinonimos = ["CD_RANKING"]
+[[coluna]]
+canonico = "ds_estoque"
+rotulo = "Descrição estoque"
+tipo = "texto_livre"
+sinonimos = ["DS_ESTOQUE"]
+[[coluna]]
+canonico = "ds_ranking"
+rotulo = "Descrição ranking"
+tipo = "texto_livre"
+sinonimos = ["DS_RANKING"]
+[[coluna]]
+canonico = "dt_avaliacao"
+rotulo = "Data avaliação"
+tipo = "data"
+sinonimos = ["DT_AVALIACAO"]
+[[coluna]]
+canonico = "dt_entrada"
+rotulo = "Data entrada"
+tipo = "data"
+sinonimos = ["DT_ENTRADA"]
+[[coluna]]
+canonico = "nm_fornecedor"
+rotulo = "Nome fornecedor"
+tipo = "texto_livre"
+sinonimos = ["NM_FORNECEDOR"]
+[[coluna]]
+canonico = "vl_media"
+rotulo = "Valor media"
+tipo = "moeda"
+sinonimos = ["VL_MEDIA"]
+[[coluna]]
+canonico = "vl_nota"
+rotulo = "Valor nota"
+tipo = "moeda"
+sinonimos = ["VL_NOTA"]
+[[coluna]]
+canonico = "cd_formula_2"
+rotulo = "Código formula"
+tipo = "identificador"
+sinonimos = ["CD_FORMULA"]
+[[coluna]]
+canonico = "nome"
+rotulo = "Nome"
+tipo = "texto_livre"
+sinonimos = ["NOME"]
+[[coluna]]
+canonico = "cd_estoque_2"
+rotulo = "Código estoque"
+tipo = "identificador"
+sinonimos = ["CD_ESTOQUE"]
+[[coluna]]
+canonico = "ds_estoque_2"
+rotulo = "Descrição estoque"
+tipo = "texto_livre"
+sinonimos = ["DS_ESTOQUE"]

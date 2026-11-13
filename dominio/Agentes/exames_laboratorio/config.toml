@@ -1,0 +1,20 @@
+# =============================================================================
+# AGENTE — Exames, Laboratório e Imagem (MV: PED_LAB / PED_RX / EXA_LAB / EXA_RX)
+# =============================================================================
+
+ids_principais = ["exame", "atendimento", "paciente"]
+valores = ["qtd", "total", "taxa", "porcentagem"]
+codigos = ["exame", "atendimento", "paciente", "setor", "prestador"]
+
+[colunas]
+exame          = ["cd_exa_lab", "nm_exa_lab", "exame", "ds_exa_rx", "procedimento", "exame solicitado"]
+setor          = ["cd_setor", "nm_setor", "setor", "unidade", "posto coleta"]
+prestador      = ["cd_prestador", "nm_prestador", "solicitante", "medico solicitante"]
+atendimento    = ["cd_atendimento", "atendimento", "atd"]
+paciente       = ["cd_paciente", "prontuario"]
+status         = ["status", "situacao", "entrega", "coleta_material"]
+turno          = ["turno", "periodo"]
+qtd            = ["qtd", "total_cd_exa_lab", "quantidade", "total_ext", "total_atendimentos"]
+total          = ["total", "vl_total"]
+taxa           = ["taxa", "porcentagem", "percentual"]
+dt_pedido      = ["dt_pedido", "data pedido", "dt_coleta", "data coleta", "dt_entrega"]

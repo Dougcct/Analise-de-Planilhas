@@ -1,0 +1,81 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 79 / USR_CONSULTAS_REALIZADAS_PRIMEIRA_)
+nome = "CONSULTAS REALIZADAS PRIMEIRA VEZ"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "hr_atendimento"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "ds_con_pla"
+rotulo = "Descrição con plano"
+tipo = "texto_livre"
+sinonimos = ["DS_CON_PLA"]
+[[coluna]]
+canonico = "ds_tipo_internacao"
+rotulo = "Descrição tipo internação"
+tipo = "texto_livre"
+sinonimos = ["DS_TIPO_INTERNACAO"]
+[[coluna]]
+canonico = "ds_tip_mar"
+rotulo = "Descrição tipo marcação"
+tipo = "texto_livre"
+sinonimos = ["DS_TIP_MAR"]
+[[coluna]]
+canonico = "espec"
+rotulo = "Espec"
+tipo = "texto_livre"
+sinonimos = ["ESPEC"]
+[[coluna]]
+canonico = "hr_atendimento"
+rotulo = "Hora atendimento"
+tipo = "data_hora"
+sinonimos = ["HR_ATENDIMENTO"]
+[[coluna]]
+canonico = "nm_convenio"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "nm_prestador"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "qtd"
+rotulo = "Qtd"
+tipo = "texto_livre"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "data"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "original_2"
+rotulo = "Original"
+tipo = "data"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "nm_convenio_2"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "qt"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]

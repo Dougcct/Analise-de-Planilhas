@@ -1,0 +1,51 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 585 / USR_CHECAGEM_RELATORIO_PACIENTE_ON)
+nome = "CHECAGEM RELATORIO PACIENTE ONCOLOGICO"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "dt_atendimento"
+dimensoes = ["status_diagnostico", "status_especialidade", "status_protocolo", "status_tipo_paciente", "status_tratamento", "status_via"]
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "dt_atendimento"
+rotulo = "Data atendimento"
+tipo = "data"
+sinonimos = ["DT_ATENDIMENTO"]
+[[coluna]]
+canonico = "status_diagnostico"
+rotulo = "Status Diagnostico"
+tipo = "categorico"
+sinonimos = ["STATUS_DIAGNOSTICO"]
+[[coluna]]
+canonico = "status_especialidade"
+rotulo = "Status Especialidade"
+tipo = "categorico"
+sinonimos = ["STATUS_ESPECIALIDADE"]
+[[coluna]]
+canonico = "status_protocolo"
+rotulo = "Status Protocolo"
+tipo = "categorico"
+sinonimos = ["STATUS_PROTOCOLO"]
+[[coluna]]
+canonico = "status_tipo_paciente"
+rotulo = "Status Tipo Paciente"
+tipo = "categorico"
+sinonimos = ["STATUS_TIPO_PACIENTE"]
+[[coluna]]
+canonico = "status_tratamento"
+rotulo = "Status Tratamento"
+tipo = "categorico"
+sinonimos = ["STATUS_TRATAMENTO"]
+[[coluna]]
+canonico = "status_via"
+rotulo = "Status Via"
+tipo = "categorico"
+sinonimos = ["STATUS_VIA"]

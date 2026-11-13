@@ -1,0 +1,30 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 299 / USR_TOTAL_CHECK_LIST_CIRURGIA_SEGU)
+nome = "TOTAL CHECK LIST CIRURGIA SEGURA"
+pasta = "Centro Cirúrgico"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "original"
+
+[[coluna]]
+canonico = "total"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "data"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "qt"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "s"
+rotulo = "S"
+tipo = "texto_livre"
+sinonimos = ["S"]

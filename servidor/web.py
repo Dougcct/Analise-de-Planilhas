@@ -107,6 +107,11 @@ def _pode(escopo: Escopo, *papeis: str) -> bool:
     return escopo.papel in papeis
 
 
+def _exige_gestor_ou_adm(escopo: Escopo) -> None:
+    if not _pode(escopo, GESTOR, ADM):
+        raise _Erro("Acesso restrito a gestores e administradores.")
+
+
 def _audit(s, escopo, acao, alvo=None, det=None):
     s.add(Auditoria(usuario_id=escopo.usuario_id, centro_custo_id=escopo.centro_custo_id,
                     acao=acao, alvo=alvo, ip=escopo.ip, detalhes=det))
@@ -1012,7 +1017,8 @@ def home(request: Request, s: Session = Depends(_sessao)):
     elif escopo.centro_custo_id:            # um setor só: cai direto no conteúdo do próprio setor
         subs, relatorios = _conteudo(s, escopo.centro_custo_id, None)
         cc = s.get(CentroCusto, escopo.centro_custo_id)
-        ctx.update(titulo_local=cc.nome if cc else "Meu setor", pastas=subs, relatorios=relatorios)
+        ctx.update(titulo_local=cc.nome if cc else "Meu setor", pastas=subs, relatorios=relatorios,
+                   setor_id=escopo.centro_custo_id)
     else:
         ctx.update(titulo_local="Relatórios", pastas=[], relatorios=[])
     return _pagina("home.html", request, _ctx(request, escopo, s, "relatorios", **ctx))
@@ -1020,10 +1026,13 @@ def home(request: Request, s: Session = Depends(_sessao)):
 
 def _explorar(request: Request, s, escopo, cc: CentroCusto, pasta: Pasta | None):
     subs, relatorios = _conteudo(s, cc.id, pasta.id if pasta else None)
+    pode_gerenciar = _pode(escopo, GESTOR, ADM)
     return _pagina("explorar.html", request, _ctx(request, escopo, s, "relatorios",
                    migalhas=_migalhas(s, cc, pasta), titulo_local=pasta.nome if pasta else cc.nome,
-                   pastas=subs, relatorios=relatorios, eh_adm=escopo.eh_adm, setor_id=cc.id,
-                   pasta_atual=pasta.id if pasta else "", destinos=_destinos(s, cc.id) if escopo.eh_adm else []))
+                   pastas=subs, relatorios=relatorios, eh_adm=escopo.eh_adm,
+                   pode_gerenciar=pode_gerenciar, setor_id=cc.id,
+                   pasta_atual=pasta.id if pasta else "",
+                   destinos=_destinos(s, cc.id) if pode_gerenciar else []))
 
 
 @router.get("/rascunhos", response_class=HTMLResponse)
@@ -1088,7 +1097,6 @@ def pasta_criar(request: Request, setor_id: int = Form(...), nome: str = Form(..
         return redir
     pai = int(pai_id) if pai_id.isdigit() else None
     try:
-        _exige_adm(escopo)
         cc = _setor_acessivel(s, escopo, setor_id)
         if not nome.strip():
             raise _Erro("Dê um nome à pasta.")
@@ -1108,7 +1116,7 @@ def pasta_renomear(pasta_id: int, request: Request, nome: str = Form(...), s: Se
     if redir:
         return redir
     try:
-        _exige_adm(escopo)
+        _exige_gestor_ou_adm(escopo)
         p = _pasta_acessivel(s, escopo, pasta_id)
         if not nome.strip():
             raise _Erro("O nome não pode ficar vazio.")
@@ -1127,7 +1135,7 @@ def pasta_excluir(pasta_id: int, request: Request, s: Session = Depends(_sessao)
         return redir
     destino, srv = "/web", _srv()
     try:
-        _exige_adm(escopo)
+        _exige_gestor_ou_adm(escopo)
         p = _pasta_acessivel(s, escopo, pasta_id)
         destino = _volta_para(s, p.centro_custo_id, p.pai_id)
         ids: list[int] = []                             # subárvore em pré-ordem (pai antes dos filhos)
@@ -1156,7 +1164,7 @@ def relatorio_mover(slug: str, request: Request, pasta_id: str = Form(""), s: Se
         return redir
     destino = "/web"
     try:
-        _exige_adm(escopo)
+        _exige_gestor_ou_adm(escopo)
         rel = _relatorio_gerenciavel(s, escopo, slug)
         alvo = int(pasta_id) if pasta_id.isdigit() else None
         if alvo is not None:

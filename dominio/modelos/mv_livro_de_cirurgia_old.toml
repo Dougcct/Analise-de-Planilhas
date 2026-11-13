@@ -1,0 +1,122 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 185 / USR_CIRURGIAS_POR_ESPECIALIDADE)
+nome = "LIVRO DE CIRURGIA OLD"
+pasta = "Centro Cirúrgico"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "dt_fim_cirurgia"
+dimensoes = ["tp_cirurgias", "tp_sexo", "tp_situacao"]
+
+[[coluna]]
+canonico = "cd_asa"
+rotulo = "Código asa"
+tipo = "identificador"
+sinonimos = ["CD_ASA"]
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_aviso_cirurgia"
+rotulo = "Código aviso cirurgia"
+tipo = "identificador"
+sinonimos = ["CD_AVISO_CIRURGIA"]
+[[coluna]]
+canonico = "cd_cen_cir"
+rotulo = "Código centro cirurgia"
+tipo = "identificador"
+sinonimos = ["CD_CEN_CIR"]
+[[coluna]]
+canonico = "cd_cirurgia"
+rotulo = "Código cirurgia"
+tipo = "identificador"
+sinonimos = ["CD_CIRURGIA"]
+[[coluna]]
+canonico = "cd_especialid"
+rotulo = "Código especialidade"
+tipo = "identificador"
+sinonimos = ["CD_ESPECIALID"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "ds_cen_cir"
+rotulo = "Descrição centro cirurgia"
+tipo = "texto_livre"
+sinonimos = ["DS_CEN_CIR"]
+[[coluna]]
+canonico = "ds_cirurgia"
+rotulo = "Descrição cirurgia"
+tipo = "texto_livre"
+sinonimos = ["DS_CIRURGIA"]
+[[coluna]]
+canonico = "ds_especialid"
+rotulo = "Descrição especialidade"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIALID"]
+[[coluna]]
+canonico = "dt_fim_cirurgia"
+rotulo = "Data fim cirurgia"
+tipo = "data"
+sinonimos = ["DT_FIM_CIRURGIA"]
+[[coluna]]
+canonico = "idade"
+rotulo = "Idade"
+tipo = "decimal"
+sinonimos = ["IDADE"]
+[[coluna]]
+canonico = "nm_prestador"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "tp_cirurgias"
+rotulo = "Tipo cirurgias"
+tipo = "categorico"
+sinonimos = ["TP_CIRURGIAS"]
+[[coluna]]
+canonico = "tp_sexo"
+rotulo = "Tipo sexo"
+tipo = "categorico"
+sinonimos = ["TP_SEXO"]
+[[coluna]]
+canonico = "tp_situacao"
+rotulo = "Tipo situacao"
+tipo = "categorico"
+sinonimos = ["TP_SITUACAO"]
+[[coluna]]
+canonico = "cd_prestador"
+rotulo = "Código prestador"
+tipo = "identificador"
+sinonimos = ["CD_PRESTADOR"]
+[[coluna]]
+canonico = "nm_prestador_2"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "cd_cen_cir_2"
+rotulo = "Código centro cirurgia"
+tipo = "identificador"
+sinonimos = ["CD_CEN_CIR"]
+[[coluna]]
+canonico = "ds_cen_cir_2"
+rotulo = "Descrição centro cirurgia"
+tipo = "texto_livre"
+sinonimos = ["DS_CEN_CIR"]
+[[coluna]]
+canonico = "cd_especialid_2"
+rotulo = "Código especialidade"
+tipo = "identificador"
+sinonimos = ["CD_ESPECIALID"]
+[[coluna]]
+canonico = "ds_especialid_2"
+rotulo = "Descrição especialidade"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIALID"]

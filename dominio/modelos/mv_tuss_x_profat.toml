@@ -1,0 +1,35 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 505 / USR_TUSS_X_PROFAT)
+nome = "TUSS X PROFAT"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "data_fim_vigencia"
+
+[[coluna]]
+canonico = "cod_fat"
+rotulo = "Código faturamento"
+tipo = "identificador"
+sinonimos = ["COD_FAT"]
+[[coluna]]
+canonico = "cod_tuss"
+rotulo = "Código tuss"
+tipo = "identificador"
+sinonimos = ["COD_TUSS"]
+[[coluna]]
+canonico = "data_fim_vigencia"
+rotulo = "Data fim vigencia"
+tipo = "data"
+sinonimos = ["DATA_FIM_VIGENCIA"]
+[[coluna]]
+canonico = "data_inicio_vigencia"
+rotulo = "Data inicio vigencia"
+tipo = "data"
+sinonimos = ["DATA_INICIO_VIGENCIA"]
+[[coluna]]
+canonico = "descricao"
+rotulo = "Descricao"
+tipo = "texto_livre"
+sinonimos = ["DESCRICAO"]

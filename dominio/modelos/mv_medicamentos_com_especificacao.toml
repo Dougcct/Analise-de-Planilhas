@@ -1,0 +1,59 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 529 / USR_TESTE_MEDIA)
+nome = "Medicamentos Com Especificação"
+pasta = "Farmácia e Suprimentos"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "cd_produto"
+rotulo = "Código produto"
+tipo = "identificador"
+sinonimos = ["CD_PRODUTO"]
+[[coluna]]
+canonico = "cd_produto_2"
+rotulo = "Código produto"
+tipo = "identificador"
+sinonimos = ["CD_PRODUTO"]
+[[coluna]]
+canonico = "cd_tip_presc_componente"
+rotulo = "Código tipo prescrição componente"
+tipo = "identificador"
+sinonimos = ["CD_TIP_PRESC_COMPONENTE"]
+[[coluna]]
+canonico = "ds_especificacao"
+rotulo = "Descrição especificacao"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIFICACAO"]
+[[coluna]]
+canonico = "ds_produto"
+rotulo = "Descrição produto"
+tipo = "texto_livre"
+sinonimos = ["DS_PRODUTO"]
+[[coluna]]
+canonico = "ds_tip_presc"
+rotulo = "Descrição tipo prescrição"
+tipo = "texto_livre"
+sinonimos = ["DS_TIP_PRESC"]
+[[coluna]]
+canonico = "presc1"
+rotulo = "Presc1"
+tipo = "decimal"
+sinonimos = ["PRESC1"]
+[[coluna]]
+canonico = "presc2"
+rotulo = "Presc2"
+tipo = "texto_livre"
+sinonimos = ["PRESC2"]
+[[coluna]]
+canonico = "cd_produto_3"
+rotulo = "Código produto"
+tipo = "identificador"
+sinonimos = ["CD_PRODUTO"]
+[[coluna]]
+canonico = "ds_produto_2"
+rotulo = "Descrição produto"
+tipo = "texto_livre"
+sinonimos = ["DS_PRODUTO"]

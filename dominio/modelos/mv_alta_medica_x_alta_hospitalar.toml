@@ -1,0 +1,41 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 452 / USR_ALTA_MEDICA_X_ALTA_HOSPITALAR)
+nome = "ALTA MEDICA X ALTA HOSPITALAR"
+pasta = "Farmácia e Suprimentos"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "alta_medica"
+dimensoes = ["leito"]
+
+[[coluna]]
+canonico = "alta_hospital"
+rotulo = "Alta Hospital"
+tipo = "texto_livre"
+sinonimos = ["ALTA_HOSPITAL"]
+[[coluna]]
+canonico = "alta_medica"
+rotulo = "Alta Medica"
+tipo = "data"
+sinonimos = ["ALTA_MEDICA"]
+[[coluna]]
+canonico = "cod_atendime"
+rotulo = "Código atendime"
+tipo = "identificador"
+sinonimos = ["COD_ATENDIME"]
+[[coluna]]
+canonico = "leito"
+rotulo = "Leito"
+tipo = "categorico"
+sinonimos = ["LEITO"]
+[[coluna]]
+canonico = "posto"
+rotulo = "Posto"
+tipo = "texto_livre"
+sinonimos = ["POSTO"]
+[[coluna]]
+canonico = "tempo_medio_permanecia"
+rotulo = "Tempo Medio Permanecia"
+tipo = "texto_livre"
+sinonimos = ["TEMPO_MEDIO_PERMANECIA"]

@@ -1,0 +1,105 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 327 / USR_ESTATISTICAS_LAB)
+nome = "INDICADORES LAB"
+pasta = "Exames e Laboratório"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+dimensoes = ["status", "status_2"]
+
+[[coluna]]
+canonico = "coleta_material"
+rotulo = "Coleta Material"
+tipo = "decimal"
+sinonimos = ["COLETA_MATERIAL"]
+[[coluna]]
+canonico = "porcentagem"
+rotulo = "Porcentagem"
+tipo = "decimal"
+sinonimos = ["PORCENTAGEM"]
+[[coluna]]
+canonico = "total_ext"
+rotulo = "Total Ext"
+tipo = "moeda"
+sinonimos = ["TOTAL_EXT"]
+[[coluna]]
+canonico = "coleta_material_2"
+rotulo = "Coleta Material"
+tipo = "decimal"
+sinonimos = ["COLETA_MATERIAL"]
+[[coluna]]
+canonico = "porcentagem_2"
+rotulo = "Porcentagem"
+tipo = "decimal"
+sinonimos = ["PORCENTAGEM"]
+[[coluna]]
+canonico = "total_ext_2"
+rotulo = "Total Ext"
+tipo = "moeda"
+sinonimos = ["TOTAL_EXT"]
+[[coluna]]
+canonico = "exames_realizados"
+rotulo = "Exames Realizados"
+tipo = "decimal"
+sinonimos = ["EXAMES_REALIZADOS"]
+[[coluna]]
+canonico = "total_atendimentos"
+rotulo = "Total Atendimentos"
+tipo = "moeda"
+sinonimos = ["TOTAL_ATENDIMENTOS"]
+[[coluna]]
+canonico = "porcentagem_3"
+rotulo = "Porcentagem"
+tipo = "decimal"
+sinonimos = ["PORCENTAGEM"]
+[[coluna]]
+canonico = "total_coleta"
+rotulo = "Total Coleta"
+tipo = "moeda"
+sinonimos = ["TOTAL_COLETA"]
+[[coluna]]
+canonico = "total_recoleta"
+rotulo = "Total Recoleta"
+tipo = "moeda"
+sinonimos = ["TOTAL_RECOLETA"]
+[[coluna]]
+canonico = "atendimentos_retificados"
+rotulo = "Atendimentos Retificados"
+tipo = "decimal"
+sinonimos = ["ATENDIMENTOS_RETIFICADOS"]
+[[coluna]]
+canonico = "porcentagem_4"
+rotulo = "Porcentagem"
+tipo = "decimal"
+sinonimos = ["PORCENTAGEM"]
+[[coluna]]
+canonico = "total_atendimentos_2"
+rotulo = "Total Atendimentos"
+tipo = "moeda"
+sinonimos = ["TOTAL_ATENDIMENTOS"]
+[[coluna]]
+canonico = "qtd"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "status"
+rotulo = "Status"
+tipo = "categorico"
+sinonimos = ["STATUS"]
+[[coluna]]
+canonico = "qtd_2"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "status_2"
+rotulo = "Status"
+tipo = "categorico"
+sinonimos = ["STATUS"]
+[[coluna]]
+canonico = "qtd_3"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]

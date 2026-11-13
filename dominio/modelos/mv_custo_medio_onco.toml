@@ -1,0 +1,64 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 311 / USR_CUSTO_MEDIO_ONCO)
+nome = "CUSTO MÉDIO ONCO"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_estoque"
+rotulo = "Código estoque"
+tipo = "identificador"
+sinonimos = ["CD_ESTOQUE"]
+[[coluna]]
+canonico = "cd_mvto_estoque"
+rotulo = "Código mvto estoque"
+tipo = "identificador"
+sinonimos = ["CD_MVTO_ESTOQUE"]
+[[coluna]]
+canonico = "cd_produto"
+rotulo = "Código produto"
+tipo = "identificador"
+sinonimos = ["CD_PRODUTO"]
+[[coluna]]
+canonico = "ds_estoque"
+rotulo = "Descrição estoque"
+tipo = "texto_livre"
+sinonimos = ["DS_ESTOQUE"]
+[[coluna]]
+canonico = "ds_produto"
+rotulo = "Descrição produto"
+tipo = "texto_livre"
+sinonimos = ["DS_PRODUTO"]
+[[coluna]]
+canonico = "qt_movimentacao"
+rotulo = "Qtd. movimentacao"
+tipo = "inteiro"
+sinonimos = ["QT_MOVIMENTACAO"]
+[[coluna]]
+canonico = "vl_custo_medio"
+rotulo = "Valor custo medio"
+tipo = "moeda"
+sinonimos = ["VL_CUSTO_MEDIO"]
+[[coluna]]
+canonico = "cd_estoque_2"
+rotulo = "Código estoque"
+tipo = "identificador"
+sinonimos = ["CD_ESTOQUE"]
+[[coluna]]
+canonico = "ds_estoque_2"
+rotulo = "Descrição estoque"
+tipo = "texto_livre"
+sinonimos = ["DS_ESTOQUE"]
+[[coluna]]
+canonico = "ds_sub_cla"
+rotulo = "Descrição sub cla"
+tipo = "texto_livre"
+sinonimos = ["DS_SUB_CLA"]

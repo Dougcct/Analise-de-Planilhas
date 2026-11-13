@@ -1,0 +1,100 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 548 / USR_PROCEDIMENTOS_HEMODINAMICA)
+nome = "PROCEDIMENTOS HEMODINAMICA"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "dt_realizacao"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_aviso_cirurgia"
+rotulo = "Código aviso cirurgia"
+tipo = "identificador"
+sinonimos = ["CD_AVISO_CIRURGIA"]
+[[coluna]]
+canonico = "cd_cirurgia"
+rotulo = "Código cirurgia"
+tipo = "identificador"
+sinonimos = ["CD_CIRURGIA"]
+[[coluna]]
+canonico = "cd_pro_fat"
+rotulo = "Código procedimento faturamento"
+tipo = "identificador"
+sinonimos = ["CD_PRO_FAT"]
+[[coluna]]
+canonico = "ds_cirurgia"
+rotulo = "Descrição cirurgia"
+tipo = "texto_livre"
+sinonimos = ["DS_CIRURGIA"]
+[[coluna]]
+canonico = "dt_realizacao"
+rotulo = "Data realizacao"
+tipo = "data"
+sinonimos = ["DT_REALIZACAO"]
+[[coluna]]
+canonico = "idade"
+rotulo = "Idade"
+tipo = "decimal"
+sinonimos = ["IDADE"]
+[[coluna]]
+canonico = "nm_convenio"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "tp"
+rotulo = "Tp"
+tipo = "texto_livre"
+sinonimos = ["TP"]
+[[coluna]]
+canonico = "acima_80"
+rotulo = "Acima 80"
+tipo = "decimal"
+sinonimos = ["ACIMA_80"]
+[[coluna]]
+canonico = "entre_18_44"
+rotulo = "Entre 18 44"
+tipo = "decimal"
+sinonimos = ["ENTRE_18_44"]
+[[coluna]]
+canonico = "entre_45_64"
+rotulo = "Entre 45 64"
+tipo = "decimal"
+sinonimos = ["ENTRE_45_64"]
+[[coluna]]
+canonico = "entre_65_80"
+rotulo = "Entre 65 80"
+tipo = "decimal"
+sinonimos = ["ENTRE_65_80"]
+[[coluna]]
+canonico = "menor_18"
+rotulo = "Menor 18"
+tipo = "decimal"
+sinonimos = ["MENOR_18"]
+[[coluna]]
+canonico = "ds_cirurgia_2"
+rotulo = "Descrição cirurgia"
+tipo = "texto_livre"
+sinonimos = ["DS_CIRURGIA"]
+[[coluna]]
+canonico = "qtd_cirurgias"
+rotulo = "Qtd. cirurgias"
+tipo = "inteiro"
+sinonimos = ["QTD_CIRURGIAS"]
+[[coluna]]
+canonico = "e"
+rotulo = "E"
+tipo = "decimal"
+sinonimos = ["E"]
+[[coluna]]
+canonico = "u"
+rotulo = "U"
+tipo = "decimal"
+sinonimos = ["U"]

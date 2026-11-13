@@ -1,0 +1,41 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 234 / USR_OBITOS_ORIUNDOS_DO_PA)
+nome = "OBITOS ORIUNDOS DO PA"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "dt_alta"
+dimensoes = ["tp_sexo"]
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "dt_alta"
+rotulo = "Data alta"
+tipo = "data"
+sinonimos = ["DT_ALTA"]
+[[coluna]]
+canonico = "dt_atendimento"
+rotulo = "Data atendimento"
+tipo = "data"
+sinonimos = ["DT_ATENDIMENTO"]
+[[coluna]]
+canonico = "dt_nasc"
+rotulo = "Data nascimento"
+tipo = "data"
+sinonimos = ["DT_NASC"]
+[[coluna]]
+canonico = "idade"
+rotulo = "Idade"
+tipo = "texto_livre"
+sinonimos = ["IDADE"]
+[[coluna]]
+canonico = "tp_sexo"
+rotulo = "Tipo sexo"
+tipo = "categorico"
+sinonimos = ["TP_SEXO"]

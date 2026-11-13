@@ -1,0 +1,50 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 731 / USR_RELATORIO_GLOSAS_ACATADAS)
+nome = "RELATÓRIO GLOSAS ACATADAS"
+pasta = "Faturamento"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "dt_aceite"
+
+[[coluna]]
+canonico = "cd_convenio"
+rotulo = "Código convênio"
+tipo = "identificador"
+sinonimos = ["CD_CONVENIO"]
+[[coluna]]
+canonico = "cd_con_rec"
+rotulo = "Código con rec"
+tipo = "identificador"
+sinonimos = ["CD_CON_REC"]
+[[coluna]]
+canonico = "dt_aceite"
+rotulo = "Data aceite"
+tipo = "data"
+sinonimos = ["DT_ACEITE"]
+[[coluna]]
+canonico = "nm_cliente"
+rotulo = "Nome cliente"
+tipo = "texto_livre"
+sinonimos = ["NM_CLIENTE"]
+[[coluna]]
+canonico = "nr_documento"
+rotulo = "Número documento"
+tipo = "identificador"
+sinonimos = ["NR_DOCUMENTO"]
+[[coluna]]
+canonico = "vl_aceite"
+rotulo = "Valor aceite"
+tipo = "moeda"
+sinonimos = ["VL_ACEITE"]
+[[coluna]]
+canonico = "vl_duplicata"
+rotulo = "Valor duplicata"
+tipo = "moeda"
+sinonimos = ["VL_DUPLICATA"]
+[[coluna]]
+canonico = "vl_glosa"
+rotulo = "Valor glosa"
+tipo = "moeda"
+sinonimos = ["VL_GLOSA"]

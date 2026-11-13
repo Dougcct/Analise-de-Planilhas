@@ -1,0 +1,71 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 510 / USR_FISIOTERAPIAS_PRESCRITAS)
+nome = "Fisioterapias prescritas"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "dt_pre_med"
+
+[[coluna]]
+canonico = "alta"
+rotulo = "Alta"
+tipo = "texto_livre"
+sinonimos = ["ALTA"]
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "ds_enfermaria"
+rotulo = "Descrição enfermaria"
+tipo = "texto_livre"
+sinonimos = ["DS_ENFERMARIA"]
+[[coluna]]
+canonico = "ds_tip_presc"
+rotulo = "Descrição tipo prescrição"
+tipo = "texto_livre"
+sinonimos = ["DS_TIP_PRESC"]
+[[coluna]]
+canonico = "ds_unid_int"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "dt_pre_med"
+rotulo = "Data pre médico"
+tipo = "data"
+sinonimos = ["DT_PRE_MED"]
+[[coluna]]
+canonico = "nm_prestador"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "qt_itpre_med"
+rotulo = "Qtd. itpre médico"
+tipo = "inteiro"
+sinonimos = ["QT_ITPRE_MED"]
+[[coluna]]
+canonico = "tempo_int"
+rotulo = "Tempo Int"
+tipo = "decimal"
+sinonimos = ["TEMPO_INT"]
+[[coluna]]
+canonico = "cd_unid_int"
+rotulo = "Código unidade internação"
+tipo = "identificador"
+sinonimos = ["CD_UNID_INT"]
+[[coluna]]
+canonico = "ds_unid_int_2"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]

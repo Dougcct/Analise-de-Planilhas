@@ -1,0 +1,65 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 362 / USR_ALTAS_POR_DATA)
+nome = "ALTAS POR DATA"
+pasta = "Atendimento Hospitalar"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "dt_alta_adm"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "dias_int"
+rotulo = "Dias internação"
+tipo = "inteiro"
+sinonimos = ["DIAS_INT"]
+[[coluna]]
+canonico = "ds_mot_alt"
+rotulo = "Descrição motivo alteração"
+tipo = "texto_livre"
+sinonimos = ["DS_MOT_ALT"]
+[[coluna]]
+canonico = "ds_resumo"
+rotulo = "Descrição resumo"
+tipo = "texto_livre"
+sinonimos = ["DS_RESUMO"]
+[[coluna]]
+canonico = "dt_alta_adm"
+rotulo = "Data alta adm"
+tipo = "data"
+sinonimos = ["DT_ALTA_ADM"]
+[[coluna]]
+canonico = "dt_alta_medica"
+rotulo = "Data alta médica"
+tipo = "data"
+sinonimos = ["DT_ALTA_MEDICA"]
+[[coluna]]
+canonico = "dt_internacao"
+rotulo = "Data internação"
+tipo = "data"
+sinonimos = ["DT_INTERNACAO"]
+[[coluna]]
+canonico = "hr_alta_adm"
+rotulo = "Hora alta adm"
+tipo = "texto_livre"
+sinonimos = ["HR_ALTA_ADM"]
+[[coluna]]
+canonico = "hr_alta_medica"
+rotulo = "Hora alta médica"
+tipo = "texto_livre"
+sinonimos = ["HR_ALTA_MEDICA"]
+[[coluna]]
+canonico = "nm_convenio"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "nm_usuario"
+rotulo = "Nome usuário"
+tipo = "texto_livre"
+sinonimos = ["NM_USUARIO"]

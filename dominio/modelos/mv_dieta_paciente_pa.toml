@@ -1,0 +1,34 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 382 / USR_DIETA_PACIENTE_PA)
+nome = "DIETA PACIENTE PA"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "dieta"
+rotulo = "Dieta"
+tipo = "texto_livre"
+sinonimos = ["DIETA"]
+[[coluna]]
+canonico = "ds_itpre_med"
+rotulo = "Descrição itpre médico"
+tipo = "texto_livre"
+sinonimos = ["DS_ITPRE_MED"]
+[[coluna]]
+canonico = "ds_ori_ate"
+rotulo = "Descrição origem atendimento"
+tipo = "texto_livre"
+sinonimos = ["DS_ORI_ATE"]
+[[coluna]]
+canonico = "idade"
+rotulo = "Idade"
+tipo = "decimal"
+sinonimos = ["IDADE"]

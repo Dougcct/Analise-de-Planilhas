@@ -1,0 +1,149 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 161 / USR_TEMPO_MEDIO_PERM_FAIXA_ETARIA)
+nome = "TEMPO MEDIO PERM FAIXA ETARIA"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "texto_livre"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "alt"
+rotulo = "Alt"
+tipo = "decimal"
+sinonimos = ["ALT"]
+[[coluna]]
+canonico = "csn"
+rotulo = "Csn"
+tipo = "decimal"
+sinonimos = ["CSN"]
+[[coluna]]
+canonico = "perm_media"
+rotulo = "Perm Media"
+tipo = "decimal"
+sinonimos = ["PERM_MEDIA"]
+[[coluna]]
+canonico = "original_2"
+rotulo = "Original"
+tipo = "texto_livre"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "alt_2"
+rotulo = "Alt"
+tipo = "decimal"
+sinonimos = ["ALT"]
+[[coluna]]
+canonico = "csn_2"
+rotulo = "Csn"
+tipo = "decimal"
+sinonimos = ["CSN"]
+[[coluna]]
+canonico = "perm_media_2"
+rotulo = "Perm Media"
+tipo = "decimal"
+sinonimos = ["PERM_MEDIA"]
+[[coluna]]
+canonico = "original_3"
+rotulo = "Original"
+tipo = "texto_livre"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "alt_3"
+rotulo = "Alt"
+tipo = "decimal"
+sinonimos = ["ALT"]
+[[coluna]]
+canonico = "csn_3"
+rotulo = "Csn"
+tipo = "decimal"
+sinonimos = ["CSN"]
+[[coluna]]
+canonico = "perm_media_3"
+rotulo = "Perm Media"
+tipo = "decimal"
+sinonimos = ["PERM_MEDIA"]
+[[coluna]]
+canonico = "original_4"
+rotulo = "Original"
+tipo = "texto_livre"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "alt_4"
+rotulo = "Alt"
+tipo = "decimal"
+sinonimos = ["ALT"]
+[[coluna]]
+canonico = "csn_4"
+rotulo = "Csn"
+tipo = "decimal"
+sinonimos = ["CSN"]
+[[coluna]]
+canonico = "perm_media_4"
+rotulo = "Perm Media"
+tipo = "decimal"
+sinonimos = ["PERM_MEDIA"]
+[[coluna]]
+canonico = "original_5"
+rotulo = "Original"
+tipo = "texto_livre"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "alt_5"
+rotulo = "Alt"
+tipo = "decimal"
+sinonimos = ["ALT"]
+[[coluna]]
+canonico = "csn_5"
+rotulo = "Csn"
+tipo = "decimal"
+sinonimos = ["CSN"]
+[[coluna]]
+canonico = "perm_media_5"
+rotulo = "Perm Media"
+tipo = "decimal"
+sinonimos = ["PERM_MEDIA"]
+[[coluna]]
+canonico = "original_6"
+rotulo = "Original"
+tipo = "texto_livre"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "alt_6"
+rotulo = "Alt"
+tipo = "decimal"
+sinonimos = ["ALT"]
+[[coluna]]
+canonico = "csn_6"
+rotulo = "Csn"
+tipo = "decimal"
+sinonimos = ["CSN"]
+[[coluna]]
+canonico = "perm_media_6"
+rotulo = "Perm Media"
+tipo = "decimal"
+sinonimos = ["PERM_MEDIA"]
+[[coluna]]
+canonico = "original_7"
+rotulo = "Original"
+tipo = "texto_livre"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "alt_7"
+rotulo = "Alt"
+tipo = "decimal"
+sinonimos = ["ALT"]
+[[coluna]]
+canonico = "csn_7"
+rotulo = "Csn"
+tipo = "decimal"
+sinonimos = ["CSN"]
+[[coluna]]
+canonico = "perm_media_7"
+rotulo = "Perm Media"
+tipo = "decimal"
+sinonimos = ["PERM_MEDIA"]

@@ -1,0 +1,229 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 264 / USR_COPIA_INDICADORES_PA)
+nome = "COPIA_INDICADORES PA"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "atd"
+rotulo = "Atd"
+tipo = "decimal"
+sinonimos = ["ATD"]
+[[coluna]]
+canonico = "exa_lab"
+rotulo = "Exa Lab"
+tipo = "decimal"
+sinonimos = ["EXA_LAB"]
+[[coluna]]
+canonico = "taxa"
+rotulo = "Taxa"
+tipo = "texto_livre"
+sinonimos = ["TAXA"]
+[[coluna]]
+canonico = "qtd"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "taxa_2"
+rotulo = "Taxa"
+tipo = "texto_livre"
+sinonimos = ["TAXA"]
+[[coluna]]
+canonico = "total"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "qtd_2"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "taxa_3"
+rotulo = "Taxa"
+tipo = "texto_livre"
+sinonimos = ["TAXA"]
+[[coluna]]
+canonico = "total_2"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "classificacao"
+rotulo = "Classificacao"
+tipo = "texto_livre"
+sinonimos = ["CLASSIFICACAO"]
+[[coluna]]
+canonico = "media"
+rotulo = "Media"
+tipo = "texto_livre"
+sinonimos = ["MEDIA"]
+[[coluna]]
+canonico = "atd_2"
+rotulo = "Atd"
+tipo = "decimal"
+sinonimos = ["ATD"]
+[[coluna]]
+canonico = "taxa_4"
+rotulo = "Taxa"
+tipo = "texto_livre"
+sinonimos = ["TAXA"]
+[[coluna]]
+canonico = "us"
+rotulo = "Us"
+tipo = "decimal"
+sinonimos = ["US"]
+[[coluna]]
+canonico = "atd_3"
+rotulo = "Atd"
+tipo = "decimal"
+sinonimos = ["ATD"]
+[[coluna]]
+canonico = "friburgo"
+rotulo = "Friburgo"
+tipo = "decimal"
+sinonimos = ["FRIBURGO"]
+[[coluna]]
+canonico = "percent"
+rotulo = "Percent"
+tipo = "texto_livre"
+sinonimos = ["PERCENT"]
+[[coluna]]
+canonico = "atd_4"
+rotulo = "Atd"
+tipo = "decimal"
+sinonimos = ["ATD"]
+[[coluna]]
+canonico = "taxa_5"
+rotulo = "Taxa"
+tipo = "texto_livre"
+sinonimos = ["TAXA"]
+[[coluna]]
+canonico = "total_3"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "texto_livre"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "total_4"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "media_2"
+rotulo = "Media"
+tipo = "decimal"
+sinonimos = ["MEDIA"]
+[[coluna]]
+canonico = "qtd_3"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "tempo_em_min"
+rotulo = "Tempo Em Min"
+tipo = "decimal"
+sinonimos = ["TEMPO_EM_MIN"]
+[[coluna]]
+canonico = "ano_mes"
+rotulo = "Ano Mes"
+tipo = "texto_livre"
+sinonimos = ["ANO_MES"]
+[[coluna]]
+canonico = "media_min"
+rotulo = "Media Min"
+tipo = "decimal"
+sinonimos = ["MEDIA_MIN"]
+[[coluna]]
+canonico = "media_permanencia"
+rotulo = "Media Permanencia"
+tipo = "texto_livre"
+sinonimos = ["MEDIA_PERMANENCIA"]
+[[coluna]]
+canonico = "qtd_atd"
+rotulo = "Qtd. atendimento"
+tipo = "inteiro"
+sinonimos = ["QTD_ATD"]
+[[coluna]]
+canonico = "tempo_total_min"
+rotulo = "Tempo Total Min"
+tipo = "moeda"
+sinonimos = ["TEMPO_TOTAL_MIN"]
+[[coluna]]
+canonico = "classificacao_2"
+rotulo = "Classificacao"
+tipo = "texto_livre"
+sinonimos = ["CLASSIFICACAO"]
+[[coluna]]
+canonico = "qtd_4"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "original_2"
+rotulo = "Original"
+tipo = "texto_livre"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "qtd_5"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "qtd_6"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "tempo_total"
+rotulo = "Tempo Total"
+tipo = "moeda"
+sinonimos = ["TEMPO_TOTAL"]
+[[coluna]]
+canonico = "qtd_rx"
+rotulo = "Qtd. rx"
+tipo = "inteiro"
+sinonimos = ["QTD_RX"]
+[[coluna]]
+canonico = "qtd_usg"
+rotulo = "Qtd. usg"
+tipo = "inteiro"
+sinonimos = ["QTD_USG"]
+[[coluna]]
+canonico = "qtd_tc"
+rotulo = "Qtd. tc"
+tipo = "inteiro"
+sinonimos = ["QTD_TC"]
+[[coluna]]
+canonico = "qtd_rm"
+rotulo = "Qtd. rm"
+tipo = "inteiro"
+sinonimos = ["QTD_RM"]
+[[coluna]]
+canonico = "nm_convenio"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "qtd_7"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "ds_unid_int"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "qtd_8"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]

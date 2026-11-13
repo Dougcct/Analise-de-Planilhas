@@ -1,0 +1,141 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 483 / USR_TESTE_MP)
+nome = "teste MP"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "data_nasc"
+dimensoes = ["leito", "leito_2"]
+
+[[coluna]]
+canonico = "cd_unid_int"
+rotulo = "Código unidade internação"
+tipo = "identificador"
+sinonimos = ["CD_UNID_INT"]
+[[coluna]]
+canonico = "ds_unid_int"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_unid_int_2"
+rotulo = "Código unidade internação"
+tipo = "identificador"
+sinonimos = ["CD_UNID_INT"]
+[[coluna]]
+canonico = "data_nasc"
+rotulo = "Data nascimento"
+tipo = "data"
+sinonimos = ["DATA_NASC"]
+[[coluna]]
+canonico = "ds_resumo"
+rotulo = "Descrição resumo"
+tipo = "texto_livre"
+sinonimos = ["DS_RESUMO"]
+[[coluna]]
+canonico = "ds_unid_int_2"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "idade_mes"
+rotulo = "Idade Mes"
+tipo = "texto_livre"
+sinonimos = ["IDADE_MES"]
+[[coluna]]
+canonico = "categoria"
+rotulo = "Categoria"
+tipo = "texto_livre"
+sinonimos = ["CATEGORIA"]
+[[coluna]]
+canonico = "cod_atendim"
+rotulo = "Código atendim"
+tipo = "identificador"
+sinonimos = ["COD_ATENDIM"]
+[[coluna]]
+canonico = "cod_leito"
+rotulo = "Código leito"
+tipo = "identificador"
+sinonimos = ["COD_LEITO"]
+[[coluna]]
+canonico = "cod_posto"
+rotulo = "Código posto"
+tipo = "identificador"
+sinonimos = ["COD_POSTO"]
+[[coluna]]
+canonico = "cod_presc"
+rotulo = "Código prescrição"
+tipo = "identificador"
+sinonimos = ["COD_PRESC"]
+[[coluna]]
+canonico = "desc_prescricao"
+rotulo = "Descrição prescricao"
+tipo = "texto_livre"
+sinonimos = ["DESC_PRESCRICAO"]
+[[coluna]]
+canonico = "desc_presc_tipo"
+rotulo = "Descrição prescrição tipo"
+tipo = "texto_livre"
+sinonimos = ["DESC_PRESC_TIPO"]
+[[coluna]]
+canonico = "dt_ref"
+rotulo = "Data referência"
+tipo = "data"
+sinonimos = ["DT_REF"]
+[[coluna]]
+canonico = "leito"
+rotulo = "Leito"
+tipo = "categorico"
+sinonimos = ["LEITO"]
+[[coluna]]
+canonico = "nome_social"
+rotulo = "Nome social"
+tipo = "texto_livre"
+sinonimos = ["NOME_SOCIAL"]
+[[coluna]]
+canonico = "ordem"
+rotulo = "Ordem"
+tipo = "decimal"
+sinonimos = ["ORDEM"]
+[[coluna]]
+canonico = "posto"
+rotulo = "Posto"
+tipo = "texto_livre"
+sinonimos = ["POSTO"]
+[[coluna]]
+canonico = "cod_atendim_2"
+rotulo = "Código atendim"
+tipo = "identificador"
+sinonimos = ["COD_ATENDIM"]
+[[coluna]]
+canonico = "cod_leito_2"
+rotulo = "Código leito"
+tipo = "identificador"
+sinonimos = ["COD_LEITO"]
+[[coluna]]
+canonico = "cod_posto_2"
+rotulo = "Código posto"
+tipo = "identificador"
+sinonimos = ["COD_POSTO"]
+[[coluna]]
+canonico = "leito_2"
+rotulo = "Leito"
+tipo = "categorico"
+sinonimos = ["LEITO"]
+[[coluna]]
+canonico = "nome_social_2"
+rotulo = "Nome social"
+tipo = "texto_livre"
+sinonimos = ["NOME_SOCIAL"]
+[[coluna]]
+canonico = "posto_2"
+rotulo = "Posto"
+tipo = "texto_livre"
+sinonimos = ["POSTO"]

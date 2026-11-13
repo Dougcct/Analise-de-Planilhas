@@ -1,0 +1,24 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 270 / USR_TOTAL_CIRURGIAS_POR_ESPECIALID)
+nome = "TOTAL CIRURGIAS POR ESPECIALIDADE"
+pasta = "Centro Cirúrgico"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "ds_cen_cir"
+rotulo = "Descrição centro cirurgia"
+tipo = "texto_livre"
+sinonimos = ["DS_CEN_CIR"]
+[[coluna]]
+canonico = "ds_especialid"
+rotulo = "Descrição especialidade"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIALID"]
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]

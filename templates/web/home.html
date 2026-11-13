@@ -75,7 +75,14 @@
 
 <div class="painel-2">
   <div class="bloco">
-    <h2>{{ titulo_local }}</h2>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px 0">
+      <h2 style="margin:0;padding:0;border:0">{{ titulo_local }}</h2>
+      {% if setor_id %}
+      <button type="button" class="btn-sec" style="margin:0;padding:7px 12px;font-size:13px" onclick="document.getElementById('dlg-nova-home').showModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" width="14" height="14"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke-linejoin="round"/><path d="M12 11v4M10 13h4" stroke-linecap="round"/></svg>
+        Nova pasta</button>
+      {% endif %}
+    </div>
     {% if pastas %}
     <div class="pastas-grade">
       {% for p in pastas %}
@@ -154,4 +161,21 @@
   {% endif %}
 </div>
 <p class="rodape">Versão {{ versao }}</p>
+{% if setor_id %}
+<dialog id="dlg-nova-home">
+  <form method="post" action="/web/pasta/criar">
+    <div class="cab">Nova pasta</div>
+    <div class="corpo">
+      <input type="hidden" name="setor_id" value="{{ setor_id }}">
+      <input type="hidden" name="pai_id" value="">
+      <label>Nome da pasta</label>
+      <input name="nome" required autofocus placeholder="ex.: Faturamento">
+    </div>
+    <div class="pe">
+      <button type="button" class="btn-fantasma" onclick="document.getElementById('dlg-nova-home').close()">Cancelar</button>
+      <button type="submit" style="margin:0">Criar</button>
+    </div>
+  </form>
+</dialog>
+{% endif %}
 {% endblock %}

@@ -1,0 +1,376 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 687 / USR_PLANO_DE_PARTO_UNIMED_SERRANA)
+nome = "PLANO DE PARTO UNIMED SERRANA"
+pasta = "Faturamento"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "data_atendimento"
+dimensoes = ["descricao_convenio", "descricao_do_sexo", "descricao_origem", "especialidade", "leito", "tipo_atendimento"]
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "acomodacao_atendimento"
+rotulo = "Acomodacao Atendimento"
+tipo = "texto_livre"
+sinonimos = ["ACOMODACAO_ATENDIMENTO"]
+[[coluna]]
+canonico = "atendimento"
+rotulo = "Atendimento"
+tipo = "decimal"
+sinonimos = ["ATENDIMENTO"]
+[[coluna]]
+canonico = "carteirinha"
+rotulo = "Carteirinha"
+tipo = "texto_livre"
+sinonimos = ["CARTEIRINHA"]
+[[coluna]]
+canonico = "cd_mot_ent"
+rotulo = "Código motivo ent"
+tipo = "identificador"
+sinonimos = ["CD_MOT_ENT"]
+[[coluna]]
+canonico = "cd_pro_int"
+rotulo = "Código procedimento internação"
+tipo = "identificador"
+sinonimos = ["CD_PRO_INT"]
+[[coluna]]
+canonico = "cd_senha"
+rotulo = "Código senha"
+tipo = "identificador"
+sinonimos = ["CD_SENHA"]
+[[coluna]]
+canonico = "cidade"
+rotulo = "Cidade"
+tipo = "texto_livre"
+sinonimos = ["CIDADE"]
+[[coluna]]
+canonico = "codigo_cid"
+rotulo = "Codigo Cid"
+tipo = "texto_livre"
+sinonimos = ["CODIGO_CID"]
+[[coluna]]
+canonico = "codigo_convenio"
+rotulo = "Codigo Convenio"
+tipo = "decimal"
+sinonimos = ["CODIGO_CONVENIO"]
+[[coluna]]
+canonico = "codigo_prestador"
+rotulo = "Codigo Prestador"
+tipo = "decimal"
+sinonimos = ["CODIGO_PRESTADOR"]
+[[coluna]]
+canonico = "cod_proc_principal"
+rotulo = "Código procedimento principal"
+tipo = "identificador"
+sinonimos = ["COD_PROC_PRINCIPAL"]
+[[coluna]]
+canonico = "complemento_do_endereco"
+rotulo = "Complemento Do Endereco"
+tipo = "texto_livre"
+sinonimos = ["COMPLEMENTO_DO_ENDERECO"]
+[[coluna]]
+canonico = "data_atendimento"
+rotulo = "Data atendimento"
+tipo = "data"
+sinonimos = ["DATA_ATENDIMENTO"]
+[[coluna]]
+canonico = "data_de_nascimento"
+rotulo = "Data de nascimento"
+tipo = "data"
+sinonimos = ["DATA_DE_NASCIMENTO"]
+[[coluna]]
+canonico = "descricao_cid"
+rotulo = "Descricao Cid"
+tipo = "texto_livre"
+sinonimos = ["DESCRICAO_CID"]
+[[coluna]]
+canonico = "descricao_convenio"
+rotulo = "Descricao Convenio"
+tipo = "categorico"
+sinonimos = ["DESCRICAO_CONVENIO"]
+[[coluna]]
+canonico = "descricao_do_bairro"
+rotulo = "Descricao Do Bairro"
+tipo = "texto_livre"
+sinonimos = ["DESCRICAO_DO_BAIRRO"]
+[[coluna]]
+canonico = "descricao_do_endereco"
+rotulo = "Descricao Do Endereco"
+tipo = "texto_livre"
+sinonimos = ["DESCRICAO_DO_ENDERECO"]
+[[coluna]]
+canonico = "descricao_do_estado_civil"
+rotulo = "Descricao Do Estado Civil"
+tipo = "texto_livre"
+sinonimos = ["DESCRICAO_DO_ESTADO_CIVIL"]
+[[coluna]]
+canonico = "descricao_do_sexo"
+rotulo = "Descricao Do Sexo"
+tipo = "categorico"
+sinonimos = ["DESCRICAO_DO_SEXO"]
+[[coluna]]
+canonico = "descricao_orgao_emissor"
+rotulo = "Descricao Orgao Emissor"
+tipo = "texto_livre"
+sinonimos = ["DESCRICAO_ORGAO_EMISSOR"]
+[[coluna]]
+canonico = "descricao_origem"
+rotulo = "Descricao Origem"
+tipo = "categorico"
+sinonimos = ["DESCRICAO_ORIGEM"]
+[[coluna]]
+canonico = "descricao_tp_atendimento"
+rotulo = "Descricao Tp Atendimento"
+tipo = "texto_livre"
+sinonimos = ["DESCRICAO_TP_ATENDIMENTO"]
+[[coluna]]
+canonico = "des_proc_principal"
+rotulo = "Des Proc Principal"
+tipo = "texto_livre"
+sinonimos = ["DES_PROC_PRINCIPAL"]
+[[coluna]]
+canonico = "des_proc_principal_2"
+rotulo = "Des Proc Principal"
+tipo = "texto_livre"
+sinonimos = ["DES_PROC_PRINCIPAL"]
+[[coluna]]
+canonico = "ds_codigo_conselho"
+rotulo = "Descrição codigo conselho"
+tipo = "texto_livre"
+sinonimos = ["DS_CODIGO_CONSELHO"]
+[[coluna]]
+canonico = "ds_conselho"
+rotulo = "Descrição conselho"
+tipo = "texto_livre"
+sinonimos = ["DS_CONSELHO"]
+[[coluna]]
+canonico = "ds_info_atendimento"
+rotulo = "Descrição info atendimento"
+tipo = "texto_livre"
+sinonimos = ["DS_INFO_ATENDIMENTO"]
+[[coluna]]
+canonico = "ds_mot_ent"
+rotulo = "Descrição motivo ent"
+tipo = "texto_livre"
+sinonimos = ["DS_MOT_ENT"]
+[[coluna]]
+canonico = "ds_multi_empresa"
+rotulo = "Descrição multi empresa"
+tipo = "texto_livre"
+sinonimos = ["DS_MULTI_EMPRESA"]
+[[coluna]]
+canonico = "ds_pro_fat_sec"
+rotulo = "Descrição procedimento faturamento sec"
+tipo = "texto_livre"
+sinonimos = ["DS_PRO_FAT_SEC"]
+[[coluna]]
+canonico = "enfermaria"
+rotulo = "Enfermaria"
+tipo = "texto_livre"
+sinonimos = ["ENFERMARIA"]
+[[coluna]]
+canonico = "especialidade"
+rotulo = "Especialidade"
+tipo = "categorico"
+sinonimos = ["ESPECIALIDADE"]
+[[coluna]]
+canonico = "guia_dias"
+rotulo = "Guia Dias"
+tipo = "decimal"
+sinonimos = ["GUIA_DIAS"]
+[[coluna]]
+canonico = "guia_horas"
+rotulo = "Guia Horas"
+tipo = "decimal"
+sinonimos = ["GUIA_HORAS"]
+[[coluna]]
+canonico = "hora_atendimento"
+rotulo = "Hora atendimento"
+tipo = "texto_livre"
+sinonimos = ["HORA_ATENDIMENTO"]
+[[coluna]]
+canonico = "idade"
+rotulo = "Idade"
+tipo = "texto_livre"
+sinonimos = ["IDADE"]
+[[coluna]]
+canonico = "leito"
+rotulo = "Leito"
+tipo = "categorico"
+sinonimos = ["LEITO"]
+[[coluna]]
+canonico = "local_proced"
+rotulo = "Local Proced"
+tipo = "texto_livre"
+sinonimos = ["LOCAL_PROCED"]
+[[coluna]]
+canonico = "naturalidade"
+rotulo = "Naturalidade"
+tipo = "texto_livre"
+sinonimos = ["NATURALIDADE"]
+[[coluna]]
+canonico = "nm_profissao"
+rotulo = "Nome profissao"
+tipo = "texto_livre"
+sinonimos = ["NM_PROFISSAO"]
+[[coluna]]
+canonico = "nm_social_paciente"
+rotulo = "Nome social paciente"
+tipo = "texto_livre"
+sinonimos = ["NM_SOCIAL_PACIENTE"]
+[[coluna]]
+canonico = "nome_da_mae"
+rotulo = "Nome da mae"
+tipo = "texto_livre"
+sinonimos = ["NOME_DA_MAE"]
+[[coluna]]
+canonico = "nome_do_paciente"
+rotulo = "Nome do paciente"
+tipo = "texto_livre"
+sinonimos = ["NOME_DO_PACIENTE"]
+[[coluna]]
+canonico = "nome_do_pai"
+rotulo = "Nome do pai"
+tipo = "texto_livre"
+sinonimos = ["NOME_DO_PAI"]
+[[coluna]]
+canonico = "nome_prestador"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NOME_PRESTADOR"]
+[[coluna]]
+canonico = "nr_cpf_resp"
+rotulo = "Número cpf responsável"
+tipo = "identificador"
+sinonimos = ["NR_CPF_RESP"]
+[[coluna]]
+canonico = "nr_guia"
+rotulo = "Número guia"
+tipo = "identificador"
+sinonimos = ["NR_GUIA"]
+[[coluna]]
+canonico = "nr_identidade_resp"
+rotulo = "Número identidade responsável"
+tipo = "identificador"
+sinonimos = ["NR_IDENTIDADE_RESP"]
+[[coluna]]
+canonico = "nr_quantidade"
+rotulo = "Número quantidade"
+tipo = "identificador"
+sinonimos = ["NR_QUANTIDADE"]
+[[coluna]]
+canonico = "numero_da_identidade"
+rotulo = "Numero Da Identidade"
+tipo = "texto_livre"
+sinonimos = ["NUMERO_DA_IDENTIDADE"]
+[[coluna]]
+canonico = "numero_do_cep"
+rotulo = "Numero Do Cep"
+tipo = "texto_livre"
+sinonimos = ["NUMERO_DO_CEP"]
+[[coluna]]
+canonico = "numero_do_cpf"
+rotulo = "Numero Do Cpf"
+tipo = "texto_livre"
+sinonimos = ["NUMERO_DO_CPF"]
+[[coluna]]
+canonico = "numero_do_endereco"
+rotulo = "Numero Do Endereco"
+tipo = "decimal"
+sinonimos = ["NUMERO_DO_ENDERECO"]
+[[coluna]]
+canonico = "numero_do_registro"
+rotulo = "Numero Do Registro"
+tipo = "decimal"
+sinonimos = ["NUMERO_DO_REGISTRO"]
+[[coluna]]
+canonico = "numero_do_telefone"
+rotulo = "Numero Do Telefone"
+tipo = "texto_livre"
+sinonimos = ["NUMERO_DO_TELEFONE"]
+[[coluna]]
+canonico = "plano"
+rotulo = "Plano"
+tipo = "texto_livre"
+sinonimos = ["PLANO"]
+[[coluna]]
+canonico = "prontuario"
+rotulo = "Prontuario"
+tipo = "decimal"
+sinonimos = ["PRONTUARIO"]
+[[coluna]]
+canonico = "religiao"
+rotulo = "Religiao"
+tipo = "texto_livre"
+sinonimos = ["RELIGIAO"]
+[[coluna]]
+canonico = "responsavel"
+rotulo = "Responsavel"
+tipo = "texto_livre"
+sinonimos = ["RESPONSAVEL"]
+[[coluna]]
+canonico = "responsavel_cep"
+rotulo = "Responsavel Cep"
+tipo = "texto_livre"
+sinonimos = ["RESPONSAVEL_CEP"]
+[[coluna]]
+canonico = "responsavel_complemento"
+rotulo = "Responsavel Complemento"
+tipo = "texto_livre"
+sinonimos = ["RESPONSAVEL_COMPLEMENTO"]
+[[coluna]]
+canonico = "responsavel_endereco"
+rotulo = "Responsavel Endereco"
+tipo = "texto_livre"
+sinonimos = ["RESPONSAVEL_ENDERECO"]
+[[coluna]]
+canonico = "responsavel_fone"
+rotulo = "Responsavel Fone"
+tipo = "texto_livre"
+sinonimos = ["RESPONSAVEL_FONE"]
+[[coluna]]
+canonico = "responsavel_nr_end"
+rotulo = "Responsavel Nr End"
+tipo = "decimal"
+sinonimos = ["RESPONSAVEL_NR_END"]
+[[coluna]]
+canonico = "responsavel_parentesco"
+rotulo = "Responsavel Parentesco"
+tipo = "texto_livre"
+sinonimos = ["RESPONSAVEL_PARENTESCO"]
+[[coluna]]
+canonico = "servico"
+rotulo = "Servico"
+tipo = "texto_livre"
+sinonimos = ["SERVICO"]
+[[coluna]]
+canonico = "tipo_atendimento"
+rotulo = "Tipo atendimento"
+tipo = "categorico"
+sinonimos = ["TIPO_ATENDIMENTO"]
+[[coluna]]
+canonico = "tipo_marcacao"
+rotulo = "Tipo marcacao"
+tipo = "categorico"
+sinonimos = ["TIPO_MARCACAO"]
+[[coluna]]
+canonico = "unidade_internacao"
+rotulo = "Unidade Internacao"
+tipo = "categorico"
+sinonimos = ["UNIDADE_INTERNACAO"]
+[[coluna]]
+canonico = "usuario_atendimento"
+rotulo = "Usuario Atendimento"
+tipo = "texto_livre"
+sinonimos = ["USUARIO_ATENDIMENTO"]
+[[coluna]]
+canonico = "usuario_cadastro"
+rotulo = "Usuario Cadastro"
+tipo = "texto_livre"
+sinonimos = ["USUARIO_CADASTRO"]

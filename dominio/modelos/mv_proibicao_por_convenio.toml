@@ -1,0 +1,45 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 355 / USR_PROIBICAO_POR_CONVENIO)
+nome = "PROIBIÇÃO POR CONVÊNIO"
+pasta = "Faturamento"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+dimensoes = ["tp_proibicao", "tp_proibicao_2"]
+
+[[coluna]]
+canonico = "cd_pro_fat"
+rotulo = "Código procedimento faturamento"
+tipo = "identificador"
+sinonimos = ["CD_PRO_FAT"]
+[[coluna]]
+canonico = "ds_pro_fat"
+rotulo = "Descrição procedimento faturamento"
+tipo = "texto_livre"
+sinonimos = ["DS_PRO_FAT"]
+[[coluna]]
+canonico = "ds_unidade"
+rotulo = "Descrição unidade"
+tipo = "texto_livre"
+sinonimos = ["DS_UNIDADE"]
+[[coluna]]
+canonico = "tp_proibicao"
+rotulo = "Tipo proibicao"
+tipo = "categorico"
+sinonimos = ["TP_PROIBICAO"]
+[[coluna]]
+canonico = "cd_convenio"
+rotulo = "Código convênio"
+tipo = "identificador"
+sinonimos = ["CD_CONVENIO"]
+[[coluna]]
+canonico = "nm_convenio"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "tp_proibicao_2"
+rotulo = "Tipo proibicao"
+tipo = "categorico"
+sinonimos = ["TP_PROIBICAO"]

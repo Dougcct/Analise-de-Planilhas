@@ -1,0 +1,117 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 231 / USR_INDICADORES_CENTRO_CIRURGICO)
+nome = "INDICADORES CENTRO CIRURGICO"
+pasta = "Centro Cirúrgico"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "original"
+
+[[coluna]]
+canonico = "total"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "data"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_aviso_cirurgia"
+rotulo = "Código aviso cirurgia"
+tipo = "identificador"
+sinonimos = ["CD_AVISO_CIRURGIA"]
+[[coluna]]
+canonico = "cd_cen_cir"
+rotulo = "Código centro cirurgia"
+tipo = "identificador"
+sinonimos = ["CD_CEN_CIR"]
+[[coluna]]
+canonico = "cd_mot_alt"
+rotulo = "Código motivo alteração"
+tipo = "identificador"
+sinonimos = ["CD_MOT_ALT"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "ds_mot_alt"
+rotulo = "Descrição motivo alteração"
+tipo = "texto_livre"
+sinonimos = ["DS_MOT_ALT"]
+[[coluna]]
+canonico = "dt_alta"
+rotulo = "Data alta"
+tipo = "data"
+sinonimos = ["DT_ALTA"]
+[[coluna]]
+canonico = "dt_aviso_cirurgia"
+rotulo = "Data aviso cirurgia"
+tipo = "data"
+sinonimos = ["DT_AVISO_CIRURGIA"]
+[[coluna]]
+canonico = "sn_obito"
+rotulo = "Obito?"
+tipo = "booleano"
+sinonimos = ["SN_OBITO"]
+[[coluna]]
+canonico = "cd_atendimento_2"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_aviso_cirurgia_2"
+rotulo = "Código aviso cirurgia"
+tipo = "identificador"
+sinonimos = ["CD_AVISO_CIRURGIA"]
+[[coluna]]
+canonico = "cd_cen_cir_2"
+rotulo = "Código centro cirurgia"
+tipo = "identificador"
+sinonimos = ["CD_CEN_CIR"]
+[[coluna]]
+canonico = "cd_mot_alt_2"
+rotulo = "Código motivo alteração"
+tipo = "identificador"
+sinonimos = ["CD_MOT_ALT"]
+[[coluna]]
+canonico = "cd_paciente_2"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "ds_mot_alt_2"
+rotulo = "Descrição motivo alteração"
+tipo = "texto_livre"
+sinonimos = ["DS_MOT_ALT"]
+[[coluna]]
+canonico = "dt_alta_2"
+rotulo = "Data alta"
+tipo = "data"
+sinonimos = ["DT_ALTA"]
+[[coluna]]
+canonico = "sn_obito_2"
+rotulo = "Obito?"
+tipo = "booleano"
+sinonimos = ["SN_OBITO"]
+[[coluna]]
+canonico = "cd_atendimento_3"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "original_2"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]

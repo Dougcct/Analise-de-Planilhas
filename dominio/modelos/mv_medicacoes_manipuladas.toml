@@ -1,0 +1,49 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 329 / USR_MEDICACOES_MANIPULADAS)
+nome = "MEDICAÇÕES MANIPULADAS"
+pasta = "Farmácia e Suprimentos"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_pre_med"
+rotulo = "Código pre médico"
+tipo = "identificador"
+sinonimos = ["CD_PRE_MED"]
+[[coluna]]
+canonico = "ds_leito"
+rotulo = "Descrição leito"
+tipo = "texto_livre"
+sinonimos = ["DS_LEITO"]
+[[coluna]]
+canonico = "periodo"
+rotulo = "Periodo"
+tipo = "texto_livre"
+sinonimos = ["PERIODO"]
+[[coluna]]
+canonico = "qtd_medicamento"
+rotulo = "Qtd. medicamento"
+tipo = "inteiro"
+sinonimos = ["QTD_MEDICAMENTO"]
+[[coluna]]
+canonico = "qtd_medicamento_2"
+rotulo = "Qtd. medicamento"
+tipo = "inteiro"
+sinonimos = ["QTD_MEDICAMENTO"]
+[[coluna]]
+canonico = "cd_unid_int"
+rotulo = "Código unidade internação"
+tipo = "identificador"
+sinonimos = ["CD_UNID_INT"]
+[[coluna]]
+canonico = "ds_unid_int"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]

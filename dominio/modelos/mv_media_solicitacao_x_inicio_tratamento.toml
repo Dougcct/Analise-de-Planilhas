@@ -1,0 +1,24 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 378 / USR_MEDIA_SOLICITACAO_X_INICIO_TRA)
+nome = "Média Solicitação x Inicio Tratamento"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "media"
+rotulo = "Media"
+tipo = "decimal"
+sinonimos = ["MEDIA"]
+[[coluna]]
+canonico = "som"
+rotulo = "Som"
+tipo = "decimal"
+sinonimos = ["SOM"]
+[[coluna]]
+canonico = "qt"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]

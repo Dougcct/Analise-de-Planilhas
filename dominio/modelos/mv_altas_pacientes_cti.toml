@@ -1,0 +1,41 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 184 / USR_ALTAS_PACIENTES_CTI)
+nome = "ALTAS PACIENTES CTI"
+pasta = "Atendimento Hospitalar"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "dt_alta"
+dimensoes = ["unidade"]
+
+[[coluna]]
+canonico = "atd"
+rotulo = "Atd"
+tipo = "decimal"
+sinonimos = ["ATD"]
+[[coluna]]
+canonico = "cd_pct"
+rotulo = "Código pct"
+tipo = "identificador"
+sinonimos = ["CD_PCT"]
+[[coluna]]
+canonico = "dt_alta"
+rotulo = "Data alta"
+tipo = "data"
+sinonimos = ["DT_ALTA"]
+[[coluna]]
+canonico = "dt_reg"
+rotulo = "Data reg"
+tipo = "data"
+sinonimos = ["DT_REG"]
+[[coluna]]
+canonico = "nm_pct"
+rotulo = "Nome pct"
+tipo = "texto_livre"
+sinonimos = ["NM_PCT"]
+[[coluna]]
+canonico = "unidade"
+rotulo = "Unidade"
+tipo = "categorico"
+sinonimos = ["UNIDADE"]

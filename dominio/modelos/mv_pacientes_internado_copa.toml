@@ -1,0 +1,35 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 268 / USR_PACIENTES_INTERNADO_COPA)
+nome = "PACIENTES INTERNADO COPA"
+pasta = "Atendimento Hospitalar"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "nasc"
+
+[[coluna]]
+canonico = "alta_medica"
+rotulo = "Alta Medica"
+tipo = "texto_livre"
+sinonimos = ["ALTA_MEDICA"]
+[[coluna]]
+canonico = "ds_resumo"
+rotulo = "Descrição resumo"
+tipo = "texto_livre"
+sinonimos = ["DS_RESUMO"]
+[[coluna]]
+canonico = "ds_unid_int"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "idade"
+rotulo = "Idade"
+tipo = "decimal"
+sinonimos = ["IDADE"]
+[[coluna]]
+canonico = "nasc"
+rotulo = "Nasc"
+tipo = "data"
+sinonimos = ["NASC"]

@@ -1,0 +1,55 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 503 / USR_MOVIMENTO_REFEITORIO)
+nome = "MOVIMENTO_REFEITORIO"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "dt_registro"
+
+[[coluna]]
+canonico = "dia_semana"
+rotulo = "Dia Semana"
+tipo = "texto_livre"
+sinonimos = ["DIA_SEMANA"]
+[[coluna]]
+canonico = "dt_registro"
+rotulo = "Data registro"
+tipo = "data"
+sinonimos = ["DT_REGISTRO"]
+[[coluna]]
+canonico = "qtd"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "refeicao"
+rotulo = "Refeicao"
+tipo = "texto_livre"
+sinonimos = ["REFEICAO"]
+[[coluna]]
+canonico = "dia_semana_2"
+rotulo = "Dia Semana"
+tipo = "texto_livre"
+sinonimos = ["DIA_SEMANA"]
+[[coluna]]
+canonico = "media_diaria"
+rotulo = "Media Diaria"
+tipo = "decimal"
+sinonimos = ["MEDIA_DIARIA"]
+[[coluna]]
+canonico = "num_dias"
+rotulo = "Num Dias"
+tipo = "decimal"
+sinonimos = ["NUM_DIAS"]
+[[coluna]]
+canonico = "refeicao_2"
+rotulo = "Refeicao"
+tipo = "texto_livre"
+sinonimos = ["REFEICAO"]
+[[coluna]]
+canonico = "total_qtd"
+rotulo = "Total Qtd"
+tipo = "moeda"
+sinonimos = ["TOTAL_QTD"]

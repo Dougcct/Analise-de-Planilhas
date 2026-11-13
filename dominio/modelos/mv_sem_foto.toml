@@ -1,0 +1,45 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 3 / USR__SEM_FOTO)
+nome = "_sem_foto"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "data_entrada"
+
+[[coluna]]
+canonico = "nome_empresa"
+rotulo = "Nome empresa"
+tipo = "texto_livre"
+sinonimos = ["NOME_EMPRESA"]
+[[coluna]]
+canonico = "nome_setor"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NOME_SETOR"]
+[[coluna]]
+canonico = "data_entrada"
+rotulo = "Data entrada"
+tipo = "data"
+sinonimos = ["DATA_ENTRADA"]
+[[coluna]]
+canonico = "hora_entrada"
+rotulo = "Hora entrada"
+tipo = "data_hora"
+sinonimos = ["HORA_ENTRADA"]
+[[coluna]]
+canonico = "usuario_entrada"
+rotulo = "Usuario Entrada"
+tipo = "texto_livre"
+sinonimos = ["USUARIO_ENTRADA"]
+[[coluna]]
+canonico = "codigo_colaborador_presta"
+rotulo = "Codigo Colaborador Presta"
+tipo = "inteiro"
+sinonimos = ["CODIGO_COLABORADOR_PRESTA"]
+[[coluna]]
+canonico = "nome_colaborador_prestado"
+rotulo = "Nome colaborador prestado"
+tipo = "texto_livre"
+sinonimos = ["NOME_COLABORADOR_PRESTADO"]

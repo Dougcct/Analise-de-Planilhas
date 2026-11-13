@@ -1,0 +1,161 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 533 / USR_DOCUMENTOS_FORNECEDORES)
+nome = "DOCUMENTOS FORNECEDORES"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "dt_efetivacao"
+dimensoes = ["status_validade", "status_validade_2", "status_validade_3", "status_validade_4", "status_validade_5"]
+
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "texto_livre"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "dt_efetivacao"
+rotulo = "Data efetivacao"
+tipo = "data"
+sinonimos = ["DT_EFETIVACAO"]
+[[coluna]]
+canonico = "dt_validade"
+rotulo = "Data validade"
+tipo = "data"
+sinonimos = ["DT_VALIDADE"]
+[[coluna]]
+canonico = "documento"
+rotulo = "Documento"
+tipo = "texto_livre"
+sinonimos = ["Documento"]
+[[coluna]]
+canonico = "nm_fornecedor"
+rotulo = "Nome fornecedor"
+tipo = "texto_livre"
+sinonimos = ["NM_FORNECEDOR"]
+[[coluna]]
+canonico = "status_validade"
+rotulo = "Status Validade"
+tipo = "categorico"
+sinonimos = ["STATUS_VALIDADE"]
+[[coluna]]
+canonico = "original_2"
+rotulo = "Original"
+tipo = "texto_livre"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "dt_efetivacao_2"
+rotulo = "Data efetivacao"
+tipo = "data"
+sinonimos = ["DT_EFETIVACAO"]
+[[coluna]]
+canonico = "dt_validade_2"
+rotulo = "Data validade"
+tipo = "data"
+sinonimos = ["DT_VALIDADE"]
+[[coluna]]
+canonico = "documento_2"
+rotulo = "Documento"
+tipo = "texto_livre"
+sinonimos = ["Documento"]
+[[coluna]]
+canonico = "nm_fornecedor_2"
+rotulo = "Nome fornecedor"
+tipo = "texto_livre"
+sinonimos = ["NM_FORNECEDOR"]
+[[coluna]]
+canonico = "status_validade_2"
+rotulo = "Status Validade"
+tipo = "categorico"
+sinonimos = ["STATUS_VALIDADE"]
+[[coluna]]
+canonico = "original_3"
+rotulo = "Original"
+tipo = "texto_livre"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "dt_efetivacao_3"
+rotulo = "Data efetivacao"
+tipo = "data"
+sinonimos = ["DT_EFETIVACAO"]
+[[coluna]]
+canonico = "dt_validade_3"
+rotulo = "Data validade"
+tipo = "data"
+sinonimos = ["DT_VALIDADE"]
+[[coluna]]
+canonico = "documento_3"
+rotulo = "Documento"
+tipo = "texto_livre"
+sinonimos = ["Documento"]
+[[coluna]]
+canonico = "nm_fornecedor_3"
+rotulo = "Nome fornecedor"
+tipo = "texto_livre"
+sinonimos = ["NM_FORNECEDOR"]
+[[coluna]]
+canonico = "status_validade_3"
+rotulo = "Status Validade"
+tipo = "categorico"
+sinonimos = ["STATUS_VALIDADE"]
+[[coluna]]
+canonico = "original_4"
+rotulo = "Original"
+tipo = "texto_livre"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "dt_efetivacao_4"
+rotulo = "Data efetivacao"
+tipo = "data"
+sinonimos = ["DT_EFETIVACAO"]
+[[coluna]]
+canonico = "dt_validade_4"
+rotulo = "Data validade"
+tipo = "data"
+sinonimos = ["DT_VALIDADE"]
+[[coluna]]
+canonico = "documento_4"
+rotulo = "Documento"
+tipo = "texto_livre"
+sinonimos = ["Documento"]
+[[coluna]]
+canonico = "nm_fornecedor_4"
+rotulo = "Nome fornecedor"
+tipo = "texto_livre"
+sinonimos = ["NM_FORNECEDOR"]
+[[coluna]]
+canonico = "status_validade_4"
+rotulo = "Status Validade"
+tipo = "categorico"
+sinonimos = ["STATUS_VALIDADE"]
+[[coluna]]
+canonico = "dias"
+rotulo = "Dias"
+tipo = "decimal"
+sinonimos = ["DIAS"]
+[[coluna]]
+canonico = "dt_efetivacao_5"
+rotulo = "Data efetivacao"
+tipo = "data"
+sinonimos = ["DT_EFETIVACAO"]
+[[coluna]]
+canonico = "dt_validade_5"
+rotulo = "Data validade"
+tipo = "data"
+sinonimos = ["DT_VALIDADE"]
+[[coluna]]
+canonico = "documento_5"
+rotulo = "Documento"
+tipo = "texto_livre"
+sinonimos = ["Documento"]
+[[coluna]]
+canonico = "nm_fornecedor_5"
+rotulo = "Nome fornecedor"
+tipo = "texto_livre"
+sinonimos = ["NM_FORNECEDOR"]
+[[coluna]]
+canonico = "status_validade_5"
+rotulo = "Status Validade"
+tipo = "categorico"
+sinonimos = ["STATUS_VALIDADE"]

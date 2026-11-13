@@ -1,0 +1,19 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 456 / USR_ATENDIMENTO_OBSTETRICIA)
+nome = "ATENDIMENTO OBSTETRICIA"
+pasta = "Atendimento Hospitalar"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "ds_cid"
+rotulo = "Descrição cid"
+tipo = "texto_livre"
+sinonimos = ["DS_CID"]
+[[coluna]]
+canonico = "total_exames"
+rotulo = "Total Exames"
+tipo = "moeda"
+sinonimos = ["TOTAL_EXAMES"]

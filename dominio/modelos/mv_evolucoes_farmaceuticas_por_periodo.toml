@@ -1,0 +1,51 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 83 / USR_EVOLUCOES_FARMACEUTICAS_POR_PE)
+nome = "EVOLUÇÕES FARMACÊUTICAS POR PERÍODO"
+pasta = "Farmácia e Suprimentos"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "data_evolucao"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_documento_clinico"
+rotulo = "Código documento clínico"
+tipo = "identificador"
+sinonimos = ["CD_DOCUMENTO_CLINICO"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "cd_usuario"
+rotulo = "Código usuário"
+tipo = "identificador"
+sinonimos = ["CD_USUARIO"]
+[[coluna]]
+canonico = "data_evolucao"
+rotulo = "Data evolucao"
+tipo = "data"
+sinonimos = ["DATA_EVOLUCAO"]
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "data"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "cd_usuario_2"
+rotulo = "Código usuário"
+tipo = "identificador"
+sinonimos = ["CD_USUARIO"]
+[[coluna]]
+canonico = "nm_usuario"
+rotulo = "Nome usuário"
+tipo = "texto_livre"
+sinonimos = ["NM_USUARIO"]

@@ -1,0 +1,95 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 545 / USR_PACIENTES_ENCAMINHADOS_FISIOTE)
+nome = "PACIENTES ENCAMINHADOS FISIOTERAPIA"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "data"
+
+[[coluna]]
+canonico = "data"
+rotulo = "Data"
+tipo = "data"
+sinonimos = ["DATA"]
+[[coluna]]
+canonico = "total_geral_dia"
+rotulo = "Total Geral Dia"
+tipo = "moeda"
+sinonimos = ["TOTAL_GERAL_DIA"]
+[[coluna]]
+canonico = "bipap"
+rotulo = "Bipap"
+tipo = "decimal"
+sinonimos = ["BIPAP"]
+[[coluna]]
+canonico = "cateter_de_alto_fluxo"
+rotulo = "Cateter De Alto Fluxo"
+tipo = "decimal"
+sinonimos = ["CATETER_DE_ALTO_FLUXO"]
+[[coluna]]
+canonico = "cateter_nasal"
+rotulo = "Cateter Nasal"
+tipo = "decimal"
+sinonimos = ["CATETER_NASAL"]
+[[coluna]]
+canonico = "cnaf"
+rotulo = "Cnaf"
+tipo = "decimal"
+sinonimos = ["CNAF"]
+[[coluna]]
+canonico = "cpap"
+rotulo = "Cpap"
+tipo = "decimal"
+sinonimos = ["CPAP"]
+[[coluna]]
+canonico = "data_2"
+rotulo = "Data"
+tipo = "data"
+sinonimos = ["DATA"]
+[[coluna]]
+canonico = "fisio_cpap"
+rotulo = "Fisio Cpap"
+tipo = "decimal"
+sinonimos = ["FISIO_CPAP"]
+[[coluna]]
+canonico = "fisio_motora"
+rotulo = "Fisio Motora"
+tipo = "decimal"
+sinonimos = ["FISIO_MOTORA"]
+[[coluna]]
+canonico = "fisio_motora_e_respiratoria"
+rotulo = "Fisio Motora E Respiratoria"
+tipo = "decimal"
+sinonimos = ["FISIO_MOTORA_E_RESPIRATORIA"]
+[[coluna]]
+canonico = "fisio_resp"
+rotulo = "Fisio Resp"
+tipo = "decimal"
+sinonimos = ["FISIO_RESP"]
+[[coluna]]
+canonico = "total_dia"
+rotulo = "Total Dia"
+tipo = "moeda"
+sinonimos = ["TOTAL_DIA"]
+[[coluna]]
+canonico = "tubo_orotraqueal"
+rotulo = "Tubo Orotraqueal"
+tipo = "decimal"
+sinonimos = ["TUBO_OROTRAQUEAL"]
+[[coluna]]
+canonico = "ventilacao_mecanica"
+rotulo = "Ventilacao Mecanica"
+tipo = "decimal"
+sinonimos = ["VENTILACAO_MECANICA"]
+[[coluna]]
+canonico = "cd_unid_int"
+rotulo = "Código unidade internação"
+tipo = "identificador"
+sinonimos = ["CD_UNID_INT"]
+[[coluna]]
+canonico = "ds_unid_int"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]

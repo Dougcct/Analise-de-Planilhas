@@ -1,0 +1,45 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 375 / USR_CUSTOS_DE_FORNECEDORES)
+nome = "CUSTOS DE FORNECEDORES"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "dt_lancamento"
+
+[[coluna]]
+canonico = "cd_con_pag"
+rotulo = "Código con pag"
+tipo = "identificador"
+sinonimos = ["CD_CON_PAG"]
+[[coluna]]
+canonico = "cd_fornecedor"
+rotulo = "Código fornecedor"
+tipo = "identificador"
+sinonimos = ["CD_FORNECEDOR"]
+[[coluna]]
+canonico = "ds_fornecedor"
+rotulo = "Descrição fornecedor"
+tipo = "texto_livre"
+sinonimos = ["DS_FORNECEDOR"]
+[[coluna]]
+canonico = "ds_observacao"
+rotulo = "Descrição observacao"
+tipo = "texto_livre"
+sinonimos = ["DS_OBSERVACAO"]
+[[coluna]]
+canonico = "dt_lancamento"
+rotulo = "Data lancamento"
+tipo = "data"
+sinonimos = ["DT_LANCAMENTO"]
+[[coluna]]
+canonico = "nm_fantasia"
+rotulo = "Nome fantasia"
+tipo = "texto_livre"
+sinonimos = ["NM_FANTASIA"]
+[[coluna]]
+canonico = "vl_bruto_conta"
+rotulo = "Valor bruto conta"
+tipo = "moeda"
+sinonimos = ["VL_BRUTO_CONTA"]

@@ -1,0 +1,36 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 693 / USR_CONTROLE_DIETAS_CONSIGNADAS)
+nome = "CONTROLE DIETAS CONSIGNADAS"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "dh_referencia"
+
+[[coluna]]
+canonico = "campo"
+rotulo = "Campo"
+tipo = "texto_livre"
+sinonimos = ["CAMPO"]
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "dh_referencia"
+rotulo = "Data/hora referencia"
+tipo = "data_hora"
+sinonimos = ["DH_REFERENCIA"]
+[[coluna]]
+canonico = "resultado"
+rotulo = "Resultado"
+tipo = "texto_livre"
+sinonimos = ["RESULTADO"]

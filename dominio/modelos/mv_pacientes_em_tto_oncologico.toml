@@ -1,0 +1,36 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 527 / USR_PACIENTES_EM_TTO_ONCOLOGICO)
+nome = "PACIENTES EM TTO ONCOLOGICO"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "dt_atendimento"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "ds_info_atendimento"
+rotulo = "Descrição info atendimento"
+tipo = "texto_livre"
+sinonimos = ["DS_INFO_ATENDIMENTO"]
+[[coluna]]
+canonico = "dt_atendimento"
+rotulo = "Data atendimento"
+tipo = "data"
+sinonimos = ["DT_ATENDIMENTO"]
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "texto_livre"
+sinonimos = ["ORIGINAL"]

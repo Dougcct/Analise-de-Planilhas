@@ -1,0 +1,19 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 350 / USR_NOME_TAXA_DE_PACIENTE_RESIDENT)
+nome = "TAXA DE PACIENTE RESIDENTE NO HOSPITAL (permanência =90 DIAS)"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "qt"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "qt_2"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]

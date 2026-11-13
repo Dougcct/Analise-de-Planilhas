@@ -1,0 +1,130 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 316 / USR_CHECKLIST_DIARIO_ENFERMAGEM)
+nome = "CHECKLIST DIARIO ENFERMAGEM"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "dh_criacao"
+
+[[coluna]]
+canonico = "ds_unid_int"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "picc"
+rotulo = "Picc"
+tipo = "decimal"
+sinonimos = ["PICC"]
+[[coluna]]
+canonico = "cvd"
+rotulo = "Cvd"
+tipo = "decimal"
+sinonimos = ["CVD"]
+[[coluna]]
+canonico = "ds_unid_int_2"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "cat_umb"
+rotulo = "Cat Umb"
+tipo = "decimal"
+sinonimos = ["CAT_UMB"]
+[[coluna]]
+canonico = "ds_unid_int_3"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "ds_unid_int_4"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "vm_tqt"
+rotulo = "Vm Tqt"
+tipo = "decimal"
+sinonimos = ["VM_TQT"]
+[[coluna]]
+canonico = "ds_unid_int_5"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "vm_tot"
+rotulo = "Vm Tot"
+tipo = "decimal"
+sinonimos = ["VM_TOT"]
+[[coluna]]
+canonico = "ds_unid_int_6"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "pai"
+rotulo = "Pai"
+tipo = "decimal"
+sinonimos = ["PAI"]
+[[coluna]]
+canonico = "avprof"
+rotulo = "Avprof"
+tipo = "decimal"
+sinonimos = ["AVPROF"]
+[[coluna]]
+canonico = "ds_unid_int_7"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_unid_int"
+rotulo = "Código unidade internação"
+tipo = "identificador"
+sinonimos = ["CD_UNID_INT"]
+[[coluna]]
+canonico = "dh_criacao"
+rotulo = "Data/hora criação"
+tipo = "data_hora"
+sinonimos = ["DH_CRIACAO"]
+[[coluna]]
+canonico = "dh_fechamento"
+rotulo = "Data/hora fechamento"
+tipo = "data_hora"
+sinonimos = ["DH_FECHAMENTO"]
+[[coluna]]
+canonico = "ds_campo"
+rotulo = "Descrição campo"
+tipo = "texto_livre"
+sinonimos = ["DS_CAMPO"]
+[[coluna]]
+canonico = "ds_unid_int_8"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "cd_unid_int_2"
+rotulo = "Código unidade internação"
+tipo = "identificador"
+sinonimos = ["CD_UNID_INT"]
+[[coluna]]
+canonico = "ds_unid_int_9"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "avper"
+rotulo = "Avper"
+tipo = "decimal"
+sinonimos = ["AVPER"]
+[[coluna]]
+canonico = "ds_unid_int_10"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]

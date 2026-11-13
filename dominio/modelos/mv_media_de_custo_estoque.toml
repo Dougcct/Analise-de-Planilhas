@@ -1,0 +1,191 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 373 / USR_MEDIA_DE_CUSTO_ESTOQUE)
+nome = "MÉDIA DE CUSTO ESTOQUE"
+pasta = "Farmácia e Suprimentos"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "dt_procedimento"
+dimensoes = ["tp_sexo"]
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_estoque"
+rotulo = "Código estoque"
+tipo = "identificador"
+sinonimos = ["CD_ESTOQUE"]
+[[coluna]]
+canonico = "cd_mvto_estoque"
+rotulo = "Código mvto estoque"
+tipo = "identificador"
+sinonimos = ["CD_MVTO_ESTOQUE"]
+[[coluna]]
+canonico = "cd_produto"
+rotulo = "Código produto"
+tipo = "identificador"
+sinonimos = ["CD_PRODUTO"]
+[[coluna]]
+canonico = "cd_setor"
+rotulo = "Código setor"
+tipo = "identificador"
+sinonimos = ["CD_SETOR"]
+[[coluna]]
+canonico = "ds_produto"
+rotulo = "Descrição produto"
+tipo = "texto_livre"
+sinonimos = ["DS_PRODUTO"]
+[[coluna]]
+canonico = "nm_convenio"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "qt_devolvida"
+rotulo = "Qtd. devolvida"
+tipo = "inteiro"
+sinonimos = ["QT_DEVOLVIDA"]
+[[coluna]]
+canonico = "qt_movimentacao"
+rotulo = "Qtd. movimentacao"
+tipo = "inteiro"
+sinonimos = ["QT_MOVIMENTACAO"]
+[[coluna]]
+canonico = "total"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "total_custo"
+rotulo = "Total Custo"
+tipo = "moeda"
+sinonimos = ["TOTAL_CUSTO"]
+[[coluna]]
+canonico = "total_devolucao"
+rotulo = "Total Devolução"
+tipo = "moeda"
+sinonimos = ["TOTAL_DEVOLUÇÃO"]
+[[coluna]]
+canonico = "vl_custo_medio"
+rotulo = "Valor custo medio"
+tipo = "moeda"
+sinonimos = ["VL_CUSTO_MEDIO"]
+[[coluna]]
+canonico = "cd_estoque_2"
+rotulo = "Código estoque"
+tipo = "identificador"
+sinonimos = ["CD_ESTOQUE"]
+[[coluna]]
+canonico = "ds_estoque"
+rotulo = "Descrição estoque"
+tipo = "texto_livre"
+sinonimos = ["DS_ESTOQUE"]
+[[coluna]]
+canonico = "cd_setor_2"
+rotulo = "Código setor"
+tipo = "identificador"
+sinonimos = ["CD_SETOR"]
+[[coluna]]
+canonico = "nm_setor"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "cd_atendimento_2"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_atendimento_3"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_estoque_3"
+rotulo = "Código estoque"
+tipo = "identificador"
+sinonimos = ["CD_ESTOQUE"]
+[[coluna]]
+canonico = "cd_mvto_estoque_2"
+rotulo = "Código mvto estoque"
+tipo = "identificador"
+sinonimos = ["CD_MVTO_ESTOQUE"]
+[[coluna]]
+canonico = "cd_processo"
+rotulo = "Código processo"
+tipo = "identificador"
+sinonimos = ["CD_PROCESSO"]
+[[coluna]]
+canonico = "cd_produto_2"
+rotulo = "Código produto"
+tipo = "identificador"
+sinonimos = ["CD_PRODUTO"]
+[[coluna]]
+canonico = "cd_setor_3"
+rotulo = "Código setor"
+tipo = "identificador"
+sinonimos = ["CD_SETOR"]
+[[coluna]]
+canonico = "cirurgia"
+rotulo = "Cirurgia"
+tipo = "texto_livre"
+sinonimos = ["CIRURGIA"]
+[[coluna]]
+canonico = "ds_produto_2"
+rotulo = "Descrição produto"
+tipo = "texto_livre"
+sinonimos = ["DS_PRODUTO"]
+[[coluna]]
+canonico = "dt_procedimento"
+rotulo = "Data procedimento"
+tipo = "data"
+sinonimos = ["DT_PROCEDIMENTO"]
+[[coluna]]
+canonico = "idade"
+rotulo = "Idade"
+tipo = "decimal"
+sinonimos = ["IDADE"]
+[[coluna]]
+canonico = "nm_convenio_2"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "qt_devolvida_2"
+rotulo = "Qtd. devolvida"
+tipo = "inteiro"
+sinonimos = ["QT_DEVOLVIDA"]
+[[coluna]]
+canonico = "qt_movimentacao_2"
+rotulo = "Qtd. movimentacao"
+tipo = "inteiro"
+sinonimos = ["QT_MOVIMENTACAO"]
+[[coluna]]
+canonico = "total_2"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "total_custo_2"
+rotulo = "Total Custo"
+tipo = "moeda"
+sinonimos = ["TOTAL_CUSTO"]
+[[coluna]]
+canonico = "total_devolucao_2"
+rotulo = "Total Devolução"
+tipo = "moeda"
+sinonimos = ["TOTAL_DEVOLUÇÃO"]
+[[coluna]]
+canonico = "tp_sexo"
+rotulo = "Tipo sexo"
+tipo = "categorico"
+sinonimos = ["TP_SEXO"]
+[[coluna]]
+canonico = "vl_custo_medio_2"
+rotulo = "Valor custo medio"
+tipo = "moeda"
+sinonimos = ["VL_CUSTO_MEDIO"]

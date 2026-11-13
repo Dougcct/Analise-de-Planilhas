@@ -1,0 +1,20 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 156 / USR_MEDIA_TEMPO_DE_PERMANENCIA)
+nome = "MEDIA TEMPO DE PERMANENCIA"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "original"
+
+[[coluna]]
+canonico = "tempo"
+rotulo = "Tempo"
+tipo = "decimal"
+sinonimos = ["TEMPO"]
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "data"
+sinonimos = ["ORIGINAL"]

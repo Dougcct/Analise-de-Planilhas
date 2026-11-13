@@ -1,0 +1,65 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 8 / USR_REL_ENT_SAIDA)
+nome = "rel_ent_saida"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "data_entrada"
+
+[[coluna]]
+canonico = "codigo_visitante_acompanh"
+rotulo = "Codigo Visitante Acompanh"
+tipo = "inteiro"
+sinonimos = ["CODIGO_VISITANTE_ACOMPANH"]
+[[coluna]]
+canonico = "visitante_acompanhante"
+rotulo = "Visitante Acompanhante"
+tipo = "texto_livre"
+sinonimos = ["VISITANTE_ACOMPANHANTE"]
+[[coluna]]
+canonico = "data_entrada"
+rotulo = "Data entrada"
+tipo = "data"
+sinonimos = ["DATA_ENTRADA"]
+[[coluna]]
+canonico = "usuario_entrada"
+rotulo = "Usuario Entrada"
+tipo = "texto_livre"
+sinonimos = ["USUARIO_ENTRADA"]
+[[coluna]]
+canonico = "nome_visitante_acompanhan"
+rotulo = "Nome visitante acompanhan"
+tipo = "texto_livre"
+sinonimos = ["NOME_VISITANTE_ACOMPANHAN"]
+[[coluna]]
+canonico = "atendimento_do_paciente"
+rotulo = "Atendimento Do Paciente"
+tipo = "inteiro"
+sinonimos = ["ATENDIMENTO_DO_PACIENTE"]
+[[coluna]]
+canonico = "nome_do_paciente"
+rotulo = "Nome do paciente"
+tipo = "texto_livre"
+sinonimos = ["NOME_DO_PACIENTE"]
+[[coluna]]
+canonico = "nome_resumido_leito"
+rotulo = "Nome resumido leito"
+tipo = "texto_livre"
+sinonimos = ["NOME_RESUMIDO_LEITO"]
+[[coluna]]
+canonico = "nome_unidade_internacao"
+rotulo = "Nome unidade internação"
+tipo = "texto_livre"
+sinonimos = ["NOME_UNIDADE_INTERNACAO"]
+[[coluna]]
+canonico = "trunc_data_entrada"
+rotulo = "Trunc Data Entrada"
+tipo = "data"
+sinonimos = ["trunc_DATA_ENTRADA"]
+[[coluna]]
+canonico = "select_user_from_dual"
+rotulo = "Select User From Dual"
+tipo = "texto_livre"
+sinonimos = ["select_user_from_dual"]

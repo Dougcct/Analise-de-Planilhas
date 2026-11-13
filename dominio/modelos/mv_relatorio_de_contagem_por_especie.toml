@@ -1,0 +1,66 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 265 / USR_RELATORIO_DE_CONTAGEM_POR_ESPE)
+nome = "RELATÓRIO DE CONTAGEM POR ESPÉCIE"
+pasta = "Farmácia e Suprimentos"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "dt_contagem"
+dimensoes = ["tp_relatorios"]
+
+[[coluna]]
+canonico = "cd_contagem"
+rotulo = "Código contagem"
+tipo = "identificador"
+sinonimos = ["CD_CONTAGEM"]
+[[coluna]]
+canonico = "cd_especie"
+rotulo = "Código especie"
+tipo = "identificador"
+sinonimos = ["CD_ESPECIE"]
+[[coluna]]
+canonico = "cd_produto"
+rotulo = "Código produto"
+tipo = "identificador"
+sinonimos = ["CD_PRODUTO"]
+[[coluna]]
+canonico = "ds_especie"
+rotulo = "Descrição especie"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIE"]
+[[coluna]]
+canonico = "ds_produto"
+rotulo = "Descrição produto"
+tipo = "texto_livre"
+sinonimos = ["DS_PRODUTO"]
+[[coluna]]
+canonico = "ds_unidade"
+rotulo = "Descrição unidade"
+tipo = "texto_livre"
+sinonimos = ["DS_UNIDADE"]
+[[coluna]]
+canonico = "dt_contagem"
+rotulo = "Data contagem"
+tipo = "data"
+sinonimos = ["DT_CONTAGEM"]
+[[coluna]]
+canonico = "qt_estoque"
+rotulo = "Qtd. estoque"
+tipo = "inteiro"
+sinonimos = ["QT_ESTOQUE"]
+[[coluna]]
+canonico = "total"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "tp_relatorios"
+rotulo = "Tipo relatorios"
+tipo = "categorico"
+sinonimos = ["TP_RELATORIOS"]
+[[coluna]]
+canonico = "vl_custo_medio"
+rotulo = "Valor custo medio"
+tipo = "moeda"
+sinonimos = ["VL_CUSTO_MEDIO"]

@@ -1,0 +1,45 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 131 / USR_ATDS_PA_DETALHADO)
+nome = "ATDS PA DETALHADO"
+pasta = "Atendimento Hospitalar"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "retirada_senha"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_pro_fat"
+rotulo = "Código procedimento faturamento"
+tipo = "identificador"
+sinonimos = ["CD_PRO_FAT"]
+[[coluna]]
+canonico = "cd_senha"
+rotulo = "Código senha"
+tipo = "identificador"
+sinonimos = ["CD_SENHA"]
+[[coluna]]
+canonico = "nm_convenio"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "nr_guia"
+rotulo = "Número guia"
+tipo = "identificador"
+sinonimos = ["NR_GUIA"]
+[[coluna]]
+canonico = "retirada_senha"
+rotulo = "Retirada Senha"
+tipo = "data"
+sinonimos = ["RETIRADA_SENHA"]
+[[coluna]]
+canonico = "tf_medico"
+rotulo = "Tf Medico"
+tipo = "data"
+sinonimos = ["TF_MEDICO"]

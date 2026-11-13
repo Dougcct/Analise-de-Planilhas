@@ -1,0 +1,80 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 460 / USR_PACOTES_PEDIATRICOS)
+nome = "PACOTES PEDIÁTRICOS"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "hr_atendimento"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_senha"
+rotulo = "Código senha"
+tipo = "identificador"
+sinonimos = ["CD_SENHA"]
+[[coluna]]
+canonico = "ds_especialid"
+rotulo = "Descrição especialidade"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIALID"]
+[[coluna]]
+canonico = "hr_atendimento"
+rotulo = "Hora atendimento"
+tipo = "data_hora"
+sinonimos = ["HR_ATENDIMENTO"]
+[[coluna]]
+canonico = "idade_no_atd"
+rotulo = "Idade No Atd"
+tipo = "decimal"
+sinonimos = ["IDADE_NO_ATD"]
+[[coluna]]
+canonico = "nm_convenio"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "nm_usuario"
+rotulo = "Nome usuário"
+tipo = "texto_livre"
+sinonimos = ["NM_USUARIO"]
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "data"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "original_2"
+rotulo = "Original"
+tipo = "data"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "usuario"
+rotulo = "Usuario"
+tipo = "texto_livre"
+sinonimos = ["USUARIO"]
+[[coluna]]
+canonico = "cd_convenio"
+rotulo = "Código convênio"
+tipo = "identificador"
+sinonimos = ["CD_CONVENIO"]
+[[coluna]]
+canonico = "nm_convenio_2"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "cd_especialid"
+rotulo = "Código especialidade"
+tipo = "identificador"
+sinonimos = ["CD_ESPECIALID"]
+[[coluna]]
+canonico = "ds_especialid_2"
+rotulo = "Descrição especialidade"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIALID"]

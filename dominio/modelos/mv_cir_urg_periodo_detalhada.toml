@@ -1,0 +1,72 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 664 / USR_CIRURGIAS_PERIODO_DETALHADA)
+nome = "CIR_URG_PERIODO_DETALHADA"
+pasta = "Centro Cirúrgico"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "dt_proc"
+dimensoes = ["prestadores", "tp_cirurgia"]
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_aviso_cirurgia"
+rotulo = "Código aviso cirurgia"
+tipo = "identificador"
+sinonimos = ["CD_AVISO_CIRURGIA"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "cd_senha"
+rotulo = "Código senha"
+tipo = "identificador"
+sinonimos = ["CD_SENHA"]
+[[coluna]]
+canonico = "ds_cen_cir"
+rotulo = "Descrição centro cirurgia"
+tipo = "texto_livre"
+sinonimos = ["DS_CEN_CIR"]
+[[coluna]]
+canonico = "ds_especialid"
+rotulo = "Descrição especialidade"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIALID"]
+[[coluna]]
+canonico = "dt_proc"
+rotulo = "Data procedimento"
+tipo = "data"
+sinonimos = ["DT_PROC"]
+[[coluna]]
+canonico = "nm_convenio"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "prestadores"
+rotulo = "Prestadores"
+tipo = "categorico"
+sinonimos = ["PRESTADORES"]
+[[coluna]]
+canonico = "procedimentos"
+rotulo = "Procedimentos"
+tipo = "texto_livre"
+sinonimos = ["PROCEDIMENTOS"]
+[[coluna]]
+canonico = "qt"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "tp_cirurgia"
+rotulo = "Tipo cirurgia"
+tipo = "categorico"
+sinonimos = ["TP_CIRURGIA"]

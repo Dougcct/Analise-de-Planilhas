@@ -1,0 +1,35 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 219 / USR_TEMPO_DE_ESPERA_SUPERIOR_A_6_H)
+nome = "TEMPO DE ESPERA SUPERIOR A 6 HORAS"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "data_atd"
+
+[[coluna]]
+canonico = "data_atd"
+rotulo = "Data atendimento"
+tipo = "data"
+sinonimos = ["DATA_ATD"]
+[[coluna]]
+canonico = "ds_especialid"
+rotulo = "Descrição especialidade"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIALID"]
+[[coluna]]
+canonico = "nm_convenio"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "nm_paciente_abrev"
+rotulo = "Nome paciente abrev"
+tipo = "texto_livre"
+sinonimos = ["NM_PACIENTE_ABREV"]
+[[coluna]]
+canonico = "tempo_total_atendimento"
+rotulo = "Tempo Total Atendimento"
+tipo = "moeda"
+sinonimos = ["TEMPO_TOTAL_ATENDIMENTO"]

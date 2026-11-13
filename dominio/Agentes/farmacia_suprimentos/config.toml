@@ -1,0 +1,21 @@
+# =============================================================================
+# AGENTE — Farmácia, Estoque e Suprimentos (MV: EST_PRO / MOV_EST / SOLSAI_PRO)
+# =============================================================================
+
+ids_principais = ["produto", "movimento", "fornecedor", "atendimento"]
+valores = ["vl_custo_medio", "total", "qtd"]
+codigos = ["produto", "fornecedor", "movimento", "especie", "atendimento"]
+
+[colunas]
+produto        = ["cd_produto", "cod_produto", "ds_produto", "produto", "medicamento", "material", "item"]
+estoque        = ["cd_estoque", "ds_estoque", "estoque", "almoxarifado", "farmacia"]
+setor          = ["cd_setor", "nm_setor", "ds_unid_int", "setor", "unidade"]
+fornecedor     = ["cd_fornecedor", "nm_fornecedor", "fornecedor"]
+especie        = ["cd_especie", "especie", "classe", "grupo produto"]
+movimento      = ["cd_mvto_estoque", "mvto estoque", "requisicao", "solicitacao"]
+prestador      = ["cd_prestador", "nm_prestador", "prescritor", "solicitante"]
+atendimento    = ["cd_atendimento", "atendimento"]
+qtd            = ["qtd", "qtde", "quantidade", "qt_movimentacao", "qt_consumo"]
+vl_custo_medio = ["vl_custo_medio", "custo medio", "valor unitario", "vl_unitario"]
+total          = ["total", "vl_total", "valor total", "custo total"]
+dt_movimento   = ["dt_mvto_estoque", "dt_movimento", "data movimento", "dt_entrada", "dt_consumo"]

@@ -1,0 +1,44 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 568 / USR_CONFERENCIA_DE_LOTE_SIMPLIFICA)
+nome = "CONFERENCIA DE LOTE SIMPLIFICADO"
+pasta = "Farmácia e Suprimentos"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "cd_estoque"
+rotulo = "Código estoque"
+tipo = "identificador"
+sinonimos = ["CD_ESTOQUE"]
+[[coluna]]
+canonico = "cod_produto"
+rotulo = "Código produto"
+tipo = "identificador"
+sinonimos = ["COD_PRODUTO"]
+[[coluna]]
+canonico = "desc_produto"
+rotulo = "Descrição produto"
+tipo = "texto_livre"
+sinonimos = ["DESC_PRODUTO"]
+[[coluna]]
+canonico = "ds_estoque"
+rotulo = "Descrição estoque"
+tipo = "texto_livre"
+sinonimos = ["DS_ESTOQUE"]
+[[coluna]]
+canonico = "quantidade"
+rotulo = "Quantidade"
+tipo = "decimal"
+sinonimos = ["QUANTIDADE"]
+[[coluna]]
+canonico = "cd"
+rotulo = "Cd"
+tipo = "texto_livre"
+sinonimos = ["CD"]
+[[coluna]]
+canonico = "estoque"
+rotulo = "Estoque"
+tipo = "texto_livre"
+sinonimos = ["ESTOQUE"]

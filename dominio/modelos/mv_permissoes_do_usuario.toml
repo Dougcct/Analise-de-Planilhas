@@ -1,0 +1,110 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 734 / USR_PERMISSOES_DO_USUARIO)
+nome = "Permissões do usuário"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+dimensoes = ["origem", "status", "origem_2", "status_2", "origem_3", "status_3"]
+
+[[coluna]]
+canonico = "origem"
+rotulo = "Origem"
+tipo = "categorico"
+sinonimos = ["ORIGEM"]
+[[coluna]]
+canonico = "status"
+rotulo = "Status"
+tipo = "categorico"
+sinonimos = ["STATUS"]
+[[coluna]]
+canonico = "x"
+rotulo = "X"
+tipo = "texto_livre"
+sinonimos = ["X"]
+[[coluna]]
+canonico = "origem_2"
+rotulo = "Origem"
+tipo = "categorico"
+sinonimos = ["ORIGEM"]
+[[coluna]]
+canonico = "status_2"
+rotulo = "Status"
+tipo = "categorico"
+sinonimos = ["STATUS"]
+[[coluna]]
+canonico = "x_2"
+rotulo = "X"
+tipo = "texto_livre"
+sinonimos = ["X"]
+[[coluna]]
+canonico = "origem_3"
+rotulo = "Origem"
+tipo = "categorico"
+sinonimos = ["ORIGEM"]
+[[coluna]]
+canonico = "status_3"
+rotulo = "Status"
+tipo = "categorico"
+sinonimos = ["STATUS"]
+[[coluna]]
+canonico = "x_3"
+rotulo = "X"
+tipo = "texto_livre"
+sinonimos = ["X"]
+[[coluna]]
+canonico = "origem_4"
+rotulo = "Origem"
+tipo = "categorico"
+sinonimos = ["ORIGEM"]
+[[coluna]]
+canonico = "status_4"
+rotulo = "Status"
+tipo = "categorico"
+sinonimos = ["STATUS"]
+[[coluna]]
+canonico = "x_4"
+rotulo = "X"
+tipo = "texto_livre"
+sinonimos = ["X"]
+[[coluna]]
+canonico = "cd_especialid"
+rotulo = "Código especialidade"
+tipo = "identificador"
+sinonimos = ["CD_ESPECIALID"]
+[[coluna]]
+canonico = "cd_tip_presta"
+rotulo = "Código tipo presta"
+tipo = "identificador"
+sinonimos = ["CD_TIP_PRESTA"]
+[[coluna]]
+canonico = "ds_especialid"
+rotulo = "Descrição especialidade"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIALID"]
+[[coluna]]
+canonico = "nm_tip_presta"
+rotulo = "Nome tipo presta"
+tipo = "texto_livre"
+sinonimos = ["NM_TIP_PRESTA"]
+[[coluna]]
+canonico = "origem_5"
+rotulo = "Origem"
+tipo = "categorico"
+sinonimos = ["ORIGEM"]
+[[coluna]]
+canonico = "status_5"
+rotulo = "Status"
+tipo = "categorico"
+sinonimos = ["STATUS"]
+[[coluna]]
+canonico = "x_5"
+rotulo = "X"
+tipo = "texto_livre"
+sinonimos = ["X"]
+[[coluna]]
+canonico = "xx"
+rotulo = "Xx"
+tipo = "texto_livre"
+sinonimos = ["XX"]

@@ -1,0 +1,136 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 732 / USR_AUXILIO_FATURAMENTO_CEU'S)
+nome = "AUXILIO FATURAMENTO CEU's"
+pasta = "Faturamento"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "data"
+dimensoes = ["convenio", "tip_mar"]
+
+[[coluna]]
+canonico = "atendido"
+rotulo = "Atendido"
+tipo = "decimal"
+sinonimos = ["ATENDIDO"]
+[[coluna]]
+canonico = "cd_prestador"
+rotulo = "Código prestador"
+tipo = "identificador"
+sinonimos = ["CD_PRESTADOR"]
+[[coluna]]
+canonico = "cd_setor"
+rotulo = "Código setor"
+tipo = "identificador"
+sinonimos = ["CD_SETOR"]
+[[coluna]]
+canonico = "conv_intercambio"
+rotulo = "Conv Intercambio"
+tipo = "decimal"
+sinonimos = ["CONV_INTERCAMBIO"]
+[[coluna]]
+canonico = "conv_local"
+rotulo = "Conv Local"
+tipo = "decimal"
+sinonimos = ["CONV_LOCAL"]
+[[coluna]]
+canonico = "data"
+rotulo = "Data"
+tipo = "data"
+sinonimos = ["DATA"]
+[[coluna]]
+canonico = "nao_atendido"
+rotulo = "Nao Atendido"
+tipo = "decimal"
+sinonimos = ["NAO_ATENDIDO"]
+[[coluna]]
+canonico = "nm_prestador"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "nm_setor"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "outros_convenios"
+rotulo = "Outros Convenios"
+tipo = "decimal"
+sinonimos = ["OUTROS_CONVENIOS"]
+[[coluna]]
+canonico = "primeira_consulta"
+rotulo = "Primeira Consulta"
+tipo = "decimal"
+sinonimos = ["PRIMEIRA_CONSULTA"]
+[[coluna]]
+canonico = "retorno"
+rotulo = "Retorno"
+tipo = "decimal"
+sinonimos = ["RETORNO"]
+[[coluna]]
+canonico = "cd_prestador_2"
+rotulo = "Código prestador"
+tipo = "identificador"
+sinonimos = ["CD_PRESTADOR"]
+[[coluna]]
+canonico = "nm_prestador_2"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "cd_setor_2"
+rotulo = "Código setor"
+tipo = "identificador"
+sinonimos = ["CD_SETOR"]
+[[coluna]]
+canonico = "nm_setor_2"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "cd_agenda_central"
+rotulo = "Código agenda central"
+tipo = "identificador"
+sinonimos = ["CD_AGENDA_CENTRAL"]
+[[coluna]]
+canonico = "convenio"
+rotulo = "Convenio"
+tipo = "categorico"
+sinonimos = ["CONVENIO"]
+[[coluna]]
+canonico = "hr_agenda"
+rotulo = "Hora agenda"
+tipo = "data_hora"
+sinonimos = ["HR_AGENDA"]
+[[coluna]]
+canonico = "nm_prestador_3"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "nm_setor_3"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "obs"
+rotulo = "Obs"
+tipo = "texto_livre"
+sinonimos = ["OBS"]
+[[coluna]]
+canonico = "sn_atendido"
+rotulo = "Atendido?"
+tipo = "booleano"
+sinonimos = ["SN_ATENDIDO"]
+[[coluna]]
+canonico = "sn_encaixe"
+rotulo = "Encaixe?"
+tipo = "booleano"
+sinonimos = ["SN_ENCAIXE"]
+[[coluna]]
+canonico = "tip_mar"
+rotulo = "Tipo marcação"
+tipo = "categorico"
+sinonimos = ["TIP_MAR"]

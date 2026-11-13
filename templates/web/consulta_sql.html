@@ -137,8 +137,14 @@ que alteram dados são bloqueados. Uso restrito ao administrador, na rede local.
     <button type="submit" class="btn">Salvar consulta atual</button>
   </form>
   {% if salvas %}
+  <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
+    <input type="search" id="busca-salvas" placeholder="Pesquisar consultas salvas (nome ou área, ex.: Centro Cirúrgico)…"
+           oninput="filtrarSalvas()"
+           style="flex:1;min-width:220px;padding:6px 10px;border:1px solid var(--borda);border-radius:8px;background:var(--fundo);color:var(--texto)">
+    <span id="cont-salvas" class="mv-dica">{{ salvas|length }} consulta(s)</span>
+  </div>
   <div class="tab-scroll" style="max-height:30vh">
-    <table class="mv-tab" style="width:100%">
+    <table class="mv-tab" id="tab-salvas" style="width:100%">
       <thead><tr><th>Nome</th><th>Ambiente</th><th style="width:150px"></th></tr></thead>
       <tbody>
       {% for q in salvas %}
@@ -332,6 +338,21 @@ que alteram dados são bloqueados. Uso restrito ao administrador, na rede local.
       h += v===null ? '<td class="nulo">(nulo)</td>' : '<td>'+escapar(v)+'</td>'; }); h += '</tr>'; });
     return h + '</tbody></table></div>';
   }
+  window.filtrarSalvas = function(){
+    var q = (document.getElementById('busca-salvas').value || '')
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+    var linhas = document.querySelectorAll('#tab-salvas tbody tr');
+    var vis = 0;
+    linhas.forEach(function(tr){
+      var txt = (tr.cells[0].textContent + ' ' + tr.cells[1].textContent)
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+      var ok = !q || txt.indexOf(q) !== -1;
+      tr.style.display = ok ? '' : 'none';
+      if(ok) vis++;
+    });
+    var el = document.getElementById('cont-salvas');
+    if(el) el.textContent = q ? (vis + ' de ' + linhas.length + ' consulta(s)') : (linhas.length + ' consulta(s)');
+  };
 })();
 </script>
 {% endblock %}

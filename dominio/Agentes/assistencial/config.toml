@@ -22,13 +22,13 @@ leito             = ["leito", "nr leito", "cod leito", "acomodacao"]
 cirurgia          = ["cirurgia", "nr cirurgia", "aviso cirurgia", "procedimento cirurgico"]
 
 # dimensões assistenciais
-setor             = ["setor", "unidade", "unidade internacao", "clinica", "ala", "posto"]
-especialidade     = ["especialidade", "esp", "ds especialidade", "servico"]
+setor             = ["setor", "unidade", "unidade internacao", "ds_unid_int", "nm_setor", "cd_setor", "clinica", "ala", "posto"]
+especialidade     = ["especialidade", "esp", "ds especialidade", "ds_especialid", "servico"]
 classificacao_risco = ["classificacao de risco", "classificacao risco", "risco", "manchester", "prioridade"]
 carater           = ["carater", "carater atendimento", "tipo atendimento", "origem"]
 tipo_alta         = ["tipo alta", "motivo alta", "desfecho", "situacao alta", "condicao saida"]
 cid               = ["cid", "cid10", "diagnostico", "patologia"]
-procedimento      = ["procedimento", "cirurgia", "ds procedimento", "tuss"]
+procedimento      = ["procedimento", "cirurgia", "ds procedimento", "des_proc_principal", "tuss"]
 
 # medidas / indicadores assistenciais e hospitalares
 tempo_permanencia    = ["tempo permanencia", "permanencia", "dias permanencia", "los", "tempo de permanencia"]

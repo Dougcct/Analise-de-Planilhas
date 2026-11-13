@@ -1,0 +1,187 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 371 / USR_REFEICOES_POR_PACIENTE)
+nome = "REFEIÇÕES POR PACIENTE"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "dt_mov_cardapio"
+dimensoes = ["tipo_cardapio"]
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_mov_cardapio"
+rotulo = "Código movimento cardapio"
+tipo = "identificador"
+sinonimos = ["CD_MOV_CARDAPIO"]
+[[coluna]]
+canonico = "cd_pro_fat"
+rotulo = "Código procedimento faturamento"
+tipo = "identificador"
+sinonimos = ["CD_PRO_FAT"]
+[[coluna]]
+canonico = "cd_setor"
+rotulo = "Código setor"
+tipo = "identificador"
+sinonimos = ["CD_SETOR"]
+[[coluna]]
+canonico = "cd_unidade"
+rotulo = "Código unidade"
+tipo = "identificador"
+sinonimos = ["CD_UNIDADE"]
+[[coluna]]
+canonico = "ds_gru_pro"
+rotulo = "Descrição gru procedimento"
+tipo = "texto_livre"
+sinonimos = ["DS_GRU_PRO"]
+[[coluna]]
+canonico = "ds_opcao"
+rotulo = "Descrição opcao"
+tipo = "texto_livre"
+sinonimos = ["DS_OPCAO"]
+[[coluna]]
+canonico = "ds_tipo_refeicao"
+rotulo = "Descrição tipo refeicao"
+tipo = "texto_livre"
+sinonimos = ["DS_TIPO_REFEICAO"]
+[[coluna]]
+canonico = "dt_mov_cardapio"
+rotulo = "Data movimento cardapio"
+tipo = "data"
+sinonimos = ["DT_MOV_CARDAPIO"]
+[[coluna]]
+canonico = "nm_setor"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "qt_cardapio"
+rotulo = "Qtd. cardapio"
+tipo = "inteiro"
+sinonimos = ["QT_CARDAPIO"]
+[[coluna]]
+canonico = "tipo_cardapio"
+rotulo = "Tipo cardapio"
+tipo = "categorico"
+sinonimos = ["TIPO_CARDAPIO"]
+[[coluna]]
+canonico = "vl_total"
+rotulo = "Valor total"
+tipo = "moeda"
+sinonimos = ["VL_TOTAL"]
+[[coluna]]
+canonico = "cd_atendimento_2"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_convenio"
+rotulo = "Código convênio"
+tipo = "identificador"
+sinonimos = ["CD_CONVENIO"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "cd_pro_fat_realizado"
+rotulo = "Código procedimento faturamento realizado"
+tipo = "identificador"
+sinonimos = ["CD_PRO_FAT_REALIZADO"]
+[[coluna]]
+canonico = "ds_codigo_conselho"
+rotulo = "Descrição codigo conselho"
+tipo = "texto_livre"
+sinonimos = ["DS_CODIGO_CONSELHO"]
+[[coluna]]
+canonico = "ds_con_pla"
+rotulo = "Descrição con plano"
+tipo = "texto_livre"
+sinonimos = ["DS_CON_PLA"]
+[[coluna]]
+canonico = "ds_especialid"
+rotulo = "Descrição especialidade"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIALID"]
+[[coluna]]
+canonico = "ds_leito"
+rotulo = "Descrição leito"
+tipo = "texto_livre"
+sinonimos = ["DS_LEITO"]
+[[coluna]]
+canonico = "ds_mot_alt"
+rotulo = "Descrição motivo alteração"
+tipo = "texto_livre"
+sinonimos = ["DS_MOT_ALT"]
+[[coluna]]
+canonico = "ds_pro_fat"
+rotulo = "Descrição procedimento faturamento"
+tipo = "texto_livre"
+sinonimos = ["DS_PRO_FAT"]
+[[coluna]]
+canonico = "ds_tip_acom"
+rotulo = "Descrição tipo acom"
+tipo = "texto_livre"
+sinonimos = ["DS_TIP_ACOM"]
+[[coluna]]
+canonico = "dt_alta"
+rotulo = "Data alta"
+tipo = "data"
+sinonimos = ["DT_ALTA"]
+[[coluna]]
+canonico = "hr_atendimento"
+rotulo = "Hora atendimento"
+tipo = "data_hora"
+sinonimos = ["HR_ATENDIMENTO"]
+[[coluna]]
+canonico = "nm_bairro"
+rotulo = "Nome bairro"
+tipo = "texto_livre"
+sinonimos = ["NM_BAIRRO"]
+[[coluna]]
+canonico = "nm_cidade"
+rotulo = "Nome cidade"
+tipo = "texto_livre"
+sinonimos = ["NM_CIDADE"]
+[[coluna]]
+canonico = "nm_convenio"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "nm_prestador"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "nm_sexo"
+rotulo = "Nome sexo"
+tipo = "texto_livre"
+sinonimos = ["NM_SEXO"]
+[[coluna]]
+canonico = "nr"
+rotulo = "Nr"
+tipo = "texto_livre"
+sinonimos = ["NR"]
+[[coluna]]
+canonico = "nr_cep"
+rotulo = "Número cep"
+tipo = "identificador"
+sinonimos = ["NR_CEP"]
+[[coluna]]
+canonico = "cd_atendimento_3"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "ds_mot_alt_2"
+rotulo = "Descrição motivo alteração"
+tipo = "texto_livre"
+sinonimos = ["DS_MOT_ALT"]

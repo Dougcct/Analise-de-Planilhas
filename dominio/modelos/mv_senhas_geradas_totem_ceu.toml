@@ -1,0 +1,36 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 198 / USR_SENHAS_GERADAS_TOTEM_CEU)
+nome = "SENHAS GERADAS TOTEM_CEU"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "data_atd"
+dimensoes = ["tp_senha", "tp_senha_2"]
+
+[[coluna]]
+canonico = "data_atd"
+rotulo = "Data atendimento"
+tipo = "data"
+sinonimos = ["DATA_ATD"]
+[[coluna]]
+canonico = "qtd"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "tp_senha"
+rotulo = "Tipo senha"
+tipo = "categorico"
+sinonimos = ["TP_SENHA"]
+[[coluna]]
+canonico = "qtd_2"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "tp_senha_2"
+rotulo = "Tipo senha"
+tipo = "categorico"
+sinonimos = ["TP_SENHA"]

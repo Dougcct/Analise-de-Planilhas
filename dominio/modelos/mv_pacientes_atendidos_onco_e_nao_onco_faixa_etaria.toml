@@ -1,0 +1,65 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 490 / USR_PACIENTES_ATENDIDOS_ONCO_E_NAO)
+nome = "PACIENTES ATENDIDOS ONCO E NÃO ONCO FAIXA ETARIA"
+pasta = "Atendimento Hospitalar"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "original"
+
+[[coluna]]
+canonico = "total_nao_onco"
+rotulo = "Total Nao Onco"
+tipo = "moeda"
+sinonimos = ["TOTAL_NAO_ONCO"]
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "data"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "original_2"
+rotulo = "Original"
+tipo = "data"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "original_3"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "nm_convenio"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "sn"
+rotulo = "Sn"
+tipo = "texto_livre"
+sinonimos = ["SN"]
+[[coluna]]
+canonico = "total"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "faixa_etaria"
+rotulo = "Faixa Etaria"
+tipo = "texto_livre"
+sinonimos = ["FAIXA_ETARIA"]
+[[coluna]]
+canonico = "total_2"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "faixa_etaria_2"
+rotulo = "Faixa Etaria"
+tipo = "texto_livre"
+sinonimos = ["FAIXA_ETARIA"]
+[[coluna]]
+canonico = "total_nao_onco_2"
+rotulo = "Total Nao Onco"
+tipo = "moeda"
+sinonimos = ["TOTAL_NAO_ONCO"]

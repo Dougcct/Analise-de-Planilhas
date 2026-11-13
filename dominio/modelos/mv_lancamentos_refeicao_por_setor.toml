@@ -1,0 +1,30 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 363 / USR_LANCAMENTOS_REFEICAO_POR_SETOR)
+nome = "LANCAMENTOS REFEICAO POR SETOR"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "dt_lanc"
+
+[[coluna]]
+canonico = "ds_pro_fat"
+rotulo = "Descrição procedimento faturamento"
+tipo = "texto_livre"
+sinonimos = ["DS_PRO_FAT"]
+[[coluna]]
+canonico = "dt_lanc"
+rotulo = "Data lançamento"
+tipo = "data"
+sinonimos = ["DT_LANC"]
+[[coluna]]
+canonico = "nm_setor"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "tot"
+rotulo = "Tot"
+tipo = "decimal"
+sinonimos = ["TOT"]

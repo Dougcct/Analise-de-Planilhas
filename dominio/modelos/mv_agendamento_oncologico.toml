@@ -1,0 +1,102 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 662 / USR_AGENDAMENTO_ONCOLOGICO)
+nome = "AGENDAMENTO ONCOLÓGICO"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "dh_final_agendamento_onc"
+dimensoes = ["status_desc", "tp_status"]
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_convenio"
+rotulo = "Código convênio"
+tipo = "identificador"
+sinonimos = ["CD_CONVENIO"]
+[[coluna]]
+canonico = "cd_con_pla"
+rotulo = "Código con plano"
+tipo = "identificador"
+sinonimos = ["CD_CON_PLA"]
+[[coluna]]
+canonico = "cd_item_agendamento"
+rotulo = "Código item agendamento"
+tipo = "identificador"
+sinonimos = ["CD_ITEM_AGENDAMENTO"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "cd_recurso_oncologico"
+rotulo = "Código recurso oncologico"
+tipo = "identificador"
+sinonimos = ["CD_RECURSO_ONCOLOGICO"]
+[[coluna]]
+canonico = "dh_final_agendamento_onc"
+rotulo = "Data/hora final agendamento onc"
+tipo = "data_hora"
+sinonimos = ["DH_FINAL_AGENDAMENTO_ONC"]
+[[coluna]]
+canonico = "dh_inicio_agendamento_onc"
+rotulo = "Data/hora inicio agendamento onc"
+tipo = "data_hora"
+sinonimos = ["DH_INICIO_AGENDAMENTO_ONC"]
+[[coluna]]
+canonico = "ds_con_pla"
+rotulo = "Descrição con plano"
+tipo = "texto_livre"
+sinonimos = ["DS_CON_PLA"]
+[[coluna]]
+canonico = "ds_item_agendamento"
+rotulo = "Descrição item agendamento"
+tipo = "texto_livre"
+sinonimos = ["DS_ITEM_AGENDAMENTO"]
+[[coluna]]
+canonico = "ds_observacao"
+rotulo = "Descrição observacao"
+tipo = "texto_livre"
+sinonimos = ["DS_OBSERVACAO"]
+[[coluna]]
+canonico = "ds_recurso_oncologico"
+rotulo = "Descrição recurso oncologico"
+tipo = "texto_livre"
+sinonimos = ["DS_RECURSO_ONCOLOGICO"]
+[[coluna]]
+canonico = "nm_convenio"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "nr_sessao"
+rotulo = "Número sessao"
+tipo = "identificador"
+sinonimos = ["NR_SESSAO"]
+[[coluna]]
+canonico = "status_desc"
+rotulo = "Status Desc"
+tipo = "categorico"
+sinonimos = ["STATUS_DESC"]
+[[coluna]]
+canonico = "tp_status"
+rotulo = "Tipo status"
+tipo = "categorico"
+sinonimos = ["TP_STATUS"]
+[[coluna]]
+canonico = "cd_recurso_oncologico_2"
+rotulo = "Código recurso oncologico"
+tipo = "identificador"
+sinonimos = ["CD_RECURSO_ONCOLOGICO"]
+[[coluna]]
+canonico = "ds_recurso_oncologico_2"
+rotulo = "Descrição recurso oncologico"
+tipo = "texto_livre"
+sinonimos = ["DS_RECURSO_ONCOLOGICO"]

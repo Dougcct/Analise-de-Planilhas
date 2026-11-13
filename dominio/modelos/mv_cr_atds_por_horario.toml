@@ -1,0 +1,39 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 263 / USR_CR_-_ATDS_POR_HORARIO)
+nome = "CR - ATDS POR HORARIO"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "cd_especialid"
+rotulo = "Código especialidade"
+tipo = "identificador"
+sinonimos = ["CD_ESPECIALID"]
+[[coluna]]
+canonico = "ds_especialid"
+rotulo = "Descrição especialidade"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIALID"]
+[[coluna]]
+canonico = "cd_dia_semana"
+rotulo = "Código dia semana"
+tipo = "identificador"
+sinonimos = ["CD_DIA_SEMANA"]
+[[coluna]]
+canonico = "nm_dia_semana"
+rotulo = "Nome dia semana"
+tipo = "texto_livre"
+sinonimos = ["NM_DIA_SEMANA"]
+[[coluna]]
+canonico = "hr_atd"
+rotulo = "Hora atendimento"
+tipo = "texto_livre"
+sinonimos = ["HR_ATD"]
+[[coluna]]
+canonico = "soma_qtd"
+rotulo = "Soma Qtd"
+tipo = "decimal"
+sinonimos = ["SOMA_QTD"]

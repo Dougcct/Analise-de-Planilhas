@@ -1,0 +1,25 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 387 / USR_SUMARIO_CTI)
+nome = "SUMARIO CTI"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "dt_internacao"
+
+[[coluna]]
+canonico = "destino"
+rotulo = "Destino"
+tipo = "texto_livre"
+sinonimos = ["DESTINO"]
+[[coluna]]
+canonico = "dt_internacao"
+rotulo = "Data internação"
+tipo = "data"
+sinonimos = ["DT_INTERNACAO"]
+[[coluna]]
+canonico = "quadro"
+rotulo = "Quadro"
+tipo = "texto_livre"
+sinonimos = ["QUADRO"]

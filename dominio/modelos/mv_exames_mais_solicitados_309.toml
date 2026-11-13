@@ -1,0 +1,19 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 309 / USR_EXAMES_MAIS_SOLICITADOS)
+nome = "EXAMES MAIS SOLICITADOS"
+pasta = "Exames e Laboratório"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "exame"
+rotulo = "Exame"
+tipo = "texto_livre"
+sinonimos = ["EXAME"]
+[[coluna]]
+canonico = "total_cd_exa_lab"
+rotulo = "Total Cd Exa Lab"
+tipo = "moeda"
+sinonimos = ["TOTAL_CD_EXA_LAB"]

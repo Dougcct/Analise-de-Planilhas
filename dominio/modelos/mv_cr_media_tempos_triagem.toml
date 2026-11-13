@@ -1,0 +1,64 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 127 / USR_CR_-_MEDIA_TEMPOS_TRIAGEM)
+nome = "CR - MEDIA TEMPOS TRIAGEM"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "media_tempo_triagem"
+rotulo = "Media Tempo Triagem"
+tipo = "decimal"
+sinonimos = ["MEDIA_TEMPO_TRIAGEM"]
+[[coluna]]
+canonico = "media_toten_triagem"
+rotulo = "Media Toten Triagem"
+tipo = "decimal"
+sinonimos = ["MEDIA_TOTEN_TRIAGEM"]
+[[coluna]]
+canonico = "media_tempo_triagem_2"
+rotulo = "Media Tempo Triagem"
+tipo = "decimal"
+sinonimos = ["MEDIA_TEMPO_TRIAGEM"]
+[[coluna]]
+canonico = "media_toten_triagem_2"
+rotulo = "Media Toten Triagem"
+tipo = "decimal"
+sinonimos = ["MEDIA_TOTEN_TRIAGEM"]
+[[coluna]]
+canonico = "us_triagem"
+rotulo = "Us Triagem"
+tipo = "texto_livre"
+sinonimos = ["US_TRIAGEM"]
+[[coluna]]
+canonico = "ds_cor"
+rotulo = "Descrição cor"
+tipo = "texto_livre"
+sinonimos = ["DS_COR"]
+[[coluna]]
+canonico = "qt"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "ds_especialid"
+rotulo = "Descrição especialidade"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIALID"]
+[[coluna]]
+canonico = "qt_2"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "cd_fila_senha"
+rotulo = "Código fila senha"
+tipo = "identificador"
+sinonimos = ["CD_FILA_SENHA"]
+[[coluna]]
+canonico = "ds_fila"
+rotulo = "Descrição fila"
+tipo = "texto_livre"
+sinonimos = ["DS_FILA"]

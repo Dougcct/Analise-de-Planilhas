@@ -1,0 +1,35 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 125 / USR_CR_-_SENHAS_EXCLUIDAS)
+nome = "CR - SENHAS EXCLUIDAS"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "dh_removido"
+
+[[coluna]]
+canonico = "cd_usuario_removeu"
+rotulo = "Código usuário removeu"
+tipo = "identificador"
+sinonimos = ["CD_USUARIO_REMOVEU"]
+[[coluna]]
+canonico = "dh_removido"
+rotulo = "Data/hora removido"
+tipo = "data_hora"
+sinonimos = ["DH_REMOVIDO"]
+[[coluna]]
+canonico = "ds_observacao_removido"
+rotulo = "Descrição observacao removido"
+tipo = "texto_livre"
+sinonimos = ["DS_OBSERVACAO_REMOVIDO"]
+[[coluna]]
+canonico = "ds_senha"
+rotulo = "Descrição senha"
+tipo = "texto_livre"
+sinonimos = ["DS_SENHA"]
+[[coluna]]
+canonico = "qtd"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]

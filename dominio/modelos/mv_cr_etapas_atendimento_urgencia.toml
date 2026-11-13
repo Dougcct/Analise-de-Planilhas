@@ -1,0 +1,85 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 124 / USR_QTD_ATEND_POR_COR)
+nome = "CR - ETAPAS ATENDIMENTO URGENCIA"
+pasta = "Atendimento Hospitalar"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "retirada_senha"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "ds_cor"
+rotulo = "Descrição cor"
+tipo = "texto_livre"
+sinonimos = ["DS_COR"]
+[[coluna]]
+canonico = "ds_senha"
+rotulo = "Descrição senha"
+tipo = "texto_livre"
+sinonimos = ["DS_SENHA"]
+[[coluna]]
+canonico = "nm_paciente_abrev"
+rotulo = "Nome paciente abrev"
+tipo = "texto_livre"
+sinonimos = ["NM_PACIENTE_ABREV"]
+[[coluna]]
+canonico = "retirada_senha"
+rotulo = "Retirada Senha"
+tipo = "data"
+sinonimos = ["RETIRADA_SENHA"]
+[[coluna]]
+canonico = "tf_medico"
+rotulo = "Tf Medico"
+tipo = "data"
+sinonimos = ["TF_MEDICO"]
+[[coluna]]
+canonico = "tf_recepcao"
+rotulo = "Tf Recepcao"
+tipo = "data"
+sinonimos = ["TF_RECEPCAO"]
+[[coluna]]
+canonico = "tf_triagem"
+rotulo = "Tf Triagem"
+tipo = "data"
+sinonimos = ["TF_TRIAGEM"]
+[[coluna]]
+canonico = "ti_medico"
+rotulo = "Ti Medico"
+tipo = "data"
+sinonimos = ["TI_MEDICO"]
+[[coluna]]
+canonico = "ti_recepcao"
+rotulo = "Ti Recepcao"
+tipo = "data"
+sinonimos = ["TI_RECEPCAO"]
+[[coluna]]
+canonico = "ti_triagem"
+rotulo = "Ti Triagem"
+tipo = "data"
+sinonimos = ["TI_TRIAGEM"]
+[[coluna]]
+canonico = "cd_especialid"
+rotulo = "Código especialidade"
+tipo = "identificador"
+sinonimos = ["CD_ESPECIALID"]
+[[coluna]]
+canonico = "ds_especialid"
+rotulo = "Descrição especialidade"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIALID"]
+[[coluna]]
+canonico = "cd_fila_senha"
+rotulo = "Código fila senha"
+tipo = "identificador"
+sinonimos = ["CD_FILA_SENHA"]
+[[coluna]]
+canonico = "ds_fila"
+rotulo = "Descrição fila"
+tipo = "texto_livre"
+sinonimos = ["DS_FILA"]

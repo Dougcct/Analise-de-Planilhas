@@ -1,0 +1,116 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 455 / USR_DEMONSTRATIVO_MEDICO)
+nome = "DEMONSTRATIVO MEDICO"
+pasta = "Farmácia e Suprimentos"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "dt_fatura"
+dimensoes = ["convenio", "prestador", "setor", "tp_pgto"]
+
+[[coluna]]
+canonico = "atd"
+rotulo = "Atd"
+tipo = "decimal"
+sinonimos = ["ATD"]
+[[coluna]]
+canonico = "ati_med"
+rotulo = "Ati Med"
+tipo = "texto_livre"
+sinonimos = ["ATI_MED"]
+[[coluna]]
+canonico = "cd_pac"
+rotulo = "Código paciente"
+tipo = "identificador"
+sinonimos = ["CD_PAC"]
+[[coluna]]
+canonico = "conta"
+rotulo = "Conta"
+tipo = "decimal"
+sinonimos = ["CONTA"]
+[[coluna]]
+canonico = "convenio"
+rotulo = "Convenio"
+tipo = "categorico"
+sinonimos = ["CONVENIO"]
+[[coluna]]
+canonico = "desc_profat"
+rotulo = "Descrição profat"
+tipo = "texto_livre"
+sinonimos = ["DESC_PROFAT"]
+[[coluna]]
+canonico = "ds_con_pla"
+rotulo = "Descrição con plano"
+tipo = "texto_livre"
+sinonimos = ["DS_CON_PLA"]
+[[coluna]]
+canonico = "dt_fatura"
+rotulo = "Data fatura"
+tipo = "data"
+sinonimos = ["DT_FATURA"]
+[[coluna]]
+canonico = "dt_lanc"
+rotulo = "Data lançamento"
+tipo = "data"
+sinonimos = ["DT_LANC"]
+[[coluna]]
+canonico = "hr_lanc"
+rotulo = "Hora lançamento"
+tipo = "texto_livre"
+sinonimos = ["HR_LANC"]
+[[coluna]]
+canonico = "nm_pac"
+rotulo = "Nome paciente"
+tipo = "texto_livre"
+sinonimos = ["NM_PAC"]
+[[coluna]]
+canonico = "prestador"
+rotulo = "Prestador"
+tipo = "categorico"
+sinonimos = ["PRESTADOR"]
+[[coluna]]
+canonico = "profat"
+rotulo = "Profat"
+tipo = "texto_livre"
+sinonimos = ["PROFAT"]
+[[coluna]]
+canonico = "qtd"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "setor"
+rotulo = "Setor"
+tipo = "categorico"
+sinonimos = ["SETOR"]
+[[coluna]]
+canonico = "sn_horario_especial"
+rotulo = "Horario especial?"
+tipo = "booleano"
+sinonimos = ["SN_HORARIO_ESPECIAL"]
+[[coluna]]
+canonico = "tp_pgto"
+rotulo = "Tipo pgto"
+tipo = "categorico"
+sinonimos = ["TP_PGTO"]
+[[coluna]]
+canonico = "valor"
+rotulo = "Valor"
+tipo = "moeda"
+sinonimos = ["VALOR"]
+[[coluna]]
+canonico = "vl_percentual_multipla"
+rotulo = "Valor percentual multipla"
+tipo = "moeda"
+sinonimos = ["VL_PERCENTUAL_MULTIPLA"]
+[[coluna]]
+canonico = "cd_prestador"
+rotulo = "Código prestador"
+tipo = "identificador"
+sinonimos = ["CD_PRESTADOR"]
+[[coluna]]
+canonico = "nm_prestador"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]

@@ -1,0 +1,126 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 59 / USR_MAPA_CIRURGICO_POR_DATA)
+nome = "MAPA CIRURGICO POR DATA"
+pasta = "Centro Cirúrgico"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "dt_hr_inicio"
+dimensoes = ["leito", "tipo_cir", "tp_sexo"]
+
+[[coluna]]
+canonico = "anestesista"
+rotulo = "Anestesista"
+tipo = "texto_livre"
+sinonimos = ["ANESTESISTA"]
+[[coluna]]
+canonico = "cd_aviso_cirurgia"
+rotulo = "Código aviso cirurgia"
+tipo = "identificador"
+sinonimos = ["CD_AVISO_CIRURGIA"]
+[[coluna]]
+canonico = "cd_aviso_cirurgia1"
+rotulo = "Código aviso cirurgia1"
+tipo = "identificador"
+sinonimos = ["CD_AVISO_CIRURGIA1"]
+[[coluna]]
+canonico = "cd_cen_cir"
+rotulo = "Código centro cirurgia"
+tipo = "identificador"
+sinonimos = ["CD_CEN_CIR"]
+[[coluna]]
+canonico = "cd_cirurgia"
+rotulo = "Código cirurgia"
+tipo = "identificador"
+sinonimos = ["CD_CIRURGIA"]
+[[coluna]]
+canonico = "cd_cirurgia_aviso"
+rotulo = "Código cirurgia aviso"
+tipo = "identificador"
+sinonimos = ["CD_CIRURGIA_AVISO"]
+[[coluna]]
+canonico = "cd_pro_fat"
+rotulo = "Código procedimento faturamento"
+tipo = "identificador"
+sinonimos = ["CD_PRO_FAT"]
+[[coluna]]
+canonico = "cirurgiao"
+rotulo = "Cirurgiao"
+tipo = "texto_livre"
+sinonimos = ["CIRURGIAO"]
+[[coluna]]
+canonico = "ds_cirurgia"
+rotulo = "Descrição cirurgia"
+tipo = "texto_livre"
+sinonimos = ["DS_CIRURGIA"]
+[[coluna]]
+canonico = "ds_con_pla"
+rotulo = "Descrição con plano"
+tipo = "texto_livre"
+sinonimos = ["DS_CON_PLA"]
+[[coluna]]
+canonico = "ds_idade"
+rotulo = "Descrição idade"
+tipo = "texto_livre"
+sinonimos = ["DS_IDADE"]
+[[coluna]]
+canonico = "ds_obs_aviso"
+rotulo = "Descrição observação aviso"
+tipo = "texto_livre"
+sinonimos = ["DS_OBS_AVISO"]
+[[coluna]]
+canonico = "dt_hr_inicio"
+rotulo = "Data hr inicio"
+tipo = "data"
+sinonimos = ["DT_HR_INICIO"]
+[[coluna]]
+canonico = "externo"
+rotulo = "Externo"
+tipo = "texto_livre"
+sinonimos = ["EXTERNO"]
+[[coluna]]
+canonico = "fornecedores"
+rotulo = "Fornecedores"
+tipo = "texto_livre"
+sinonimos = ["FORNECEDORES"]
+[[coluna]]
+canonico = "leito"
+rotulo = "Leito"
+tipo = "categorico"
+sinonimos = ["LEITO"]
+[[coluna]]
+canonico = "nm_convenio"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "sala"
+rotulo = "Sala"
+tipo = "texto_livre"
+sinonimos = ["SALA"]
+[[coluna]]
+canonico = "situacao_cir"
+rotulo = "Situacao Cir"
+tipo = "texto_livre"
+sinonimos = ["SITUACAO_CIR"]
+[[coluna]]
+canonico = "tipo_cir"
+rotulo = "Tipo cirurgia"
+tipo = "categorico"
+sinonimos = ["TIPO_CIR"]
+[[coluna]]
+canonico = "tp_sexo"
+rotulo = "Tipo sexo"
+tipo = "categorico"
+sinonimos = ["TP_SEXO"]
+[[coluna]]
+canonico = "cd_cen_cir_2"
+rotulo = "Código centro cirurgia"
+tipo = "identificador"
+sinonimos = ["CD_CEN_CIR"]
+[[coluna]]
+canonico = "ds_cen_cir"
+rotulo = "Descrição centro cirurgia"
+tipo = "texto_livre"
+sinonimos = ["DS_CEN_CIR"]

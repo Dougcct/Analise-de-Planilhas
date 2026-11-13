@@ -1,0 +1,35 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 404 / USR_PRODUTOS_CADASTRADOS_MES)
+nome = "PRODUTOS CADASTRADOS MÊS"
+pasta = "Farmácia e Suprimentos"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "dt_cadastro"
+
+[[coluna]]
+canonico = "cd_produto"
+rotulo = "Código produto"
+tipo = "identificador"
+sinonimos = ["CD_PRODUTO"]
+[[coluna]]
+canonico = "ds_produto"
+rotulo = "Descrição produto"
+tipo = "texto_livre"
+sinonimos = ["DS_PRODUTO"]
+[[coluna]]
+canonico = "dt_cadastro"
+rotulo = "Data cadastro"
+tipo = "data"
+sinonimos = ["DT_CADASTRO"]
+[[coluna]]
+canonico = "nm_padronizado"
+rotulo = "Nome padronizado"
+tipo = "texto_livre"
+sinonimos = ["NM_PADRONIZADO"]
+[[coluna]]
+canonico = "sn_padronizado"
+rotulo = "Padronizado?"
+tipo = "booleano"
+sinonimos = ["SN_PADRONIZADO"]

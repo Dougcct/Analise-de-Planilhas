@@ -1,0 +1,86 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 668 / USR_MODELO_PADRAO_REPORT)
+nome = "Itens Não Checados"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "dh_medicacao"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_leito"
+rotulo = "Código leito"
+tipo = "identificador"
+sinonimos = ["CD_LEITO"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "cd_pre_med"
+rotulo = "Código pre médico"
+tipo = "identificador"
+sinonimos = ["CD_PRE_MED"]
+[[coluna]]
+canonico = "cd_produto"
+rotulo = "Código produto"
+tipo = "identificador"
+sinonimos = ["CD_PRODUTO"]
+[[coluna]]
+canonico = "cd_unid_int"
+rotulo = "Código unidade internação"
+tipo = "identificador"
+sinonimos = ["CD_UNID_INT"]
+[[coluna]]
+canonico = "dh_medicacao"
+rotulo = "Data/hora medicacao"
+tipo = "data_hora"
+sinonimos = ["DH_MEDICACAO"]
+[[coluna]]
+canonico = "ds_produto"
+rotulo = "Descrição produto"
+tipo = "texto_livre"
+sinonimos = ["DS_PRODUTO"]
+[[coluna]]
+canonico = "ds_unid_int"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "fim"
+rotulo = "Fim"
+tipo = "data"
+sinonimos = ["FIM"]
+[[coluna]]
+canonico = "hr_criacao"
+rotulo = "Hora criação"
+tipo = "data_hora"
+sinonimos = ["HR_CRIACAO"]
+[[coluna]]
+canonico = "inicio"
+rotulo = "Inicio"
+tipo = "data"
+sinonimos = ["INICIO"]
+[[coluna]]
+canonico = "sn_urgente"
+rotulo = "Urgente?"
+tipo = "booleano"
+sinonimos = ["SN_URGENTE"]
+[[coluna]]
+canonico = "cd_unid_int_2"
+rotulo = "Código unidade internação"
+tipo = "identificador"
+sinonimos = ["CD_UNID_INT"]
+[[coluna]]
+canonico = "ds_unid_int_2"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]

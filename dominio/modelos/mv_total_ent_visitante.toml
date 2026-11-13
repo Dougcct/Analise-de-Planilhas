@@ -1,0 +1,24 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 15 / USR_TOTAL_ENT_VISITANTE)
+nome = "total_ent_visitante"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "visitante_acompanhante"
+rotulo = "Visitante Acompanhante"
+tipo = "texto_livre"
+sinonimos = ["VISITANTE_ACOMPANHANTE"]
+[[coluna]]
+canonico = "usuario_entrada"
+rotulo = "Usuario Entrada"
+tipo = "texto_livre"
+sinonimos = ["USUARIO_ENTRADA"]
+[[coluna]]
+canonico = "count_2"
+rotulo = "Count 2"
+tipo = "decimal"
+sinonimos = ["COUNT_2"]

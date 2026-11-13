@@ -1,0 +1,51 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 159 / USR_ATENDIMENTOS_SOBREAVISO)
+nome = "ATENDIMENTOS SOBREAVISO"
+pasta = "Atendimento Hospitalar"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "hr_atd_final"
+dimensoes = ["setor", "tp_incidente"]
+
+[[coluna]]
+canonico = "cd_chamado"
+rotulo = "Código chamado"
+tipo = "identificador"
+sinonimos = ["CD_CHAMADO"]
+[[coluna]]
+canonico = "cliente"
+rotulo = "Cliente"
+tipo = "texto_livre"
+sinonimos = ["CLIENTE"]
+[[coluna]]
+canonico = "desc_chamado"
+rotulo = "Descrição chamado"
+tipo = "texto_livre"
+sinonimos = ["DESC_CHAMADO"]
+[[coluna]]
+canonico = "hr_atd_final"
+rotulo = "Hora atendimento final"
+tipo = "data_hora"
+sinonimos = ["HR_ATD_FINAL"]
+[[coluna]]
+canonico = "hr_atd_inicial"
+rotulo = "Hora atendimento inicial"
+tipo = "data_hora"
+sinonimos = ["HR_ATD_INICIAL"]
+[[coluna]]
+canonico = "setor"
+rotulo = "Setor"
+tipo = "categorico"
+sinonimos = ["SETOR"]
+[[coluna]]
+canonico = "tp_incidente"
+rotulo = "Tipo incidente"
+tipo = "categorico"
+sinonimos = ["TP_INCIDENTE"]
+[[coluna]]
+canonico = "usu_ti"
+rotulo = "Usu Ti"
+tipo = "texto_livre"
+sinonimos = ["USU_TI"]

@@ -1,0 +1,96 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 741 / USR_RELATORIO_APLICACAO_DIRETA)
+nome = "RELATÓRIO APLICAÇÃO DIRETA"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "dt_lcto"
+dimensoes = ["tp_pagamento"]
+
+[[coluna]]
+canonico = "cd_caixa"
+rotulo = "Código caixa"
+tipo = "identificador"
+sinonimos = ["CD_CAIXA"]
+[[coluna]]
+canonico = "cd_doc_caixa"
+rotulo = "Código documento caixa"
+tipo = "identificador"
+sinonimos = ["CD_DOC_CAIXA"]
+[[coluna]]
+canonico = "cd_exp_contabilidade"
+rotulo = "Código exp contabilidade"
+tipo = "identificador"
+sinonimos = ["CD_EXP_CONTABILIDADE"]
+[[coluna]]
+canonico = "cd_lcto_movimento"
+rotulo = "Código lcto movimento"
+tipo = "identificador"
+sinonimos = ["CD_LCTO_MOVIMENTO"]
+[[coluna]]
+canonico = "cd_lote_caixa"
+rotulo = "Código lote caixa"
+tipo = "identificador"
+sinonimos = ["CD_LOTE_CAIXA"]
+[[coluna]]
+canonico = "cd_mov_caixa"
+rotulo = "Código movimento caixa"
+tipo = "identificador"
+sinonimos = ["CD_MOV_CAIXA"]
+[[coluna]]
+canonico = "cd_recibo"
+rotulo = "Código recibo"
+tipo = "identificador"
+sinonimos = ["CD_RECIBO"]
+[[coluna]]
+canonico = "cd_resposavel"
+rotulo = "Código resposavel"
+tipo = "identificador"
+sinonimos = ["CD_RESPOSAVEL"]
+[[coluna]]
+canonico = "doc"
+rotulo = "Doc"
+tipo = "texto_livre"
+sinonimos = ["DOC"]
+[[coluna]]
+canonico = "ds_lote"
+rotulo = "Descrição lote"
+tipo = "texto_livre"
+sinonimos = ["DS_LOTE"]
+[[coluna]]
+canonico = "ds_mov_caixa"
+rotulo = "Descrição movimento caixa"
+tipo = "texto_livre"
+sinonimos = ["DS_MOV_CAIXA"]
+[[coluna]]
+canonico = "dt_lcto"
+rotulo = "Data lcto"
+tipo = "data"
+sinonimos = ["DT_LCTO"]
+[[coluna]]
+canonico = "dt_vencimento"
+rotulo = "Data vencimento"
+tipo = "data"
+sinonimos = ["DT_VENCIMENTO"]
+[[coluna]]
+canonico = "nm_responsavel"
+rotulo = "Nome responsavel"
+tipo = "texto_livre"
+sinonimos = ["NM_RESPONSAVEL"]
+[[coluna]]
+canonico = "nr_documento"
+rotulo = "Número documento"
+tipo = "identificador"
+sinonimos = ["NR_DOCUMENTO"]
+[[coluna]]
+canonico = "tp_pagamento"
+rotulo = "Tipo pagamento"
+tipo = "categorico"
+sinonimos = ["TP_PAGAMENTO"]
+[[coluna]]
+canonico = "vl_movimentacao"
+rotulo = "Valor movimentacao"
+tipo = "moeda"
+sinonimos = ["VL_MOVIMENTACAO"]

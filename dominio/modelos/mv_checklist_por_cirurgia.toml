@@ -1,0 +1,114 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 341 / USR_CHECKLIST_POR_CIRURGIA)
+nome = "CHECKLIST POR CIRURGIA"
+pasta = "Centro Cirúrgico"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "ds_cirurgia"
+rotulo = "Descrição cirurgia"
+tipo = "texto_livre"
+sinonimos = ["DS_CIRURGIA"]
+[[coluna]]
+canonico = "ds_especialid"
+rotulo = "Descrição especialidade"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIALID"]
+[[coluna]]
+canonico = "qt"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "campo"
+rotulo = "Campo"
+tipo = "texto_livre"
+sinonimos = ["CAMPO"]
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "campo_2"
+rotulo = "Campo"
+tipo = "texto_livre"
+sinonimos = ["CAMPO"]
+[[coluna]]
+canonico = "ds_cirurgia_2"
+rotulo = "Descrição cirurgia"
+tipo = "texto_livre"
+sinonimos = ["DS_CIRURGIA"]
+[[coluna]]
+canonico = "ds_especialid_2"
+rotulo = "Descrição especialidade"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIALID"]
+[[coluna]]
+canonico = "original_2"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "cd_especialid"
+rotulo = "Código especialidade"
+tipo = "identificador"
+sinonimos = ["CD_ESPECIALID"]
+[[coluna]]
+canonico = "ds_especialid_3"
+rotulo = "Descrição especialidade"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIALID"]
+[[coluna]]
+canonico = "ds_cirurgia_3"
+rotulo = "Descrição cirurgia"
+tipo = "texto_livre"
+sinonimos = ["DS_CIRURGIA"]
+[[coluna]]
+canonico = "ds_especialid_4"
+rotulo = "Descrição especialidade"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIALID"]
+[[coluna]]
+canonico = "total"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "nao"
+rotulo = "Nao"
+tipo = "decimal"
+sinonimos = ["NAO"]
+[[coluna]]
+canonico = "sim"
+rotulo = "Sim"
+tipo = "decimal"
+sinonimos = ["SIM"]
+[[coluna]]
+canonico = "campo_3"
+rotulo = "Campo"
+tipo = "texto_livre"
+sinonimos = ["CAMPO"]
+[[coluna]]
+canonico = "original_3"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "ds_cirurgia_4"
+rotulo = "Descrição cirurgia"
+tipo = "texto_livre"
+sinonimos = ["DS_CIRURGIA"]
+[[coluna]]
+canonico = "campo_4"
+rotulo = "Campo"
+tipo = "texto_livre"
+sinonimos = ["CAMPO"]
+[[coluna]]
+canonico = "original_4"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]

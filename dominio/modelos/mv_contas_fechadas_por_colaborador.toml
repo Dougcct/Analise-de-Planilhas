@@ -1,0 +1,49 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 239 / USR_CONTAS_FECHADAS_POR_COLABORADO)
+nome = "CONTAS FECHADAS POR COLABORADOR"
+pasta = "Faturamento"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "comp"
+rotulo = "Comp"
+tipo = "texto_livre"
+sinonimos = ["COMP"]
+[[coluna]]
+canonico = "nm_usuario"
+rotulo = "Nome usuário"
+tipo = "texto_livre"
+sinonimos = ["NM_USUARIO"]
+[[coluna]]
+canonico = "nm_usuario_fechou"
+rotulo = "Nome usuário fechou"
+tipo = "texto_livre"
+sinonimos = ["NM_USUARIO_FECHOU"]
+[[coluna]]
+canonico = "qt"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "comp_2"
+rotulo = "Comp"
+tipo = "texto_livre"
+sinonimos = ["COMP"]
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "nm_usuario_2"
+rotulo = "Nome usuário"
+tipo = "texto_livre"
+sinonimos = ["NM_USUARIO"]
+[[coluna]]
+canonico = "nm_usuario_fechou_2"
+rotulo = "Nome usuário fechou"
+tipo = "texto_livre"
+sinonimos = ["NM_USUARIO_FECHOU"]

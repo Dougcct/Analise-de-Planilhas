@@ -1,0 +1,86 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 360 / USR_RECIBO_PAC_PARTICULAR)
+nome = "RECIBO PAC PARTICULAR"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "dt_caucao"
+dimensoes = ["tp_pagamento"]
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_caucao"
+rotulo = "Código caucao"
+tipo = "identificador"
+sinonimos = ["CD_CAUCAO"]
+[[coluna]]
+canonico = "nm_proprietario"
+rotulo = "Nome proprietario"
+tipo = "texto_livre"
+sinonimos = ["NM_PROPRIETARIO"]
+[[coluna]]
+canonico = "nm_responsavel"
+rotulo = "Nome responsavel"
+tipo = "texto_livre"
+sinonimos = ["NM_RESPONSAVEL"]
+[[coluna]]
+canonico = "nm_usuario"
+rotulo = "Nome usuário"
+tipo = "texto_livre"
+sinonimos = ["NM_USUARIO"]
+[[coluna]]
+canonico = "valor_extenso"
+rotulo = "Valor Extenso"
+tipo = "texto_livre"
+sinonimos = ["VALOR_EXTENSO"]
+[[coluna]]
+canonico = "vl_caucao"
+rotulo = "Valor caucao"
+tipo = "moeda"
+sinonimos = ["VL_CAUCAO"]
+[[coluna]]
+canonico = "cd_atendimento_2"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_caucao_2"
+rotulo = "Código caucao"
+tipo = "identificador"
+sinonimos = ["CD_CAUCAO"]
+[[coluna]]
+canonico = "dt_caucao"
+rotulo = "Data caucao"
+tipo = "data"
+sinonimos = ["DT_CAUCAO"]
+[[coluna]]
+canonico = "nome_do_paciente"
+rotulo = "Nome do paciente"
+tipo = "texto_livre"
+sinonimos = ["NOME_DO_PACIENTE"]
+[[coluna]]
+canonico = "nr_parcelas"
+rotulo = "Número parcelas"
+tipo = "identificador"
+sinonimos = ["NR_PARCELAS"]
+[[coluna]]
+canonico = "tp_pagamento"
+rotulo = "Tipo pagamento"
+tipo = "categorico"
+sinonimos = ["TP_PAGAMENTO"]
+[[coluna]]
+canonico = "valor"
+rotulo = "Valor"
+tipo = "moeda"
+sinonimos = ["VALOR"]
+[[coluna]]
+canonico = "vl_caucao_2"
+rotulo = "Valor caucao"
+tipo = "moeda"
+sinonimos = ["VL_CAUCAO"]

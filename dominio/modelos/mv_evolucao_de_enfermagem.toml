@@ -1,0 +1,90 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 451 / USR_EVOLUCAO_DE_ENFERMAGEM)
+nome = "EVOLUÇÃO DE ENFERMAGEM"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "dt_atendimento"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "identificador"
+rotulo = "Identificador"
+tipo = "texto_livre"
+sinonimos = ["IDENTIFICADOR"]
+[[coluna]]
+canonico = "cd_atendimento_2"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "ds_identificador"
+rotulo = "Descrição identificador"
+tipo = "texto_livre"
+sinonimos = ["DS_IDENTIFICADOR"]
+[[coluna]]
+canonico = "dt_atendimento"
+rotulo = "Data atendimento"
+tipo = "data"
+sinonimos = ["DT_ATENDIMENTO"]
+[[coluna]]
+canonico = "idade"
+rotulo = "Idade"
+tipo = "decimal"
+sinonimos = ["IDADE"]
+[[coluna]]
+canonico = "cd_atendimento_3"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "identificador_2"
+rotulo = "Identificador"
+tipo = "texto_livre"
+sinonimos = ["IDENTIFICADOR"]
+[[coluna]]
+canonico = "cd_atendimento_4"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "identificador_3"
+rotulo = "Identificador"
+tipo = "texto_livre"
+sinonimos = ["IDENTIFICADOR"]
+[[coluna]]
+canonico = "cd_atendimento_5"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "identificador_4"
+rotulo = "Identificador"
+tipo = "texto_livre"
+sinonimos = ["IDENTIFICADOR"]
+[[coluna]]
+canonico = "cd_atendimento_6"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "valor"
+rotulo = "Valor"
+tipo = "texto_livre"
+sinonimos = ["VALOR"]
+[[coluna]]
+canonico = "cd_atendimento_7"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "valor_2"
+rotulo = "Valor"
+tipo = "texto_livre"
+sinonimos = ["VALOR"]

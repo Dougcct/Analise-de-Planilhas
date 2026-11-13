@@ -14,7 +14,10 @@ from analise_planilha.normalizacao import chave_texto
 
 from .assistencial.rules import AgenteAssistencial
 from .base_agent import AgenteBase
+from .centro_cirurgico.rules import AgenteCentroCirurgico
 from .custos.rules import AgenteCustos
+from .exames_laboratorio.rules import AgenteExamesLaboratorio
+from .farmacia_suprimentos.rules import AgenteFarmaciaSuprimentos
 from .faturamento.rules import AgenteFaturamento
 
 # Registro dos agentes disponíveis. Novos agentes (intercâmbio, OPME…) entram aqui nas próximas
@@ -23,6 +26,9 @@ AGENTES: tuple[type[AgenteBase], ...] = (
     AgenteFaturamento,
     AgenteCustos,
     AgenteAssistencial,
+    AgenteCentroCirurgico,
+    AgenteFarmaciaSuprimentos,
+    AgenteExamesLaboratorio,
 )
 
 MIN_DENSIDADE = 3          # nº mínimo de colunas reconhecidas para um agente assumir pelo conteúdo

@@ -1,0 +1,104 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 322 / USR_QTD_EXAMES_POR_MEDICOS)
+nome = "QTD EXAMES POR MEDICO"
+pasta = "Farmácia e Suprimentos"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "nm_prestador"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "nm_setor"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "total_cd_exa_lab"
+rotulo = "Total Cd Exa Lab"
+tipo = "moeda"
+sinonimos = ["TOTAL_CD_EXA_LAB"]
+[[coluna]]
+canonico = "total_cd_ped_lab"
+rotulo = "Total Cd Ped Lab"
+tipo = "moeda"
+sinonimos = ["TOTAL_CD_PED_LAB"]
+[[coluna]]
+canonico = "cd_setor"
+rotulo = "Código setor"
+tipo = "identificador"
+sinonimos = ["CD_SETOR"]
+[[coluna]]
+canonico = "nm_setor_2"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "cd_ped_lab"
+rotulo = "Código ped laboratório"
+tipo = "identificador"
+sinonimos = ["CD_PED_LAB"]
+[[coluna]]
+canonico = "nm_cor"
+rotulo = "Nome cor"
+tipo = "texto_livre"
+sinonimos = ["NM_COR"]
+[[coluna]]
+canonico = "nm_exa_lab"
+rotulo = "Nome exame laboratório"
+tipo = "texto_livre"
+sinonimos = ["NM_EXA_LAB"]
+[[coluna]]
+canonico = "nm_prestador_2"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "nm_setor_3"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "custo"
+rotulo = "Custo"
+tipo = "moeda"
+sinonimos = ["CUSTO"]
+[[coluna]]
+canonico = "nm_prestador_3"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "nm_setor_4"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "total_cd_exa_rx"
+rotulo = "Total Cd Exa Rx"
+tipo = "moeda"
+sinonimos = ["TOTAL_CD_EXA_RX"]
+[[coluna]]
+canonico = "total_cd_ped_rx"
+rotulo = "Total Cd Ped Rx"
+tipo = "moeda"
+sinonimos = ["TOTAL_CD_PED_RX"]
+[[coluna]]
+canonico = "total_prestador"
+rotulo = "Total Prestador"
+tipo = "moeda"
+sinonimos = ["TOTAL_PRESTADOR"]
+[[coluna]]
+canonico = "cd_modalidade_exame"
+rotulo = "Código modalidade exame"
+tipo = "identificador"
+sinonimos = ["CD_MODALIDADE_EXAME"]
+[[coluna]]
+canonico = "ds_modalidade_exame"
+rotulo = "Descrição modalidade exame"
+tipo = "texto_livre"
+sinonimos = ["DS_MODALIDADE_EXAME"]

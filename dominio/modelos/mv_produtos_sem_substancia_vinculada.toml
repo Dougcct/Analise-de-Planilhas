@@ -1,0 +1,34 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 189 / USR_PRODUTOS_SEM_SUBSTANCIA_VINCUL)
+nome = "PRODUTOS SEM SUBSTANCIA VINCULADA"
+pasta = "Farmácia e Suprimentos"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "cd_especie"
+rotulo = "Código especie"
+tipo = "identificador"
+sinonimos = ["CD_ESPECIE"]
+[[coluna]]
+canonico = "cd_produto"
+rotulo = "Código produto"
+tipo = "identificador"
+sinonimos = ["CD_PRODUTO"]
+[[coluna]]
+canonico = "cd_substancia"
+rotulo = "Código substancia"
+tipo = "identificador"
+sinonimos = ["CD_SUBSTANCIA"]
+[[coluna]]
+canonico = "ds_produto"
+rotulo = "Descrição produto"
+tipo = "texto_livre"
+sinonimos = ["DS_PRODUTO"]
+[[coluna]]
+canonico = "ds_substancia"
+rotulo = "Descrição substancia"
+tipo = "texto_livre"
+sinonimos = ["DS_SUBSTANCIA"]

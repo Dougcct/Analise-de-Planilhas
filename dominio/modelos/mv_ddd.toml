@@ -1,0 +1,54 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 612 / USR_DDD)
+nome = "DDD"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "cd_unid_int"
+rotulo = "Código unidade internação"
+tipo = "identificador"
+sinonimos = ["CD_UNID_INT"]
+[[coluna]]
+canonico = "ds_unid_int"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "cd_produto"
+rotulo = "Código produto"
+tipo = "identificador"
+sinonimos = ["CD_PRODUTO"]
+[[coluna]]
+canonico = "cd_unid_int_2"
+rotulo = "Código unidade internação"
+tipo = "identificador"
+sinonimos = ["CD_UNID_INT"]
+[[coluna]]
+canonico = "ddd_calculado"
+rotulo = "Ddd Calculado"
+tipo = "decimal"
+sinonimos = ["DDD_CALCULADO"]
+[[coluna]]
+canonico = "ds_produto"
+rotulo = "Descrição produto"
+tipo = "texto_livre"
+sinonimos = ["DS_PRODUTO"]
+[[coluna]]
+canonico = "ds_unid_int_2"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "nr_ddd"
+rotulo = "Número ddd"
+tipo = "identificador"
+sinonimos = ["NR_DDD"]
+[[coluna]]
+canonico = "qt_grama"
+rotulo = "Qtd. grama"
+tipo = "inteiro"
+sinonimos = ["QT_GRAMA"]

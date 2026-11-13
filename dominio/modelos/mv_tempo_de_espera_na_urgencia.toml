@@ -1,0 +1,64 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 56 / USR_TEMPO_DE_ESPERA_NA_URGENCIA)
+nome = "TEMPO DE ESPERA NA URGENCIA"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "ds_especialid"
+rotulo = "Descrição especialidade"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIALID"]
+[[coluna]]
+canonico = "ds_fila"
+rotulo = "Descrição fila"
+tipo = "texto_livre"
+sinonimos = ["DS_FILA"]
+[[coluna]]
+canonico = "ds_senha"
+rotulo = "Descrição senha"
+tipo = "texto_livre"
+sinonimos = ["DS_SENHA"]
+[[coluna]]
+canonico = "nm_cor"
+rotulo = "Nome cor"
+tipo = "texto_livre"
+sinonimos = ["NM_COR"]
+[[coluna]]
+canonico = "ord_80"
+rotulo = "Ord 80"
+tipo = "decimal"
+sinonimos = ["ORD_80"]
+[[coluna]]
+canonico = "ord_cor"
+rotulo = "Ord Cor"
+tipo = "decimal"
+sinonimos = ["ORD_COR"]
+[[coluna]]
+canonico = "ord_prio"
+rotulo = "Ord Prio"
+tipo = "decimal"
+sinonimos = ["ORD_PRIO"]
+[[coluna]]
+canonico = "prioridade_80"
+rotulo = "Prioridade 80"
+tipo = "texto_livre"
+sinonimos = ["PRIORIDADE_80"]
+[[coluna]]
+canonico = "prioritario"
+rotulo = "Prioritario"
+tipo = "texto_livre"
+sinonimos = ["PRIORITARIO"]
+[[coluna]]
+canonico = "tempo_espera_min"
+rotulo = "Tempo Espera Min"
+tipo = "decimal"
+sinonimos = ["TEMPO_ESPERA_MIN"]

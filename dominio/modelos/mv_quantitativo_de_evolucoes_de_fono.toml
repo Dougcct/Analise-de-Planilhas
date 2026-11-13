@@ -1,0 +1,131 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 519 / USR_QTD_DE_EVOLUCOES_DE_FONO)
+nome = "QUANTITATIVO DE EVOLUÇÕES DE FONO"
+pasta = "Prescrição e Enfermagem"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "original_2"
+dimensoes = ["tp_unid_int"]
+
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "original_2"
+rotulo = "Original"
+tipo = "data"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "ds_unid_int"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "total_registros"
+rotulo = "Total Registros"
+tipo = "moeda"
+sinonimos = ["TOTAL_REGISTROS"]
+[[coluna]]
+canonico = "original_3"
+rotulo = "Original"
+tipo = "data"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "cd_cen_cus"
+rotulo = "Código centro cus"
+tipo = "identificador"
+sinonimos = ["CD_CEN_CUS"]
+[[coluna]]
+canonico = "cd_gru_fat"
+rotulo = "Código gru faturamento"
+tipo = "identificador"
+sinonimos = ["CD_GRU_FAT"]
+[[coluna]]
+canonico = "cd_seq_integra"
+rotulo = "Código seq integra"
+tipo = "identificador"
+sinonimos = ["CD_SEQ_INTEGRA"]
+[[coluna]]
+canonico = "cd_setor"
+rotulo = "Código setor"
+tipo = "identificador"
+sinonimos = ["CD_SETOR"]
+[[coluna]]
+canonico = "cd_unid_int"
+rotulo = "Código unidade internação"
+tipo = "identificador"
+sinonimos = ["CD_UNID_INT"]
+[[coluna]]
+canonico = "cd_unid_int_integra"
+rotulo = "Código unidade internação integra"
+tipo = "identificador"
+sinonimos = ["CD_UNID_INT_INTEGRA"]
+[[coluna]]
+canonico = "ds_localizacao"
+rotulo = "Descrição localizacao"
+tipo = "texto_livre"
+sinonimos = ["DS_LOCALIZACAO"]
+[[coluna]]
+canonico = "ds_unid_int_2"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "dt_integra"
+rotulo = "Data integra"
+tipo = "data"
+sinonimos = ["DT_INTEGRA"]
+[[coluna]]
+canonico = "sn_ativo"
+rotulo = "Ativo?"
+tipo = "booleano"
+sinonimos = ["SN_ATIVO"]
+[[coluna]]
+canonico = "sn_codigo_de_barras"
+rotulo = "Codigo de barras?"
+tipo = "booleano"
+sinonimos = ["SN_CODIGO_DE_BARRAS"]
+[[coluna]]
+canonico = "sn_hospital_dia"
+rotulo = "Hospital dia?"
+tipo = "booleano"
+sinonimos = ["SN_HOSPITAL_DIA"]
+[[coluna]]
+canonico = "sn_permite_rn_uti"
+rotulo = "Permite rn uti?"
+tipo = "booleano"
+sinonimos = ["SN_PERMITE_RN_UTI"]
+[[coluna]]
+canonico = "sn_prog_alta"
+rotulo = "Prog alta?"
+tipo = "booleano"
+sinonimos = ["SN_PROG_ALTA"]
+[[coluna]]
+canonico = "sn_semi_uti"
+rotulo = "Semi uti?"
+tipo = "booleano"
+sinonimos = ["SN_SEMI_UTI"]
+[[coluna]]
+canonico = "sn_transf_leito_vago"
+rotulo = "Transf leito vago?"
+tipo = "booleano"
+sinonimos = ["SN_TRANSF_LEITO_VAGO"]
+[[coluna]]
+canonico = "tp_unid_int"
+rotulo = "Tipo unidade internação"
+tipo = "categorico"
+sinonimos = ["TP_UNID_INT"]
+[[coluna]]
+canonico = "vl_custo_variavel"
+rotulo = "Valor custo variavel"
+tipo = "moeda"
+sinonimos = ["VL_CUSTO_VARIAVEL"]
+[[coluna]]
+canonico = "vl_custo_var_acomp"
+rotulo = "Valor custo var acomp"
+tipo = "moeda"
+sinonimos = ["VL_CUSTO_VAR_ACOMP"]

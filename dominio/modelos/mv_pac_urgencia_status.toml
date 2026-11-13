@@ -1,0 +1,137 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 633 / USR_PAC_URGENCIA_STATUS)
+nome = "Pac_Urgencia_Status"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "dt_atendimento"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "contato_nao_invasivo"
+rotulo = "Contato Nao Invasivo"
+tipo = "texto_livre"
+sinonimos = ["CONTATO_NAO_INVASIVO"]
+[[coluna]]
+canonico = "cuidados_paliativos"
+rotulo = "Cuidados Paliativos"
+tipo = "texto_livre"
+sinonimos = ["CUIDADOS_PALIATIVOS"]
+[[coluna]]
+canonico = "ds_info_atendimento"
+rotulo = "Descrição info atendimento"
+tipo = "texto_livre"
+sinonimos = ["DS_INFO_ATENDIMENTO"]
+[[coluna]]
+canonico = "ds_leito"
+rotulo = "Descrição leito"
+tipo = "texto_livre"
+sinonimos = ["DS_LEITO"]
+[[coluna]]
+canonico = "idade"
+rotulo = "Idade"
+tipo = "decimal"
+sinonimos = ["IDADE"]
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "texto_livre"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "precaucao_aerossol"
+rotulo = "Precaucao Aerossol"
+tipo = "texto_livre"
+sinonimos = ["PRECAUCAO_AEROSSOL"]
+[[coluna]]
+canonico = "precaucao_contato"
+rotulo = "Precaucao Contato"
+tipo = "texto_livre"
+sinonimos = ["PRECAUCAO_CONTATO"]
+[[coluna]]
+canonico = "precaucao_goticula"
+rotulo = "Precaucao Goticula"
+tipo = "texto_livre"
+sinonimos = ["PRECAUCAO_GOTICULA"]
+[[coluna]]
+canonico = "precaucao_padrao"
+rotulo = "Precaucao Padrao"
+tipo = "texto_livre"
+sinonimos = ["PRECAUCAO_PADRAO"]
+[[coluna]]
+canonico = "cd_atendimento_2"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_ori_ate"
+rotulo = "Código origem atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ORI_ATE"]
+[[coluna]]
+canonico = "cd_paciente_2"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "contato_nao_invasivo_2"
+rotulo = "Contato Nao Invasivo"
+tipo = "texto_livre"
+sinonimos = ["CONTATO_NAO_INVASIVO"]
+[[coluna]]
+canonico = "cuidados_paliativos_2"
+rotulo = "Cuidados Paliativos"
+tipo = "texto_livre"
+sinonimos = ["CUIDADOS_PALIATIVOS"]
+[[coluna]]
+canonico = "ds_ori_ate"
+rotulo = "Descrição origem atendimento"
+tipo = "texto_livre"
+sinonimos = ["DS_ORI_ATE"]
+[[coluna]]
+canonico = "dt_atendimento"
+rotulo = "Data atendimento"
+tipo = "data"
+sinonimos = ["DT_ATENDIMENTO"]
+[[coluna]]
+canonico = "hr_alta"
+rotulo = "Hora alta"
+tipo = "data_hora"
+sinonimos = ["HR_ALTA"]
+[[coluna]]
+canonico = "idade_2"
+rotulo = "Idade"
+tipo = "decimal"
+sinonimos = ["IDADE"]
+[[coluna]]
+canonico = "precaucao_aerossol_2"
+rotulo = "Precaucao Aerossol"
+tipo = "texto_livre"
+sinonimos = ["PRECAUCAO_AEROSSOL"]
+[[coluna]]
+canonico = "precaucao_contato_2"
+rotulo = "Precaucao Contato"
+tipo = "texto_livre"
+sinonimos = ["PRECAUCAO_CONTATO"]
+[[coluna]]
+canonico = "precaucao_goticula_2"
+rotulo = "Precaucao Goticula"
+tipo = "texto_livre"
+sinonimos = ["PRECAUCAO_GOTICULA"]
+[[coluna]]
+canonico = "precaucao_padrao_2"
+rotulo = "Precaucao Padrao"
+tipo = "texto_livre"
+sinonimos = ["PRECAUCAO_PADRAO"]

@@ -1,0 +1,70 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 328 / USR_ESCALAS)
+nome = "ESCALAS"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+dimensoes = ["tp_prestador", "tp_dia_semana"]
+
+[[coluna]]
+canonico = "cd_escala_central"
+rotulo = "Código escala central"
+tipo = "identificador"
+sinonimos = ["CD_ESCALA_CENTRAL"]
+[[coluna]]
+canonico = "dia_semana"
+rotulo = "Dia Semana"
+tipo = "texto_livre"
+sinonimos = ["DIA_SEMANA"]
+[[coluna]]
+canonico = "hr_fim"
+rotulo = "Hora fim"
+tipo = "texto_livre"
+sinonimos = ["HR_FIM"]
+[[coluna]]
+canonico = "hr_inicio"
+rotulo = "Hora inicio"
+tipo = "texto_livre"
+sinonimos = ["HR_INICIO"]
+[[coluna]]
+canonico = "nm_setor"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "tp_prestador"
+rotulo = "Tipo prestador"
+tipo = "categorico"
+sinonimos = ["TP_PRESTADOR"]
+[[coluna]]
+canonico = "cd_setor"
+rotulo = "Código setor"
+tipo = "identificador"
+sinonimos = ["CD_SETOR"]
+[[coluna]]
+canonico = "nm_setor_2"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "cd_prestador"
+rotulo = "Código prestador"
+tipo = "identificador"
+sinonimos = ["CD_PRESTADOR"]
+[[coluna]]
+canonico = "nm_prestador"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "dia_semana_2"
+rotulo = "Dia Semana"
+tipo = "texto_livre"
+sinonimos = ["DIA_SEMANA"]
+[[coluna]]
+canonico = "tp_dia_semana"
+rotulo = "Tipo dia semana"
+tipo = "categorico"
+sinonimos = ["TP_DIA_SEMANA"]

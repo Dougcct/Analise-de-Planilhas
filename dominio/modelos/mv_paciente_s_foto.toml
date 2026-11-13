@@ -1,0 +1,35 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 16 / USR_PACIENTE-S_FOTO)
+nome = "paciente-s_foto"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "data_entrada"
+
+[[coluna]]
+canonico = "nome_setor"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NOME_SETOR"]
+[[coluna]]
+canonico = "data_entrada"
+rotulo = "Data entrada"
+tipo = "data"
+sinonimos = ["DATA_ENTRADA"]
+[[coluna]]
+canonico = "hora_entrada"
+rotulo = "Hora entrada"
+tipo = "data_hora"
+sinonimos = ["HORA_ENTRADA"]
+[[coluna]]
+canonico = "usuario_entrada"
+rotulo = "Usuario Entrada"
+tipo = "texto_livre"
+sinonimos = ["USUARIO_ENTRADA"]
+[[coluna]]
+canonico = "codigo_paciente"
+rotulo = "Codigo Paciente"
+tipo = "inteiro"
+sinonimos = ["CODIGO_PACIENTE"]

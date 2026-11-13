@@ -1,0 +1,520 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 151 / USR_INDICADORES_CTI)
+nome = "INDICADORES CTI"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+dimensoes = ["unid_anterior", "unid_anterior_2", "unid_anterior_3", "unid_anterior_4", "tp_saida", "tp_saida_2"]
+
+[[coluna]]
+canonico = "ds_unid_int"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "qt"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "ds_unid_int_2"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "qt_2"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "unidanterior"
+rotulo = "Unidanterior"
+tipo = "decimal"
+sinonimos = ["UNIDANTERIOR"]
+[[coluna]]
+canonico = "unid_anterior"
+rotulo = "Unid Anterior"
+tipo = "categorico"
+sinonimos = ["UNID_ANTERIOR"]
+[[coluna]]
+canonico = "ds_unid_int_3"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "qt_3"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "unidanterior_2"
+rotulo = "Unidanterior"
+tipo = "decimal"
+sinonimos = ["UNIDANTERIOR"]
+[[coluna]]
+canonico = "unid_anterior_2"
+rotulo = "Unid Anterior"
+tipo = "categorico"
+sinonimos = ["UNID_ANTERIOR"]
+[[coluna]]
+canonico = "ds_unid_int_4"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "qt_4"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "unidanterior_3"
+rotulo = "Unidanterior"
+tipo = "decimal"
+sinonimos = ["UNIDANTERIOR"]
+[[coluna]]
+canonico = "unid_anterior_3"
+rotulo = "Unid Anterior"
+tipo = "categorico"
+sinonimos = ["UNID_ANTERIOR"]
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "ds_mot_alt"
+rotulo = "Descrição motivo alteração"
+tipo = "texto_livre"
+sinonimos = ["DS_MOT_ALT"]
+[[coluna]]
+canonico = "ds_unid_int_5"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "taxa"
+rotulo = "Taxa"
+tipo = "texto_livre"
+sinonimos = ["TAXA"]
+[[coluna]]
+canonico = "taxa_2"
+rotulo = "Taxa"
+tipo = "texto_livre"
+sinonimos = ["TAXA"]
+[[coluna]]
+canonico = "taxa_3"
+rotulo = "Taxa"
+tipo = "texto_livre"
+sinonimos = ["TAXA"]
+[[coluna]]
+canonico = "cid"
+rotulo = "Cid"
+tipo = "texto_livre"
+sinonimos = ["CID"]
+[[coluna]]
+canonico = "ds_unid_int_6"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "qt_5"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "cid_2"
+rotulo = "Cid"
+tipo = "texto_livre"
+sinonimos = ["CID"]
+[[coluna]]
+canonico = "ds_unid_int_7"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "qt_6"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "cid_3"
+rotulo = "Cid"
+tipo = "texto_livre"
+sinonimos = ["CID"]
+[[coluna]]
+canonico = "qt_7"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "cid_4"
+rotulo = "Cid"
+tipo = "texto_livre"
+sinonimos = ["CID"]
+[[coluna]]
+canonico = "qt_8"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "ds_unid_int_8"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "qt_9"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "ds_unid_int_9"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "qt_10"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "cid_5"
+rotulo = "Cid"
+tipo = "texto_livre"
+sinonimos = ["CID"]
+[[coluna]]
+canonico = "ds_unid_int_10"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "qt_11"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "cid_6"
+rotulo = "Cid"
+tipo = "texto_livre"
+sinonimos = ["CID"]
+[[coluna]]
+canonico = "qt_12"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "ds_unid_int_11"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "qt_13"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "unidanterior_4"
+rotulo = "Unidanterior"
+tipo = "decimal"
+sinonimos = ["UNIDANTERIOR"]
+[[coluna]]
+canonico = "unid_anterior_4"
+rotulo = "Unid Anterior"
+tipo = "categorico"
+sinonimos = ["UNID_ANTERIOR"]
+[[coluna]]
+canonico = "original_2"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "ds_tipo_internacao"
+rotulo = "Descrição tipo internação"
+tipo = "texto_livre"
+sinonimos = ["DS_TIPO_INTERNACAO"]
+[[coluna]]
+canonico = "qt_14"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "tp_saida"
+rotulo = "Tipo saida"
+tipo = "categorico"
+sinonimos = ["TP_SAIDA"]
+[[coluna]]
+canonico = "qt_15"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "tp_saida_2"
+rotulo = "Tipo saida"
+tipo = "categorico"
+sinonimos = ["TP_SAIDA"]
+[[coluna]]
+canonico = "unid"
+rotulo = "Unid"
+tipo = "categorico"
+sinonimos = ["UNID"]
+[[coluna]]
+canonico = "diagnostico"
+rotulo = "Diagnostico"
+tipo = "texto_livre"
+sinonimos = ["DIAGNOSTICO"]
+[[coluna]]
+canonico = "qt_16"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "diagnostico_2"
+rotulo = "Diagnostico"
+tipo = "texto_livre"
+sinonimos = ["DIAGNOSTICO"]
+[[coluna]]
+canonico = "qt_17"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "unidad"
+rotulo = "Unidad"
+tipo = "categorico"
+sinonimos = ["UNIDAD"]
+[[coluna]]
+canonico = "diagnostico_3"
+rotulo = "Diagnostico"
+tipo = "texto_livre"
+sinonimos = ["DIAGNOSTICO"]
+[[coluna]]
+canonico = "qt_18"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "unidad_2"
+rotulo = "Unidad"
+tipo = "categorico"
+sinonimos = ["UNIDAD"]
+[[coluna]]
+canonico = "origem"
+rotulo = "Origem"
+tipo = "categorico"
+sinonimos = ["ORIGEM"]
+[[coluna]]
+canonico = "qt_19"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "unid_2"
+rotulo = "Unid"
+tipo = "categorico"
+sinonimos = ["UNID"]
+[[coluna]]
+canonico = "origem_2"
+rotulo = "Origem"
+tipo = "categorico"
+sinonimos = ["ORIGEM"]
+[[coluna]]
+canonico = "qt_20"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "unid_3"
+rotulo = "Unid"
+tipo = "categorico"
+sinonimos = ["UNID"]
+[[coluna]]
+canonico = "origem_3"
+rotulo = "Origem"
+tipo = "categorico"
+sinonimos = ["ORIGEM"]
+[[coluna]]
+canonico = "qt_21"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "unid_4"
+rotulo = "Unid"
+tipo = "categorico"
+sinonimos = ["UNID"]
+[[coluna]]
+canonico = "origem_4"
+rotulo = "Origem"
+tipo = "categorico"
+sinonimos = ["ORIGEM"]
+[[coluna]]
+canonico = "qt_22"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "unid_5"
+rotulo = "Unid"
+tipo = "categorico"
+sinonimos = ["UNID"]
+[[coluna]]
+canonico = "diagnostico_4"
+rotulo = "Diagnostico"
+tipo = "texto_livre"
+sinonimos = ["DIAGNOSTICO"]
+[[coluna]]
+canonico = "qt_23"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "unidade"
+rotulo = "Unidade"
+tipo = "categorico"
+sinonimos = ["UNIDADE"]
+[[coluna]]
+canonico = "qt_24"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "unid_6"
+rotulo = "Unid"
+tipo = "categorico"
+sinonimos = ["UNID"]
+[[coluna]]
+canonico = "qt_25"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "tip_int"
+rotulo = "Tipo internação"
+tipo = "categorico"
+sinonimos = ["TIP_INT"]
+[[coluna]]
+canonico = "unidade_2"
+rotulo = "Unidade"
+tipo = "categorico"
+sinonimos = ["UNIDADE"]
+[[coluna]]
+canonico = "qt_26"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "tp"
+rotulo = "Tp"
+tipo = "texto_livre"
+sinonimos = ["TP"]
+[[coluna]]
+canonico = "unidade_3"
+rotulo = "Unidade"
+tipo = "categorico"
+sinonimos = ["UNIDADE"]
+[[coluna]]
+canonico = "qt_27"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "tp_2"
+rotulo = "Tp"
+tipo = "texto_livre"
+sinonimos = ["TP"]
+[[coluna]]
+canonico = "unidade_4"
+rotulo = "Unidade"
+tipo = "categorico"
+sinonimos = ["UNIDADE"]
+[[coluna]]
+canonico = "qt_28"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "tp_3"
+rotulo = "Tp"
+tipo = "texto_livre"
+sinonimos = ["TP"]
+[[coluna]]
+canonico = "unidade_5"
+rotulo = "Unidade"
+tipo = "categorico"
+sinonimos = ["UNIDADE"]
+[[coluna]]
+canonico = "diagnostico_5"
+rotulo = "Diagnostico"
+tipo = "texto_livre"
+sinonimos = ["DIAGNOSTICO"]
+[[coluna]]
+canonico = "qt_29"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "diagnostico_6"
+rotulo = "Diagnostico"
+tipo = "texto_livre"
+sinonimos = ["DIAGNOSTICO"]
+[[coluna]]
+canonico = "qt_30"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "unidad_3"
+rotulo = "Unidad"
+tipo = "categorico"
+sinonimos = ["UNIDAD"]
+[[coluna]]
+canonico = "diagnostico_7"
+rotulo = "Diagnostico"
+tipo = "texto_livre"
+sinonimos = ["DIAGNOSTICO"]
+[[coluna]]
+canonico = "qt_31"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "unidad_4"
+rotulo = "Unidad"
+tipo = "categorico"
+sinonimos = ["UNIDAD"]
+[[coluna]]
+canonico = "qt_32"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "qt_33"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "qt_34"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "qt_35"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "tp_saida_3"
+rotulo = "Tipo saida"
+tipo = "categorico"
+sinonimos = ["TP_SAIDA"]
+[[coluna]]
+canonico = "qt_36"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "tp_saida_4"
+rotulo = "Tipo saida"
+tipo = "categorico"
+sinonimos = ["TP_SAIDA"]

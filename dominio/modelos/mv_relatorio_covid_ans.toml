@@ -1,0 +1,90 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 51 / USR_RELATORIO_COVID_-_ANS)
+nome = "Relatorio COVID - ANS"
+pasta = "Faturamento"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+dimensoes = ["convenio"]
+
+[[coluna]]
+canonico = "acomodacao"
+rotulo = "Acomodacao"
+tipo = "texto_livre"
+sinonimos = ["ACOMODACAO"]
+[[coluna]]
+canonico = "atendimento"
+rotulo = "Atendimento"
+tipo = "decimal"
+sinonimos = ["ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_pro_fat"
+rotulo = "Código procedimento faturamento"
+tipo = "identificador"
+sinonimos = ["CD_PRO_FAT"]
+[[coluna]]
+canonico = "cod_acomodacao"
+rotulo = "Código acomodacao"
+tipo = "identificador"
+sinonimos = ["COD_ACOMODACAO"]
+[[coluna]]
+canonico = "cod_convenio"
+rotulo = "Código convênio"
+tipo = "identificador"
+sinonimos = ["COD_CONVENIO"]
+[[coluna]]
+canonico = "convenio"
+rotulo = "Convenio"
+tipo = "categorico"
+sinonimos = ["CONVENIO"]
+[[coluna]]
+canonico = "dias_internado"
+rotulo = "Dias internado"
+tipo = "inteiro"
+sinonimos = ["DIAS_INTERNADO"]
+[[coluna]]
+canonico = "dih"
+rotulo = "Dih"
+tipo = "decimal"
+sinonimos = ["DIH"]
+[[coluna]]
+canonico = "ds_pro_fat"
+rotulo = "Descrição procedimento faturamento"
+tipo = "texto_livre"
+sinonimos = ["DS_PRO_FAT"]
+[[coluna]]
+canonico = "prontuario"
+rotulo = "Prontuario"
+tipo = "decimal"
+sinonimos = ["PRONTUARIO"]
+[[coluna]]
+canonico = "valor_por_dia"
+rotulo = "Valor Por Dia"
+tipo = "moeda"
+sinonimos = ["VALOR_POR_DIA"]
+[[coluna]]
+canonico = "valor_total_da_conta"
+rotulo = "Valor Total Da Conta"
+tipo = "moeda"
+sinonimos = ["VALOR_TOTAL_DA_CONTA"]
+[[coluna]]
+canonico = "cd_convenio"
+rotulo = "Código convênio"
+tipo = "identificador"
+sinonimos = ["CD_CONVENIO"]
+[[coluna]]
+canonico = "nm_convenio"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "cd_pro_fat_2"
+rotulo = "Código procedimento faturamento"
+tipo = "identificador"
+sinonimos = ["CD_PRO_FAT"]
+[[coluna]]
+canonico = "ds_pro_fat_2"
+rotulo = "Descrição procedimento faturamento"
+tipo = "texto_livre"
+sinonimos = ["DS_PRO_FAT"]

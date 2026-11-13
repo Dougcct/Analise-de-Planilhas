@@ -1,0 +1,119 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 97 / USR_EMPRESAS_TERCEIRIZADAS)
+nome = "EMPRESAS_TERCEIRIZADAS"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "empresa"
+rotulo = "Empresa"
+tipo = "texto_livre"
+sinonimos = ["EMPRESA"]
+[[coluna]]
+canonico = "nm_prestador"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "nm_setor"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "empresa_2"
+rotulo = "Empresa"
+tipo = "texto_livre"
+sinonimos = ["EMPRESA"]
+[[coluna]]
+canonico = "nm_setor_2"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "original_2"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "empresa_3"
+rotulo = "Empresa"
+tipo = "texto_livre"
+sinonimos = ["EMPRESA"]
+[[coluna]]
+canonico = "nm_setor_3"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "original_3"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "empresa_4"
+rotulo = "Empresa"
+tipo = "texto_livre"
+sinonimos = ["EMPRESA"]
+[[coluna]]
+canonico = "nm_setor_4"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "original_4"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "empresa_5"
+rotulo = "Empresa"
+tipo = "texto_livre"
+sinonimos = ["EMPRESA"]
+[[coluna]]
+canonico = "nm_setor_5"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "original_5"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "empresa_6"
+rotulo = "Empresa"
+tipo = "texto_livre"
+sinonimos = ["EMPRESA"]
+[[coluna]]
+canonico = "nm_setor_6"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "original_6"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "empresa_7"
+rotulo = "Empresa"
+tipo = "texto_livre"
+sinonimos = ["EMPRESA"]
+[[coluna]]
+canonico = "nm_setor_7"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "original_7"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]

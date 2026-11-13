@@ -1,0 +1,114 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 385 / USR_MEDIA_DE_CUSTO_PA)
+nome = "MEDIA DE CUSTO PA"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+
+[[coluna]]
+canonico = "atendimento"
+rotulo = "Atendimento"
+tipo = "decimal"
+sinonimos = ["ATENDIMENTO"]
+[[coluna]]
+canonico = "especie"
+rotulo = "Especie"
+tipo = "texto_livre"
+sinonimos = ["ESPECIE"]
+[[coluna]]
+canonico = "faixa"
+rotulo = "Faixa"
+tipo = "texto_livre"
+sinonimos = ["FAIXA"]
+[[coluna]]
+canonico = "media"
+rotulo = "Media"
+tipo = "decimal"
+sinonimos = ["MEDIA"]
+[[coluna]]
+canonico = "qtd"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "ds_especie"
+rotulo = "Descrição especie"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIE"]
+[[coluna]]
+canonico = "ds_produto"
+rotulo = "Descrição produto"
+tipo = "texto_livre"
+sinonimos = ["DS_PRODUTO"]
+[[coluna]]
+canonico = "faixa_2"
+rotulo = "Faixa"
+tipo = "texto_livre"
+sinonimos = ["FAIXA"]
+[[coluna]]
+canonico = "qt_movimentacao"
+rotulo = "Qtd. movimentacao"
+tipo = "inteiro"
+sinonimos = ["QT_MOVIMENTACAO"]
+[[coluna]]
+canonico = "valor"
+rotulo = "Valor"
+tipo = "moeda"
+sinonimos = ["VALOR"]
+[[coluna]]
+canonico = "vl_custo_medio"
+rotulo = "Valor custo medio"
+tipo = "moeda"
+sinonimos = ["VL_CUSTO_MEDIO"]
+[[coluna]]
+canonico = "atendimento_2"
+rotulo = "Atendimento"
+tipo = "decimal"
+sinonimos = ["ATENDIMENTO"]
+[[coluna]]
+canonico = "faixa_3"
+rotulo = "Faixa"
+tipo = "texto_livre"
+sinonimos = ["FAIXA"]
+[[coluna]]
+canonico = "atendimento_3"
+rotulo = "Atendimento"
+tipo = "decimal"
+sinonimos = ["ATENDIMENTO"]
+[[coluna]]
+canonico = "exame"
+rotulo = "Exame"
+tipo = "texto_livre"
+sinonimos = ["EXAME"]
+[[coluna]]
+canonico = "faixa_4"
+rotulo = "Faixa"
+tipo = "texto_livre"
+sinonimos = ["FAIXA"]
+[[coluna]]
+canonico = "total_exame"
+rotulo = "Total Exame"
+tipo = "moeda"
+sinonimos = ["TOTAL_EXAME"]
+[[coluna]]
+canonico = "atendimento_4"
+rotulo = "Atendimento"
+tipo = "decimal"
+sinonimos = ["ATENDIMENTO"]
+[[coluna]]
+canonico = "ds_especialid"
+rotulo = "Descrição especialidade"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIALID"]
+[[coluna]]
+canonico = "faixa_5"
+rotulo = "Faixa"
+tipo = "texto_livre"
+sinonimos = ["FAIXA"]

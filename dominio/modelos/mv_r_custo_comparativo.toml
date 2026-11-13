@@ -1,0 +1,96 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 23 / USR_R_CUSTO_COMPARATIVO)
+nome = "R_CUSTO_COMPARATIVO"
+pasta = "Centro Cirúrgico"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "dt_alta"
+dimensoes = ["tp_referencia"]
+
+[[coluna]]
+canonico = "ds_multi_empresa"
+rotulo = "Descrição multi empresa"
+tipo = "texto_livre"
+sinonimos = ["DS_MULTI_EMPRESA"]
+[[coluna]]
+canonico = "user"
+rotulo = "User"
+tipo = "texto_livre"
+sinonimos = ["USER"]
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_pro_fat"
+rotulo = "Código procedimento faturamento"
+tipo = "identificador"
+sinonimos = ["CD_PRO_FAT"]
+[[coluna]]
+canonico = "ds_convenio"
+rotulo = "Descrição convênio"
+tipo = "texto_livre"
+sinonimos = ["DS_CONVENIO"]
+[[coluna]]
+canonico = "ds_paciente"
+rotulo = "Descrição paciente"
+tipo = "texto_livre"
+sinonimos = ["DS_PACIENTE"]
+[[coluna]]
+canonico = "ds_referencia"
+rotulo = "Descrição referencia"
+tipo = "texto_livre"
+sinonimos = ["DS_REFERENCIA"]
+[[coluna]]
+canonico = "ds_unidade"
+rotulo = "Descrição unidade"
+tipo = "texto_livre"
+sinonimos = ["DS_UNIDADE"]
+[[coluna]]
+canonico = "dt_alta"
+rotulo = "Data alta"
+tipo = "data"
+sinonimos = ["DT_ALTA"]
+[[coluna]]
+canonico = "dt_atendimento"
+rotulo = "Data atendimento"
+tipo = "data"
+sinonimos = ["DT_ATENDIMENTO"]
+[[coluna]]
+canonico = "item_referencia"
+rotulo = "Item Referencia"
+tipo = "decimal"
+sinonimos = ["ITEM_REFERENCIA"]
+[[coluna]]
+canonico = "qt_item_padrao"
+rotulo = "Qtd. item padrao"
+tipo = "inteiro"
+sinonimos = ["QT_ITEM_PADRAO"]
+[[coluna]]
+canonico = "qt_item_real"
+rotulo = "Qtd. item real"
+tipo = "inteiro"
+sinonimos = ["QT_ITEM_REAL"]
+[[coluna]]
+canonico = "tp_referencia"
+rotulo = "Tipo referencia"
+tipo = "categorico"
+sinonimos = ["TP_REFERENCIA"]
+[[coluna]]
+canonico = "vl_custo_padrao"
+rotulo = "Valor custo padrao"
+tipo = "moeda"
+sinonimos = ["VL_CUSTO_PADRAO"]
+[[coluna]]
+canonico = "vl_custo_real"
+rotulo = "Valor custo real"
+tipo = "moeda"
+sinonimos = ["VL_CUSTO_REAL"]
+[[coluna]]
+canonico = "vl_resultado"
+rotulo = "Valor resultado"
+tipo = "moeda"
+sinonimos = ["VL_RESULTADO"]

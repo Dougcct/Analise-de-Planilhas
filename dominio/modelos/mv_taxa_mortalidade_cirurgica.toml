@@ -1,0 +1,89 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 567 / USR_TAXA_MORTALIDADE_CIRURGICA)
+nome = "TAXA MORTALIDADE CIRURGICA"
+pasta = "Centro Cirúrgico"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "obitos_asa_i"
+rotulo = "Obitos Asa I"
+tipo = "decimal"
+sinonimos = ["OBITOS_ASA_I"]
+[[coluna]]
+canonico = "obitos_asa_ii"
+rotulo = "Obitos Asa Ii"
+tipo = "decimal"
+sinonimos = ["OBITOS_ASA_II"]
+[[coluna]]
+canonico = "obitos_asa_iii"
+rotulo = "Obitos Asa Iii"
+tipo = "decimal"
+sinonimos = ["OBITOS_ASA_III"]
+[[coluna]]
+canonico = "obitos_asa_iv"
+rotulo = "Obitos Asa Iv"
+tipo = "decimal"
+sinonimos = ["OBITOS_ASA_IV"]
+[[coluna]]
+canonico = "obitos_asa_v"
+rotulo = "Obitos Asa V"
+tipo = "decimal"
+sinonimos = ["OBITOS_ASA_V"]
+[[coluna]]
+canonico = "obitos_asa_vi"
+rotulo = "Obitos Asa Vi"
+tipo = "decimal"
+sinonimos = ["OBITOS_ASA_VI"]
+[[coluna]]
+canonico = "obitos_sem_asa"
+rotulo = "Obitos Sem Asa"
+tipo = "decimal"
+sinonimos = ["OBITOS_SEM_ASA"]
+[[coluna]]
+canonico = "total_obitos"
+rotulo = "Total Obitos"
+tipo = "moeda"
+sinonimos = ["TOTAL_OBITOS"]
+[[coluna]]
+canonico = "realizada_asa_1"
+rotulo = "Realizada Asa 1"
+tipo = "decimal"
+sinonimos = ["REALIZADA_ASA_1"]
+[[coluna]]
+canonico = "realizada_asa_2"
+rotulo = "Realizada Asa 2"
+tipo = "decimal"
+sinonimos = ["REALIZADA_ASA_2"]
+[[coluna]]
+canonico = "realizada_asa_3"
+rotulo = "Realizada Asa 3"
+tipo = "decimal"
+sinonimos = ["REALIZADA_ASA_3"]
+[[coluna]]
+canonico = "realizada_asa_4"
+rotulo = "Realizada Asa 4"
+tipo = "decimal"
+sinonimos = ["REALIZADA_ASA_4"]
+[[coluna]]
+canonico = "realizada_asa_5"
+rotulo = "Realizada Asa 5"
+tipo = "decimal"
+sinonimos = ["REALIZADA_ASA_5"]
+[[coluna]]
+canonico = "realizada_asa_6"
+rotulo = "Realizada Asa 6"
+tipo = "decimal"
+sinonimos = ["REALIZADA_ASA_6"]
+[[coluna]]
+canonico = "realizada_sem_asa"
+rotulo = "Realizada Sem Asa"
+tipo = "decimal"
+sinonimos = ["REALIZADA_SEM_ASA"]
+[[coluna]]
+canonico = "total_realizadas"
+rotulo = "Total Realizadas"
+tipo = "moeda"
+sinonimos = ["TOTAL_REALIZADAS"]

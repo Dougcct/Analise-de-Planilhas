@@ -1,0 +1,52 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 501 / USR_CONSULTA_OCOR_PAC)
+nome = "CONSULTA_OCOR_PAC"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "dh_ocorrido"
+
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_paciente_2"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "cd_registro_ocorrencia"
+rotulo = "Código registro ocorrencia"
+tipo = "identificador"
+sinonimos = ["CD_REGISTRO_OCORRENCIA"]
+[[coluna]]
+canonico = "centro_custo_relator"
+rotulo = "Centro Custo Relator"
+tipo = "texto_livre"
+sinonimos = ["CENTRO_CUSTO_RELATOR"]
+[[coluna]]
+canonico = "dh_ocorrido"
+rotulo = "Data/hora ocorrido"
+tipo = "data_hora"
+sinonimos = ["DH_OCORRIDO"]
+[[coluna]]
+canonico = "ds_resumo"
+rotulo = "Descrição resumo"
+tipo = "texto_livre"
+sinonimos = ["DS_RESUMO"]
+[[coluna]]
+canonico = "dt_registro"
+rotulo = "Data registro"
+tipo = "data"
+sinonimos = ["DT_REGISTRO"]

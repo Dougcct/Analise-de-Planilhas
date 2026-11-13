@@ -1,0 +1,55 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 76 / USR_PC_-_CIRURGIAS_CANCELADAS)
+nome = "CIRURGIAS CANCELADAS"
+pasta = "Centro Cirúrgico"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "dt_cirurgia"
+
+[[coluna]]
+canonico = "cd_aviso"
+rotulo = "Código aviso"
+tipo = "identificador"
+sinonimos = ["CD_AVISO"]
+[[coluna]]
+canonico = "cd_usuario_cancel"
+rotulo = "Código usuário cancel"
+tipo = "identificador"
+sinonimos = ["CD_USUARIO_CANCEL"]
+[[coluna]]
+canonico = "ds_motivo_cancelamento"
+rotulo = "Descrição motivo cancelamento"
+tipo = "texto_livre"
+sinonimos = ["DS_MOTIVO_CANCELAMENTO"]
+[[coluna]]
+canonico = "ds_mot_canc"
+rotulo = "Descrição motivo canc"
+tipo = "texto_livre"
+sinonimos = ["DS_MOT_CANC"]
+[[coluna]]
+canonico = "dt_cirurgia"
+rotulo = "Data cirurgia"
+tipo = "data"
+sinonimos = ["DT_CIRURGIA"]
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "ds_mot_canc_2"
+rotulo = "Descrição motivo canc"
+tipo = "texto_livre"
+sinonimos = ["DS_MOT_CANC"]
+[[coluna]]
+canonico = "cd_cen_cir"
+rotulo = "Código centro cirurgia"
+tipo = "identificador"
+sinonimos = ["CD_CEN_CIR"]
+[[coluna]]
+canonico = "ds_cen_cir"
+rotulo = "Descrição centro cirurgia"
+tipo = "texto_livre"
+sinonimos = ["DS_CEN_CIR"]

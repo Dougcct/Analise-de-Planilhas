@@ -1,0 +1,39 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 289 / USR_GRAFICO_SOLICITACOES_HORA_BPK)
+nome = "SOLICITAÇÕES POR HORA"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "nm_exa_lab"
+rotulo = "Nome exame laboratório"
+tipo = "texto_livre"
+sinonimos = ["NM_EXA_LAB"]
+[[coluna]]
+canonico = "tempo_medio_exame"
+rotulo = "Tempo Medio Exame"
+tipo = "texto_livre"
+sinonimos = ["TEMPO_MEDIO_EXAME"]
+[[coluna]]
+canonico = "cd_unid_int"
+rotulo = "Código unidade internação"
+tipo = "identificador"
+sinonimos = ["CD_UNID_INT"]
+[[coluna]]
+canonico = "ds_unid_int"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "cd_exa_lab"
+rotulo = "Código exame laboratório"
+tipo = "identificador"
+sinonimos = ["CD_EXA_LAB"]
+[[coluna]]
+canonico = "nm_exa_lab_2"
+rotulo = "Nome exame laboratório"
+tipo = "texto_livre"
+sinonimos = ["NM_EXA_LAB"]

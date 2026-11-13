@@ -1,0 +1,80 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 160 / USR_CR_-_HORARIOS_TRIAGEM)
+nome = "CR - HORARIOS TRIAGEM (AUDITORIA MANCHESTER)"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "fim_triagem"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "ds_cor"
+rotulo = "Descrição cor"
+tipo = "texto_livre"
+sinonimos = ["DS_COR"]
+[[coluna]]
+canonico = "ds_especialid"
+rotulo = "Descrição especialidade"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIALID"]
+[[coluna]]
+canonico = "ds_senha"
+rotulo = "Descrição senha"
+tipo = "texto_livre"
+sinonimos = ["DS_SENHA"]
+[[coluna]]
+canonico = "ds_sintoma"
+rotulo = "Descrição sintoma"
+tipo = "texto_livre"
+sinonimos = ["DS_SINTOMA"]
+[[coluna]]
+canonico = "enfermeiro"
+rotulo = "Enfermeiro"
+tipo = "texto_livre"
+sinonimos = ["ENFERMEIRO"]
+[[coluna]]
+canonico = "fim_triagem"
+rotulo = "Fim Triagem"
+tipo = "data"
+sinonimos = ["FIM_TRIAGEM"]
+[[coluna]]
+canonico = "inicio_triagem"
+rotulo = "Inicio Triagem"
+tipo = "data"
+sinonimos = ["INICIO_TRIAGEM"]
+[[coluna]]
+canonico = "nm_paciente_abrev"
+rotulo = "Nome paciente abrev"
+tipo = "texto_livre"
+sinonimos = ["NM_PACIENTE_ABREV"]
+[[coluna]]
+canonico = "retirada_senha"
+rotulo = "Retirada Senha"
+tipo = "data"
+sinonimos = ["RETIRADA_SENHA"]
+[[coluna]]
+canonico = "sn_prioridade_classificacao"
+rotulo = "Prioridade classificacao?"
+tipo = "booleano"
+sinonimos = ["SN_PRIORIDADE_CLASSIFICACAO"]
+[[coluna]]
+canonico = "vl_idade"
+rotulo = "Valor idade"
+tipo = "moeda"
+sinonimos = ["VL_IDADE"]
+[[coluna]]
+canonico = "cd_fila_senha"
+rotulo = "Código fila senha"
+tipo = "identificador"
+sinonimos = ["CD_FILA_SENHA"]
+[[coluna]]
+canonico = "ds_fila"
+rotulo = "Descrição fila"
+tipo = "texto_livre"
+sinonimos = ["DS_FILA"]

@@ -1,0 +1,465 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 504 / USR_RESUMO_DE_CONTA_HOSPITALAR_PER)
+nome = "Resumo de Conta Hospitalar Person."
+pasta = "Faturamento"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "dt_alta"
+dimensoes = ["tp_sexo", "tp_sexo_2", "tp_sexo_3", "tp_sexo_4"]
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_cid"
+rotulo = "Código cid"
+tipo = "identificador"
+sinonimos = ["CD_CID"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "cd_pro_fat"
+rotulo = "Código procedimento faturamento"
+tipo = "identificador"
+sinonimos = ["CD_PRO_FAT"]
+[[coluna]]
+canonico = "cd_reg_fat"
+rotulo = "Código reg faturamento"
+tipo = "identificador"
+sinonimos = ["CD_REG_FAT"]
+[[coluna]]
+canonico = "ds_gru_pro"
+rotulo = "Descrição gru procedimento"
+tipo = "texto_livre"
+sinonimos = ["DS_GRU_PRO"]
+[[coluna]]
+canonico = "ds_mot_alt"
+rotulo = "Descrição motivo alteração"
+tipo = "texto_livre"
+sinonimos = ["DS_MOT_ALT"]
+[[coluna]]
+canonico = "ds_pro_fat"
+rotulo = "Descrição procedimento faturamento"
+tipo = "texto_livre"
+sinonimos = ["DS_PRO_FAT"]
+[[coluna]]
+canonico = "ds_unidade"
+rotulo = "Descrição unidade"
+tipo = "texto_livre"
+sinonimos = ["DS_UNIDADE"]
+[[coluna]]
+canonico = "dt_alta"
+rotulo = "Data alta"
+tipo = "data"
+sinonimos = ["DT_ALTA"]
+[[coluna]]
+canonico = "dt_atendimento"
+rotulo = "Data atendimento"
+tipo = "data"
+sinonimos = ["DT_ATENDIMENTO"]
+[[coluna]]
+canonico = "dt_final"
+rotulo = "Data final"
+tipo = "data"
+sinonimos = ["DT_FINAL"]
+[[coluna]]
+canonico = "dt_inicio"
+rotulo = "Data inicio"
+tipo = "data"
+sinonimos = ["DT_INICIO"]
+[[coluna]]
+canonico = "dt_nasc"
+rotulo = "Data nascimento"
+tipo = "data"
+sinonimos = ["DT_NASC"]
+[[coluna]]
+canonico = "hr_alta"
+rotulo = "Hora alta"
+tipo = "data_hora"
+sinonimos = ["HR_ALTA"]
+[[coluna]]
+canonico = "hr_atendimento"
+rotulo = "Hora atendimento"
+tipo = "data_hora"
+sinonimos = ["HR_ATENDIMENTO"]
+[[coluna]]
+canonico = "nm_convenio"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "nr_guia"
+rotulo = "Número guia"
+tipo = "identificador"
+sinonimos = ["NR_GUIA"]
+[[coluna]]
+canonico = "qt"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "total"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "tp_sexo"
+rotulo = "Tipo sexo"
+tipo = "categorico"
+sinonimos = ["TP_SEXO"]
+[[coluna]]
+canonico = "vl_unitario"
+rotulo = "Valor unitario"
+tipo = "moeda"
+sinonimos = ["VL_UNITARIO"]
+[[coluna]]
+canonico = "cd_atendimento_2"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_cid_2"
+rotulo = "Código cid"
+tipo = "identificador"
+sinonimos = ["CD_CID"]
+[[coluna]]
+canonico = "cd_gru_fat"
+rotulo = "Código gru faturamento"
+tipo = "identificador"
+sinonimos = ["CD_GRU_FAT"]
+[[coluna]]
+canonico = "cd_paciente_2"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "cd_pro_fat_2"
+rotulo = "Código procedimento faturamento"
+tipo = "identificador"
+sinonimos = ["CD_PRO_FAT"]
+[[coluna]]
+canonico = "cd_reg_fat_2"
+rotulo = "Código reg faturamento"
+tipo = "identificador"
+sinonimos = ["CD_REG_FAT"]
+[[coluna]]
+canonico = "ds_gru_pro_2"
+rotulo = "Descrição gru procedimento"
+tipo = "texto_livre"
+sinonimos = ["DS_GRU_PRO"]
+[[coluna]]
+canonico = "ds_mot_alt_2"
+rotulo = "Descrição motivo alteração"
+tipo = "texto_livre"
+sinonimos = ["DS_MOT_ALT"]
+[[coluna]]
+canonico = "ds_pro_fat_2"
+rotulo = "Descrição procedimento faturamento"
+tipo = "texto_livre"
+sinonimos = ["DS_PRO_FAT"]
+[[coluna]]
+canonico = "ds_unidade_2"
+rotulo = "Descrição unidade"
+tipo = "texto_livre"
+sinonimos = ["DS_UNIDADE"]
+[[coluna]]
+canonico = "dt_alta_2"
+rotulo = "Data alta"
+tipo = "data"
+sinonimos = ["DT_ALTA"]
+[[coluna]]
+canonico = "dt_atendimento_2"
+rotulo = "Data atendimento"
+tipo = "data"
+sinonimos = ["DT_ATENDIMENTO"]
+[[coluna]]
+canonico = "dt_nasc_2"
+rotulo = "Data nascimento"
+tipo = "data"
+sinonimos = ["DT_NASC"]
+[[coluna]]
+canonico = "hr_alta_2"
+rotulo = "Hora alta"
+tipo = "data_hora"
+sinonimos = ["HR_ALTA"]
+[[coluna]]
+canonico = "hr_atendimento_2"
+rotulo = "Hora atendimento"
+tipo = "data_hora"
+sinonimos = ["HR_ATENDIMENTO"]
+[[coluna]]
+canonico = "nm_convenio_2"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "nm_setor"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "qt_2"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "total_2"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "tp_sexo_2"
+rotulo = "Tipo sexo"
+tipo = "categorico"
+sinonimos = ["TP_SEXO"]
+[[coluna]]
+canonico = "vl_unitario_2"
+rotulo = "Valor unitario"
+tipo = "moeda"
+sinonimos = ["VL_UNITARIO"]
+[[coluna]]
+canonico = "cd_reg_fat_3"
+rotulo = "Código reg faturamento"
+tipo = "identificador"
+sinonimos = ["CD_REG_FAT"]
+[[coluna]]
+canonico = "conta"
+rotulo = "Conta"
+tipo = "decimal"
+sinonimos = ["CONTA"]
+[[coluna]]
+canonico = "procedimento"
+rotulo = "Procedimento"
+tipo = "decimal"
+sinonimos = ["PROCEDIMENTO"]
+[[coluna]]
+canonico = "total_3"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "cd_atendimento_3"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_cid_3"
+rotulo = "Código cid"
+tipo = "identificador"
+sinonimos = ["CD_CID"]
+[[coluna]]
+canonico = "cd_paciente_3"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "cd_pro_fat_3"
+rotulo = "Código procedimento faturamento"
+tipo = "identificador"
+sinonimos = ["CD_PRO_FAT"]
+[[coluna]]
+canonico = "cd_reg_fat_4"
+rotulo = "Código reg faturamento"
+tipo = "identificador"
+sinonimos = ["CD_REG_FAT"]
+[[coluna]]
+canonico = "ds_gru_pro_3"
+rotulo = "Descrição gru procedimento"
+tipo = "texto_livre"
+sinonimos = ["DS_GRU_PRO"]
+[[coluna]]
+canonico = "ds_mot_alt_3"
+rotulo = "Descrição motivo alteração"
+tipo = "texto_livre"
+sinonimos = ["DS_MOT_ALT"]
+[[coluna]]
+canonico = "ds_pro_fat_3"
+rotulo = "Descrição procedimento faturamento"
+tipo = "texto_livre"
+sinonimos = ["DS_PRO_FAT"]
+[[coluna]]
+canonico = "ds_unidade_3"
+rotulo = "Descrição unidade"
+tipo = "texto_livre"
+sinonimos = ["DS_UNIDADE"]
+[[coluna]]
+canonico = "dt_alta_3"
+rotulo = "Data alta"
+tipo = "data"
+sinonimos = ["DT_ALTA"]
+[[coluna]]
+canonico = "dt_atendimento_3"
+rotulo = "Data atendimento"
+tipo = "data"
+sinonimos = ["DT_ATENDIMENTO"]
+[[coluna]]
+canonico = "dt_final_2"
+rotulo = "Data final"
+tipo = "data"
+sinonimos = ["DT_FINAL"]
+[[coluna]]
+canonico = "dt_inicio_2"
+rotulo = "Data inicio"
+tipo = "data"
+sinonimos = ["DT_INICIO"]
+[[coluna]]
+canonico = "dt_nasc_3"
+rotulo = "Data nascimento"
+tipo = "data"
+sinonimos = ["DT_NASC"]
+[[coluna]]
+canonico = "hr_alta_3"
+rotulo = "Hora alta"
+tipo = "data_hora"
+sinonimos = ["HR_ALTA"]
+[[coluna]]
+canonico = "hr_atendimento_3"
+rotulo = "Hora atendimento"
+tipo = "data_hora"
+sinonimos = ["HR_ATENDIMENTO"]
+[[coluna]]
+canonico = "nm_convenio_3"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "nr_guia_2"
+rotulo = "Número guia"
+tipo = "identificador"
+sinonimos = ["NR_GUIA"]
+[[coluna]]
+canonico = "qt_3"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "total_4"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "tp_sexo_3"
+rotulo = "Tipo sexo"
+tipo = "categorico"
+sinonimos = ["TP_SEXO"]
+[[coluna]]
+canonico = "vl_unitario_3"
+rotulo = "Valor unitario"
+tipo = "moeda"
+sinonimos = ["VL_UNITARIO"]
+[[coluna]]
+canonico = "cd_atendimento_4"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_cid_4"
+rotulo = "Código cid"
+tipo = "identificador"
+sinonimos = ["CD_CID"]
+[[coluna]]
+canonico = "cd_gru_fat_2"
+rotulo = "Código gru faturamento"
+tipo = "identificador"
+sinonimos = ["CD_GRU_FAT"]
+[[coluna]]
+canonico = "cd_paciente_4"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "cd_pro_fat_4"
+rotulo = "Código procedimento faturamento"
+tipo = "identificador"
+sinonimos = ["CD_PRO_FAT"]
+[[coluna]]
+canonico = "cd_reg_fat_5"
+rotulo = "Código reg faturamento"
+tipo = "identificador"
+sinonimos = ["CD_REG_FAT"]
+[[coluna]]
+canonico = "ds_gru_pro_4"
+rotulo = "Descrição gru procedimento"
+tipo = "texto_livre"
+sinonimos = ["DS_GRU_PRO"]
+[[coluna]]
+canonico = "ds_mot_alt_4"
+rotulo = "Descrição motivo alteração"
+tipo = "texto_livre"
+sinonimos = ["DS_MOT_ALT"]
+[[coluna]]
+canonico = "ds_pro_fat_4"
+rotulo = "Descrição procedimento faturamento"
+tipo = "texto_livre"
+sinonimos = ["DS_PRO_FAT"]
+[[coluna]]
+canonico = "ds_unidade_4"
+rotulo = "Descrição unidade"
+tipo = "texto_livre"
+sinonimos = ["DS_UNIDADE"]
+[[coluna]]
+canonico = "dt_alta_4"
+rotulo = "Data alta"
+tipo = "data"
+sinonimos = ["DT_ALTA"]
+[[coluna]]
+canonico = "dt_atendimento_4"
+rotulo = "Data atendimento"
+tipo = "data"
+sinonimos = ["DT_ATENDIMENTO"]
+[[coluna]]
+canonico = "dt_nasc_4"
+rotulo = "Data nascimento"
+tipo = "data"
+sinonimos = ["DT_NASC"]
+[[coluna]]
+canonico = "hr_alta_4"
+rotulo = "Hora alta"
+tipo = "data_hora"
+sinonimos = ["HR_ALTA"]
+[[coluna]]
+canonico = "hr_atendimento_4"
+rotulo = "Hora atendimento"
+tipo = "data_hora"
+sinonimos = ["HR_ATENDIMENTO"]
+[[coluna]]
+canonico = "nm_convenio_4"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "nm_setor_2"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "qt_4"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "total_5"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "tp_sexo_4"
+rotulo = "Tipo sexo"
+tipo = "categorico"
+sinonimos = ["TP_SEXO"]
+[[coluna]]
+canonico = "vl_unitario_4"
+rotulo = "Valor unitario"
+tipo = "moeda"
+sinonimos = ["VL_UNITARIO"]

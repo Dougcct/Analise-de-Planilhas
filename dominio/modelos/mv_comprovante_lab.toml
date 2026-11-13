@@ -1,0 +1,67 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 93 / USR_COMPROVANTE_LAB)
+nome = "COMPROVANTE LAB"
+pasta = "Exames e Laboratório"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "dt_atendimento"
+dimensoes = ["leito", "unidade"]
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "cd_ped_lab"
+rotulo = "Código ped laboratório"
+tipo = "identificador"
+sinonimos = ["CD_PED_LAB"]
+[[coluna]]
+canonico = "coleta"
+rotulo = "Coleta"
+tipo = "texto_livre"
+sinonimos = ["COLETA"]
+[[coluna]]
+canonico = "dt_atendimento"
+rotulo = "Data atendimento"
+tipo = "data"
+sinonimos = ["DT_ATENDIMENTO"]
+[[coluna]]
+canonico = "entrega"
+rotulo = "Entrega"
+tipo = "texto_livre"
+sinonimos = ["ENTREGA"]
+[[coluna]]
+canonico = "laboratorio"
+rotulo = "Laboratorio"
+tipo = "texto_livre"
+sinonimos = ["LABORATORIO"]
+[[coluna]]
+canonico = "leito"
+rotulo = "Leito"
+tipo = "categorico"
+sinonimos = ["LEITO"]
+[[coluna]]
+canonico = "nm_exa_lab"
+rotulo = "Nome exame laboratório"
+tipo = "texto_livre"
+sinonimos = ["NM_EXA_LAB"]
+[[coluna]]
+canonico = "unidade"
+rotulo = "Unidade"
+tipo = "categorico"
+sinonimos = ["UNIDADE"]
+[[coluna]]
+canonico = "entrega_2"
+rotulo = "Entrega"
+tipo = "texto_livre"
+sinonimos = ["ENTREGA"]

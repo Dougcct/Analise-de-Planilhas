@@ -1,0 +1,54 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 361 / USR_QUATITATIVO_TRATAMENTO)
+nome = "QUATITATIVO TRATAMENTO"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+
+[[coluna]]
+canonico = "categorias"
+rotulo = "Categorias"
+tipo = "texto_livre"
+sinonimos = ["CATEGORIAS"]
+[[coluna]]
+canonico = "qtd"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "tp"
+rotulo = "Tp"
+tipo = "texto_livre"
+sinonimos = ["TP"]
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cp"
+rotulo = "Cp"
+tipo = "texto_livre"
+sinonimos = ["CP"]
+[[coluna]]
+canonico = "cp2"
+rotulo = "Cp2"
+tipo = "texto_livre"
+sinonimos = ["CP2"]
+[[coluna]]
+canonico = "cp2_teste"
+rotulo = "Cp2 Teste"
+tipo = "texto_livre"
+sinonimos = ["CP2_TESTE"]
+[[coluna]]
+canonico = "dc"
+rotulo = "Dc"
+tipo = "decimal"
+sinonimos = ["DC"]
+[[coluna]]
+canonico = "dc2"
+rotulo = "Dc2"
+tipo = "decimal"
+sinonimos = ["DC2"]

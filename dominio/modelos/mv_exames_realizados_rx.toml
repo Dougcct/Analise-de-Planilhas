@@ -1,0 +1,46 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 449 / USR_EXAMES_REALIZADOS_RX)
+nome = "EXAMES REALIZADOS RX"
+pasta = "Exames e Laboratório"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "data_atendime"
+dimensoes = ["sexo"]
+
+[[coluna]]
+canonico = "cidade"
+rotulo = "Cidade"
+tipo = "texto_livre"
+sinonimos = ["CIDADE"]
+[[coluna]]
+canonico = "cod_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["COD_ATENDIMENTO"]
+[[coluna]]
+canonico = "data_atendime"
+rotulo = "Data atendime"
+tipo = "data"
+sinonimos = ["DATA_ATENDIME"]
+[[coluna]]
+canonico = "exame"
+rotulo = "Exame"
+tipo = "texto_livre"
+sinonimos = ["EXAME"]
+[[coluna]]
+canonico = "idade"
+rotulo = "Idade"
+tipo = "decimal"
+sinonimos = ["IDADE"]
+[[coluna]]
+canonico = "nome"
+rotulo = "Nome"
+tipo = "texto_livre"
+sinonimos = ["NOME"]
+[[coluna]]
+canonico = "sexo"
+rotulo = "Sexo"
+tipo = "categorico"
+sinonimos = ["SEXO"]

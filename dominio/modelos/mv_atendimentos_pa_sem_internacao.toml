@@ -1,0 +1,29 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 70 / USR_ATENDIMENTOS_PA_SEM_INTERNACAO)
+nome = "ATENDIMENTOS PA SEM INTERNAÇÃO"
+pasta = "Atendimento Hospitalar"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "mediadia"
+rotulo = "Mediadia"
+tipo = "decimal"
+sinonimos = ["MEDIADIA"]
+[[coluna]]
+canonico = "qtd"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "mes"
+rotulo = "Mes"
+tipo = "texto_livre"
+sinonimos = ["MES"]
+[[coluna]]
+canonico = "qtd_2"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]

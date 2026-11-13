@@ -1,0 +1,39 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 478 / USR_REGISTRO_DE_LOG)
+nome = "Registro de LOG"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "acesso"
+rotulo = "Acesso"
+tipo = "texto_livre"
+sinonimos = ["ACESSO"]
+[[coluna]]
+canonico = "hora"
+rotulo = "Hora"
+tipo = "texto_livre"
+sinonimos = ["HORA"]
+[[coluna]]
+canonico = "nome"
+rotulo = "Nome"
+tipo = "texto_livre"
+sinonimos = ["NOME"]
+[[coluna]]
+canonico = "sistemas"
+rotulo = "Sistemas"
+tipo = "texto_livre"
+sinonimos = ["SISTEMAS"]
+[[coluna]]
+canonico = "cod"
+rotulo = "Cod"
+tipo = "texto_livre"
+sinonimos = ["COD"]
+[[coluna]]
+canonico = "nome_2"
+rotulo = "Nome"
+tipo = "texto_livre"
+sinonimos = ["NOME"]

@@ -1,0 +1,55 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 546 / USR_VIA_DE_ADMINISTRACAO_ONCOLOGIA)
+nome = "VIA_DE_ADMINISTRACAO_ONCOLOGIA"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "original"
+
+[[coluna]]
+canonico = "cvc_ti"
+rotulo = "Cvc Ti"
+tipo = "decimal"
+sinonimos = ["CVC_TI"]
+[[coluna]]
+canonico = "intramuscular"
+rotulo = "Intramuscular"
+tipo = "decimal"
+sinonimos = ["INTRAMUSCULAR"]
+[[coluna]]
+canonico = "intravenosa"
+rotulo = "Intravenosa"
+tipo = "decimal"
+sinonimos = ["INTRAVENOSA"]
+[[coluna]]
+canonico = "intravesical"
+rotulo = "Intravesical"
+tipo = "decimal"
+sinonimos = ["INTRAVESICAL"]
+[[coluna]]
+canonico = "subcutanea"
+rotulo = "Subcutânea"
+tipo = "decimal"
+sinonimos = ["SUBCUTÂNEA"]
+[[coluna]]
+canonico = "total"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "data"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "mes"
+rotulo = "Mes"
+tipo = "data"
+sinonimos = ["MES"]
+[[coluna]]
+canonico = "total_mensal"
+rotulo = "Total Mensal"
+tipo = "moeda"
+sinonimos = ["TOTAL_MENSAL"]

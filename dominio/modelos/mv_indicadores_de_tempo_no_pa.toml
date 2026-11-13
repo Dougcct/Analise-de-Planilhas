@@ -1,0 +1,124 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 465 / USR_INDICADORES_PA_BKP)
+nome = "INDICADORES DE TEMPO NO PA"
+pasta = "Atendimento Hospitalar"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "classificacao"
+rotulo = "Classificacao"
+tipo = "texto_livre"
+sinonimos = ["CLASSIFICACAO"]
+[[coluna]]
+canonico = "media"
+rotulo = "Media"
+tipo = "decimal"
+sinonimos = ["MEDIA"]
+[[coluna]]
+canonico = "atd"
+rotulo = "Atd"
+tipo = "decimal"
+sinonimos = ["ATD"]
+[[coluna]]
+canonico = "friburgo"
+rotulo = "Friburgo"
+tipo = "decimal"
+sinonimos = ["FRIBURGO"]
+[[coluna]]
+canonico = "percent"
+rotulo = "Percent"
+tipo = "texto_livre"
+sinonimos = ["PERCENT"]
+[[coluna]]
+canonico = "ano_mes"
+rotulo = "Ano Mes"
+tipo = "texto_livre"
+sinonimos = ["ANO_MES"]
+[[coluna]]
+canonico = "media_min"
+rotulo = "Media Min"
+tipo = "decimal"
+sinonimos = ["MEDIA_MIN"]
+[[coluna]]
+canonico = "media_permanencia"
+rotulo = "Media Permanencia"
+tipo = "texto_livre"
+sinonimos = ["MEDIA_PERMANENCIA"]
+[[coluna]]
+canonico = "qtd_atd"
+rotulo = "Qtd. atendimento"
+tipo = "inteiro"
+sinonimos = ["QTD_ATD"]
+[[coluna]]
+canonico = "tempo_total_min"
+rotulo = "Tempo Total Min"
+tipo = "moeda"
+sinonimos = ["TEMPO_TOTAL_MIN"]
+[[coluna]]
+canonico = "classificacao_2"
+rotulo = "Classificacao"
+tipo = "texto_livre"
+sinonimos = ["CLASSIFICACAO"]
+[[coluna]]
+canonico = "qtd"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "texto_livre"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "qtd_2"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "original_2"
+rotulo = "Original"
+tipo = "texto_livre"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "qtd_3"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "tempo_total"
+rotulo = "Tempo Total"
+tipo = "moeda"
+sinonimos = ["TEMPO_TOTAL"]
+[[coluna]]
+canonico = "nm_convenio"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "qtd_4"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "tempo"
+rotulo = "Tempo"
+tipo = "decimal"
+sinonimos = ["TEMPO"]
+[[coluna]]
+canonico = "media_2"
+rotulo = "Media"
+tipo = "decimal"
+sinonimos = ["MEDIA"]
+[[coluna]]
+canonico = "qtd_5"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "tempo_em_min"
+rotulo = "Tempo Em Min"
+tipo = "decimal"
+sinonimos = ["TEMPO_EM_MIN"]

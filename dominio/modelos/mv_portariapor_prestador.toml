@@ -1,0 +1,85 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 11 / USR_PORTARIAPOR_PRESTADOR)
+nome = "portariapor_prestador"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "data_entrada"
+
+[[coluna]]
+canonico = "data_entrada"
+rotulo = "Data entrada"
+tipo = "data"
+sinonimos = ["DATA_ENTRADA"]
+[[coluna]]
+canonico = "usuario_entrada"
+rotulo = "Usuario Entrada"
+tipo = "texto_livre"
+sinonimos = ["USUARIO_ENTRADA"]
+[[coluna]]
+canonico = "data_saida"
+rotulo = "Data saida"
+tipo = "data"
+sinonimos = ["DATA_SAIDA"]
+[[coluna]]
+canonico = "usuario_saida"
+rotulo = "Usuario Saida"
+tipo = "texto_livre"
+sinonimos = ["USUARIO_SAIDA"]
+[[coluna]]
+canonico = "nome_empresa"
+rotulo = "Nome empresa"
+tipo = "texto_livre"
+sinonimos = ["NOME_EMPRESA"]
+[[coluna]]
+canonico = "numero_ramal"
+rotulo = "Numero Ramal"
+tipo = "inteiro"
+sinonimos = ["NUMERO_RAMAL"]
+[[coluna]]
+canonico = "nome_autorizador"
+rotulo = "Nome autorizador"
+tipo = "texto_livre"
+sinonimos = ["NOME_AUTORIZADOR"]
+[[coluna]]
+canonico = "numero_documento"
+rotulo = "Numero Documento"
+tipo = "texto_livre"
+sinonimos = ["NUMERO_DOCUMENTO"]
+[[coluna]]
+canonico = "observacoes"
+rotulo = "Observacoes"
+tipo = "texto_livre"
+sinonimos = ["OBSERVACOES"]
+[[coluna]]
+canonico = "codigo_setor"
+rotulo = "Codigo Setor"
+tipo = "inteiro"
+sinonimos = ["CODIGO_SETOR"]
+[[coluna]]
+canonico = "nome_setor"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NOME_SETOR"]
+[[coluna]]
+canonico = "descricao_documento"
+rotulo = "Descricao Documento"
+tipo = "texto_livre"
+sinonimos = ["DESCRICAO_DOCUMENTO"]
+[[coluna]]
+canonico = "nome_colaborador_prestado"
+rotulo = "Nome colaborador prestado"
+tipo = "texto_livre"
+sinonimos = ["NOME_COLABORADOR_PRESTADO"]
+[[coluna]]
+canonico = "codigo_colaborador_presta"
+rotulo = "Codigo Colaborador Presta"
+tipo = "inteiro"
+sinonimos = ["CODIGO_COLABORADOR_PRESTA"]
+[[coluna]]
+canonico = "select_user_from_dual"
+rotulo = "Select User From Dual"
+tipo = "texto_livre"
+sinonimos = ["select_user_from_dual"]

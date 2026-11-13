@@ -51,11 +51,11 @@
 
 <div class="topo-local">
   <h1>{{ titulo_local }}</h1>
-  {% if eh_adm %}
   <div class="acoes-local">
     <button type="button" class="btn-sec" style="margin:0" onclick="document.getElementById('dlg-nova').showModal()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" width="15" height="15"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke-linejoin="round"/><path d="M12 11v4M10 13h4" stroke-linecap="round"/></svg>
       Nova pasta</button>
+    {% if pode_gerenciar %}
     <a class="btn-sec" style="margin:0" href="/web/enviar?setor={{ setor_id }}{{ '&pasta=' ~ pasta_atual if pasta_atual }}">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" width="15" height="15"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
       Novo documento</a>
@@ -65,8 +65,8 @@
           onsubmit="return confirm('EXCLUIR esta pasta em definitivo?\n\nApaga tudo dentro dela: subpastas e relatórios (com suas planilhas). Não dá para desfazer.')">
       <button class="btn-perigo" style="margin:0;padding:9px 14px">Excluir pasta</button></form>
     {% endif %}
+    {% endif %}
   </div>
-  {% endif %}
 </div>
 
 {% if pastas %}
@@ -88,7 +88,7 @@
   <div class="doc">
     <span class="pt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V5a1 1 0 0 1 1-1h11l4 4v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" stroke-linejoin="round"/></svg></span>
     <a class="nome" href="/web/r/{{ r.slug }}">{{ r.nome }}</a>
-    {% if eh_adm %}
+    {% if pode_gerenciar %}
     <div class="acoes">
       <form method="post" action="/web/relatorio/{{ r.slug }}/mover" title="Mover para a pasta">
         <select name="pasta_id" onchange="this.form.submit()">
@@ -109,11 +109,10 @@
     {% endif %}
   </div>
   {% else %}
-  <div class="vazio-nav">Nenhum relatório neste nível{{ ' — use «Novo documento» ou mova um para cá' if eh_adm }}.</div>
+  <div class="vazio-nav">Nenhum relatório neste nível{{ ' — use «Novo documento» ou mova um para cá' if pode_gerenciar }}.</div>
   {% endfor %}
 </div>
 
-{% if eh_adm %}
 <dialog id="dlg-nova">
   <form method="post" action="/web/pasta/criar">
     <div class="cab">Nova pasta</div>
@@ -129,7 +128,7 @@
     </div>
   </form>
 </dialog>
-{% if pasta_atual %}
+{% if pode_gerenciar and pasta_atual %}
 <dialog id="dlg-renomear">
   <form method="post" action="/web/pasta/{{ pasta_atual }}/renomear">
     <div class="cab">Renomear pasta</div>
@@ -140,6 +139,5 @@
     </div>
   </form>
 </dialog>
-{% endif %}
 {% endif %}
 {% endblock %}

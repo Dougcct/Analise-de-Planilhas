@@ -1,0 +1,81 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 377 / USR_CUSTO_POR_ATENDIMENTO)
+nome = "CUSTO POR ATENDIMENTO"
+pasta = "Atendimento Hospitalar"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "dt_atendimento"
+dimensoes = ["tp_atendimento"]
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_gru_fat"
+rotulo = "Código gru faturamento"
+tipo = "identificador"
+sinonimos = ["CD_GRU_FAT"]
+[[coluna]]
+canonico = "ds_gru_fat"
+rotulo = "Descrição gru faturamento"
+tipo = "texto_livre"
+sinonimos = ["DS_GRU_FAT"]
+[[coluna]]
+canonico = "ds_pro_fat"
+rotulo = "Descrição procedimento faturamento"
+tipo = "texto_livre"
+sinonimos = ["DS_PRO_FAT"]
+[[coluna]]
+canonico = "dt_atendimento"
+rotulo = "Data atendimento"
+tipo = "data"
+sinonimos = ["DT_ATENDIMENTO"]
+[[coluna]]
+canonico = "faixa_etaria"
+rotulo = "Faixa Etaria"
+tipo = "texto_livre"
+sinonimos = ["FAIXA_ETARIA"]
+[[coluna]]
+canonico = "lancamento"
+rotulo = "Lancamento"
+tipo = "decimal"
+sinonimos = ["LANCAMENTO"]
+[[coluna]]
+canonico = "qt_lancamento"
+rotulo = "Qtd. lancamento"
+tipo = "inteiro"
+sinonimos = ["QT_LANCAMENTO"]
+[[coluna]]
+canonico = "tp_atendimento"
+rotulo = "Tipo atendimento"
+tipo = "categorico"
+sinonimos = ["TP_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_atendimento_2"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_convenio"
+rotulo = "Código convênio"
+tipo = "identificador"
+sinonimos = ["CD_CONVENIO"]
+[[coluna]]
+canonico = "dt_atendimento_2"
+rotulo = "Data atendimento"
+tipo = "data"
+sinonimos = ["DT_ATENDIMENTO"]
+[[coluna]]
+canonico = "faixa_etaria_2"
+rotulo = "Faixa Etaria"
+tipo = "texto_livre"
+sinonimos = ["FAIXA_ETARIA"]
+[[coluna]]
+canonico = "nm_convenio"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]

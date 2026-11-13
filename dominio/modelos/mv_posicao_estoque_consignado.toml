@@ -1,0 +1,85 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 541 / USR_POSICAO_ESTOQUE_CONSIGNADO)
+nome = "POSICAO_ESTOQUE_CONSIGNADO"
+pasta = "Farmácia e Suprimentos"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "dt_validade"
+
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "cd_estoque"
+rotulo = "Código estoque"
+tipo = "identificador"
+sinonimos = ["CD_ESTOQUE"]
+[[coluna]]
+canonico = "cd_fornecedor"
+rotulo = "Código fornecedor"
+tipo = "identificador"
+sinonimos = ["CD_FORNECEDOR"]
+[[coluna]]
+canonico = "cd_lote"
+rotulo = "Código lote"
+tipo = "identificador"
+sinonimos = ["CD_LOTE"]
+[[coluna]]
+canonico = "cod_produto"
+rotulo = "Código produto"
+tipo = "identificador"
+sinonimos = ["COD_PRODUTO"]
+[[coluna]]
+canonico = "desc_produto"
+rotulo = "Descrição produto"
+tipo = "texto_livre"
+sinonimos = ["DESC_PRODUTO"]
+[[coluna]]
+canonico = "ds_estoque"
+rotulo = "Descrição estoque"
+tipo = "texto_livre"
+sinonimos = ["DS_ESTOQUE"]
+[[coluna]]
+canonico = "dt_validade"
+rotulo = "Data validade"
+tipo = "data"
+sinonimos = ["DT_VALIDADE"]
+[[coluna]]
+canonico = "original_2"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "nm_fornecedor"
+rotulo = "Nome fornecedor"
+tipo = "texto_livre"
+sinonimos = ["NM_FORNECEDOR"]
+[[coluna]]
+canonico = "qt_estoque_atual"
+rotulo = "Qtd. estoque atual"
+tipo = "inteiro"
+sinonimos = ["QT_ESTOQUE_ATUAL"]
+[[coluna]]
+canonico = "valor_unit"
+rotulo = "Valor Unit"
+tipo = "moeda"
+sinonimos = ["VALOR_UNIT"]
+[[coluna]]
+canonico = "vl_custo"
+rotulo = "Valor custo"
+tipo = "moeda"
+sinonimos = ["VL_CUSTO"]
+[[coluna]]
+canonico = "cd_fornecedor_2"
+rotulo = "Código fornecedor"
+tipo = "identificador"
+sinonimos = ["CD_FORNECEDOR"]
+[[coluna]]
+canonico = "nm_fornecedor_2"
+rotulo = "Nome fornecedor"
+tipo = "texto_livre"
+sinonimos = ["NM_FORNECEDOR"]

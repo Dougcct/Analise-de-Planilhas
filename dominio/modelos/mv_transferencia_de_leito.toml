@@ -1,0 +1,31 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 422 / USR_TRANSFERENCIA_DE_LEITO)
+nome = "TRANSFERENCIA DE LEITO"
+pasta = "Atendimento Hospitalar"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "data"
+dimensoes = ["leito_anterior"]
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "data"
+rotulo = "Data"
+tipo = "data"
+sinonimos = ["DATA"]
+[[coluna]]
+canonico = "ds_leito"
+rotulo = "Descrição leito"
+tipo = "texto_livre"
+sinonimos = ["DS_LEITO"]
+[[coluna]]
+canonico = "leito_anterior"
+rotulo = "Leito Anterior"
+tipo = "categorico"
+sinonimos = ["LEITO_ANTERIOR"]

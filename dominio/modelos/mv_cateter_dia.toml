@@ -1,0 +1,96 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 172 / USR_CATETER_DIA)
+nome = "CATETER DIA"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "dt_atendimento"
+dimensoes = ["status"]
+
+[[coluna]]
+canonico = "cd_pro_invasivo"
+rotulo = "Código procedimento invasivo"
+tipo = "identificador"
+sinonimos = ["CD_PRO_INVASIVO"]
+[[coluna]]
+canonico = "ds_pro_invasivo"
+rotulo = "Descrição procedimento invasivo"
+tipo = "texto_livre"
+sinonimos = ["DS_PRO_INVASIVO"]
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_mov_inv"
+rotulo = "Código movimento inv"
+tipo = "identificador"
+sinonimos = ["CD_MOV_INV"]
+[[coluna]]
+canonico = "ds_leito"
+rotulo = "Descrição leito"
+tipo = "texto_livre"
+sinonimos = ["DS_LEITO"]
+[[coluna]]
+canonico = "ds_pro_invasivo_2"
+rotulo = "Descrição procedimento invasivo"
+tipo = "texto_livre"
+sinonimos = ["DS_PRO_INVASIVO"]
+[[coluna]]
+canonico = "dt_atendimento"
+rotulo = "Data atendimento"
+tipo = "data"
+sinonimos = ["DT_ATENDIMENTO"]
+[[coluna]]
+canonico = "dt_mov_inv"
+rotulo = "Data movimento inv"
+tipo = "data"
+sinonimos = ["DT_MOV_INV"]
+[[coluna]]
+canonico = "hr_inicio"
+rotulo = "Hora inicio"
+tipo = "data_hora"
+sinonimos = ["HR_INICIO"]
+[[coluna]]
+canonico = "inicio"
+rotulo = "Inicio"
+tipo = "texto_livre"
+sinonimos = ["INICIO"]
+[[coluna]]
+canonico = "status"
+rotulo = "Status"
+tipo = "categorico"
+sinonimos = ["STATUS"]
+[[coluna]]
+canonico = "tempo"
+rotulo = "Tempo"
+tipo = "texto_livre"
+sinonimos = ["TEMPO"]
+[[coluna]]
+canonico = "termino"
+rotulo = "Termino"
+tipo = "texto_livre"
+sinonimos = ["TERMINO"]
+[[coluna]]
+canonico = "usr_final"
+rotulo = "Usr Final"
+tipo = "texto_livre"
+sinonimos = ["USR_FINAL"]
+[[coluna]]
+canonico = "usr_inicio"
+rotulo = "Usr Inicio"
+tipo = "texto_livre"
+sinonimos = ["USR_INICIO"]
+[[coluna]]
+canonico = "ds_pro_invasivo_3"
+rotulo = "Descrição procedimento invasivo"
+tipo = "texto_livre"
+sinonimos = ["DS_PRO_INVASIVO"]
+[[coluna]]
+canonico = "total"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]

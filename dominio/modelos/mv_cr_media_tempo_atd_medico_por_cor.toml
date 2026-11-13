@@ -1,0 +1,19 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 194 / USR_CR_-_MEDIA_TEMPO_ATD_MEDICO_PO)
+nome = "CR - MEDIA TEMPO ATD MEDICO POR COR"
+pasta = "Farmácia e Suprimentos"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "ds_cor"
+rotulo = "Descrição cor"
+tipo = "texto_livre"
+sinonimos = ["DS_COR"]
+[[coluna]]
+canonico = "tempo_medio_espera_medico_min"
+rotulo = "Tempo Medio Espera Medico Min"
+tipo = "decimal"
+sinonimos = ["TEMPO_MEDIO_ESPERA_MEDICO_MIN"]

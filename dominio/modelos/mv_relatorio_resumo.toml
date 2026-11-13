@@ -1,0 +1,136 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 473 / USR_RELATORIO_RESUMO_)
+nome = "Relatório Resumo"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "fim"
+dimensoes = ["tipo_prioridade"]
+
+[[coluna]]
+canonico = "data"
+rotulo = "Data"
+tipo = "texto_livre"
+sinonimos = ["DATA"]
+[[coluna]]
+canonico = "fim"
+rotulo = "Fim"
+tipo = "data"
+sinonimos = ["FIM"]
+[[coluna]]
+canonico = "ini"
+rotulo = "Ini"
+tipo = "data"
+sinonimos = ["INI"]
+[[coluna]]
+canonico = "atendimentos_com_class"
+rotulo = "Atendimentos Com Class"
+tipo = "decimal"
+sinonimos = ["ATENDIMENTOS_COM_CLASS"]
+[[coluna]]
+canonico = "atend_class_24h_posteriores"
+rotulo = "Atend Class 24H Posteriores"
+tipo = "texto_livre"
+sinonimos = ["ATEND_CLASS_24H_POSTERIORES"]
+[[coluna]]
+canonico = "atend_sem_prioridade"
+rotulo = "Atend Sem Prioridade"
+tipo = "texto_livre"
+sinonimos = ["ATEND_SEM_PRIORIDADE"]
+[[coluna]]
+canonico = "atend_sem_senha_fora_do_sacr"
+rotulo = "Atend Sem Senha Fora Do Sacr"
+tipo = "decimal"
+sinonimos = ["ATEND_SEM_SENHA_FORA_DO_SACR"]
+[[coluna]]
+canonico = "atend_sem_senha_fora_sacr_alta"
+rotulo = "Atend Sem Senha Fora Sacr Alta"
+tipo = "decimal"
+sinonimos = ["ATEND_SEM_SENHA_FORA_SACR_ALTA"]
+[[coluna]]
+canonico = "classificacoes_excluidas"
+rotulo = "Classificacoes Excluidas"
+tipo = "decimal"
+sinonimos = ["CLASSIFICACOES_EXCLUIDAS"]
+[[coluna]]
+canonico = "class_atend_24h_post"
+rotulo = "Class Atend 24H Post"
+tipo = "texto_livre"
+sinonimos = ["CLASS_ATEND_24H_POST"]
+[[coluna]]
+canonico = "class_periodo_sem_atendimento"
+rotulo = "Class Periodo Sem Atendimento"
+tipo = "decimal"
+sinonimos = ["CLASS_PERIODO_SEM_ATENDIMENTO"]
+[[coluna]]
+canonico = "tot_atend_periodo"
+rotulo = "Tot Atend Periodo"
+tipo = "decimal"
+sinonimos = ["TOT_ATEND_PERIODO"]
+[[coluna]]
+canonico = "tot_atend_urgencia"
+rotulo = "Tot Atend Urgencia"
+tipo = "decimal"
+sinonimos = ["TOT_ATEND_URGENCIA"]
+[[coluna]]
+canonico = "tot_atend_urgencia_com_alta"
+rotulo = "Tot Atend Urgencia Com Alta"
+tipo = "decimal"
+sinonimos = ["TOT_ATEND_URGENCIA_COM_ALTA"]
+[[coluna]]
+canonico = "tot_class"
+rotulo = "Tot Class"
+tipo = "texto_livre"
+sinonimos = ["TOT_CLASS"]
+[[coluna]]
+canonico = "tot_class_atend_periodo"
+rotulo = "Tot Class Atend Periodo"
+tipo = "decimal"
+sinonimos = ["TOT_CLASS_ATEND_PERIODO"]
+[[coluna]]
+canonico = "percent"
+rotulo = "Percent"
+tipo = "texto_livre"
+sinonimos = ["PERCENT"]
+[[coluna]]
+canonico = "qt"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "tipo_prioridade"
+rotulo = "Tipo prioridade"
+tipo = "categorico"
+sinonimos = ["TIPO_PRIORIDADE"]
+[[coluna]]
+canonico = "tot"
+rotulo = "Tot"
+tipo = "decimal"
+sinonimos = ["TOT"]
+[[coluna]]
+canonico = "nm_cidade"
+rotulo = "Nome cidade"
+tipo = "texto_livre"
+sinonimos = ["NM_CIDADE"]
+[[coluna]]
+canonico = "percent_2"
+rotulo = "Percent"
+tipo = "texto_livre"
+sinonimos = ["PERCENT"]
+[[coluna]]
+canonico = "qt_2"
+rotulo = "Qt"
+tipo = "decimal"
+sinonimos = ["QT"]
+[[coluna]]
+canonico = "tot_2"
+rotulo = "Tot"
+tipo = "decimal"
+sinonimos = ["TOT"]
+[[coluna]]
+canonico = "ds_multi_empresa"
+rotulo = "Descrição multi empresa"
+tipo = "texto_livre"
+sinonimos = ["DS_MULTI_EMPRESA"]

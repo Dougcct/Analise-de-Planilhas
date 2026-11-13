@@ -1,0 +1,77 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 526 / USR_CHECKLIST_PARTO_SEGURO_POR_ATE)
+nome = "CHECKLIST PARTO SEGURO POR ATENDIMENTO"
+pasta = "Atendimento Hospitalar"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "dt_parto"
+dimensoes = ["status_doc", "status_doc_2", "tp_status"]
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "dt_parto"
+rotulo = "Data parto"
+tipo = "data"
+sinonimos = ["DT_PARTO"]
+[[coluna]]
+canonico = "nm_documento"
+rotulo = "Nome documento"
+tipo = "texto_livre"
+sinonimos = ["NM_DOCUMENTO"]
+[[coluna]]
+canonico = "parto"
+rotulo = "Parto"
+tipo = "texto_livre"
+sinonimos = ["PARTO"]
+[[coluna]]
+canonico = "ref"
+rotulo = "Ref"
+tipo = "data"
+sinonimos = ["REF"]
+[[coluna]]
+canonico = "status_doc"
+rotulo = "Status Doc"
+tipo = "categorico"
+sinonimos = ["STATUS_DOC"]
+[[coluna]]
+canonico = "cd_atendimento_2"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "dt_parto_2"
+rotulo = "Data parto"
+tipo = "data"
+sinonimos = ["DT_PARTO"]
+[[coluna]]
+canonico = "qtd_documentos"
+rotulo = "Qtd. documentos"
+tipo = "inteiro"
+sinonimos = ["QTD_DOCUMENTOS"]
+[[coluna]]
+canonico = "status_doc_2"
+rotulo = "Status Doc"
+tipo = "categorico"
+sinonimos = ["STATUS_DOC"]
+[[coluna]]
+canonico = "cd_status"
+rotulo = "Código status"
+tipo = "identificador"
+sinonimos = ["CD_STATUS"]
+[[coluna]]
+canonico = "tp_status"
+rotulo = "Tipo status"
+tipo = "categorico"
+sinonimos = ["TP_STATUS"]

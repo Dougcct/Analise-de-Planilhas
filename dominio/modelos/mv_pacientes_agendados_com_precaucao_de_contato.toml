@@ -1,0 +1,19 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 383 / USR_PACIENTES_AGENDADOS_COM_PRECAU)
+nome = "PACIENTES AGENDADOS COM PRECAUCAO DE CONTATO"
+pasta = "Faturamento"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "precaucao_de_contato"
+rotulo = "Precaucao De Contato"
+tipo = "texto_livre"
+sinonimos = ["PRECAUCAO_DE_CONTATO"]
+[[coluna]]
+canonico = "precaucao_de_contato_2"
+rotulo = "Precaucao De Contato"
+tipo = "texto_livre"
+sinonimos = ["PRECAUCAO_DE_CONTATO"]

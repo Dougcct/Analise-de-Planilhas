@@ -1,0 +1,40 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 230 / USR_ATD_PA_ACIMA_6_HRS_FATURAMENTO)
+nome = "TEMPO DE ESPERA SUPERIOR A 6 HORAS - FATURAMENTO"
+pasta = "Faturamento"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "data_atd"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_remessa"
+rotulo = "Código remessa"
+tipo = "identificador"
+sinonimos = ["CD_REMESSA"]
+[[coluna]]
+canonico = "data_atd"
+rotulo = "Data atendimento"
+tipo = "data"
+sinonimos = ["DATA_ATD"]
+[[coluna]]
+canonico = "nm_convenio"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "senha"
+rotulo = "Senha"
+tipo = "texto_livre"
+sinonimos = ["SENHA"]
+[[coluna]]
+canonico = "tempo_total_atendimento"
+rotulo = "Tempo Total Atendimento"
+tipo = "moeda"
+sinonimos = ["TEMPO_TOTAL_ATENDIMENTO"]

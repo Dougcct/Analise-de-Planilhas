@@ -1,0 +1,85 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 565 / USR_CONFERENCIA_LOTE)
+nome = "CONFERENCIA DE LOTE"
+pasta = "Farmácia e Suprimentos"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "dt_validade"
+
+[[coluna]]
+canonico = "cd_estoque"
+rotulo = "Código estoque"
+tipo = "identificador"
+sinonimos = ["CD_ESTOQUE"]
+[[coluna]]
+canonico = "cd_lote"
+rotulo = "Código lote"
+tipo = "identificador"
+sinonimos = ["CD_LOTE"]
+[[coluna]]
+canonico = "cd_tip_esq"
+rotulo = "Código tipo esq"
+tipo = "identificador"
+sinonimos = ["CD_TIP_ESQ"]
+[[coluna]]
+canonico = "cd_uni_pro"
+rotulo = "Código uni procedimento"
+tipo = "identificador"
+sinonimos = ["CD_UNI_PRO"]
+[[coluna]]
+canonico = "cod_produto"
+rotulo = "Código produto"
+tipo = "identificador"
+sinonimos = ["COD_PRODUTO"]
+[[coluna]]
+canonico = "desc_produto"
+rotulo = "Descrição produto"
+tipo = "texto_livre"
+sinonimos = ["DESC_PRODUTO"]
+[[coluna]]
+canonico = "ds_estoque"
+rotulo = "Descrição estoque"
+tipo = "texto_livre"
+sinonimos = ["DS_ESTOQUE"]
+[[coluna]]
+canonico = "ds_tip_esq"
+rotulo = "Descrição tipo esq"
+tipo = "texto_livre"
+sinonimos = ["DS_TIP_ESQ"]
+[[coluna]]
+canonico = "dt_validade"
+rotulo = "Data validade"
+tipo = "data"
+sinonimos = ["DT_VALIDADE"]
+[[coluna]]
+canonico = "fator"
+rotulo = "Fator"
+tipo = "decimal"
+sinonimos = ["FATOR"]
+[[coluna]]
+canonico = "qt_estoque_atual"
+rotulo = "Qtd. estoque atual"
+tipo = "inteiro"
+sinonimos = ["QT_ESTOQUE_ATUAL"]
+[[coluna]]
+canonico = "quantidade"
+rotulo = "Quantidade"
+tipo = "decimal"
+sinonimos = ["QUANTIDADE"]
+[[coluna]]
+canonico = "sn_solicitacao"
+rotulo = "Solicitacao?"
+tipo = "booleano"
+sinonimos = ["SN_SOLICITACAO"]
+[[coluna]]
+canonico = "cd"
+rotulo = "Cd"
+tipo = "texto_livre"
+sinonimos = ["CD"]
+[[coluna]]
+canonico = "estoque"
+rotulo = "Estoque"
+tipo = "texto_livre"
+sinonimos = ["ESTOQUE"]

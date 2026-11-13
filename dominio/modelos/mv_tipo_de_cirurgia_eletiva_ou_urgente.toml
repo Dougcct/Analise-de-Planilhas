@@ -1,0 +1,25 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 96 / USR_TIPO_DE_CIRURGIA_(ELETIVA_OU_U)
+nome = "TIPO DE CIRURGIA (ELETIVA OU URGENTE)"
+pasta = "Centro Cirúrgico"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+dimensoes = ["tipo_cir"]
+
+[[coluna]]
+canonico = "cc"
+rotulo = "Cc"
+tipo = "texto_livre"
+sinonimos = ["CC"]
+[[coluna]]
+canonico = "qtd"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "tipo_cir"
+rotulo = "Tipo cirurgia"
+tipo = "categorico"
+sinonimos = ["TIPO_CIR"]

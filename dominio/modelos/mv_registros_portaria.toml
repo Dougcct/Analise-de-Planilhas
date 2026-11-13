@@ -1,0 +1,191 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 627 / USR_REGISTROS_PORTARIA)
+nome = "registros_portaria"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "data_entrada"
+dimensoes = ["tip_doc", "tip_visita", "tip_doc_2", "tip_parentesco", "tip_visita_2", "tip_entrada"]
+
+[[coluna]]
+canonico = "cd_entrada"
+rotulo = "Código entrada"
+tipo = "identificador"
+sinonimos = ["CD_ENTRADA"]
+[[coluna]]
+canonico = "cd_pessoa"
+rotulo = "Código pessoa"
+tipo = "identificador"
+sinonimos = ["CD_PESSOA"]
+[[coluna]]
+canonico = "cd_tip_entrada"
+rotulo = "Código tipo entrada"
+tipo = "identificador"
+sinonimos = ["CD_TIP_ENTRADA"]
+[[coluna]]
+canonico = "codigo_setor"
+rotulo = "Codigo Setor"
+tipo = "inteiro"
+sinonimos = ["CODIGO_SETOR"]
+[[coluna]]
+canonico = "cracha"
+rotulo = "Cracha"
+tipo = "inteiro"
+sinonimos = ["CRACHA"]
+[[coluna]]
+canonico = "data_entrada"
+rotulo = "Data entrada"
+tipo = "data"
+sinonimos = ["DATA_ENTRADA"]
+[[coluna]]
+canonico = "data_saida"
+rotulo = "Data saida"
+tipo = "data"
+sinonimos = ["DATA_SAIDA"]
+[[coluna]]
+canonico = "descricao_documento"
+rotulo = "Descricao Documento"
+tipo = "texto_livre"
+sinonimos = ["DESCRICAO_DOCUMENTO"]
+[[coluna]]
+canonico = "identif"
+rotulo = "Identif"
+tipo = "texto_livre"
+sinonimos = ["IDENTIF"]
+[[coluna]]
+canonico = "nome"
+rotulo = "Nome"
+tipo = "texto_livre"
+sinonimos = ["NOME"]
+[[coluna]]
+canonico = "nome_empresa"
+rotulo = "Nome empresa"
+tipo = "texto_livre"
+sinonimos = ["NOME_EMPRESA"]
+[[coluna]]
+canonico = "nome_setor"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NOME_SETOR"]
+[[coluna]]
+canonico = "num_doc"
+rotulo = "Num Doc"
+tipo = "texto_livre"
+sinonimos = ["NUM_DOC"]
+[[coluna]]
+canonico = "observacoes"
+rotulo = "Observacoes"
+tipo = "texto_livre"
+sinonimos = ["OBSERVACOES"]
+[[coluna]]
+canonico = "tip_doc"
+rotulo = "Tipo documento"
+tipo = "categorico"
+sinonimos = ["TIP_DOC"]
+[[coluna]]
+canonico = "tip_visita"
+rotulo = "Tipo visita"
+tipo = "categorico"
+sinonimos = ["TIP_VISITA"]
+[[coluna]]
+canonico = "usuario_entrada"
+rotulo = "Usuario Entrada"
+tipo = "texto_livre"
+sinonimos = ["USUARIO_ENTRADA"]
+[[coluna]]
+canonico = "usuario_saida"
+rotulo = "Usuario Saida"
+tipo = "texto_livre"
+sinonimos = ["USUARIO_SAIDA"]
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_entrada_2"
+rotulo = "Código entrada"
+tipo = "identificador"
+sinonimos = ["CD_ENTRADA"]
+[[coluna]]
+canonico = "cd_pessoa_2"
+rotulo = "Código pessoa"
+tipo = "identificador"
+sinonimos = ["CD_PESSOA"]
+[[coluna]]
+canonico = "cd_tip_entrada_2"
+rotulo = "Código tipo entrada"
+tipo = "identificador"
+sinonimos = ["CD_TIP_ENTRADA"]
+[[coluna]]
+canonico = "cracha_2"
+rotulo = "Cracha"
+tipo = "inteiro"
+sinonimos = ["CRACHA"]
+[[coluna]]
+canonico = "data_entrada_2"
+rotulo = "Data entrada"
+tipo = "data"
+sinonimos = ["DATA_ENTRADA"]
+[[coluna]]
+canonico = "data_saida_2"
+rotulo = "Data saida"
+tipo = "data"
+sinonimos = ["DATA_SAIDA"]
+[[coluna]]
+canonico = "identif_2"
+rotulo = "Identif"
+tipo = "texto_livre"
+sinonimos = ["IDENTIF"]
+[[coluna]]
+canonico = "nome_2"
+rotulo = "Nome"
+tipo = "texto_livre"
+sinonimos = ["NOME"]
+[[coluna]]
+canonico = "num_doc_2"
+rotulo = "Num Doc"
+tipo = "texto_livre"
+sinonimos = ["NUM_DOC"]
+[[coluna]]
+canonico = "parentesco"
+rotulo = "Parentesco"
+tipo = "texto_livre"
+sinonimos = ["PARENTESCO"]
+[[coluna]]
+canonico = "tip_doc_2"
+rotulo = "Tipo documento"
+tipo = "categorico"
+sinonimos = ["TIP_DOC"]
+[[coluna]]
+canonico = "tip_parentesco"
+rotulo = "Tipo parentesco"
+tipo = "categorico"
+sinonimos = ["TIP_PARENTESCO"]
+[[coluna]]
+canonico = "tip_visita_2"
+rotulo = "Tipo visita"
+tipo = "categorico"
+sinonimos = ["TIP_VISITA"]
+[[coluna]]
+canonico = "usuario_entrada_2"
+rotulo = "Usuario Entrada"
+tipo = "texto_livre"
+sinonimos = ["USUARIO_ENTRADA"]
+[[coluna]]
+canonico = "usuario_saida_2"
+rotulo = "Usuario Saida"
+tipo = "texto_livre"
+sinonimos = ["USUARIO_SAIDA"]
+[[coluna]]
+canonico = "cd_tip_entrada_3"
+rotulo = "Código tipo entrada"
+tipo = "identificador"
+sinonimos = ["CD_TIP_ENTRADA"]
+[[coluna]]
+canonico = "tip_entrada"
+rotulo = "Tipo entrada"
+tipo = "categorico"
+sinonimos = ["TIP_ENTRADA"]

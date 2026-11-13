@@ -1,0 +1,30 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 703 / USR_ELETROCARDIOGRAMAS_-_PA)
+nome = "ELETROCARDIOGRAMAS - PA"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "dt_pre_med"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "ds_tip_presc"
+rotulo = "Descrição tipo prescrição"
+tipo = "texto_livre"
+sinonimos = ["DS_TIP_PRESC"]
+[[coluna]]
+canonico = "dt_pre_med"
+rotulo = "Data pre médico"
+tipo = "data"
+sinonimos = ["DT_PRE_MED"]
+[[coluna]]
+canonico = "nm_prestador"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]

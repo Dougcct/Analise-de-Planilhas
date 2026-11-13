@@ -680,11 +680,44 @@ def test_excluir_usuario_definitivo(web):
 
 
 def test_pastas_isolamento_e_permissao(web):
+    import re
+    u = _cli("user.fin")
+    home_u = u.get("/web").text
+    assert "Nova pasta" in home_u
+    fin_id = re.search(r'name="setor_id" value="(\d+)"', home_u).group(1)
+    assert int(fin_id) != 1
+
+    # usuário comum pode criar pasta no próprio setor
+    r_cria = u.post("/web/pasta/criar", data={"setor_id": fin_id, "nome": "Pasta User", "pai_id": ""},
+                    follow_redirects=False)
+    assert r_cria.status_code == 303 and "ok=" in r_cria.headers["location"]
+    setor_u = u.get(f"/web/setor/{fin_id}").text
+    assert "Pasta User" in setor_u
+    assert "Renomear" not in setor_u and "Excluir pasta" not in setor_u
+    pid = re.search(r"/web/pasta/(\d+)", setor_u).group(1)
+
+    # usuário comum NÃO pode renomear nem excluir pasta
+    loc_ren = u.post(f"/web/pasta/{pid}/renomear", data={"nome": "Hack"}, follow_redirects=False).headers["location"]
+    assert "restrito" in loc_ren.lower()
+    loc_del = u.post(f"/web/pasta/{pid}/excluir", follow_redirects=False).headers["location"]
+    assert "restrito" in loc_del.lower()
+
+    # usuário comum NÃO pode criar pasta em outro setor (ATD = 1)
+    loc_outro = u.post("/web/pasta/criar", data={"setor_id": 1, "nome": "X"}, follow_redirects=False).headers["location"]
+    assert "fora" in loc_outro.lower()
+
+    # gestor pode renomear e excluir pasta do próprio setor
     g = _cli("gestor.fin")
-    # gestor não cria pasta (só ADM organiza)
+    r_ren = g.post(f"/web/pasta/{pid}/renomear", data={"nome": "Pasta Gestor"}, follow_redirects=False)
+    assert r_ren.status_code == 303 and "ok=" in r_ren.headers["location"]
+    assert "Pasta Gestor" in g.get(f"/web/setor/{fin_id}").text
+    r_del = g.post(f"/web/pasta/{pid}/excluir", follow_redirects=False)
+    assert r_del.status_code == 303 and "ok=" in r_del.headers["location"]
+    assert f"/web/pasta/{pid}" not in g.get(f"/web/setor/{fin_id}").text
+
+    # gestor.fin (FIN) não cria pasta nem abre o setor de outro (ATD = 1)
     loc = g.post("/web/pasta/criar", data={"setor_id": 1, "nome": "X"}, follow_redirects=False).headers["location"]
-    assert "restrito" in loc.lower()
-    # gestor.fin (FIN) não abre o setor de outro (ATD = 1)
+    assert "fora" in loc.lower()
     assert "fora do seu setor" in g.get("/web/setor/1").text.lower()
 
 

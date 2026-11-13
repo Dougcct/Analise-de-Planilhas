@@ -1,0 +1,24 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 539 / USR_IAG_-_ITENS_DE_AGENDAMENTO)
+nome = "IAG - ITENS DE AGENDAMENTO"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "cd_item_agendamento"
+rotulo = "Código item agendamento"
+tipo = "identificador"
+sinonimos = ["CD_ITEM_AGENDAMENTO"]
+[[coluna]]
+canonico = "cd_pro_fat"
+rotulo = "Código procedimento faturamento"
+tipo = "identificador"
+sinonimos = ["CD_PRO_FAT"]
+[[coluna]]
+canonico = "ds_item_agendamento"
+rotulo = "Descrição item agendamento"
+tipo = "texto_livre"
+sinonimos = ["DS_ITEM_AGENDAMENTO"]

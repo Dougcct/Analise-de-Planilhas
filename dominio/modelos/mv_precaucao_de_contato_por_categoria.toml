@@ -1,0 +1,59 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 485 / USR_PRECAUCAO_DE_CONTATO_POR_CATEG)
+nome = "PRECAUÇÃO DE CONTATO POR CATEGORIA"
+pasta = "Faturamento"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_unid_int"
+rotulo = "Código unidade internação"
+tipo = "identificador"
+sinonimos = ["CD_UNID_INT"]
+[[coluna]]
+canonico = "ds_categoria"
+rotulo = "Descrição categoria"
+tipo = "texto_livre"
+sinonimos = ["DS_CATEGORIA"]
+[[coluna]]
+canonico = "ds_leito"
+rotulo = "Descrição leito"
+tipo = "texto_livre"
+sinonimos = ["DS_LEITO"]
+[[coluna]]
+canonico = "ds_unid_int"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "idade"
+rotulo = "Idade"
+tipo = "texto_livre"
+sinonimos = ["IDADE"]
+[[coluna]]
+canonico = "cd_unid_int_2"
+rotulo = "Código unidade internação"
+tipo = "identificador"
+sinonimos = ["CD_UNID_INT"]
+[[coluna]]
+canonico = "ds_unid_int_2"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "cd_categoria"
+rotulo = "Código categoria"
+tipo = "identificador"
+sinonimos = ["CD_CATEGORIA"]
+[[coluna]]
+canonico = "ds_categoria_2"
+rotulo = "Descrição categoria"
+tipo = "texto_livre"
+sinonimos = ["DS_CATEGORIA"]

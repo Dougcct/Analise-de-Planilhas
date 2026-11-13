@@ -1,0 +1,40 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 287 / USR_LB_-_QTD_EXAMES_POR_MEDICO)
+nome = "QTD EXAMES POR MEDICO"
+pasta = "Farmácia e Suprimentos"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+dimensoes = ["prestador"]
+
+[[coluna]]
+canonico = "nm_setor"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "prestador"
+rotulo = "Prestador"
+tipo = "categorico"
+sinonimos = ["PRESTADOR"]
+[[coluna]]
+canonico = "total_cd_exa_lab"
+rotulo = "Total Cd Exa Lab"
+tipo = "moeda"
+sinonimos = ["TOTAL_CD_EXA_LAB"]
+[[coluna]]
+canonico = "total_cd_ped_lab"
+rotulo = "Total Cd Ped Lab"
+tipo = "moeda"
+sinonimos = ["TOTAL_CD_PED_LAB"]
+[[coluna]]
+canonico = "cd_setor"
+rotulo = "Código setor"
+tipo = "identificador"
+sinonimos = ["CD_SETOR"]
+[[coluna]]
+canonico = "nm_setor_2"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]

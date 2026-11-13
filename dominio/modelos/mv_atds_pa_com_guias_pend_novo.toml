@@ -1,0 +1,90 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 164 / USR_ATDS_PA_COM_GUIAS_PEND_NOVO)
+nome = "ATDS PA COM GUIAS PEND NOVO"
+pasta = "Faturamento"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "t_med"
+
+[[coluna]]
+canonico = "anos"
+rotulo = "Anos"
+tipo = "decimal"
+sinonimos = ["ANOS"]
+[[coluna]]
+canonico = "atd"
+rotulo = "Atd"
+tipo = "decimal"
+sinonimos = ["ATD"]
+[[coluna]]
+canonico = "cart"
+rotulo = "Cart"
+tipo = "texto_livre"
+sinonimos = ["CART"]
+[[coluna]]
+canonico = "conv"
+rotulo = "Conv"
+tipo = "texto_livre"
+sinonimos = ["CONV"]
+[[coluna]]
+canonico = "just"
+rotulo = "Just"
+tipo = "texto_livre"
+sinonimos = ["JUST"]
+[[coluna]]
+canonico = "meses"
+rotulo = "Meses"
+tipo = "decimal"
+sinonimos = ["MESES"]
+[[coluna]]
+canonico = "nm_pac"
+rotulo = "Nome paciente"
+tipo = "texto_livre"
+sinonimos = ["NM_PAC"]
+[[coluna]]
+canonico = "nr_guia"
+rotulo = "Número guia"
+tipo = "identificador"
+sinonimos = ["NR_GUIA"]
+[[coluna]]
+canonico = "ob"
+rotulo = "Ob"
+tipo = "texto_livre"
+sinonimos = ["OB"]
+[[coluna]]
+canonico = "pro_fat"
+rotulo = "Pro Fat"
+tipo = "texto_livre"
+sinonimos = ["PRO_FAT"]
+[[coluna]]
+canonico = "senha"
+rotulo = "Senha"
+tipo = "texto_livre"
+sinonimos = ["SENHA"]
+[[coluna]]
+canonico = "t_med"
+rotulo = "T Med"
+tipo = "data"
+sinonimos = ["T_MED"]
+[[coluna]]
+canonico = "t_senha"
+rotulo = "T Senha"
+tipo = "data"
+sinonimos = ["T_SENHA"]
+[[coluna]]
+canonico = "usu"
+rotulo = "Usu"
+tipo = "texto_livre"
+sinonimos = ["USU"]
+[[coluna]]
+canonico = "cd_convenio"
+rotulo = "Código convênio"
+tipo = "identificador"
+sinonimos = ["CD_CONVENIO"]
+[[coluna]]
+canonico = "nm_convenio"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]

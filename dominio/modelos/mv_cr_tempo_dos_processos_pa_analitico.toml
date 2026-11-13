@@ -1,0 +1,120 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 274 / USR_CR_-_TEMPO_DOS_PROCESSOS_PA_AN)
+nome = "CR - TEMPO DOS PROCESSOS PA ANALITICO"
+pasta = "Faturamento"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "retirada_senha"
+
+[[coluna]]
+canonico = "cd_especialid"
+rotulo = "Código especialidade"
+tipo = "identificador"
+sinonimos = ["CD_ESPECIALID"]
+[[coluna]]
+canonico = "ds_especialid"
+rotulo = "Descrição especialidade"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIALID"]
+[[coluna]]
+canonico = "cd_cor_referencia"
+rotulo = "Código cor referencia"
+tipo = "identificador"
+sinonimos = ["CD_COR_REFERENCIA"]
+[[coluna]]
+canonico = "nm_cor"
+rotulo = "Nome cor"
+tipo = "texto_livre"
+sinonimos = ["NM_COR"]
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "classificacao"
+rotulo = "Classificacao"
+tipo = "texto_livre"
+sinonimos = ["CLASSIFICACAO"]
+[[coluna]]
+canonico = "ds_especialid_2"
+rotulo = "Descrição especialidade"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIALID"]
+[[coluna]]
+canonico = "ds_sintoma"
+rotulo = "Descrição sintoma"
+tipo = "texto_livre"
+sinonimos = ["DS_SINTOMA"]
+[[coluna]]
+canonico = "espera_recep_x_medico"
+rotulo = "Espera Recep X Medico"
+tipo = "decimal"
+sinonimos = ["ESPERA_RECEP_X_MEDICO"]
+[[coluna]]
+canonico = "espera_toten_x_triagem"
+rotulo = "Espera Toten X Triagem"
+tipo = "decimal"
+sinonimos = ["ESPERA_TOTEN_X_TRIAGEM"]
+[[coluna]]
+canonico = "espera_triagem_x_recep"
+rotulo = "Espera Triagem X Recep"
+tipo = "decimal"
+sinonimos = ["ESPERA_TRIAGEM_X_RECEP"]
+[[coluna]]
+canonico = "nm_convenio"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "nm_paciente_abrev"
+rotulo = "Nome paciente abrev"
+tipo = "texto_livre"
+sinonimos = ["NM_PACIENTE_ABREV"]
+[[coluna]]
+canonico = "retirada_senha"
+rotulo = "Retirada Senha"
+tipo = "data"
+sinonimos = ["RETIRADA_SENHA"]
+[[coluna]]
+canonico = "tempo_atend_medico_x_alta"
+rotulo = "Tempo Atend Medico X Alta"
+tipo = "decimal"
+sinonimos = ["TEMPO_ATEND_MEDICO_X_ALTA"]
+[[coluna]]
+canonico = "tempo_da_recepcao"
+rotulo = "Tempo Da Recepcao"
+tipo = "decimal"
+sinonimos = ["TEMPO_DA_RECEPCAO"]
+[[coluna]]
+canonico = "tempo_de_triagem"
+rotulo = "Tempo De Triagem"
+tipo = "decimal"
+sinonimos = ["TEMPO_DE_TRIAGEM"]
+[[coluna]]
+canonico = "tempo_total_atendimento"
+rotulo = "Tempo Total Atendimento"
+tipo = "moeda"
+sinonimos = ["TEMPO_TOTAL_ATENDIMENTO"]
+[[coluna]]
+canonico = "us_medico"
+rotulo = "Us Medico"
+tipo = "texto_livre"
+sinonimos = ["US_MEDICO"]
+[[coluna]]
+canonico = "us_recepcao"
+rotulo = "Us Recepcao"
+tipo = "texto_livre"
+sinonimos = ["US_RECEPCAO"]
+[[coluna]]
+canonico = "us_triagem"
+rotulo = "Us Triagem"
+tipo = "texto_livre"
+sinonimos = ["US_TRIAGEM"]
+[[coluna]]
+canonico = "vl_idade"
+rotulo = "Valor idade"
+tipo = "moeda"
+sinonimos = ["VL_IDADE"]

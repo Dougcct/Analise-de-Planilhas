@@ -1,0 +1,70 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 698 / USR_PACIENTES_FALTOSOS)
+nome = "PACIENTES FALTOSOS"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "hr_agenda"
+
+[[coluna]]
+canonico = "cod_pac"
+rotulo = "Código paciente"
+tipo = "identificador"
+sinonimos = ["COD_PAC"]
+[[coluna]]
+canonico = "ds_ser_dis"
+rotulo = "Descrição ser dis"
+tipo = "texto_livre"
+sinonimos = ["DS_SER_DIS"]
+[[coluna]]
+canonico = "hr_agenda"
+rotulo = "Hora agenda"
+tipo = "data_hora"
+sinonimos = ["HR_AGENDA"]
+[[coluna]]
+canonico = "nm_convenio"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "nm_prestador"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "nm_setor"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "cd_setor"
+rotulo = "Código setor"
+tipo = "identificador"
+sinonimos = ["CD_SETOR"]
+[[coluna]]
+canonico = "nm_setor_2"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "cd_prestador"
+rotulo = "Código prestador"
+tipo = "identificador"
+sinonimos = ["CD_PRESTADOR"]
+[[coluna]]
+canonico = "nm_prestador_2"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "cd_ser_dis"
+rotulo = "Código ser dis"
+tipo = "identificador"
+sinonimos = ["CD_SER_DIS"]
+[[coluna]]
+canonico = "ds_ser_dis_2"
+rotulo = "Descrição ser dis"
+tipo = "texto_livre"
+sinonimos = ["DS_SER_DIS"]

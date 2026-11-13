@@ -1,0 +1,60 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 719 / USR_FALTAS)
+nome = "FALTAS"
+pasta = "Atendimento Hospitalar"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+dimensoes = ["especialidade"]
+
+[[coluna]]
+canonico = "cd_setor"
+rotulo = "Código setor"
+tipo = "identificador"
+sinonimos = ["CD_SETOR"]
+[[coluna]]
+canonico = "nm_setor"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "agendados"
+rotulo = "Agendados"
+tipo = "decimal"
+sinonimos = ["AGENDADOS"]
+[[coluna]]
+canonico = "atendidos"
+rotulo = "Atendidos"
+tipo = "decimal"
+sinonimos = ["ATENDIDOS"]
+[[coluna]]
+canonico = "bloq_com_paciente"
+rotulo = "Bloq Com Paciente"
+tipo = "decimal"
+sinonimos = ["BLOQ_COM_PACIENTE"]
+[[coluna]]
+canonico = "bloq_sem_paciente"
+rotulo = "Bloq Sem Paciente"
+tipo = "decimal"
+sinonimos = ["BLOQ_SEM_PACIENTE"]
+[[coluna]]
+canonico = "especialidade"
+rotulo = "Especialidade"
+tipo = "categorico"
+sinonimos = ["ESPECIALIDADE"]
+[[coluna]]
+canonico = "faltas"
+rotulo = "Faltas"
+tipo = "decimal"
+sinonimos = ["FALTAS"]
+[[coluna]]
+canonico = "nm_prestador"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "nm_setor_2"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]

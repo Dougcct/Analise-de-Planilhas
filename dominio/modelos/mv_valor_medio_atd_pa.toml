@@ -1,0 +1,110 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 330 / USR_VALOR_MEDIO_ATD_PA)
+nome = "VALOR MEDIO ATD PA"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "dt_atendimento"
+
+[[coluna]]
+canonico = "mes"
+rotulo = "Mes"
+tipo = "texto_livre"
+sinonimos = ["MES"]
+[[coluna]]
+canonico = "qtd_atd"
+rotulo = "Qtd. atendimento"
+tipo = "inteiro"
+sinonimos = ["QTD_ATD"]
+[[coluna]]
+canonico = "val"
+rotulo = "Val"
+tipo = "decimal"
+sinonimos = ["VAL"]
+[[coluna]]
+canonico = "mes_2"
+rotulo = "Mes"
+tipo = "texto_livre"
+sinonimos = ["MES"]
+[[coluna]]
+canonico = "qtd_atd_2"
+rotulo = "Qtd. atendimento"
+tipo = "inteiro"
+sinonimos = ["QTD_ATD"]
+[[coluna]]
+canonico = "val_2"
+rotulo = "Val"
+tipo = "decimal"
+sinonimos = ["VAL"]
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "dt_atendimento"
+rotulo = "Data atendimento"
+tipo = "data"
+sinonimos = ["DT_ATENDIMENTO"]
+[[coluna]]
+canonico = "idade"
+rotulo = "Idade"
+tipo = "decimal"
+sinonimos = ["IDADE"]
+[[coluna]]
+canonico = "mes_3"
+rotulo = "Mes"
+tipo = "texto_livre"
+sinonimos = ["MES"]
+[[coluna]]
+canonico = "total"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "cd_atendimento_2"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "dt_atendimento_2"
+rotulo = "Data atendimento"
+tipo = "data"
+sinonimos = ["DT_ATENDIMENTO"]
+[[coluna]]
+canonico = "mes_4"
+rotulo = "Mes"
+tipo = "texto_livre"
+sinonimos = ["MES"]
+[[coluna]]
+canonico = "total_2"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "original_2"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "mes_5"
+rotulo = "Mes"
+tipo = "texto_livre"
+sinonimos = ["MES"]
+[[coluna]]
+canonico = "original_3"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "mes_6"
+rotulo = "Mes"
+tipo = "texto_livre"
+sinonimos = ["MES"]

@@ -1,0 +1,29 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 5 / USR_TOTAL_ENT_PACIENTE)
+nome = "total_ent_paciente"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "usuario_entrada"
+rotulo = "Usuario Entrada"
+tipo = "texto_livre"
+sinonimos = ["USUARIO_ENTRADA"]
+[[coluna]]
+canonico = "count_2"
+rotulo = "Count 2"
+tipo = "decimal"
+sinonimos = ["COUNT_2"]
+[[coluna]]
+canonico = "usuario_entrada_2"
+rotulo = "Usuario Entrada"
+tipo = "texto_livre"
+sinonimos = ["USUARIO_ENTRADA"]
+[[coluna]]
+canonico = "count_2_2"
+rotulo = "Count 2"
+tipo = "decimal"
+sinonimos = ["COUNT_2"]

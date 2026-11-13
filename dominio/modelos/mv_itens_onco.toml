@@ -1,0 +1,40 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 211 / USR_ITENS_ONCO)
+nome = "ITENS_ONCO"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "dt_inicio"
+
+[[coluna]]
+canonico = "cd_protocolo"
+rotulo = "Código protocolo"
+tipo = "identificador"
+sinonimos = ["CD_PROTOCOLO"]
+[[coluna]]
+canonico = "ds_observacao_padrao"
+rotulo = "Descrição observacao padrao"
+tipo = "texto_livre"
+sinonimos = ["DS_OBSERVACAO_PADRAO"]
+[[coluna]]
+canonico = "ds_protocolo"
+rotulo = "Descrição protocolo"
+tipo = "texto_livre"
+sinonimos = ["DS_PROTOCOLO"]
+[[coluna]]
+canonico = "dt_inicio"
+rotulo = "Data inicio"
+tipo = "data"
+sinonimos = ["DT_INICIO"]
+[[coluna]]
+canonico = "nr_tot_dia"
+rotulo = "Número tot dia"
+tipo = "identificador"
+sinonimos = ["NR_TOT_DIA"]
+[[coluna]]
+canonico = "qt_ciclo"
+rotulo = "Qtd. ciclo"
+tipo = "inteiro"
+sinonimos = ["QT_CICLO"]

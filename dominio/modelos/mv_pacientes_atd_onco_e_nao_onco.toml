@@ -1,0 +1,50 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 174 / USR_PACIENTES_ATD_ONCO_E_NAO_ONCO)
+nome = "PACIENTES ATD ONCO E NAO ONCO"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "original"
+
+[[coluna]]
+canonico = "total_nao_onco"
+rotulo = "Total Nao Onco"
+tipo = "moeda"
+sinonimos = ["TOTAL_NAO_ONCO"]
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "data"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "original_2"
+rotulo = "Original"
+tipo = "data"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "original_3"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "original_4"
+rotulo = "Original"
+tipo = "decimal"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "nm_convenio"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "sn"
+rotulo = "Sn"
+tipo = "texto_livre"
+sinonimos = ["SN"]
+[[coluna]]
+canonico = "total"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]

@@ -1,0 +1,45 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 502 / USR_ENTRADAS_DE_NOTAS_FISCAIS)
+nome = "ENTRADAS DE NOTAS FISCAIS"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "dt_entrada"
+
+[[coluna]]
+canonico = "cd_fornecedor"
+rotulo = "Código fornecedor"
+tipo = "identificador"
+sinonimos = ["CD_FORNECEDOR"]
+[[coluna]]
+canonico = "dt_entrada"
+rotulo = "Data entrada"
+tipo = "data"
+sinonimos = ["DT_ENTRADA"]
+[[coluna]]
+canonico = "nm_fornecedor"
+rotulo = "Nome fornecedor"
+tipo = "texto_livre"
+sinonimos = ["NM_FORNECEDOR"]
+[[coluna]]
+canonico = "nr_cgc_cpf"
+rotulo = "Número CNPJ cpf"
+tipo = "identificador"
+sinonimos = ["NR_CGC_CPF"]
+[[coluna]]
+canonico = "nr_documento"
+rotulo = "Número documento"
+tipo = "identificador"
+sinonimos = ["NR_DOCUMENTO"]
+[[coluna]]
+canonico = "observacao"
+rotulo = "Observacao"
+tipo = "texto_livre"
+sinonimos = ["OBSERVACAO"]
+[[coluna]]
+canonico = "vl_total"
+rotulo = "Valor total"
+tipo = "moeda"
+sinonimos = ["VL_TOTAL"]

@@ -1,0 +1,55 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 682 / USR_SOLICITACAO_PARECER)
+nome = "SOLICITAÇÃO PARECER"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "dt_solicitacao"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_especialid"
+rotulo = "Código especialidade"
+tipo = "identificador"
+sinonimos = ["CD_ESPECIALID"]
+[[coluna]]
+canonico = "ds_especialid"
+rotulo = "Descrição especialidade"
+tipo = "texto_livre"
+sinonimos = ["DS_ESPECIALID"]
+[[coluna]]
+canonico = "ds_leito"
+rotulo = "Descrição leito"
+tipo = "texto_livre"
+sinonimos = ["DS_LEITO"]
+[[coluna]]
+canonico = "ds_solicitacao"
+rotulo = "Descrição solicitacao"
+tipo = "texto_livre"
+sinonimos = ["DS_SOLICITACAO"]
+[[coluna]]
+canonico = "ds_unid_int"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "dt_solicitacao"
+rotulo = "Data solicitacao"
+tipo = "data"
+sinonimos = ["DT_SOLICITACAO"]
+[[coluna]]
+canonico = "espec_solicitada"
+rotulo = "Espec Solicitada"
+tipo = "texto_livre"
+sinonimos = ["ESPEC_SOLICITADA"]
+[[coluna]]
+canonico = "pr_solicitante"
+rotulo = "Pr Solicitante"
+tipo = "texto_livre"
+sinonimos = ["PR_SOLICITANTE"]

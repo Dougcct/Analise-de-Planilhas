@@ -1,0 +1,253 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 544 / USR_MAPA_CIRURGICO_ANESTESIA)
+nome = "MAPA_CIRURGICO_ANESTESIA"
+pasta = "Centro Cirúrgico"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "dt_prev_inter"
+dimensoes = ["tp_cirurgias", "tp_sexo", "tp_cirurgias_2", "tp_cirurgias_3", "tp_sexo_2", "tp_situacao"]
+
+[[coluna]]
+canonico = "anestesista_sigla"
+rotulo = "Anestesista Sigla"
+tipo = "texto_livre"
+sinonimos = ["ANESTESISTA_SIGLA"]
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_aviso_cirurgia"
+rotulo = "Código aviso cirurgia"
+tipo = "identificador"
+sinonimos = ["CD_AVISO_CIRURGIA"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "cd_pro_fat"
+rotulo = "Código procedimento faturamento"
+tipo = "identificador"
+sinonimos = ["CD_PRO_FAT"]
+[[coluna]]
+canonico = "cirurgiao_sigla"
+rotulo = "Cirurgiao Sigla"
+tipo = "texto_livre"
+sinonimos = ["CIRURGIAO_SIGLA"]
+[[coluna]]
+canonico = "ds_cen_cir"
+rotulo = "Descrição centro cirurgia"
+tipo = "texto_livre"
+sinonimos = ["DS_CEN_CIR"]
+[[coluna]]
+canonico = "ds_cirurgia"
+rotulo = "Descrição cirurgia"
+tipo = "texto_livre"
+sinonimos = ["DS_CIRURGIA"]
+[[coluna]]
+canonico = "ds_con_pla"
+rotulo = "Descrição con plano"
+tipo = "texto_livre"
+sinonimos = ["DS_CON_PLA"]
+[[coluna]]
+canonico = "ds_obs_aviso"
+rotulo = "Descrição observação aviso"
+tipo = "texto_livre"
+sinonimos = ["DS_OBS_AVISO"]
+[[coluna]]
+canonico = "ds_sal_cir"
+rotulo = "Descrição sal cirurgia"
+tipo = "texto_livre"
+sinonimos = ["DS_SAL_CIR"]
+[[coluna]]
+canonico = "dt_prev_inter"
+rotulo = "Data previsão inter"
+tipo = "data"
+sinonimos = ["DT_PREV_INTER"]
+[[coluna]]
+canonico = "idade"
+rotulo = "Idade"
+tipo = "texto_livre"
+sinonimos = ["IDADE"]
+[[coluna]]
+canonico = "nm_convenio"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "nome_aberviado"
+rotulo = "Nome aberviado"
+tipo = "texto_livre"
+sinonimos = ["NOME_ABERVIADO"]
+[[coluna]]
+canonico = "sala_padronizada"
+rotulo = "Sala Padronizada"
+tipo = "texto_livre"
+sinonimos = ["SALA_PADRONIZADA"]
+[[coluna]]
+canonico = "sn_ambulatorial"
+rotulo = "Ambulatorial?"
+tipo = "booleano"
+sinonimos = ["SN_AMBULATORIAL"]
+[[coluna]]
+canonico = "tp_cirurgias"
+rotulo = "Tipo cirurgias"
+tipo = "categorico"
+sinonimos = ["TP_CIRURGIAS"]
+[[coluna]]
+canonico = "tp_sexo"
+rotulo = "Tipo sexo"
+tipo = "categorico"
+sinonimos = ["TP_SEXO"]
+[[coluna]]
+canonico = "anestesista_sigla_2"
+rotulo = "Anestesista Sigla"
+tipo = "texto_livre"
+sinonimos = ["ANESTESISTA_SIGLA"]
+[[coluna]]
+canonico = "cd_atendimento_2"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_ati_med"
+rotulo = "Código ati médico"
+tipo = "identificador"
+sinonimos = ["CD_ATI_MED"]
+[[coluna]]
+canonico = "cd_ati_med_2"
+rotulo = "Código ati médico"
+tipo = "identificador"
+sinonimos = ["CD_ATI_MED"]
+[[coluna]]
+canonico = "cd_aviso_cirurgia_2"
+rotulo = "Código aviso cirurgia"
+tipo = "identificador"
+sinonimos = ["CD_AVISO_CIRURGIA"]
+[[coluna]]
+canonico = "cd_cen_cir"
+rotulo = "Código centro cirurgia"
+tipo = "identificador"
+sinonimos = ["CD_CEN_CIR"]
+[[coluna]]
+canonico = "cd_cirurgia"
+rotulo = "Código cirurgia"
+tipo = "identificador"
+sinonimos = ["CD_CIRURGIA"]
+[[coluna]]
+canonico = "cd_cirurgia_aviso"
+rotulo = "Código cirurgia aviso"
+tipo = "identificador"
+sinonimos = ["CD_CIRURGIA_AVISO"]
+[[coluna]]
+canonico = "cd_paciente_2"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "cd_prestador"
+rotulo = "Código prestador"
+tipo = "identificador"
+sinonimos = ["CD_PRESTADOR"]
+[[coluna]]
+canonico = "cd_prestador_2"
+rotulo = "Código prestador"
+tipo = "identificador"
+sinonimos = ["CD_PRESTADOR"]
+[[coluna]]
+canonico = "cd_pro_fat_2"
+rotulo = "Código procedimento faturamento"
+tipo = "identificador"
+sinonimos = ["CD_PRO_FAT"]
+[[coluna]]
+canonico = "cd_sal_cir"
+rotulo = "Código sal cirurgia"
+tipo = "identificador"
+sinonimos = ["CD_SAL_CIR"]
+[[coluna]]
+canonico = "cd_tip_anest"
+rotulo = "Código tipo anest"
+tipo = "identificador"
+sinonimos = ["CD_TIP_ANEST"]
+[[coluna]]
+canonico = "ds_cen_cir_2"
+rotulo = "Descrição centro cirurgia"
+tipo = "texto_livre"
+sinonimos = ["DS_CEN_CIR"]
+[[coluna]]
+canonico = "ds_cirurgia_2"
+rotulo = "Descrição cirurgia"
+tipo = "texto_livre"
+sinonimos = ["DS_CIRURGIA"]
+[[coluna]]
+canonico = "ds_con_pla_2"
+rotulo = "Descrição con plano"
+tipo = "texto_livre"
+sinonimos = ["DS_CON_PLA"]
+[[coluna]]
+canonico = "ds_obs_aviso_2"
+rotulo = "Descrição observação aviso"
+tipo = "texto_livre"
+sinonimos = ["DS_OBS_AVISO"]
+[[coluna]]
+canonico = "ds_sal_cir_2"
+rotulo = "Descrição sal cirurgia"
+tipo = "texto_livre"
+sinonimos = ["DS_SAL_CIR"]
+[[coluna]]
+canonico = "ds_tip_anest"
+rotulo = "Descrição tipo anest"
+tipo = "texto_livre"
+sinonimos = ["DS_TIP_ANEST"]
+[[coluna]]
+canonico = "dt_prev_inter_2"
+rotulo = "Data previsão inter"
+tipo = "data"
+sinonimos = ["DT_PREV_INTER"]
+[[coluna]]
+canonico = "medico_sigla"
+rotulo = "Medico Sigla"
+tipo = "texto_livre"
+sinonimos = ["MEDICO_SIGLA"]
+[[coluna]]
+canonico = "nm_prestador"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "nm_prestador_2"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "tp_cirurgias_2"
+rotulo = "Tipo cirurgias"
+tipo = "categorico"
+sinonimos = ["TP_CIRURGIAS"]
+[[coluna]]
+canonico = "tp_cirurgias_3"
+rotulo = "Tipo cirurgias"
+tipo = "categorico"
+sinonimos = ["TP_CIRURGIAS"]
+[[coluna]]
+canonico = "tp_sexo_2"
+rotulo = "Tipo sexo"
+tipo = "categorico"
+sinonimos = ["TP_SEXO"]
+[[coluna]]
+canonico = "tp_situacao"
+rotulo = "Tipo situacao"
+tipo = "categorico"
+sinonimos = ["TP_SITUACAO"]
+[[coluna]]
+canonico = "tp_situacao_2"
+rotulo = "Tipo situacao"
+tipo = "categorico"
+sinonimos = ["TP_SITUACAO"]

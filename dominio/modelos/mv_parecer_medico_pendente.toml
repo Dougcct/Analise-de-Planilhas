@@ -1,0 +1,65 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 147 / USR_PARECER_MEDICO_PENDENTE)
+nome = "PARECER MÉDICO PENDENTE"
+pasta = "Farmácia e Suprimentos"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "dt_solicitacao"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_prestador_requistado"
+rotulo = "Código prestador requistado"
+tipo = "identificador"
+sinonimos = ["CD_PRESTADOR_REQUISTADO"]
+[[coluna]]
+canonico = "ds_leito"
+rotulo = "Descrição leito"
+tipo = "texto_livre"
+sinonimos = ["DS_LEITO"]
+[[coluna]]
+canonico = "ds_solicitacao"
+rotulo = "Descrição solicitacao"
+tipo = "texto_livre"
+sinonimos = ["DS_SOLICITACAO"]
+[[coluna]]
+canonico = "ds_unid_int"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "dt_solicitacao"
+rotulo = "Data solicitacao"
+tipo = "data"
+sinonimos = ["DT_SOLICITACAO"]
+[[coluna]]
+canonico = "espec_solicitada"
+rotulo = "Espec Solicitada"
+tipo = "texto_livre"
+sinonimos = ["ESPEC_SOLICITADA"]
+[[coluna]]
+canonico = "nm_prestador_requisitado"
+rotulo = "Nome prestador requisitado"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR_REQUISITADO"]
+[[coluna]]
+canonico = "pr_solicitante"
+rotulo = "Pr Solicitante"
+tipo = "texto_livre"
+sinonimos = ["PR_SOLICITANTE"]
+[[coluna]]
+canonico = "cd_unid_int"
+rotulo = "Código unidade internação"
+tipo = "identificador"
+sinonimos = ["CD_UNID_INT"]
+[[coluna]]
+canonico = "ds_unid_int_2"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]

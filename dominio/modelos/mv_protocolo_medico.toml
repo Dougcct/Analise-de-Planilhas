@@ -1,0 +1,135 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 458 / USR_PROTOCOLO_MEDICO)
+nome = "Protocolo Médico"
+pasta = "Farmácia e Suprimentos"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+dimensoes = ["prestador", "unidade_componente", "unidade_principal"]
+
+[[coluna]]
+canonico = "aplicacao_principal"
+rotulo = "Aplicacao Principal"
+tipo = "texto_livre"
+sinonimos = ["APLICACAO_PRINCIPAL"]
+[[coluna]]
+canonico = "ativo"
+rotulo = "Ativo"
+tipo = "texto_livre"
+sinonimos = ["ATIVO"]
+[[coluna]]
+canonico = "componente"
+rotulo = "Componente"
+tipo = "texto_livre"
+sinonimos = ["COMPONENTE"]
+[[coluna]]
+canonico = "contagem"
+rotulo = "Contagem"
+tipo = "texto_livre"
+sinonimos = ["CONTAGEM"]
+[[coluna]]
+canonico = "descr_ciclo"
+rotulo = "Descr Ciclo"
+tipo = "texto_livre"
+sinonimos = ["DESCR_CICLO"]
+[[coluna]]
+canonico = "descr_protocolo"
+rotulo = "Descr Protocolo"
+tipo = "texto_livre"
+sinonimos = ["DESCR_PROTOCOLO"]
+[[coluna]]
+canonico = "dia"
+rotulo = "Dia"
+tipo = "texto_livre"
+sinonimos = ["DIA"]
+[[coluna]]
+canonico = "diluente"
+rotulo = "Diluente"
+tipo = "texto_livre"
+sinonimos = ["DILUENTE"]
+[[coluna]]
+canonico = "formula_principal"
+rotulo = "Formula Principal"
+tipo = "texto_livre"
+sinonimos = ["FORMULA_PRINCIPAL"]
+[[coluna]]
+canonico = "frequencia_principal"
+rotulo = "Frequencia Principal"
+tipo = "texto_livre"
+sinonimos = ["FREQUENCIA_PRINCIPAL"]
+[[coluna]]
+canonico = "medicamento_principal"
+rotulo = "Medicamento Principal"
+tipo = "texto_livre"
+sinonimos = ["MEDICAMENTO_PRINCIPAL"]
+[[coluna]]
+canonico = "obs_medicamento_principal"
+rotulo = "Obs Medicamento Principal"
+tipo = "texto_livre"
+sinonimos = ["OBS_MEDICAMENTO_PRINCIPAL"]
+[[coluna]]
+canonico = "ordem"
+rotulo = "Ordem"
+tipo = "decimal"
+sinonimos = ["ORDEM"]
+[[coluna]]
+canonico = "ordem_imp_principal"
+rotulo = "Ordem Imp Principal"
+tipo = "decimal"
+sinonimos = ["ORDEM_IMP_PRINCIPAL"]
+[[coluna]]
+canonico = "presc_ativo"
+rotulo = "Presc Ativo"
+tipo = "texto_livre"
+sinonimos = ["PRESC_ATIVO"]
+[[coluna]]
+canonico = "prestador"
+rotulo = "Prestador"
+tipo = "categorico"
+sinonimos = ["PRESTADOR"]
+[[coluna]]
+canonico = "protocolo"
+rotulo = "Protocolo"
+tipo = "texto_livre"
+sinonimos = ["PROTOCOLO"]
+[[coluna]]
+canonico = "qtd_principal"
+rotulo = "Qtd. principal"
+tipo = "inteiro"
+sinonimos = ["QTD_PRINCIPAL"]
+[[coluna]]
+canonico = "qt_componente"
+rotulo = "Qtd. componente"
+tipo = "inteiro"
+sinonimos = ["QT_COMPONENTE"]
+[[coluna]]
+canonico = "qt_dose_padrao_principal"
+rotulo = "Qtd. dose padrao principal"
+tipo = "inteiro"
+sinonimos = ["QT_DOSE_PADRAO_PRINCIPAL"]
+[[coluna]]
+canonico = "reconstituinte"
+rotulo = "Reconstituinte"
+tipo = "texto_livre"
+sinonimos = ["RECONSTITUINTE"]
+[[coluna]]
+canonico = "unidade_componente"
+rotulo = "Unidade Componente"
+tipo = "categorico"
+sinonimos = ["UNIDADE_COMPONENTE"]
+[[coluna]]
+canonico = "unidade_principal"
+rotulo = "Unidade Principal"
+tipo = "categorico"
+sinonimos = ["UNIDADE_PRINCIPAL"]
+[[coluna]]
+canonico = "cd_protocolo"
+rotulo = "Código protocolo"
+tipo = "identificador"
+sinonimos = ["CD_PROTOCOLO"]
+[[coluna]]
+canonico = "ds_protocolo"
+rotulo = "Descrição protocolo"
+tipo = "texto_livre"
+sinonimos = ["DS_PROTOCOLO"]

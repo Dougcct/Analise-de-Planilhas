@@ -1,0 +1,101 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 372 / USR_RECIBO_DE_REFEICOES)
+nome = "RECIBO DE REFEIÇÕES"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "dt_emissao"
+dimensoes = ["tp_status"]
+
+[[coluna]]
+canonico = "cd_recibo"
+rotulo = "Código recibo"
+tipo = "identificador"
+sinonimos = ["CD_RECIBO"]
+[[coluna]]
+canonico = "cd_resposavel"
+rotulo = "Código resposavel"
+tipo = "identificador"
+sinonimos = ["CD_RESPOSAVEL"]
+[[coluna]]
+canonico = "cd_uf"
+rotulo = "Código uf"
+tipo = "identificador"
+sinonimos = ["CD_UF"]
+[[coluna]]
+canonico = "cd_usuario"
+rotulo = "Código usuário"
+tipo = "identificador"
+sinonimos = ["CD_USUARIO"]
+[[coluna]]
+canonico = "ds_complemento"
+rotulo = "Descrição complemento"
+tipo = "texto_livre"
+sinonimos = ["DS_COMPLEMENTO"]
+[[coluna]]
+canonico = "ds_observacao"
+rotulo = "Descrição observacao"
+tipo = "texto_livre"
+sinonimos = ["DS_OBSERVACAO"]
+[[coluna]]
+canonico = "dt_emissao"
+rotulo = "Data emissao"
+tipo = "data"
+sinonimos = ["DT_EMISSAO"]
+[[coluna]]
+canonico = "nm_bairro"
+rotulo = "Nome bairro"
+tipo = "texto_livre"
+sinonimos = ["NM_BAIRRO"]
+[[coluna]]
+canonico = "nm_cidade"
+rotulo = "Nome cidade"
+tipo = "texto_livre"
+sinonimos = ["NM_CIDADE"]
+[[coluna]]
+canonico = "nm_responsavel"
+rotulo = "Nome responsavel"
+tipo = "texto_livre"
+sinonimos = ["NM_RESPONSAVEL"]
+[[coluna]]
+canonico = "nm_usuario"
+rotulo = "Nome usuário"
+tipo = "texto_livre"
+sinonimos = ["NM_USUARIO"]
+[[coluna]]
+canonico = "nr_cep"
+rotulo = "Número cep"
+tipo = "identificador"
+sinonimos = ["NR_CEP"]
+[[coluna]]
+canonico = "nr_endereco"
+rotulo = "Número endereco"
+tipo = "identificador"
+sinonimos = ["NR_ENDERECO"]
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "texto_livre"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "original_2"
+rotulo = "Original"
+tipo = "texto_livre"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "tp_status"
+rotulo = "Tipo status"
+tipo = "categorico"
+sinonimos = ["TP_STATUS"]
+[[coluna]]
+canonico = "valor_extenso"
+rotulo = "Valor Extenso"
+tipo = "texto_livre"
+sinonimos = ["VALOR_EXTENSO"]
+[[coluna]]
+canonico = "vl_recibo"
+rotulo = "Valor recibo"
+tipo = "moeda"
+sinonimos = ["VL_RECIBO"]

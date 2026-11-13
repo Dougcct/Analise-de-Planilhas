@@ -1,0 +1,62 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 712 / USR_TIPO_DE_ATENDIMENTO_CENTRO_INF)
+nome = "Tipo de atendimento Centro Infusional e Oncologia"
+pasta = "Atendimento Hospitalar"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "dt_atendimento"
+dimensoes = ["origem", "tipo"]
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_ori_ate"
+rotulo = "Código origem atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ORI_ATE"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "ds_info_atendimento"
+rotulo = "Descrição info atendimento"
+tipo = "texto_livre"
+sinonimos = ["DS_INFO_ATENDIMENTO"]
+[[coluna]]
+canonico = "dt_atendimento"
+rotulo = "Data atendimento"
+tipo = "data"
+sinonimos = ["DT_ATENDIMENTO"]
+[[coluna]]
+canonico = "hora"
+rotulo = "Hora"
+tipo = "texto_livre"
+sinonimos = ["HORA"]
+[[coluna]]
+canonico = "origem"
+rotulo = "Origem"
+tipo = "categorico"
+sinonimos = ["ORIGEM"]
+[[coluna]]
+canonico = "tipo"
+rotulo = "Tipo"
+tipo = "categorico"
+sinonimos = ["TIPO"]
+[[coluna]]
+canonico = "cd_ori_ate_2"
+rotulo = "Código origem atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ORI_ATE"]
+[[coluna]]
+canonico = "ds_ori_ate"
+rotulo = "Descrição origem atendimento"
+tipo = "texto_livre"
+sinonimos = ["DS_ORI_ATE"]

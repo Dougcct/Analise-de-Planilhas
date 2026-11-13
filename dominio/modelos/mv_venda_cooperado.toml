@@ -1,0 +1,100 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 121 / USR_VENDA_COOPERADO)
+nome = "VENDA COOPERADO"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "hr_mvto_estoque"
+
+[[coluna]]
+canonico = "cd_estoque"
+rotulo = "Código estoque"
+tipo = "identificador"
+sinonimos = ["CD_ESTOQUE"]
+[[coluna]]
+canonico = "cd_mot_bai"
+rotulo = "Código motivo bai"
+tipo = "identificador"
+sinonimos = ["CD_MOT_BAI"]
+[[coluna]]
+canonico = "cd_mvto_estoque"
+rotulo = "Código mvto estoque"
+tipo = "identificador"
+sinonimos = ["CD_MVTO_ESTOQUE"]
+[[coluna]]
+canonico = "cd_setor"
+rotulo = "Código setor"
+tipo = "identificador"
+sinonimos = ["CD_SETOR"]
+[[coluna]]
+canonico = "cd_usuario"
+rotulo = "Código usuário"
+tipo = "identificador"
+sinonimos = ["CD_USUARIO"]
+[[coluna]]
+canonico = "ds_estoque"
+rotulo = "Descrição estoque"
+tipo = "texto_livre"
+sinonimos = ["DS_ESTOQUE"]
+[[coluna]]
+canonico = "ds_mot_bai"
+rotulo = "Descrição motivo bai"
+tipo = "texto_livre"
+sinonimos = ["DS_MOT_BAI"]
+[[coluna]]
+canonico = "ds_obs_emprestimo"
+rotulo = "Descrição observação emprestimo"
+tipo = "texto_livre"
+sinonimos = ["DS_OBS_EMPRESTIMO"]
+[[coluna]]
+canonico = "hr_mvto_estoque"
+rotulo = "Hora mvto estoque"
+tipo = "data_hora"
+sinonimos = ["HR_MVTO_ESTOQUE"]
+[[coluna]]
+canonico = "nm_setor"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "cd_lote"
+rotulo = "Código lote"
+tipo = "identificador"
+sinonimos = ["CD_LOTE"]
+[[coluna]]
+canonico = "cd_produto"
+rotulo = "Código produto"
+tipo = "identificador"
+sinonimos = ["CD_PRODUTO"]
+[[coluna]]
+canonico = "ds_produto"
+rotulo = "Descrição produto"
+tipo = "texto_livre"
+sinonimos = ["DS_PRODUTO"]
+[[coluna]]
+canonico = "ds_unidade"
+rotulo = "Descrição unidade"
+tipo = "texto_livre"
+sinonimos = ["DS_UNIDADE"]
+[[coluna]]
+canonico = "dt_validade"
+rotulo = "Data validade"
+tipo = "data"
+sinonimos = ["DT_VALIDADE"]
+[[coluna]]
+canonico = "qt_movimentacao"
+rotulo = "Qtd. movimentacao"
+tipo = "inteiro"
+sinonimos = ["QT_MOVIMENTACAO"]
+[[coluna]]
+canonico = "vl_total"
+rotulo = "Valor total"
+tipo = "moeda"
+sinonimos = ["VL_TOTAL"]
+[[coluna]]
+canonico = "vl_unitario"
+rotulo = "Valor unitario"
+tipo = "moeda"
+sinonimos = ["VL_UNITARIO"]

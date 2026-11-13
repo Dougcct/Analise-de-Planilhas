@@ -1,0 +1,35 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 94 / USR_PROPORCAO_DE_PARTOS_NORMAIS)
+nome = "PROPORÇÃO DE PARTOS NORMAIS / PARTOS REALIZADOS"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+dimensoes = ["tipo_parto"]
+
+[[coluna]]
+canonico = "cd_pro_fat_solicitado"
+rotulo = "Código procedimento faturamento solicitado"
+tipo = "identificador"
+sinonimos = ["CD_PRO_FAT_SOLICITADO"]
+[[coluna]]
+canonico = "percentual"
+rotulo = "Percentual"
+tipo = "decimal"
+sinonimos = ["PERCENTUAL"]
+[[coluna]]
+canonico = "qtd"
+rotulo = "Qtd"
+tipo = "decimal"
+sinonimos = ["QTD"]
+[[coluna]]
+canonico = "tipo_parto"
+rotulo = "Tipo parto"
+tipo = "categorico"
+sinonimos = ["TIPO_PARTO"]
+[[coluna]]
+canonico = "total"
+rotulo = "Total"
+tipo = "moeda"
+sinonimos = ["TOTAL"]

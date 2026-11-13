@@ -1,0 +1,96 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 64 / USR_CONTAS_EM_ABERTO)
+nome = "Contas em Aberto"
+pasta = "Faturamento"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "dt_emissao"
+dimensoes = ["tp_con_pag"]
+
+[[coluna]]
+canonico = "cd_con_pag"
+rotulo = "Código con pag"
+tipo = "identificador"
+sinonimos = ["CD_CON_PAG"]
+[[coluna]]
+canonico = "cd_fornecedor"
+rotulo = "Código fornecedor"
+tipo = "identificador"
+sinonimos = ["CD_FORNECEDOR"]
+[[coluna]]
+canonico = "cd_moeda"
+rotulo = "Código moeda"
+tipo = "identificador"
+sinonimos = ["CD_MOEDA"]
+[[coluna]]
+canonico = "cd_multi_empresa"
+rotulo = "Código multi empresa"
+tipo = "identificador"
+sinonimos = ["CD_MULTI_EMPRESA"]
+[[coluna]]
+canonico = "cd_reduzido"
+rotulo = "Código reduzido"
+tipo = "identificador"
+sinonimos = ["CD_REDUZIDO"]
+[[coluna]]
+canonico = "ds_con_pag"
+rotulo = "Descrição con pag"
+tipo = "texto_livre"
+sinonimos = ["DS_CON_PAG"]
+[[coluna]]
+canonico = "dt_emissao"
+rotulo = "Data emissao"
+tipo = "data"
+sinonimos = ["DT_EMISSAO"]
+[[coluna]]
+canonico = "dt_prevista_pag"
+rotulo = "Data prevista pag"
+tipo = "data"
+sinonimos = ["DT_PREVISTA_PAG"]
+[[coluna]]
+canonico = "dt_vencimento"
+rotulo = "Data vencimento"
+tipo = "data"
+sinonimos = ["DT_VENCIMENTO"]
+[[coluna]]
+canonico = "it_vl_moeda"
+rotulo = "It Vl Moeda"
+tipo = "moeda"
+sinonimos = ["IT_VL_MOEDA"]
+[[coluna]]
+canonico = "nm_fornecedor"
+rotulo = "Nome fornecedor"
+tipo = "texto_livre"
+sinonimos = ["NM_FORNECEDOR"]
+[[coluna]]
+canonico = "nr_documento"
+rotulo = "Número documento"
+tipo = "identificador"
+sinonimos = ["NR_DOCUMENTO"]
+[[coluna]]
+canonico = "tp_con_pag"
+rotulo = "Tipo con pag"
+tipo = "categorico"
+sinonimos = ["TP_CON_PAG"]
+[[coluna]]
+canonico = "vl_bruto_conta"
+rotulo = "Valor bruto conta"
+tipo = "moeda"
+sinonimos = ["VL_BRUTO_CONTA"]
+[[coluna]]
+canonico = "vl_moeda"
+rotulo = "Valor moeda"
+tipo = "moeda"
+sinonimos = ["VL_MOEDA"]
+[[coluna]]
+canonico = "vl_soma_baixada"
+rotulo = "Valor soma baixada"
+tipo = "moeda"
+sinonimos = ["VL_SOMA_BAIXADA"]
+[[coluna]]
+canonico = "vl_soma_pago"
+rotulo = "Valor soma pago"
+tipo = "moeda"
+sinonimos = ["VL_SOMA_PAGO"]

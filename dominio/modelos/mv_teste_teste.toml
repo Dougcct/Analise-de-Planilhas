@@ -1,0 +1,50 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 523 / USR_MEDIA_DE_CUSTO_ESTOQUE_2)
+nome = "TESTE TESTE"
+pasta = "Prescrição e Enfermagem"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+data_base = "original"
+
+[[coluna]]
+canonico = "ds_unid_int"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "total_registros"
+rotulo = "Total Registros"
+tipo = "moeda"
+sinonimos = ["TOTAL_REGISTROS"]
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "data"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "ds_unid_int_2"
+rotulo = "Descrição unidade internação"
+tipo = "texto_livre"
+sinonimos = ["DS_UNID_INT"]
+[[coluna]]
+canonico = "total_registros_2"
+rotulo = "Total Registros"
+tipo = "moeda"
+sinonimos = ["TOTAL_REGISTROS"]
+[[coluna]]
+canonico = "original_2"
+rotulo = "Original"
+tipo = "data"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "data_documento"
+rotulo = "Data documento"
+tipo = "data"
+sinonimos = ["DATA_DOCUMENTO"]
+[[coluna]]
+canonico = "total_registros_3"
+rotulo = "Total Registros"
+tipo = "moeda"
+sinonimos = ["TOTAL_REGISTROS"]

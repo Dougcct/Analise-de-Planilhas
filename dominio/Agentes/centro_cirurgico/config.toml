@@ -1,0 +1,23 @@
+# =============================================================================
+# AGENTE — Centro Cirúrgico (MV: AVISO_CIRURGIA / CIRURGIA / SAL_CIR)
+# =============================================================================
+
+ids_principais = ["aviso_cirurgia", "cirurgia", "atendimento", "paciente"]
+valores = ["qtd", "tempo_sala", "cirurgias_canceladas"]
+codigos = ["aviso_cirurgia", "atendimento", "paciente", "pro_fat", "crm"]
+
+[colunas]
+aviso_cirurgia = ["cd_aviso_cirurgia", "cd_aviso", "aviso cirurgia", "aviso", "nr aviso"]
+cirurgia       = ["cd_cirurgia", "ds_cirurgia", "cirurgia", "procedimento cirurgico", "cirurgia realizada"]
+atendimento    = ["cd_atendimento", "atendimento", "nr atendimento"]
+paciente       = ["cd_paciente", "prontuario"]
+centro_cirurgico = ["cd_cen_cir", "ds_cen_cir", "centro cirurgico", "sala cirurgica", "sala"]
+especialidade  = ["cd_especialid", "ds_especialid", "especialidade", "esp"]
+prestador      = ["cd_prestador", "nm_prestador", "cirurgiao", "medico", "anestesista"]
+convenio       = ["nm_convenio", "convenio", "ds_con_pla", "plano"]
+tipo_cirurgia  = ["tipo_cir", "tipo cirurgia", "carater", "eletiva urgencia", "porte"]
+motivo_cancelamento = ["ds_mot_canc", "motivo cancelamento", "motivo suspensao", "cancelamento"]
+pro_fat        = ["cd_pro_fat", "pro_fat", "tuss"]
+qtd            = ["qt", "qtd", "quantidade", "total cirurgias"]
+dt_cirurgia    = ["dt_cirurgia", "data cirurgia", "dt_aviso", "dt_realizacao"]
+dt_alta        = ["dt_alta", "data alta"]

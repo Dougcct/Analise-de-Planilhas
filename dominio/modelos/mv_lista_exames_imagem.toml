@@ -1,0 +1,19 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 573 / USR_LISTA_EXAMES_IMAGEM)
+nome = "LISTA_EXAMES_IMAGEM"
+pasta = "Exames e Laboratório"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "cd_tip_presc"
+rotulo = "Código tipo prescrição"
+tipo = "identificador"
+sinonimos = ["CD_TIP_PRESC"]
+[[coluna]]
+canonico = "ds_tip_presc"
+rotulo = "Descrição tipo prescrição"
+tipo = "texto_livre"
+sinonimos = ["DS_TIP_PRESC"]

@@ -1,0 +1,141 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 60 / USR_AUDITORIA_DE_PACIENTES_INT_TOT)
+nome = "AUDITORIA DE PACIENTES INT TOTAL"
+pasta = "Faturamento"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "dt_auditoria"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_convenio"
+rotulo = "Código convênio"
+tipo = "identificador"
+sinonimos = ["CD_CONVENIO"]
+[[coluna]]
+canonico = "cd_motivo_auditoria"
+rotulo = "Código motivo auditoria"
+tipo = "identificador"
+sinonimos = ["CD_MOTIVO_AUDITORIA"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "cd_pro_fat"
+rotulo = "Código procedimento faturamento"
+tipo = "identificador"
+sinonimos = ["CD_PRO_FAT"]
+[[coluna]]
+canonico = "cd_reg_fat"
+rotulo = "Código reg faturamento"
+tipo = "identificador"
+sinonimos = ["CD_REG_FAT"]
+[[coluna]]
+canonico = "cd_setor"
+rotulo = "Código setor"
+tipo = "identificador"
+sinonimos = ["CD_SETOR"]
+[[coluna]]
+canonico = "ds_motivo_auditoria"
+rotulo = "Descrição motivo auditoria"
+tipo = "texto_livre"
+sinonimos = ["DS_MOTIVO_AUDITORIA"]
+[[coluna]]
+canonico = "ds_pro_fat"
+rotulo = "Descrição procedimento faturamento"
+tipo = "texto_livre"
+sinonimos = ["DS_PRO_FAT"]
+[[coluna]]
+canonico = "dt_auditoria"
+rotulo = "Data auditoria"
+tipo = "data"
+sinonimos = ["DT_AUDITORIA"]
+[[coluna]]
+canonico = "dt_final"
+rotulo = "Data final"
+tipo = "data"
+sinonimos = ["DT_FINAL"]
+[[coluna]]
+canonico = "dt_inicio"
+rotulo = "Data inicio"
+tipo = "data"
+sinonimos = ["DT_INICIO"]
+[[coluna]]
+canonico = "dt_lancamento"
+rotulo = "Data lancamento"
+tipo = "data"
+sinonimos = ["DT_LANCAMENTO"]
+[[coluna]]
+canonico = "nm_convenio"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "nm_setor"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "nm_usuario"
+rotulo = "Nome usuário"
+tipo = "texto_livre"
+sinonimos = ["NM_USUARIO"]
+[[coluna]]
+canonico = "qt_lancamento"
+rotulo = "Qtd. lancamento"
+tipo = "inteiro"
+sinonimos = ["QT_LANCAMENTO"]
+[[coluna]]
+canonico = "qt_lancamento_ant"
+rotulo = "Qtd. lancamento ant"
+tipo = "inteiro"
+sinonimos = ["QT_LANCAMENTO_ANT"]
+[[coluna]]
+canonico = "vl_total_conta"
+rotulo = "Valor total conta"
+tipo = "moeda"
+sinonimos = ["VL_TOTAL_CONTA"]
+[[coluna]]
+canonico = "vl_total_conta_ant"
+rotulo = "Valor total conta ant"
+tipo = "moeda"
+sinonimos = ["VL_TOTAL_CONTA_ANT"]
+[[coluna]]
+canonico = "cd_motivo_auditoria_2"
+rotulo = "Código motivo auditoria"
+tipo = "identificador"
+sinonimos = ["CD_MOTIVO_AUDITORIA"]
+[[coluna]]
+canonico = "desc_mot"
+rotulo = "Descrição motivo"
+tipo = "texto_livre"
+sinonimos = ["DESC_MOT"]
+[[coluna]]
+canonico = "cd_convenio_2"
+rotulo = "Código convênio"
+tipo = "identificador"
+sinonimos = ["CD_CONVENIO"]
+[[coluna]]
+canonico = "nm_convenio_2"
+rotulo = "Nome convênio"
+tipo = "texto_livre"
+sinonimos = ["NM_CONVENIO"]
+[[coluna]]
+canonico = "cd_usuario"
+rotulo = "Código usuário"
+tipo = "identificador"
+sinonimos = ["CD_USUARIO"]
+[[coluna]]
+canonico = "usuario"
+rotulo = "Usuario"
+tipo = "texto_livre"
+sinonimos = ["USUARIO"]

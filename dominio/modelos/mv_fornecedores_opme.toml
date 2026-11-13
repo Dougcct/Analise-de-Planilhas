@@ -1,0 +1,39 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 286 / USR_FORNECEDORES_OPME)
+nome = "FORNECEDORES OPME"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "cd_fornecedor"
+rotulo = "Código fornecedor"
+tipo = "identificador"
+sinonimos = ["CD_FORNECEDOR"]
+[[coluna]]
+canonico = "nm_fantasia"
+rotulo = "Nome fantasia"
+tipo = "texto_livre"
+sinonimos = ["NM_FANTASIA"]
+[[coluna]]
+canonico = "nm_fornecedor"
+rotulo = "Nome fornecedor"
+tipo = "texto_livre"
+sinonimos = ["NM_FORNECEDOR"]
+[[coluna]]
+canonico = "cod_fornecedor"
+rotulo = "Código fornecedor"
+tipo = "identificador"
+sinonimos = ["COD_FORNECEDOR"]
+[[coluna]]
+canonico = "nome_fantasia"
+rotulo = "Nome fantasia"
+tipo = "texto_livre"
+sinonimos = ["NOME_FANTASIA"]
+[[coluna]]
+canonico = "nome_fornecedor"
+rotulo = "Nome fornecedor"
+tipo = "texto_livre"
+sinonimos = ["NOME_FORNECEDOR"]

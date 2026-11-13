@@ -1,0 +1,39 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 222 / USR_TOTAL_CIRURGIAS_POR_PERIODO)
+nome = "TOTAL CIRURGIAS POR PERIODO"
+pasta = "Centro Cirúrgico"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "total_cirurgia"
+rotulo = "Total Cirurgia"
+tipo = "moeda"
+sinonimos = ["TOTAL_CIRURGIA"]
+[[coluna]]
+canonico = "total_cirurgia_2"
+rotulo = "Total Cirurgia"
+tipo = "moeda"
+sinonimos = ["TOTAL_CIRURGIA"]
+[[coluna]]
+canonico = "total_externos"
+rotulo = "Total Externos"
+tipo = "moeda"
+sinonimos = ["TOTAL_EXTERNOS"]
+[[coluna]]
+canonico = "total_int"
+rotulo = "Total Int"
+tipo = "moeda"
+sinonimos = ["TOTAL_INT"]
+[[coluna]]
+canonico = "cd_sal_cir"
+rotulo = "Código sal cirurgia"
+tipo = "identificador"
+sinonimos = ["CD_SAL_CIR"]
+[[coluna]]
+canonico = "total_cirurgia_3"
+rotulo = "Total Cirurgia"
+tipo = "moeda"
+sinonimos = ["TOTAL_CIRURGIA"]

@@ -1,0 +1,42 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 335 / USR_EVOLUCOES_ABERTAS)
+nome = "EVOLUÇÕES ABERTAS"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "dh_referencia"
+dimensoes = ["tp_status"]
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "cd_prestador"
+rotulo = "Código prestador"
+tipo = "identificador"
+sinonimos = ["CD_PRESTADOR"]
+[[coluna]]
+canonico = "dh_referencia"
+rotulo = "Data/hora referencia"
+tipo = "data_hora"
+sinonimos = ["DH_REFERENCIA"]
+[[coluna]]
+canonico = "nm_prestador"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "tp_status"
+rotulo = "Tipo status"
+tipo = "categorico"
+sinonimos = ["TP_STATUS"]

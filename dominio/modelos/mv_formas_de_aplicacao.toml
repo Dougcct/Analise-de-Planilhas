@@ -1,0 +1,24 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 324 / USR_FORMAS_DE_APLICACAO)
+nome = "FORMAS DE APLICAÇÃO"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "registro"
+entidade_plural = "registros"
+
+[[coluna]]
+canonico = "cd_for_apl"
+rotulo = "Código for apl"
+tipo = "identificador"
+sinonimos = ["CD_FOR_APL"]
+[[coluna]]
+canonico = "ds_for_apl"
+rotulo = "Descrição for apl"
+tipo = "texto_livre"
+sinonimos = ["DS_FOR_APL"]
+[[coluna]]
+canonico = "nr_ordem"
+rotulo = "Número ordem"
+tipo = "identificador"
+sinonimos = ["NR_ORDEM"]

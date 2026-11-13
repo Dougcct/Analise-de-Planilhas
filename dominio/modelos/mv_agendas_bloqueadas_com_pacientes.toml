@@ -1,0 +1,82 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 717 / USR_AGENDAS_BLOQUEADAS)
+nome = "AGENDAS BLOQUEADAS COM PACIENTES"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "dt_agenda"
+dimensoes = ["tp_presenca_falta"]
+
+[[coluna]]
+canonico = "cd_agenda_central"
+rotulo = "Código agenda central"
+tipo = "identificador"
+sinonimos = ["CD_AGENDA_CENTRAL"]
+[[coluna]]
+canonico = "cd_convenio"
+rotulo = "Código convênio"
+tipo = "identificador"
+sinonimos = ["CD_CONVENIO"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
+[[coluna]]
+canonico = "cd_setor"
+rotulo = "Código setor"
+tipo = "identificador"
+sinonimos = ["CD_SETOR"]
+[[coluna]]
+canonico = "ds_ser_dis"
+rotulo = "Descrição ser dis"
+tipo = "texto_livre"
+sinonimos = ["DS_SER_DIS"]
+[[coluna]]
+canonico = "dt_agenda"
+rotulo = "Data agenda"
+tipo = "data"
+sinonimos = ["DT_AGENDA"]
+[[coluna]]
+canonico = "hr_agenda"
+rotulo = "Hora agenda"
+tipo = "data_hora"
+sinonimos = ["HR_AGENDA"]
+[[coluna]]
+canonico = "nm_prestador"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "nm_setor"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "sn_bloqueado"
+rotulo = "Bloqueado?"
+tipo = "booleano"
+sinonimos = ["SN_BLOQUEADO"]
+[[coluna]]
+canonico = "total_geral"
+rotulo = "Total Geral"
+tipo = "moeda"
+sinonimos = ["TOTAL_GERAL"]
+[[coluna]]
+canonico = "tp_presenca_falta"
+rotulo = "Tipo presenca falta"
+tipo = "categorico"
+sinonimos = ["TP_PRESENCA_FALTA"]
+[[coluna]]
+canonico = "cd_setor_2"
+rotulo = "Código setor"
+tipo = "identificador"
+sinonimos = ["CD_SETOR"]
+[[coluna]]
+canonico = "nm_setor_2"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]

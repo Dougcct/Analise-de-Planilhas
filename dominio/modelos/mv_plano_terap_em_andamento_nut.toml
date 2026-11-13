@@ -1,0 +1,55 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 554 / USR_PLANO_TER._EM_ANDAMENTO_NUT)
+nome = "PLANO TERAP. EM ANDAMENTO NUT"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "atendimento"
+entidade_plural = "atendimentos"
+data_base = "data"
+
+[[coluna]]
+canonico = "cd_atendimento"
+rotulo = "Código atendimento"
+tipo = "identificador"
+sinonimos = ["CD_ATENDIMENTO"]
+[[coluna]]
+canonico = "data"
+rotulo = "Data"
+tipo = "data"
+sinonimos = ["DATA"]
+[[coluna]]
+canonico = "ds_enfermaria"
+rotulo = "Descrição enfermaria"
+tipo = "texto_livre"
+sinonimos = ["DS_ENFERMARIA"]
+[[coluna]]
+canonico = "nm_prestador"
+rotulo = "Nome prestador"
+tipo = "texto_livre"
+sinonimos = ["NM_PRESTADOR"]
+[[coluna]]
+canonico = "nm_setor"
+rotulo = "Nome setor"
+tipo = "texto_livre"
+sinonimos = ["NM_SETOR"]
+[[coluna]]
+canonico = "rn"
+rotulo = "Rn"
+tipo = "decimal"
+sinonimos = ["RN"]
+[[coluna]]
+canonico = "original"
+rotulo = "Original"
+tipo = "data"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "original_2"
+rotulo = "Original"
+tipo = "texto_livre"
+sinonimos = ["ORIGINAL"]
+[[coluna]]
+canonico = "valor"
+rotulo = "Valor"
+tipo = "texto_livre"
+sinonimos = ["VALOR"]

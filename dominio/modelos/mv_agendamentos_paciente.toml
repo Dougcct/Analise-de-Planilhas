@@ -1,0 +1,62 @@
+# Gerado automaticamente a partir do MV REMWEB.REPORT (ID 446 / USR_AGENDAMENTOS_PACIENTE)
+nome = "AGENDAMENTOS_PACIENTE"
+pasta = "MV — Geral"
+apenas_mapeadas = true
+
+[analise]
+entidade = "paciente"
+entidade_plural = "pacientes"
+data_base = "dt_agendamento"
+dimensoes = ["tp_presenca_falta"]
+
+[[coluna]]
+canonico = "cod_agenda"
+rotulo = "Código agenda"
+tipo = "identificador"
+sinonimos = ["COD_AGENDA"]
+[[coluna]]
+canonico = "dt_agendamento"
+rotulo = "Data agendamento"
+tipo = "data"
+sinonimos = ["DT_AGENDAMENTO"]
+[[coluna]]
+canonico = "dt_agendou"
+rotulo = "Data agendou"
+tipo = "data"
+sinonimos = ["DT_AGENDOU"]
+[[coluna]]
+canonico = "encaixe"
+rotulo = "Encaixe"
+tipo = "texto_livre"
+sinonimos = ["ENCAIXE"]
+[[coluna]]
+canonico = "local"
+rotulo = "Local"
+tipo = "texto_livre"
+sinonimos = ["LOCAL"]
+[[coluna]]
+canonico = "marcacao"
+rotulo = "Marcacao"
+tipo = "texto_livre"
+sinonimos = ["MARCACAO"]
+[[coluna]]
+canonico = "medico_agenda"
+rotulo = "Medico Agenda"
+tipo = "texto_livre"
+sinonimos = ["MEDICO_AGENDA"]
+[[coluna]]
+canonico = "situacao"
+rotulo = "Situacao"
+tipo = "texto_livre"
+sinonimos = ["SITUACAO"]
+[[coluna]]
+canonico = "tp_presenca_falta"
+rotulo = "Tipo presenca falta"
+tipo = "categorico"
+sinonimos = ["TP_PRESENCA_FALTA"]
+[[coluna]]
+canonico = "cd_paciente"
+rotulo = "Paciente (código)"
+tipo = "identificador"
+papel = "entidade"
+sinonimos = ["CD_PACIENTE"]
