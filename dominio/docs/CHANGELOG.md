@@ -2,6 +2,20 @@
 
 Formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · [SemVer](https://semver.org/lang/pt-BR/)
 
+## [4.0.0-beta.2] — 2026-11-13
+
+### Adicionado
+- **Censo Hospitalar no `AgenteAssistencial`** (`dominio/Agentes/assistencial/`): cálculo automático de
+  *Taxa de Ocupação Hospitalar*, *Média de Permanência (censo)*, *Taxa de Mortalidade Hospitalar* e
+  *Taxa de Cancelamento Cirúrgico* com alertas automáticos.
+- **Selo CeosGo na tela de Prévia** (`servidor/web.py`, `templates/web/previa.html`): exibe quantos KPIs
+  oficiais do CeosGo foram reconhecidos nas colunas e quantos indicadores derivados são calculáveis antes
+  da publicação.
+- **Fórmulas Hospitalares Clássicas** (`scripts/importar_kpis_ceosgo.py` → `config/kpis_ceosgo.json`):
+  reforço de fórmulas estruturadas (*Taxa de Ocupação*, *Mortalidade Institucional/Cirúrgica*, *Retorno PA
+  72h*, *Média de Permanência por Posto*) e correção das taxas de ocupação para `>=` (total: 93 fórmulas,
+  125 polaridades corrigidas).
+
 ## [4.0.0-beta.1] — 2026-11-13
 
 ### Adicionado
