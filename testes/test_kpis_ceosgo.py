@@ -118,3 +118,12 @@ def test_agente_assistencial_roteamento_e_analise():
     assert "Atendimentos por setor / clínica" in res["paineis"]
     assert "KPIs Derivados (CeosGo)" in res["paineis"]
     assert "KPIs Relacionados e Definições (CeosGo)" in res["paineis"]
+
+
+def test_tooltip_ceosgo_no_relatorio_html():
+    from analise_planilha.relatorio_html import _tooltip_ceosgo
+
+    tip = _tooltip_ceosgo("Número de extubações acidentais")
+    assert "CeosGo (<=):" in tip
+    assert "CÂNULA ENDOTRAQUEAL" in tip
+    assert _tooltip_ceosgo("Coluna Totalmente Inexistente XYZ") == ""

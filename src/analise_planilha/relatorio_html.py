@@ -22,6 +22,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 from markupsafe import Markup
 
 from . import __version__, config, graficos
+from .cerebro import kpis_ceosgo
 from .especificacao import ESTATISTICAS
 from .formatacao import fmt_pct, formatar_tabela
 from .modelos import Analise, Filtros
@@ -83,6 +84,17 @@ def _ancora(texto: str) -> str:
 _RE_PAREN = re.compile(r"\([^)]*\)")
 _RE_ANO = re.compile(r"\b(19|20)\d{2}\b")
 MAX_DESTAQUES = 2          # gráficos promovidos ao painel executivo (diretoria)
+
+
+def _tooltip_ceosgo(rotulo: str) -> str:
+    """Retorna a definição oficial do CeosGo para usar como tooltip no cartão do KPI."""
+    kpi = kpis_ceosgo.atual().reconhecer_coluna(rotulo)
+    if kpi is None:
+        return ""
+    resumo = (kpi.descricao[:280] + "...") if len(kpi.descricao) > 280 else kpi.descricao
+    if resumo:
+        return f"CeosGo ({kpi.sentido}): {resumo}"
+    return f"CeosGo: {kpi.titulo} (sentido {kpi.sentido})"
 
 
 def _chave_kpi(rotulo: str) -> str:
@@ -233,7 +245,8 @@ def _secoes(analise: Analise) -> list[dict]:
         sec["paineis"].append({"id": pid, "titulo": p.titulo, "descricao": p.descricao, "figura": p.figura,
                                "colunas": colunas, "linhas": linhas, "meia": p.meia, "largura": larg, "altura": 0,
                                "aberta": p.aberta, "ocultar_figura": False, "ocultar_tabela": False, "oculto": False,
-                               "kpis": [{"rotulo": k.rotulo, "valor": k.valor, "nota": k.detalhe} for k in p.kpis]})
+                               "kpis": [{"rotulo": k.rotulo, "valor": k.valor, "nota": k.detalhe,
+                                         "tooltip": _tooltip_ceosgo(k.rotulo)} for k in p.kpis]})
     return list(secoes.values())
 
 
@@ -406,6 +419,7 @@ def _vista(analise: Analise, idx: int, rotulo: str = "",
         todos_kpis.append({
             "rotulo": k.rotulo, "valor": k.valor, "nota": k.detalhe, "destaque": i == 0, "span": 2 if i == 0 else 1,
             "chave": chave, "num": num, "fmt": getattr(k, "fmt", ""), "sentido": getattr(k, "sentido", ""),
+            "tooltip": _tooltip_ceosgo(k.rotulo),
             "delta": _delta(num, ant.get(chave), getattr(k, "sentido", "")) if num is not None else None,
         })
     secoes_brutas = _secoes(analise)

@@ -600,7 +600,7 @@ body.modo-editavel .ed-achado-del { display: inline; }
           <button type="button" class="ed-mini-btn" onclick="edCiclarSpanKpi(this)" title="Alternar tamanho do cartão KPI (1x / 2x ★ / 3x)">◫ 1x/2x/3x</button>
           <button type="button" class="ed-mini-btn perigo" style="margin-left:auto" onclick="edOcultarKpiExec(this)" title="Ocultar este KPI">✕</button>
         </div>
-        <div class="rot" data-editavel="1">{{ k.rotulo }}</div>
+        <div class="rot" data-editavel="1"{% if k.tooltip %} title="{{ k.tooltip }}"{% endif %}>{{ k.rotulo }}{% if k.tooltip %}<span class="no-print" title="{{ k.tooltip }}" style="cursor:help;opacity:.65;margin-left:4px;font-size:.85em">ⓘ</span>{% endif %}</div>
         <div class="val">{{ k.valor }}</div>
         {% if k.delta %}<div><span class="delta {{ k.delta.classe }}"><span class="seta">{{ '▲' if k.delta.dir == 'up' else ('▼' if k.delta.dir == 'down' else '▬') }}</span>{{ k.delta.pct }}</span>{% if v.rotulo_ant %}<span class="delta-vs">vs {{ v.rotulo_ant }}</span>{% endif %}</div>{% endif %}
         {% if k.nota %}<div class="nota">{{ k.nota }}</div>{% endif %}
@@ -724,7 +724,7 @@ body.modo-editavel .ed-achado-del { display: inline; }
     </div>
     {% if s.paineis|length > 1 or p.titulo != s.titulo %}<h3 data-editavel="1">{{ p.titulo }}</h3>{% endif %}
     {% if p.descricao %}<p class="desc" data-editavel="1">{{ p.descricao }}</p>{% endif %}
-    {% if p.kpis %}<div class="kpis mini">{% for k in p.kpis %}<div class="kpi"><div class="rot" data-editavel="1">{{ k.rotulo }}</div>
+    {% if p.kpis %}<div class="kpis mini">{% for k in p.kpis %}<div class="kpi"><div class="rot" data-editavel="1"{% if k.tooltip %} title="{{ k.tooltip }}"{% endif %}>{{ k.rotulo }}{% if k.tooltip %}<span class="no-print" title="{{ k.tooltip }}" style="cursor:help;opacity:.65;margin-left:4px;font-size:.85em">ⓘ</span>{% endif %}</div>
       <div class="val">{{ k.valor }}</div><div class="nota">{{ k.nota }}</div></div>{% endfor %}</div>{% endif %}
     {% if p.figura %}
       <div class="painel-fig-wrap" {% if p.altura %}style="min-height:{{ p.altura }}px"{% endif %} {{ 'hidden' if p.ocultar_figura }}>{{ p.figura }}</div>
