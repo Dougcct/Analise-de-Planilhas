@@ -43,6 +43,7 @@ from ..modelos import (
 from ..modelos import (
     IDENTIFICADOR as T_ID,
 )
+from . import kpis_ceosgo
 from . import lexico as L
 from .conhecimento import Conhecimento
 
@@ -246,7 +247,14 @@ def classificar(df: pd.DataFrame, esquema: Esquema, conhecimento: Conhecimento |
             sub = subtipo_identificador(nome) if dicas[nome] == IDENTIFICADOR else ""
             saida.append(_p(nome, dicas[nome], 0.95, "estrutura da planilha / modelo do documento", tipo, sub))
             continue
-        saida.append(_pelo_nome(nome, s, tipo) or _pelos_valores(nome, s, info, tipo))
+        p = _pelo_nome(nome, s, tipo)
+        if (p is None or p.papel in MEDIDAS) and tipo in (INTEIRO, DECIMAL, MOEDA, PERCENTUAL):
+            kpi = kpis_ceosgo.atual().reconhecer_coluna(nome)
+            if kpi is not None:
+                papel_kpi, ag_kpi = kpis_ceosgo.papel_sugerido(kpi)
+                p = _p(nome, papel_kpi, 0.92, f"KPI CeosGo: «{kpi.titulo}» ({kpi.sentido})",
+                       tipo, agregacao=ag_kpi)
+        saida.append(p or _pelos_valores(nome, s, info, tipo))
     return saida
 
 

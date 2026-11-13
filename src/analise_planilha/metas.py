@@ -15,6 +15,7 @@ import json
 from dataclasses import replace
 
 from . import config
+from .cerebro import kpis_ceosgo
 from .especificacao import ESTATISTICAS, Especificacao, MetaGestor
 
 ARQUIVO = config.PASTA_CONFIG / "metas.json"
@@ -42,6 +43,13 @@ def status(valor: float | None, alvo: float, sentido: str,
     return "atencao" if valor <= alvo * (1 + tol) else "ruim"
 
 
+def _sentido_ceosgo(rotulo: str, padrao: str = ">=") -> str:
+    kpi = kpis_ceosgo.atual().reconhecer_coluna(rotulo)
+    if kpi is not None and kpi.sentido in (">=", "<="):
+        return kpi.sentido
+    return padrao
+
+
 def catalogo(spec: Especificacao) -> list[tuple[str, str, str, str]]:
     """(chave, rótulo, tipo, sentido sugerido) dos indicadores que podem virar meta neste relatório.
     tipo: pct (alvo em %) | dias | moeda | num."""
@@ -53,10 +61,11 @@ def catalogo(spec: Especificacao) -> list[tuple[str, str, str, str]]:
         if spec.perfil == "dre":
             itens.append(("margem_liquida", "Margem líquida", "pct", ">="))
         return itens
-    itens = [(t.id, t.rotulo, "pct", t.sentido or ">=") for t in spec.taxas]
+    itens = [(t.id, t.rotulo, "pct", t.sentido or _sentido_ceosgo(t.rotulo, ">=")) for t in spec.taxas]
     itens += [(t.id, f"{t.rotulo} (tempo)", "dias", "<=") for t in spec.tempos]
     if spec.medida_principal:
-        itens.append((TICKET, f"Ticket médio — {spec.medida_principal}", "moeda", ">="))
+        itens.append((TICKET, f"Ticket médio — {spec.medida_principal}", "moeda",
+                      _sentido_ceosgo(spec.medida_principal, ">=")))
     itens.append(("registros", "Registros no recorte", "num", ">="))
     return itens
 

@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from analise_planilha.normalizacao import chave_texto
 
+from .assistencial.rules import AgenteAssistencial
 from .base_agent import AgenteBase
 from .custos.rules import AgenteCustos
 from .faturamento.rules import AgenteFaturamento
@@ -21,6 +22,7 @@ from .faturamento.rules import AgenteFaturamento
 AGENTES: tuple[type[AgenteBase], ...] = (
     AgenteFaturamento,
     AgenteCustos,
+    AgenteAssistencial,
 )
 
 MIN_DENSIDADE = 3          # nº mínimo de colunas reconhecidas para um agente assumir pelo conteúdo
@@ -40,7 +42,7 @@ def _pontuar(contexto: str, colunas) -> list[tuple[AgenteBase, int, bool, int]]:
     """[(agente, score, por_contexto, densidade)] de TODOS os agentes, do maior score ao menor.
     `sort` é estável: em empate vale a ordem de registro em AGENTES (determinístico)."""
     k_ctx = chave_texto(contexto or "")
-    chaves_col = _chaves(colunas or [])
+    chaves_col = _chaves([] if colunas is None else list(colunas))
     out: list[tuple[AgenteBase, int, bool, int]] = []
     for cls in AGENTES:
         ag = cls()

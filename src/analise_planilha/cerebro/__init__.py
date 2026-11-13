@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from . import conhecimento, grao, layout, papeis
+from . import conhecimento, grao, kpis_ceosgo, layout, papeis
 from .conhecimento import Conhecimento
 from .grao import Grao
 from .papeis import PapelColuna
@@ -24,6 +24,7 @@ __all__ = [
     "classificar_e_agrupar",
     "conhecimento",
     "grao",
+    "kpis_ceosgo",
     "layout",
     "papeis",
 ]

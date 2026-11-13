@@ -193,7 +193,7 @@ def test_router_contexto_vence_densidade():
 def test_router_candidatos_marca_automatico():
     cols = ["Centro de Custo", "Conta Contabil", "Competencia", "Orcado", "Realizado"]
     cands = agentes.candidatos(colunas=cols)
-    assert {c["chave"] for c in cands} == {"custos", "faturamento"}
+    assert {c["chave"] for c in cands} == {"custos", "faturamento", "assistencial"}
     auto = [c for c in cands if c["auto"]]
     assert len(auto) == 1 and auto[0]["chave"] == "custos"
     # ordenado por score desc: o automático vem primeiro
