@@ -14,3 +14,4 @@ services:
       - ./templates:/app/templates:ro
       - ./assets:/app/assets:ro
       - ./automacao:/app/automacao:ro
+      - ./config/kpis_ceosgo.json:/app/config/kpis_ceosgo.json:ro
